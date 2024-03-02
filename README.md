@@ -1,3 +1,3 @@
-# HyperData application
+# Data application
 
 Some description
