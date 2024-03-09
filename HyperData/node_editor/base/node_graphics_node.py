@@ -31,7 +31,7 @@ class NodeGraphicsSocket (QGraphicsItem):
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         """ Temporarily turn off hover events since it conflicts with mouse press in view """
-        #self.setAcceptHoverEvents(True)
+        self.setAcceptHoverEvents(True)
 
         self.node = node # node that socket is attached to so that we can get socket position from 'NodeGraphicsNode' class
         self.index = index
@@ -58,6 +58,8 @@ class NodeGraphicsSocket (QGraphicsItem):
             self.title = 'Single Output'
         elif self.socket_type == MULTI_OUT:
             self.title = 'Multiple Outputs'
+        elif self.socket_type in [PIPELINE_IN, PIPELINE_OUT]:
+            self.title = "Pipeline"
 
     def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
         self._text.setPlainText(self.title)
