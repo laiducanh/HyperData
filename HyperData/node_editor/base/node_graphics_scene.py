@@ -24,7 +24,7 @@ class NodeGraphicsScene(QGraphicsScene):
         self.gridSquares = 5
         self.parent = parent
 
-        self._color_background = QColor("black")
+        self._color_background = QColor("white")
         self._color_light = QColor("#2f2f2f")
         self._color_dark = QColor("#292929")
 
