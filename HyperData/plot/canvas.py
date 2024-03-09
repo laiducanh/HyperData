@@ -29,7 +29,7 @@ class Canvas (FigureCanvasQTAgg):
     def __init__(self):
         
         self.fig = Figure()
-        self.fig.set_dpi(120)
+        self.fig.set_dpi(150)
         self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
         self.annot_box = dict(boxstyle="round",pad=0.3,facecolor='orange',edgecolor='none')
         self.axes = self.fig.add_subplot()

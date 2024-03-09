@@ -48,17 +48,17 @@ class TickBase2D_1 (QWidget):
         visible.button.setChecked(self.get_visible())
         layout1.addWidget(visible)
 
-        min = LineEdit(text='min value')
-        min.button.setFixedWidth(150)
-        min.button.textEdited.connect(self.set_min)
-        min.button.setText(str(round(self.get_lim()[0],5)))
-        layout1.addWidget(min)
+        self.min = LineEdit(text='min value')
+        self.min.button.setFixedWidth(150)
+        self.min.button.textChanged.connect(self.set_min)
+        self.min.button.setText(str(round(self.get_lim()[0],5)))
+        layout1.addWidget(self.min)
 
-        max = LineEdit(text='max value')
-        max.button.setFixedWidth(150)
-        max.button.textEdited.connect(self.set_max)
-        max.button.setText(str(round(self.get_lim()[1],5)))
-        layout1.addWidget(max)
+        self.max = LineEdit(text='max value')
+        self.max.button.setFixedWidth(150)
+        self.max.button.textChanged.connect(self.set_max)
+        self.max.button.setText(str(round(self.get_lim()[1],5)))
+        layout1.addWidget(self.max)
 
         scale = ComboBox(items=['Linear','Log','Symlog','Logit','Asinh'],text='scale')
         scale.button.currentTextChanged.connect(self.set_scale)
@@ -109,18 +109,26 @@ class TickBase2D_1 (QWidget):
         return self.obj.get_visible()
 
     def set_min(self, value):
-        lim = self.get_lim()
+            
         try:
-            self.obj.axes.set_xlim([float(value),lim[1]])
-            self.canvas.draw()
-        except:pass
+            if self.axis in ['bottom','top']:
+                self.obj.axes.set_xlim([float(value),float(self.max.button.text())])
+            else:
+                self.obj.axes.set_ylim([float(value),float(self.max.button.text())])
+        except Exception as e: print(e)
+
+        self.canvas.draw()
     
     def set_max (self, value):
-        lim = self.get_lim()
+            
         try:
-            self.obj.axes.set_xlim([lim[0],float(value)])
-            self.canvas.draw()
-        except:pass
+            if self.axis in ['bottom','top']:
+                self.obj.axes.set_xlim([float(self.min.button.text()),float(value)])
+            else:
+                self.obj.axes.set_ylim([float(self.min.button.text()),float(value)])
+        except Exception as e: print(e)
+
+        self.canvas.draw()
 
     def get_lim(self):
         if self.axis in ['bottom','top']: return self.obj.axes.get_xlim()
@@ -248,20 +256,15 @@ class TickBase2D_2 (QWidget):
         except:pass
     
     def get_ticklabels(self):
-        string = str()
+        
+        label_list = list()
         if self.type == 'major':
-            for i in self.obj.get_majorticklabels():
-                i = i.get_text()
-                if isinstance(i,float):
-                    i = round(i,5)
-                string += f"{str(i)}, "
+            label_list = [i.get_text() for i in self.obj.get_majorticklabels()]
+
         else:
-            for i in self.obj.get_minorticklabels():
-                i = i.get_text()
-                if isinstance(i,float):
-                    i = round(i,5)
-                string += f"{str(i)}, "
-        return string
+            label_list = [i.get_text() for i in self.obj.get_minorticklabels()]
+            
+        return ", ".join(label_list)
     
     def set_labelsize (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
@@ -329,7 +332,7 @@ class TickBase2D_2 (QWidget):
             try: return self.obj.get_minor_ticks()[0]._width
             except: return matplotlib.rcParams['ytick.minor.width']
 
-class TickWidget2D (QWidget):
+class Tick2D (QWidget):
     def __init__(self,canvas:Canvas):
         super().__init__()
         self.layout = QVBoxLayout()

@@ -69,7 +69,7 @@ class NewPlot (qfluentwidgets.CardWidget):
     sig_choose_type = pyqtSignal()
     sig_ani = pyqtSignal()
 
-    def __init__(self, current_plot, plot_type, canvas: Canvas, data:pd.DataFrame, parent=None):
+    def __init__(self, current_plot, plot_type, canvas: Canvas, node, parent=None):
         super().__init__(parent)
         #self.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.current_plot = current_plot
@@ -77,7 +77,7 @@ class NewPlot (qfluentwidgets.CardWidget):
         self.canvas = canvas
         self.gidlist = list()
         self.widget = QWidget()
-        self.data = data
+        self.node = node
 
         effect = QGraphicsOpacityEffect(self)
         effect.setOpacity(1)
@@ -133,10 +133,8 @@ class NewPlot (qfluentwidgets.CardWidget):
         try: self.widget.deleteLater()
         except:pass
 
-        
-        self.widget = widget_2input.Widget2D_2input()
+        self.widget = widget_2input.Widget2D_2input(self.node)
         self.widget.sig.connect(self.plotting)
-        self.widget.sig_choose_axes.connect(lambda: self.sig_choose_axes.emit())
         self.layout1.addWidget(self.widget)
 
         self.plotting()    
@@ -150,19 +148,19 @@ class NewPlot (qfluentwidgets.CardWidget):
         
         self.gidlist = list()
 
-        data = self.widget.data
+        input = self.widget.input
         x, y = None, None
-        if data != list():
-            x = split_input(data[0], self.data)
-            y = split_input(data[1], self.data)
-
+        if input != list():
+            x = split_input(input[0], self.node.data_out)
+            y = split_input(input[1], self.node.data_out)
             try:
                 a= self.canvas.axes.plot(x,y,gid=f'graph {self.current_plot}')
                 self.gidlist.append(a[0]._gid)
                 a[0].update_from(self.old_artist)
-                
             except Exception as e:print(e)
-        self.canvas.axes.autoscale_view()
+
+        self.canvas.axes.relim()
+        self.canvas.axes.autoscale() # use autoscale_view if the axis lim is set before
         self.canvas.draw()
         self.sig.emit()
         
@@ -170,7 +168,7 @@ class NewPlot (qfluentwidgets.CardWidget):
 class InsertPlot (QWidget):
     sig = pyqtSignal() # emit when new plot was created, also when a plot needs to be updated
 
-    def __init__(self, canvas:Canvas, data:pd.DataFrame):
+    def __init__(self, canvas:Canvas, node):
         super().__init__()
         
         self.layout = QVBoxLayout()
@@ -180,7 +178,7 @@ class InsertPlot (QWidget):
         self.num_plot = 0 # keep track of the indexes of plots
         self.plotlist = list()
         self.gidlist = list()
-        self.data = data
+        self.node = node
 
         plottype = Grid_Plottype()
         self.layout.addLayout(plottype)
@@ -210,7 +208,7 @@ class InsertPlot (QWidget):
         progressbar = qfluentwidgets.ProgressBar()
         self.layout2.addWidget(progressbar)
 
-        newplot = NewPlot(self.num_plot, plot_type, self.canvas, self.data)
+        newplot = NewPlot(self.num_plot, plot_type, self.canvas, self.node)
         self.plotlist.append(newplot)
         newplot.sig.connect(self.func)
         self.layout2.addWidget(newplot)

@@ -1,22 +1,23 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
-import os
+import os, pandas
 from ui.base_widgets.button import _ToolButton, _DropDownToolButton
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.text import _LineEdit, _EditableComboBox
 from ui.base_widgets.icons import Icon, Action
+from data_processing.data_window import DataSelection
 
 class Widget2D_2input (QWidget):
     sig = pyqtSignal()
-    sig_choose_axes = pyqtSignal()
-    def __init__(self):
+    def __init__(self, node):
         super().__init__()
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(0,0,0,0)
 
-        self.data = list()
+        self.input = list()
+        self.node = node
         self.axes = list()
 
         self.choose_axis1 = _DropDownToolButton()
@@ -30,7 +31,6 @@ class Widget2D_2input (QWidget):
         self.x_axis.addAction(self.axis_top)
         self.choose_axis1.setMenu(self.x_axis)
         
-       
         self.input1 = _EditableComboBox()
         self.input1.textChanged.connect(self.input1_func)
         self.choose_data_1 = _ToolButton()
@@ -70,7 +70,6 @@ class Widget2D_2input (QWidget):
         
         self.choose_axis1.setIcon(Icon(os.path.join("axis-bottom.png")))
         self.axes[0] = 'axis bottom'
-        self.sig_choose_axes.emit()
 
         self.y_axis.clear()
         self.y_axis.addActions([self.axis_left,self.axis_right])
@@ -80,7 +79,6 @@ class Widget2D_2input (QWidget):
 
         self.choose_axis1.setIcon(Icon(os.path.join("axis-top.png")))
         self.axes[0] = 'axis top'
-        self.sig_choose_axes.emit()
 
         self.y_axis.clear()
         self.y_axis.addAction(self.axis_left)
@@ -90,7 +88,6 @@ class Widget2D_2input (QWidget):
         
         self.choose_axis2.setIcon(Icon(os.path.join("axis-left.png")))
         self.axes[1] = 'axis left'
-        self.sig_choose_axes.emit()
 
         self.x_axis.clear()
         self.x_axis.addActions([self.axis_bottom,self.axis_top])
@@ -99,7 +96,6 @@ class Widget2D_2input (QWidget):
 
         self.choose_axis2.setIcon(Icon(os.path.join("axis-right.png")))
         self.axes[1] = 'axis right'
-        self.sig_choose_axes.emit()
 
         self.x_axis.clear()
         self.x_axis.addAction(self.axis_bottom)
@@ -110,7 +106,7 @@ class Widget2D_2input (QWidget):
         _input1 = self.input1.text()
         _input2 = self.input2.text()
 
-        self.data = [_input1, _input2]
+        self.input = [_input1, _input2]
                         
         if _input1 != '' and _input2 != '':
             self.sig.emit()
@@ -120,29 +116,31 @@ class Widget2D_2input (QWidget):
         _input1 = self.input1.text()
         _input2 = self.input2.text()
 
-        self.data = [_input1, _input2]
+        self.input = [_input1, _input2]
         if _input1 != '' and _input2 != '':
             self.sig.emit()
     
     def open_data (self, which_input):
-        raise NotImplementedError()
+
+        self.dataview = DataSelection(self.node.data_out)
+        self.dataview.update_data(self.node.data_out)
+        self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
+        self.dataview.show()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
 
         if which_input == 'input 1':
-            #_input = split_input(text,current_plot=f"graph {self.num_plot}")
-            _input = text
 
             self.input1.setText(text)
             self.input1_done = True
 
         elif which_input == 'input 2':
-            #_input = split_input(text,current_plot=f"graph {self.num_plot}")
-            _input = text
             
             self.input2.setText(text)
             self.input2_done = True
 
-        if self.input1_done and self.input2_done:
+        if self.input1.text() != '' and self.input2.text() != '':
             self.sig.emit()
+        
+        self.dataview.close()

@@ -95,7 +95,7 @@ class SpineBase (qfluentwidgets.CardWidget):
     def get_color(self):
         return matplotlib.colors.rgb2hex(self.obj[0].get_edgecolor())
 
-class SpineWidget2D (QWidget):
+class Spine2D (QWidget):
     def __init__(self, canvas:Canvas):
         super().__init__()
         self.layout = QVBoxLayout()

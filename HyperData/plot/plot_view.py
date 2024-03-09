@@ -10,14 +10,14 @@ from PyQt6.QtGui import QGuiApplication, QKeyEvent, QPaintEvent, QPixmap, QColor
 ### Import self classes
 from plot.insert_plot.insert_plot import InsertPlot
 from plot.curve.curve import Curve
-from plot.axes.AxesTab import TickWidget, SpineWidget
+from plot.axes.axes import Tick, Spine
 from plot.plot_graphics_view import GraphicsView
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.button import _ToolButton
 from ui.base_widgets.text import _Search_Box
 from plot.canvas import Canvas
-from plot.grid.GridTab import GridTab
-
+from plot.grid.grid import Grid
+from plot.label.graph_title import GraphTitle
 
 DEBUG = False
   
@@ -122,7 +122,7 @@ class PlotView (QMainWindow):
         
         elif "manage graph" == text:
             if not hasattr(self, "insertplot"):
-                self.insertplot = InsertPlot (self.canvas, self.node.data_in)
+                self.insertplot = InsertPlot (self.canvas, self.node)
                 self.insertplot.sig.connect(self.add_plot)
                 self.stackedlayout.addWidget(self.insertplot)
                 print('insert plot')
@@ -136,7 +136,7 @@ class PlotView (QMainWindow):
             
         elif "tick " in text:
             if not hasattr(self, "tick"):
-                self.tick = TickWidget(self.canvas)
+                self.tick = Tick(self.canvas)
                 self.stackedlayout.addWidget(self.tick)
                 print('tick')
             self.tick.choose_axis(text.split()[-1])
@@ -144,7 +144,7 @@ class PlotView (QMainWindow):
         
         elif "spine " in text:
             if not hasattr(self, 'spine'):
-                self.spine = SpineWidget(self.canvas)
+                self.spine = Spine(self.canvas)
                 self.stackedlayout.addWidget(self.spine)
                 print('spine')
             self.spine.choose_axis(text.split()[-1])
@@ -152,9 +152,15 @@ class PlotView (QMainWindow):
         
         elif text in ["plot size", "grid"]:
             if not hasattr(self, 'grid'):
-                self.grid = GridTab(self.canvas)
+                self.grid = Grid(self.canvas)
                 self.stackedlayout.addWidget(self.grid)
             self.stackedlayout.setCurrentWidget(self.grid)
+        
+        elif text == 'title':
+            if not hasattr(self, 'title'):
+                self.title = GraphTitle(self.canvas)
+                self.stackedlayout.addWidget(self.title)
+            self.stackedlayout.setCurrentWidget(self.title)
         
     def keyPressEvent(self, key: QKeyEvent) -> None:
 
