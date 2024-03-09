@@ -30,7 +30,6 @@ class NodeGraphicsSocket (QGraphicsItem):
         self._color_outline = QColor("#FF000000")
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        """ Temporarily turn off hover events since it conflicts with mouse press in view """
         self.setAcceptHoverEvents(True)
 
         self.node = node # node that socket is attached to so that we can get socket position from 'NodeGraphicsNode' class
