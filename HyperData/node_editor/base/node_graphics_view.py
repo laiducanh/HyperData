@@ -1,25 +1,28 @@
-from PyQt6.QtWidgets import QGraphicsView
+from PyQt6.QtWidgets import QGraphicsView, QMenu
 from PyQt6.QtCore import Qt, QEvent, QPoint, QTimeLine, pyqtSignal
 from PyQt6.QtGui import QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
+from ui.base_widgets.menu import Menu
+from config.settings import logger
 
 MODE_EDGE_DRAG = True
 
 EDGE_DRAG_START_THRESHOLD = 10
-DEBUG = False
 SINGLE_IN = 1
 MULTI_IN = 2
 SINGLE_OUT = 3
 MULTI_OUT = 4
+PIPELINE_IN = 5
+PIPELINE_OUT = 6
 
 class NodeGraphicsView(QGraphicsView):
     def __init__(self, grScene:NodeGraphicsScene, parent=None):
         super().__init__(parent)
         self.grScene = grScene
-
+        self.parent = parent
         self.initUI()
 
         self.setScene(self.grScene)
@@ -72,6 +75,7 @@ class NodeGraphicsView(QGraphicsView):
             
         for item in self.grScene.selectedItems():
             if isinstance(item, Node): item.updateConnectedEdges()
+            pass
                 
 
         super().mouseMoveEvent(event)
@@ -103,7 +107,7 @@ class NodeGraphicsView(QGraphicsView):
 
         # logic
         if type(item) is NodeGraphicsSocket:
-            if not self.drag_mode and item.socket_type in [SINGLE_OUT, MULTI_OUT]:
+            if not self.drag_mode and item.socket_type in [SINGLE_OUT, MULTI_OUT, PIPELINE_OUT]:
                 self.drag_mode = True
                 self.edgeDragStart(item)
                 return
@@ -131,10 +135,21 @@ class NodeGraphicsView(QGraphicsView):
         
 
 
-    def rightMouseButtonPress(self, event):
+    def rightMouseButtonPress(self, event:QMouseEvent):
         super().mousePressEvent(event)
 
-    def rightMouseButtonRelease(self, event):
+    def rightMouseButtonRelease(self, event:QMouseEvent):
+        item = self.itemAt(event.pos())
+        pos = self.mapToGlobal(event.pos())
+        if item != None:
+            if isinstance(item, Node):
+                item.menu.exec(pos)
+            elif isinstance(item.parentItem(), Node):
+                item.parentItem().menu.exec(pos)
+            
+        else:
+            menu = Menu(parent=self)
+            menu.exec(pos)
         super().mouseReleaseEvent(event)
 
     def dragEnterEvent(self, event:QDragEnterEvent):
@@ -152,7 +167,7 @@ class NodeGraphicsView(QGraphicsView):
         This method is called when a drag and drop event is dropped onto the view. It retrieves the name of the dropped node
         from the mime data and add the corresponding node.
         """
-        node = Node(title=event.mimeData().text())
+        node = Node(title=event.mimeData().text(),parent=self.parent)
         self.grScene.addNode(node)
         mouse_position = event.position()
         scene_position = self.grScene.views()[0].mapToScene(mouse_position.toPoint())
@@ -205,25 +220,34 @@ class NodeGraphicsView(QGraphicsView):
             self._numScheduledScalings += 1
     
     def edgeDragStart(self, item:NodeGraphicsSocket):
-        if DEBUG: print('View::edgeDragStart ~ Start dragging edge')
-        if DEBUG: print('View::edgeDragStart ~   assign Start Socket to:', item)
+
+        logger.info('View::edgeDragStart: start dragging edge.')
+        logger.info(f'View::edgeDragStart: assign start socket to socket index {item.index} of node {item.node.id}.')
+        
         #self.last_start_socket = item
         self.dragEdge = NodeGraphicsEdgeBezier(start_socket=item, end_socket=None)
         #item.addEdge(self.dragEdge)
         self.dragEdge.updatePositions()
         self.grScene.addEdge(self.dragEdge)
-        if DEBUG: print('View::edgeDragStart ~   dragEdge:', self.dragEdge)
-
 
     def edgeDragEnd(self, item):
         """ return True if skip the rest of the code """
         self.drag_mode = False
-        if type(item) is NodeGraphicsSocket and item.socket_type in [SINGLE_IN, MULTI_IN] and item.node != self.dragEdge.start_socket.node:
+        if type(item) is NodeGraphicsSocket and self.dragEdge.start_socket.socket_type == PIPELINE_OUT:
+            if item.socket_type == PIPELINE_IN:
+                self.dragEdge.end_socket = item
+                self.dragEdge.end_socket.addEdge(self.dragEdge)
+                self.dragEdge.setColor(Qt.GlobalColor.green)
+                logger.info(f'View::edgeDragEnd: assign end socket index {item.index} of node {item.node.id} to drag edge.')
+                self.dragEdge.updatePositions()
+                return True
+
+        elif type(item) is NodeGraphicsSocket and item.socket_type in [SINGLE_IN, MULTI_IN] and item.node != self.dragEdge.start_socket.node:
             if item.socket_type == SINGLE_IN and item.hasEdge(): 
                 for edge in item.edges:
                     edge.remove()
                     self.grScene.removeEdge(edge) 
-                    if DEBUG: print('Remove Edge for single-in socket')
+                    logger.info(f'View::edgeDragEnd: remove Edge for single-in socket.')
                             
                         
             if self.dragEdge.start_socket.socket_type == SINGLE_OUT: 
@@ -231,21 +255,19 @@ class NodeGraphicsView(QGraphicsView):
                     if edge != self.dragEdge:
                         edge.remove()
                         self.grScene.removeEdge(edge)
-                        if DEBUG: print('Remove Edge for single-out socket')
+                        logger.info(f'View::edgeDragEnd: remove Edge for single-out socket')
                         
-                
-                
             self.dragEdge.end_socket = item
             self.dragEdge.end_socket.addEdge(self.dragEdge)
 
-            if DEBUG: print('View::edgeDragEnd ~  reassigned start & end sockets to drag edge')
+            logger.info(f'View::edgeDragEnd: assign end socket index {item.index} of node {item.node.id} to drag edge.')
             self.dragEdge.updatePositions()
             return True
 
-        if DEBUG: print('View::edgeDragEnd ~ End dragging edge')
+        logger.info('View::edgeDragEnd: finish dragging edge.')
         self.grScene.removeEdge(self.dragEdge)
         self.dragEdge = None
-        if DEBUG: print('View::edgeDragEnd ~ everything done.')
+        logger.info('View::edgeDragEnd: everything done.')
 
 
         return False
@@ -259,6 +281,8 @@ class NodeGraphicsView(QGraphicsView):
         return (dist_scene.x()*dist_scene.x() + dist_scene.y()*dist_scene.y()) > edge_drag_threshold_sq
 
     def keyPressEvent(self, event):
+        logger.info(f"View::keyPressEvent: {event.key()} pressed.")
+
         if event.key() == Qt.Key.Key_Delete:
             self.deleteSelected()
         elif event.key() == Qt.Key.Key_A and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
