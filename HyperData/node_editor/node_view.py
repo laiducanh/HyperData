@@ -1,6 +1,6 @@
-from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtGui import QKeyEvent, QMouseEvent
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QDockWidget, 
-                             QMainWindow, QAbstractItemView, QTreeWidgetItem)
+                             QMainWindow)
 from PyQt6.QtCore import pyqtSignal, Qt
 from node_editor.base.node_graphics_view import NodeGraphicsView
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
@@ -13,7 +13,9 @@ class NodeView (QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.parent = parent
         self.setup_layout()
+
     
     def setup_layout (self):
         self.mainlayout = QHBoxLayout()
@@ -30,8 +32,13 @@ class NodeView (QMainWindow):
         self.list_widget_layout.addWidget(self.search_box)
 
         self.nodesListWidget = Draggable_TreeWidget()
-        self.nodesListWidget.setData({"Data Processing": ["Data Concator", "Data Holder","Undefined Node"],
-                                        "Visualization": ["Figure"]})
+        self.nodesListWidget.setData({"Data Processing": ["Data Holder", "Data Concator", "Data Transpose", 
+                                                          "Data Combiner", "Data Merge", "Data Compare",
+                                                          "Data Splitter",
+                                                          "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
+                                                          "Undefined Node"],
+                                        "Visualization": ["Figure"],
+                                        "Misc": ["Executor"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)
         self.list_widget_layout.addWidget(self.nodesListWidget)
         self.search_box.set_TreeView(self.nodesListWidget)
@@ -42,7 +49,7 @@ class NodeView (QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.nodesDock)
 
         self.grScene = NodeGraphicsScene()
-        node_view = NodeGraphicsView(self.grScene)
+        node_view = NodeGraphicsView(self.grScene, self.parent)
         self.grScene.sig.connect(lambda s: self.sig.emit(s))
         self.grScene.sig_keyPressEvent.connect(lambda s: self.keyPressEvent(s))
         self.mainlayout.addWidget(node_view)
@@ -55,6 +62,7 @@ class NodeView (QMainWindow):
 
     def addNode (self, title):
         try:
-            node = Node(title)
+            node = Node(title,self.parent)
             self.grScene.addNode(node)
         except:pass
+    

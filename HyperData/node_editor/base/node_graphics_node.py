@@ -1,12 +1,15 @@
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
+from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
 import pandas as pd
+from ui.base_widgets.menu import Menu
 
 SINGLE_IN = 1
 MULTI_IN = 2
 SINGLE_OUT = 3
 MULTI_OUT = 4
+PIPELINE_IN = 5
+PIPELINE_OUT = 6
 DEBUG = False
 
 class NodeGraphicsSocket (QGraphicsItem):
@@ -14,12 +17,14 @@ class NodeGraphicsSocket (QGraphicsItem):
         super().__init__(parent)
 
         self.radius = 6.0
-        self.outline_width = 1.0
+        self.outline_width = 2.5
         self._colors = [
             QColor("#FFA04D"),
             QColor("#FA6D6D"),
             QColor("#6DAFFA"),
             QColor("#6DFA8D"),
+            QColor("#f0f1f2"),
+            QColor("#f0f1f2"),
         ]
         self._color_background = self._colors[socket_type-1]
         self._color_outline = QColor("#FF000000")
@@ -30,7 +35,7 @@ class NodeGraphicsSocket (QGraphicsItem):
 
         self.node = node # node that socket is attached to so that we can get socket position from 'NodeGraphicsNode' class
         self.index = index
-        self.edges = [] # assign a list of edges connected to (self) socket, init with an empty list
+        self.edges = [] # assigns a list of edges connected to (self) socket, init with an empty list, has type of list[NodeGraphicsEdge]
         self.socket_type = socket_type
         self.hovered = False
         self.id = id(self)
@@ -89,7 +94,7 @@ class NodeGraphicsSocket (QGraphicsItem):
         pos = self.node.getSocketPosition(self.index, self.socket_type)
         return pos
     
-    def addEdge(self, edge):
+    def addEdge(self, edge):   
         self.edges.append(edge)
         if DEBUG: print('Add edge', edge, 'from node', edge.start_socket.node, 'to node', edge.end_socket.node)
         if DEBUG: print(self.edges)
@@ -128,7 +133,7 @@ class NodeGraphicsNode (QGraphicsItem):
 
         self._title_color = Qt.GlobalColor.lightGray
         self._title_color_hovered = Qt.GlobalColor.white
-        self._title_font = QFont("Verdana", 15, 700)
+        self._title_font = QFont("Monospace", 10, 700)
         self.title = title
         self.edge_size = 5.0
         self.title_height = 24.0
@@ -136,12 +141,13 @@ class NodeGraphicsNode (QGraphicsItem):
         self.socket_spacing = 22
         self.width = 180
         self.height = (self.socket_spacing)*(max(len(inputs),len(outputs))) + self.title_height + 2*self._padding
-        self.content = None
+        #self.content = None
         self.data_in = pd.DataFrame()
         self.data_out = pd.DataFrame()
         self.hovered = False
         self.id = id(self)
         self.content_change = False
+        self.menu = Menu()
 
         self._color = QColor("#7F000000")
         self._color_selected = QColor("#252525")
@@ -169,14 +175,22 @@ class NodeGraphicsNode (QGraphicsItem):
         self.wasMoved = False
 
         # create socket for inputs and outputs
-        self.input_sockets = [] # keep track input sockets by a list
-        self.output_sockets = [] # keep track output sockets by a list
+        self.input_sockets = [] # keeps track input sockets by a list
+        self.input_sockets: list[NodeGraphicsSocket]
+        self.output_sockets = [] # keeps track output sockets by a list
+        self.output_sockets: list[NodeGraphicsSocket]
 
         for index, item in enumerate(inputs):
             self.addSocket(index=index,socket_type=item)
             
         for index, item in enumerate(outputs):
             self.addSocket(index=index,socket_type=item)
+
+        # add pipeline sockets
+        self.socket_pipeline_in = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_IN, parent=self)
+        self.socket_pipeline_in.setPos(0, self.getSocketPosition(index=0, socket_type=PIPELINE_IN)[1])
+        self.socket_pipeline_out = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_OUT, parent=self)
+        self.socket_pipeline_out.setPos(self.width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
         
 
     def boundingRect(self):
@@ -229,12 +243,17 @@ class NodeGraphicsNode (QGraphicsItem):
             if DEBUG: print(socket.edges)
         for socket in self.output_sockets:
             if DEBUG: print(socket.edges)
-    
+
+ 
     def updateConnectedEdges(self):
         """ This method will update the edge attached to the socket that is moved """
         for socket in self.input_sockets + self.output_sockets:
             for edge in socket.edges:
                 edge.updatePositions()
+        for edge in self.socket_pipeline_in.edges:
+            edge.updatePositions()
+        for edge in self.socket_pipeline_out.edges:
+            edge.updatePositions()
 
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
@@ -318,6 +337,8 @@ class NodeGraphicsNode (QGraphicsItem):
     
     def addSocket (self, index, socket_type):
 
+        # add data sockets
+        index += 1
         socket = NodeGraphicsSocket(node=self, index=index, socket_type=socket_type, parent=self)
         socket.setPos(*self.getSocketPosition(index=index, socket_type=socket_type))
         if DEBUG: print("Input Socket",socket, "-- creating with", index, "for node", self)

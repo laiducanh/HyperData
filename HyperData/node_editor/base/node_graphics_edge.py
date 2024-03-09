@@ -14,10 +14,26 @@ RIGHT_BOTTOM = 4
 DEBUG = False
 
 class NodeGraphicsEdge(QGraphicsPathItem):
-    def __init__(self, start_socket:NodeGraphicsSocket=None, end_socket:NodeGraphicsSocket=None, parent=None):
+    def __init__(self, start_socket:NodeGraphicsSocket=None, 
+                 end_socket:NodeGraphicsSocket=None, parent=None):
         super().__init__(parent)
 
-        self._color = QColor("#616161")
+        self.start_socket = start_socket
+        self.end_socket = end_socket
+        self.hovered = False
+        self.id = id(self)
+
+        self.setColor()
+
+        if self.start_socket != None: self.start_socket.addEdge(self)
+        if self.end_socket != None: self.end_socket.addEdge(self)
+
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        self.setAcceptHoverEvents(True)
+        self.setZValue(-1)
+    
+    def setColor (self, color=QColor("#616161"),):
+        self._color = color
         self._color_selected = QColor("#252525")
         self._color_hovered = QColor("#FF37A6FF")
         self._pen = QPen(self._color)
@@ -29,18 +45,6 @@ class NodeGraphicsEdge(QGraphicsPathItem):
         self._pen_selected.setWidthF(3.0)
         self._pen_dragging.setWidthF(3.0)
         self._pen_hovered.setWidthF(5.0)
-
-        self.start_socket = start_socket
-        self.end_socket = end_socket
-        self.hovered = False
-        self.id = id(self)
-
-        if self.start_socket != None: self.start_socket.addEdge(self)
-        if self.end_socket != None: self.end_socket.addEdge(self)
-
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        self.setAcceptHoverEvents(True)
-        self.setZValue(-1)
 
     def setSource(self, x, y):
         self.posSource = [x, y]

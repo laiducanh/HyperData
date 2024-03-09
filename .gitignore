@@ -1,0 +1,13 @@
+
+
+# OSX
+.DS_Store
+
+
+#cached files
+*.pyc
+__pycache__
+
+
+#debug files
+*.txt
