@@ -1,4 +1,8 @@
-import string, itertools, matplotlib
+import string, itertools, matplotlib, os, logging
+from PyQt6.QtCore import Qt, QStandardPaths, QDir, QSettings
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
+
+DEBUG = True
 
 # list_name is replaced by column_labels
 list_name =list(string.ascii_lowercase)
@@ -58,3 +62,34 @@ if matplotlib.rcParams['legend.fancybox']:
         style = 'round'
 else:
         style = 'square'
+
+### Initialize setting and logging profiles
+dataPath = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+dataPathDir = QDir(dataPath)
+if not dataPathDir.exists():
+        # create the directory (including parent directories if they don't exist);
+        # that the argument of mkpath is relative to the QDir's object path, so
+        # using '.' means that it will create the actual dataPath
+        dataPathDir.mkpath('.')  
+
+appName = 'HyperData'
+logFile = os.path.join(dataPathDir.absolutePath(),appName,"log.txt")
+if DEBUG: logFile = "DEBUG.txt"
+logging.getLogger('matplotlib.font_manager').disabled = True
+# Create and configure logger
+logging.basicConfig(filename=logFile,
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+class SettingsWindow (QMainWindow):
+       def __init__(self, parent):
+              super().__init__(parent)
+
+              layout = QVBoxLayout()
+              central_widget = QWidget()
+              central_widget.setLayout(layout)
+              self.setCentralWidget(central_widget)
+
+              
