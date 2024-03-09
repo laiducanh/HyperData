@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
+from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction, QMouseEvent
 import pandas as pd
 from ui.base_widgets.menu import Menu
 
@@ -46,28 +46,36 @@ class NodeGraphicsSocket (QGraphicsItem):
         self._pen_hovered.setWidthF(self.outline_width+1)
         self._brush = QBrush(self._color_background)    
         self._text = QGraphicsTextItem(self)
-
+        self._text.hide()
         self.setTitle()
         
-    def setTitle (self):
-        if self.socket_type == SINGLE_IN:
-            self.title = 'Single Input'
-        elif self.socket_type == MULTI_IN:
-            self.title = 'Multiple Inputs'
-        elif self.socket_type == SINGLE_OUT:
-            self.title = 'Single Output'
-        elif self.socket_type == MULTI_OUT:
-            self.title = 'Multiple Outputs'
-        elif self.socket_type in [PIPELINE_IN, PIPELINE_OUT]:
-            self.title = "Pipeline"
+    def setTitle (self, title=None):
+        if title == None:
+            if self.socket_type == SINGLE_IN:
+                self.title = 'Single Input'
+            elif self.socket_type == MULTI_IN:
+                self.title = 'Multiple Inputs'
+            elif self.socket_type == SINGLE_OUT:
+                self.title = 'Single Output'
+            elif self.socket_type == MULTI_OUT:
+                self.title = 'Multiple Outputs'
+            elif self.socket_type in [PIPELINE_IN, PIPELINE_OUT]:
+                self.title = "Pipeline"
+        else:
+            self.title = title
+        
+        self._text.setPlainText(self.title)
+        self._text.setPos(16,-13)
 
     def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
-        self._text.setPlainText(self.title)
+        self._text.show()
+        self.node.content.hide()
         self.hovered = True
         self.update()
     
     def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
-        self._text.setPlainText('')
+        self._text.hide()
+        self.node.content.show()
         self.hovered = False
         self.update()
 
@@ -211,12 +219,12 @@ class NodeGraphicsNode (QGraphicsItem):
         self.title_item.document().setDefaultTextOption(QTextOption(Qt.AlignmentFlag.AlignCenter))
         self.title_item.setTextWidth(self.width)
     
-    def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+    def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent ) -> None:
         super().hoverEnterEvent(event)
         self.hovered = True
         self.update()
 
-    def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+    def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
         self.hovered = False
         self.update()
