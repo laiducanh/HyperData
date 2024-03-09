@@ -17,7 +17,7 @@ class TitleLabel (qfluentwidgets.TitleLabel):
         super().__init__(text)
 
 class Completer (QCompleter):
-    def __init__(self, string_list):
+    def __init__(self, string_list:list):
         super().__init__()
 
         self._model = QStringListModel()
@@ -73,7 +73,6 @@ class _EditableComboBox (qfluentwidgets.EditableComboBox):
     def __init__(self, tooltip=None, completer_source=None, parent=None):
         super().__init__(parent=parent)
         self.completer_source = completer_source
-        self.setMaxVisibleItems(5)
         
         if self.completer_source != None: 
             self.addItems(self.completer_source)
