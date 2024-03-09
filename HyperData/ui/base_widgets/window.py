@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QFrame
 from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QMouseEvent, QResizeEvent, QColor
+from PyQt6.QtGui import QResizeEvent, QColor
 import qfluentwidgets
 
-class MessageBox (qfluentwidgets.dialog.MaskDialogBase):
+class _Dialog (qfluentwidgets.dialog.MaskDialogBase):
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -12,7 +12,12 @@ class MessageBox (qfluentwidgets.dialog.MaskDialogBase):
         self.widget.setStyleSheet("""#centerWidget{background-color:white;
                                         border: 1px solid rgb(144, 144, 142);
                                         border-radius: 10px;}""")
-        self.widget.setFixedSize(200,200)
+        #self.widget.setFixedSize(200,200)
         self.viewLayout = QVBoxLayout(self.widget)
-        
-        self.viewLayout.addWidget(qfluentwidgets.StrongBodyLabel('qocis'))
+
+
+class Dialog (qfluentwidgets.MessageBox):
+    def __init__(self, title, parent):
+        super().__init__(title,"",parent)
+
+        self.textLayout.removeWidget(self.contentLabel)
