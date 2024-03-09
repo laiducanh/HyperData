@@ -1,13 +1,10 @@
-### Import libraries from Python
 import sys, qfluentwidgets, os, json
 
-### Import libraries from PyQt6
 from PyQt6.QtCore import QThreadPool, Qt
 from PyQt6.QtWidgets import (QWidget, QMenuBar, QVBoxLayout, QStackedLayout, QApplication, QFileDialog, QSplashScreen,
                              QMainWindow)
 from PyQt6.QtGui import QGuiApplication, QKeyEvent, QMouseEvent, QPixmap, QAction
 
-### Import self classes
 from plot.plot_view import PlotView
 from node_editor.node_view import NodeView
 from node_editor.node_node import Node
@@ -41,7 +38,6 @@ class Main(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.add_node_view()
-        #self.add_plot_view(1,pd.DataFrame())
     
     def setupMenuBar(self):
         menu_bar = QMenuBar(self)
@@ -143,8 +139,5 @@ if __name__ == "__main__":
     main_window = Main()
     main_window.show()
     splashScreen.close()
-  
-    #with open('log.txt', "w") as file:
-    #    json.dump(settings, file, indent=4)
     
     sys.exit(app.exec())
