@@ -22,7 +22,7 @@ class GraphicsNode (QGraphicsItem):
         self._padding = 4.0
         self.socket_spacing = 22
         self.width = 180
-        self.height = 100
+        self.height = 50
         self.hovered = False
         self.id = id(self)
 

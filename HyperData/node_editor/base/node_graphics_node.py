@@ -105,6 +105,7 @@ class NodeGraphicsNode (GraphicsNode):
         self.data_in = pd.DataFrame()
         self.data_out = pd.DataFrame()
         self.content_change = False
+        self.content = None
         self.menu = Menu()
 
         # create socket for inputs and outputs
@@ -153,7 +154,7 @@ class NodeGraphicsNode (GraphicsNode):
             self.title_item.setTextWidth(self.width)
             # update edges
             self.updateConnectedEdges()
-    
+       
         return super().paint(painter, QStyleOptionGraphicsItem, widget)
         
     def set_Content(self, content:QWidget):

@@ -57,7 +57,7 @@ class NodeView (QMainWindow):
         self.mainlayout.addWidget(node_view)
     
     def paintEvent(self, a0: QPaintEvent) -> None:
-        dock_area = config.value("dock area")
+        dock_area = config["dock area"]
         if dock_area == "left":
             self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.nodesDock)
         elif dock_area == "right":

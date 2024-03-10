@@ -46,7 +46,6 @@ class NodeContentWidget(QWidget):
         #self.label.setContentsMargins(5,0,5,3)
         self.layout.addWidget(self.label)
         #self.setFixedHeight(46)
-
         self.layout.addWidget(self.comment)
     
     def initMenu(self):
