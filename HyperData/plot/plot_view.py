@@ -172,7 +172,7 @@ class PlotView (QMainWindow):
         super().keyPressEvent(key)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
-        dock_area = config.value("dock area")
+        dock_area = config["dock area"]
         if dock_area == "left":
             self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dock)
         elif dock_area == "right":
