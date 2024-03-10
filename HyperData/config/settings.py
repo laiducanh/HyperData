@@ -1,4 +1,4 @@
-import string, itertools, matplotlib, os, logging, qfluentwidgets
+import string, itertools, matplotlib, os, logging, qfluentwidgets, json
 from PyQt6.QtGui import QMouseEvent
 from PyQt6.QtCore import Qt, QStandardPaths, QDir, QSettings, QSize
 
@@ -32,9 +32,14 @@ if not dataPathDir.exists():
     dataPathDir.mkpath('.')  
 
 appName = 'HyperData'
-configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.ini")
-if DEBUG: configFile = "config.ini"
-config = QSettings(configFile, QSettings.Format.IniFormat)
+configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
+if DEBUG: configFile = "config.json.txt"
+if os.path.exists(configFile):
+    with open(configFile, "r") as file:
+        raw_data = file.read()
+        config = json.loads(raw_data)
+        print(config)
+else: config = {"theme":"Auto","theme color":qfluentwidgets.themeColor().name(),"dock area":"left",}
 
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"log.txt")
 if DEBUG: logFile = "DEBUG.txt"
@@ -44,22 +49,6 @@ logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# Initialize configuration when starting up
-if config.value("theme") == "Auto":
-    qfluentwidgets.setTheme(qfluentwidgets.Theme.AUTO)
-elif config.value("theme") == "Light":
-    qfluentwidgets.setTheme(qfluentwidgets.Theme.LIGHT)
-elif config.value("theme") == "Dark":
-    qfluentwidgets.setTheme(qfluentwidgets.Theme.DARK)        
-else:
-    qfluentwidgets.setTheme(qfluentwidgets.Theme.AUTO)
-    config.setValue("theme", "Auto")
-
-if config.value("theme color") == None:
-    config.setValue("theme color", qfluentwidgets.themeColor())
-
-if config.value("dock area") == None:
-    config.setValue("dock area", 'left')
 
 
 
