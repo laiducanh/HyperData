@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
+import qfluentwidgets
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -11,7 +12,7 @@ PIPELINE_OUT = 6
 DEBUG = False
 
 class GraphicsSocket (QGraphicsItem):
-    def __init__(self, node=None, socket_type=SINGLE_IN, parent=None):
+    def __init__(self, socket_type=SINGLE_IN, parent=None):
         super().__init__(parent)
 
         self.radius = 6.0
@@ -28,30 +29,19 @@ class GraphicsSocket (QGraphicsItem):
         self._color_outline = QColor("#FF000000")
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        """ Temporarily turn off hover events since it conflicts with mouse press in view """
-        #self.setAcceptHoverEvents(True)
+        self.setAcceptHoverEvents(True)
 
         self.socket_type = socket_type
         self.hovered = False
         self.id = id(self)
-        self.edges = list()
-        self.node = node
 
         self._pen_default = QPen(self._color_outline)
         self._pen_default.setWidthF(self.outline_width)
         self._pen_hovered = QPen(self._color_outline)
         self._pen_hovered.setWidthF(self.outline_width+1)
         self._brush = QBrush(self._color_background)    
-        self._text = QGraphicsTextItem(self)        
-    
-
-    def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
-        self.hovered = True
-        self.update()
-    
-    def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
-        self.hovered = False
-        self.update()
+        self._text = QGraphicsTextItem(self)   
+        self._text.hide()     
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         # painting circle
@@ -64,6 +54,11 @@ class GraphicsSocket (QGraphicsItem):
             painter.setPen(self._pen_default)
             painter.drawEllipse(int(-self.radius), int(-self.radius), int(2 * self.radius), int(2 * self.radius))
         
+        if qfluentwidgets.isDarkTheme():
+            self._text.setDefaultTextColor(Qt.GlobalColor.white)
+        else:
+            self._text.setDefaultTextColor(Qt.GlobalColor.black)
+        
     def boundingRect(self):
         return QRectF(
             - self.radius - self.outline_width,
@@ -71,19 +66,5 @@ class GraphicsSocket (QGraphicsItem):
             2 * (self.radius + self.outline_width),
             2 * (self.radius + self.outline_width),
         )
-
-    def getSocketPosition(self) -> list:
-        pass
-    
-    def addEdge(self, edge):
-        self.edges.append(edge)
-          
-    def removeEdge(self, edge):
-        if edge in self.edges: 
-            self.edges.remove(edge)
-
-    def removeAllEdges(self):
-        raise NotImplemented("This method might be used in future")
-        self.edges = []
 
 

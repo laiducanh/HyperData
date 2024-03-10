@@ -12,8 +12,6 @@ class GraphicsEdge(QGraphicsPathItem):
         self.start_socket = start_socket
         self.end_socket = end_socket
 
-        self.setColor()
-
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setZValue(-1)
@@ -40,6 +38,7 @@ class GraphicsEdge(QGraphicsPathItem):
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         self.updatePath()
+        self.setColor()
         painter.setBrush(Qt.BrushStyle.NoBrush)
 
         if self.hovered and self.end_socket is not None:

@@ -35,7 +35,7 @@ class NodeContentWidget(QWidget):
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         font = QFont('Monospace', 8)
-        self.exec_btn = qfluentwidgets.PillPushButton('Execute',parent=self)
+        self.exec_btn = qfluentwidgets.PillPushButton('Execute')
         self.exec_btn.setFont(font)
         self.exec_btn.setCheckable(False)
         self.exec_btn.pressed.connect(self.exec)

@@ -25,7 +25,6 @@ class GraphicsNode (QGraphicsItem):
         self.height = 100
         self.hovered = False
         self.id = id(self)
-        self.content_change = False
 
         self.setColor()
 
@@ -35,8 +34,6 @@ class GraphicsNode (QGraphicsItem):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setAcceptHoverEvents(True)
-
-        self.wasMoved = False
 
     def setColor(self):
         
@@ -88,24 +85,10 @@ class GraphicsNode (QGraphicsItem):
         self.hovered = False
         self.update()
 
-    
-    def mouseMoveEvent(self, event):
-        super().mouseMoveEvent(event)
-        #self.updateConnectedEdges() # already implemented in node_graphics_view class
-        self.wasMoved = True
-    
-    def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-
-        if self.wasMoved:
-            self.wasMoved = False
-            if DEBUG: print('node moved')
-
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
-        super().mousePressEvent(event)
-
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
+        
+        self.setColor()
 
         # title
         path_title = QPainterPath()

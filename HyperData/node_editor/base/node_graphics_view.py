@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsView, QMenu
 from PyQt6.QtCore import Qt, QEvent, QPoint, QTimeLine, pyqtSignal
-from PyQt6.QtGui import QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
+from PyQt6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
@@ -307,3 +307,6 @@ class NodeGraphicsView(QGraphicsView):
                     self.grScene.removeEdge(item)
                     item.remove()
 
+    def paintEvent(self, event: QPaintEvent) -> None:
+        self.grScene.setBackgroundColor()
+        return super().paintEvent(event)

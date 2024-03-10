@@ -5,6 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphics
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.node_node import Node
 from config.settings import logger
+import qfluentwidgets
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -24,7 +25,7 @@ class NodeGraphicsScene(QGraphicsScene):
         self.gridSquares = 5
         self.parent = parent
 
-        self._color_background = QColor("white")
+        self.setBackgroundColor()
         self._color_light = QColor("#2f2f2f")
         self._color_dark = QColor("#292929")
 
@@ -32,8 +33,6 @@ class NodeGraphicsScene(QGraphicsScene):
         self._pen_light.setWidth(1)
         self._pen_dark = QPen(self._color_dark)
         self._pen_dark.setWidth(2)
-
-        self.setBackgroundBrush(self._color_background)
 
         self.nodes = []
         self.edges = []
@@ -48,8 +47,13 @@ class NodeGraphicsScene(QGraphicsScene):
     def initUI(self):
         self.setSceneRect(-self.scene_width//2, -self.scene_height//2,
                                   self.scene_width, self.scene_height)
-
     
+    def setBackgroundColor (self):
+        if qfluentwidgets.isDarkTheme(): self._color_background = QColor("#383838")
+        else: self._color_background = QColor("#FAF9F9")
+
+        self.setBackgroundBrush(self._color_background)
+
     def dragMoveEvent(self, event: QGraphicsSceneDragDropEvent | None) -> None:
         pass
 

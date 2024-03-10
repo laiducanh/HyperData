@@ -4,6 +4,7 @@ from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTe
 import pandas as pd
 from ui.base_widgets.menu import Menu
 from node_editor.graphics.graphics_node import GraphicsNode
+from node_editor.graphics.graphics_socket import GraphicsSocket
 import qfluentwidgets
 
 SINGLE_IN = 1
@@ -14,22 +15,9 @@ PIPELINE_IN = 5
 PIPELINE_OUT = 6
 DEBUG = False
 
-class NodeGraphicsSocket (QGraphicsItem):
+class NodeGraphicsSocket (GraphicsSocket):
     def __init__(self, node:'NodeGraphicsNode', index=0, socket_type=SINGLE_IN, parent=None):
-        super().__init__(parent)
-
-        self.radius = 6.0
-        self.outline_width = 2.5
-        self._colors = [
-            QColor("#FFA04D"),
-            QColor("#FA6D6D"),
-            QColor("#6DAFFA"),
-            QColor("#6DFA8D"),
-            QColor("#f0f1f2"),
-            QColor("#f0f1f2"),
-        ]
-        self._color_background = self._colors[socket_type-1]
-        self._color_outline = QColor("#FF000000")
+        super().__init__(socket_type, parent)
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
@@ -37,17 +25,7 @@ class NodeGraphicsSocket (QGraphicsItem):
         self.node = node # node that socket is attached to so that we can get socket position from 'NodeGraphicsNode' class
         self.index = index
         self.edges = [] # assigns a list of edges connected to (self) socket, init with an empty list, has type of list[NodeGraphicsEdge]
-        self.socket_type = socket_type
-        self.hovered = False
-        self.id = id(self)
 
-        self._pen_default = QPen(self._color_outline)
-        self._pen_default.setWidthF(self.outline_width)
-        self._pen_hovered = QPen(self._color_outline)
-        self._pen_hovered.setWidthF(self.outline_width+1)
-        self._brush = QBrush(self._color_background)    
-        self._text = QGraphicsTextItem(self)
-        self._text.hide()
         self.setTitle()
         
     def setTitle (self, title=None):
@@ -79,25 +57,6 @@ class NodeGraphicsSocket (QGraphicsItem):
         self.node.content.show()
         self.hovered = False
         self.update()
-
-    def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
-        # painting circle
-        painter.setBrush(self._brush)
-        
-        if self.hovered:
-            painter.setPen(self._pen_hovered)
-            painter.drawEllipse(int(-self.radius), int(-self.radius), int(2 * self.radius), int(2 * self.radius))
-        else:
-            painter.setPen(self._pen_default)
-            painter.drawEllipse(int(-self.radius), int(-self.radius), int(2 * self.radius), int(2 * self.radius))
-        
-    def boundingRect(self):
-        return QRectF(
-            - self.radius - self.outline_width,
-            - self.radius - self.outline_width,
-            2 * (self.radius + self.outline_width),
-            2 * (self.radius + self.outline_width),
-        )
 
     def getSocketPosition(self):
         """ This method use getSocketPosition method in NodeGraphicsNode to calculate the position of socket for drawing edges """
@@ -145,14 +104,8 @@ class NodeGraphicsNode (GraphicsNode):
         #self.content = None
         self.data_in = pd.DataFrame()
         self.data_out = pd.DataFrame()
-        self.hovered = False
-        self.id = id(self)
         self.content_change = False
         self.menu = Menu()
-
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        self.setAcceptHoverEvents(True)
 
         # create socket for inputs and outputs
         self.input_sockets = [] # keeps track input sockets by a list
@@ -191,47 +144,6 @@ class NodeGraphicsNode (GraphicsNode):
                 self.width = self.content.width() + 6*self.edge_size
                 self.content_change = True
             else: self.content_change = False
-
-        self.setColor()
-
-        
-
-        # title
-        path_title = QPainterPath()
-        path_title.setFillRule(Qt.FillRule.WindingFill)
-        path_title.addRoundedRect(0,0, self.width, self.title_height, self.edge_size, self.edge_size)
-        path_title.addRect(0, self.title_height - self.edge_size, self.edge_size, self.edge_size)
-        path_title.addRect(self.width - self.edge_size, self.title_height - self.edge_size, self.edge_size, self.edge_size)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(self._brush_title)
-        painter.drawPath(path_title.simplified())
-
-
-        # content
-        path_content = QPainterPath()
-        path_content.setFillRule(Qt.FillRule.WindingFill)
-        path_content.addRoundedRect(0, self.title_height, self.width, self.height - self.title_height, self.edge_size, self.edge_size)
-        path_content.addRect(0, self.title_height, self.edge_size, self.edge_size)
-        path_content.addRect(self.width - self.edge_size, self.title_height, self.edge_size, self.edge_size)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(self._brush_background)
-        painter.drawPath(path_content.simplified())
-
-
-        # outline
-        path_outline = QPainterPath()
-        path_outline.addRoundedRect(0, 0, self.width, self.height, self.edge_size, self.edge_size)
-        
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        if self.hovered:
-            painter.setPen(self._pen_hovered)
-            painter.drawPath(path_outline.simplified())
-            self.title_item.setDefaultTextColor(self._title_color_hovered)
-            
-        else:
-            painter.setPen(self._pen_default if not self.isSelected() else self._pen_selected)
-            painter.drawPath(path_outline.simplified())
-            self.title_item.setDefaultTextColor(self._title_color)
         
         if self.content_change:
             # update socket positions when content was enlarged
@@ -241,7 +153,8 @@ class NodeGraphicsNode (GraphicsNode):
             self.title_item.setTextWidth(self.width)
             # update edges
             self.updateConnectedEdges()
-
+    
+        return super().paint(painter, QStyleOptionGraphicsItem, widget)
         
     def set_Content(self, content:QWidget):
         self.content = content
