@@ -215,7 +215,7 @@ class ColorPicker (QWidget):
         layout.addWidget(self.button)
 
 
-class _ColorDropdown (qfluentwidgets.SplitPushButton):
+class _ColorDropdown (qfluentwidgets.PrimarySplitPushButton):
     colorChanged = pyqtSignal(str)
     def __init__(self, color=qfluentwidgets.themeColor(),parent=None):
         super().__init__()
@@ -233,27 +233,15 @@ class _ColorDropdown (qfluentwidgets.SplitPushButton):
     
     def buttonClicked(self):
         self.menu.close()
-        dialog = qfluentwidgets.ColorDialog(color=self.color,title='ablc',parent=self.parent)
-        dialog.colorChanged.connect(self.colorSelected)
+        dialog = qfluentwidgets.ColorDialog(color=self.color,title='theme color',parent=self.parent)
+        dialog.colorChanged.connect(lambda color: self.colorSelected(color.name()))
         dialog.exec()
     
     def colorSelected (self, color):
         self.menu.close()
         self.color = QColor(color)
         self.colorChanged.emit(color)
-        self.update()
-    
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        painter = QPainter(self)
-        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
-        pc = QColor(255, 255, 255, 10) if qfluentwidgets.isDarkTheme() else QColor(234, 234, 234)
-        painter.setPen(pc)
-
-        color = QColor(self.color)
-
-        painter.setBrush(color)
-        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
-        return super().paintEvent(a0)
+        self.update()    
 
 class ColorDropdown (QWidget):
     def __init__(self, text:str=None,color=None,parent=None):
@@ -263,7 +251,7 @@ class ColorDropdown (QWidget):
         self.setLayout(layout)
         layout.setContentsMargins(0,0,0,0)
 
-        layout.addWidget(qfluentwidgets.BodyLabel(text))
+        layout.addWidget(qfluentwidgets.BodyLabel(text.title()))
         
         self.button = _ColorDropdown(parent=parent)
         layout.addWidget(self.button)

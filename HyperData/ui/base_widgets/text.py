@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QObject, pyqtSignal, Qt, QStringListModel
-from PyQt6.QtGui import QFocusEvent, QFont, QColor, QKeyEvent, QMouseEvent
+from PyQt6.QtGui import QFocusEvent, QFont, QColor, QKeyEvent, QMouseEvent, QKeySequence
 from PyQt6.QtWidgets import QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxLayout, QTreeWidget
 import os, qfluentwidgets
 from ui.base_widgets.menu import Menu
