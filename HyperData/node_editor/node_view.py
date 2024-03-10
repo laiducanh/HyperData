@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QKeyEvent, QMouseEvent
+from PyQt6.QtGui import QKeyEvent, QMouseEvent, QPaintEvent
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QDockWidget, 
                              QMainWindow)
 from PyQt6.QtCore import pyqtSignal, Qt
@@ -7,6 +7,7 @@ from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
 from ui.base_widgets.list import Draggable_TreeWidget
 from ui.base_widgets.text import _Search_Box
+from config.settings import config
 
 class NodeView (QMainWindow):
     sig = pyqtSignal(object)
@@ -44,15 +45,28 @@ class NodeView (QMainWindow):
         self.search_box.set_TreeView(self.nodesListWidget)
 
         self.nodesDock = QDockWidget("Cards")
-        self.nodesDock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        self.nodesDock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
+        self.nodesDock.setTitleBarWidget(QWidget())        
         self.nodesDock.setWidget(self.list_widget)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.nodesDock)
+        
 
         self.grScene = NodeGraphicsScene()
         node_view = NodeGraphicsView(self.grScene, self.parent)
         self.grScene.sig.connect(lambda s: self.sig.emit(s))
         self.grScene.sig_keyPressEvent.connect(lambda s: self.keyPressEvent(s))
         self.mainlayout.addWidget(node_view)
+    
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        dock_area = config.value("dock area")
+        if dock_area == "left":
+            self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.nodesDock)
+        elif dock_area == "right":
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.nodesDock)
+        elif dock_area == "top":
+            self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.nodesDock)
+        elif dock_area == "bottom":
+            self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.nodesDock)
+        return super().paintEvent(a0)
         
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key.Key_Slash:

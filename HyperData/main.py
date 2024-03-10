@@ -3,7 +3,7 @@ import sys, qfluentwidgets, os, json
 from PyQt6.QtCore import QThreadPool, Qt
 from PyQt6.QtWidgets import (QWidget, QMenuBar, QVBoxLayout, QStackedLayout, QApplication, QFileDialog, QSplashScreen,
                              QMainWindow)
-from PyQt6.QtGui import QGuiApplication, QKeyEvent, QMouseEvent, QPixmap, QAction
+from PyQt6.QtGui import QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPixmap, QAction
 
 from plot.plot_view import PlotView
 from node_editor.node_view import NodeView
@@ -19,25 +19,28 @@ except ImportError:
     pass
 class Main(QMainWindow):
     def __init__(self):
-        super(Main, self).__init__()
+        super().__init__()
 
         self.threadpool = QThreadPool()
         self.list_figure = list()
 
-        if qfluentwidgets.theme() == qfluentwidgets.Theme.DARK:
-            self.setStyleSheet('QMainWindow {background-color: rgb(32, 32, 32)}')
-        
+           
         ### Adjust the main window's size
         #self.setMinimumSize(int(self.screen_size[2]*0.55),int(self.screen_size[3]*0.55)) # set minimum size for display
             
         self.setupMenuBar()
 
-        self.central_widget = QWidget()
+        self.central_widget = QWidget(self)
         self.mainlayout = QStackedLayout()
         self.central_widget.setLayout(self.mainlayout)
         self.setCentralWidget(self.central_widget)
 
         self.add_node_view()
+
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        if qfluentwidgets.isDarkTheme():
+            self.setAutoFillBackground(True)
+        return super().paintEvent(a0)   
     
     def setupMenuBar(self):
         menu_bar = QMenuBar(self)

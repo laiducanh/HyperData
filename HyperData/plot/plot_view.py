@@ -18,6 +18,7 @@ from ui.base_widgets.text import _Search_Box
 from plot.canvas import Canvas
 from plot.grid.grid import Grid
 from plot.label.graph_title import GraphTitle
+from config.settings import config
 
 DEBUG = False
   
@@ -88,9 +89,9 @@ class PlotView (QMainWindow):
         self.search_box.set_TreeView(self.treeview)
 
         self.dock = QDockWidget('Figure')
-        self.dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.dock.setWidget(self.sidebar)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dock)
+        self.dock.setTitleBarWidget(QWidget())
 
     
 
@@ -170,6 +171,14 @@ class PlotView (QMainWindow):
         
         super().keyPressEvent(key)
 
-
-        
-  
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        dock_area = config.value("dock area")
+        if dock_area == "left":
+            self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dock)
+        elif dock_area == "right":
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
+        elif dock_area == "top":
+            self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.dock)
+        elif dock_area == "bottom":
+            self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock)
+        return super().paintEvent(a0)

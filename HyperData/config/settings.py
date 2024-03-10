@@ -55,7 +55,8 @@ elif config.value("theme") == "Dark":
 else:
     qfluentwidgets.setTheme(qfluentwidgets.Theme.AUTO)
     config.setValue("theme", "Auto")
-
+if config.value("dock area") == None:
+    config.setValue("dock area", 'left')
 class SettingsWindow (QMainWindow):
     def __init__(self, parent):
         super().__init__(parent)
@@ -70,7 +71,10 @@ class SettingsWindow (QMainWindow):
         layout.addWidget(theme)
         theme.button.currentTextChanged.connect(self.setTheme)  
 
-        layout.addWidget(QPushButton('abc',self))
+        dockwidget_pos = ComboBox(items=["left","right","top","bottom"],text='panel position')
+        layout.addWidget(dockwidget_pos)
+        dockwidget_pos.button.setCurrentText(config.value("dock area").title())
+        dockwidget_pos.button.currentTextChanged.connect(self.setPanelPosition)
 
     def setTheme(self, theme:str):
         config.setValue("theme", theme)
@@ -80,4 +84,6 @@ class SettingsWindow (QMainWindow):
             qfluentwidgets.setTheme(qfluentwidgets.Theme.LIGHT)
         elif theme == "Dark":
             qfluentwidgets.setTheme(qfluentwidgets.Theme.DARK)     
-                  
+    
+    def setPanelPosition(self, pos:str):
+        config.setValue("dock area",pos.lower())
