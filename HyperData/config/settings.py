@@ -1,6 +1,6 @@
 import string, itertools, matplotlib, os, logging, qfluentwidgets
 from PyQt6.QtCore import Qt, QStandardPaths, QDir, QSettings
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton
 from ui.base_widgets.button import ComboBox
 
 DEBUG = True
@@ -70,6 +70,8 @@ class SettingsWindow (QMainWindow):
         layout.addWidget(theme)
         theme.button.currentTextChanged.connect(self.setTheme)  
 
+        layout.addWidget(QPushButton('abc',self))
+
     def setTheme(self, theme:str):
         config.setValue("theme", theme)
         if theme == "Auto":
@@ -77,4 +79,5 @@ class SettingsWindow (QMainWindow):
         elif theme == "Light":
             qfluentwidgets.setTheme(qfluentwidgets.Theme.LIGHT)
         elif theme == "Dark":
-            qfluentwidgets.setTheme(qfluentwidgets.Theme.DARK)            
+            qfluentwidgets.setTheme(qfluentwidgets.Theme.DARK)     
+                  
