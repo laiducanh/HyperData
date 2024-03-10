@@ -1,16 +1,14 @@
 from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout, QWidget, QPushButton
 from PyQt6.QtCore import pyqtSignal, Qt, QSize
 from PyQt6.QtGui import QPixmap, QColor, QPainter, QBrush, QIcon
-from config.settings import settings
 from ui.base_widgets.button import _PushButton, _ToolButton
 from ui.base_widgets.menu import Menu
+from config.settings import color_lib
 import qfluentwidgets, os
-
-color_lib = settings.value('color lib')
 
 PALETTES = {
     # Matplotlib default
-    'matplotlib': color_lib,
+    "matplotlib":color_lib,
     # bokeh paired 12
     'paired12':['#000000', '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a', '#ffff99', '#b15928', '#ffffff'],
     # d3 category 10
@@ -97,7 +95,7 @@ class PaletteVertical(_PaletteLinearBase):
 
 
 class PaletteGrid(_PaletteBase):
-
+    sig_openDialog = pyqtSignal()
     def __init__(self, colors, n_columns=5, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -124,10 +122,9 @@ class PaletteGrid(_PaletteBase):
         
         add.setIcon(QIcon(os.path.join('UI','Icons','add.png')))
         add.setIconSize(QSize(20,20))
+        add.clicked.connect(self.sig_openDialog.emit)
         palette.addWidget(add)
         add.setFixedSize(QSize(70,30))
-
-        
         
         self.setLayout(palette)
         self.setFixedSize(QSize(int(78*n_columns),int(42*(row+1))))
@@ -143,12 +140,11 @@ class PaletteGrid_Layout (QVBoxLayout):
         self.sig.emit(color)
 
 class PaletteMenu (Menu):
-    def __init__(self, colors, text, n_columns=5, *args, **kwargs):
+    def __init__(self, colors, n_columns=5, *args, **kwargs):
         super().__init__()
         self._palette = PaletteGrid(colors=colors)
         
         self.hBoxLayout.addChildWidget(self._palette)
-        self._title = text
 
         margins = self.contentsMargins()
         _height = int(self._palette.size().height())
