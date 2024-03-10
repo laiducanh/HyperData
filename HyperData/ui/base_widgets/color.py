@@ -197,8 +197,8 @@ class ColorDialog (QWidget):
         self.opacityLineEdit.valueChanged.connect(self.__onOpacityChanged)
 
 class ColorPicker (QWidget):
-    def __init__(self, title:str, text:str=None, color:str=None):
-        super().__init__()
+    def __init__(self, title:str, text:str=None, color:str=None, parent=None):
+        super().__init__(parent)
 
         layout = QHBoxLayout()
         self.setLayout(layout)
