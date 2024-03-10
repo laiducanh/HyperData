@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
+import qfluentwidgets
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -14,8 +15,6 @@ class GraphicsNode (QGraphicsItem):
     def __init__(self, title:str, parent=None):
         super().__init__(parent)
 
-        self._title_color = Qt.GlobalColor.lightGray
-        self._title_color_hovered = Qt.GlobalColor.white
         self._title_font = QFont("Monospace", 10, 700)
         self.title = title
         self.edge_size = 5.0
@@ -28,6 +27,19 @@ class GraphicsNode (QGraphicsItem):
         self.id = id(self)
         self.content_change = False
 
+        self.setColor()
+
+        self.setTitle()
+        
+
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        self.setAcceptHoverEvents(True)
+
+        self.wasMoved = False
+
+    def setColor(self):
+        
         self._color = QColor("#7F000000")
         self._color_selected = QColor("#252525")
         self._color_hovered = QColor("#FF37A6FF")
@@ -39,20 +51,16 @@ class GraphicsNode (QGraphicsItem):
         self._pen_hovered = QPen(self._color_hovered)
         self._pen_hovered.setWidthF(3.0)
 
-        #self._brush_title = QBrush(QColor("#FF313131"))
-        self._brush_title = QBrush(QColor("#434343"))
-        #self._brush_background = QBrush(QColor("#E3212121"))
-        self._brush_background = QBrush(Qt.GlobalColor.white)
-
-        self.setTitle()
-        
-
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        self.setAcceptHoverEvents(True)
-
-        self.wasMoved = False
-
+        if qfluentwidgets.isDarkTheme():
+            self._brush_background = QBrush(QColor("#232323"))
+            self._brush_title = QBrush(QColor("#F5F5F5"))
+            self._title_color = Qt.GlobalColor.black
+            self._title_color_hovered = Qt.GlobalColor.darkGray
+        else:
+            self._brush_background = QBrush(Qt.GlobalColor.white)
+            self._brush_title = QBrush(QColor("#434343"))
+            self._title_color = Qt.GlobalColor.lightGray
+            self._title_color_hovered = Qt.GlobalColor.white
 
     def boundingRect(self):
         return QRectF(

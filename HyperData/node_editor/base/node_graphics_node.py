@@ -3,6 +3,8 @@ from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction, QMouseEvent
 import pandas as pd
 from ui.base_widgets.menu import Menu
+from node_editor.graphics.graphics_node import GraphicsNode
+import qfluentwidgets
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -136,20 +138,10 @@ class NodeGraphicsSocket (QGraphicsItem):
 
 
 
-class NodeGraphicsNode (QGraphicsItem):
+class NodeGraphicsNode (GraphicsNode):
     def __init__(self, title:str, inputs=[], outputs=[], parent=None):
-        super().__init__(parent)
+        super().__init__(title, parent)
 
-        self._title_color = Qt.GlobalColor.lightGray
-        self._title_color_hovered = Qt.GlobalColor.white
-        self._title_font = QFont("Monospace", 10, 700)
-        self.title = title
-        self.edge_size = 5.0
-        self.title_height = 24.0
-        self._padding = 4.0
-        self.socket_spacing = 22
-        self.width = 180
-        self.height = (self.socket_spacing)*(max(len(inputs),len(outputs))) + self.title_height + 2*self._padding
         #self.content = None
         self.data_in = pd.DataFrame()
         self.data_out = pd.DataFrame()
@@ -157,24 +149,6 @@ class NodeGraphicsNode (QGraphicsItem):
         self.id = id(self)
         self.content_change = False
         self.menu = Menu()
-
-        self._color = QColor("#7F000000")
-        self._color_selected = QColor("#252525")
-        self._color_hovered = QColor("#FF37A6FF")
-
-        self._pen_default = QPen(self._color)
-        self._pen_default.setWidthF(2.0)
-        self._pen_selected = QPen(self._color_selected)
-        self._pen_selected.setWidthF(2.0)
-        self._pen_hovered = QPen(self._color_hovered)
-        self._pen_hovered.setWidthF(3.0)
-
-        #self._brush_title = QBrush(QColor("#FF313131"))
-        self._brush_title = QBrush(QColor("#434343"))
-        #self._brush_background = QBrush(QColor("#E3212121"))
-        self._brush_background = QBrush(Qt.GlobalColor.white)
-
-        self.setTitle()
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
@@ -197,33 +171,7 @@ class NodeGraphicsNode (QGraphicsItem):
         self.socket_pipeline_in.setPos(0, self.getSocketPosition(index=0, socket_type=PIPELINE_IN)[1])
         self.socket_pipeline_out = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_OUT, parent=self)
         self.socket_pipeline_out.setPos(self.width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
-        
 
-    def boundingRect(self):
-        return QRectF(
-            0,
-            0,
-            self.width,
-            self.height
-        ).normalized()     
-
-    def setTitle(self):
-        self.title_item = QGraphicsTextItem(self.title.upper(),parent=self)
-        self.title_item.setDefaultTextColor(self._title_color)
-        self.title_item.setFont(self._title_font)
-        #self.title_item.setPos(self._padding, 0)
-        self.title_item.document().setDefaultTextOption(QTextOption(Qt.AlignmentFlag.AlignCenter))
-        self.title_item.setTextWidth(self.width)
-    
-    def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent ) -> None:
-        super().hoverEnterEvent(event)
-        self.hovered = True
-        self.update()
-
-    def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent) -> None:
-        super().hoverLeaveEvent(event)
-        self.hovered = False
-        self.update()
 
     def updateConnectedEdges(self):
         """ This method will update the edge attached to the socket that is moved """
@@ -243,6 +191,10 @@ class NodeGraphicsNode (QGraphicsItem):
                 self.width = self.content.width() + 6*self.edge_size
                 self.content_change = True
             else: self.content_change = False
+
+        self.setColor()
+
+        
 
         # title
         path_title = QPainterPath()
