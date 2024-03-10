@@ -1,7 +1,6 @@
 import string, itertools, matplotlib, os, logging, qfluentwidgets
-from PyQt6.QtCore import Qt, QStandardPaths, QDir, QSettings
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton
-from ui.base_widgets.button import ComboBox
+from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtCore import Qt, QStandardPaths, QDir, QSettings, QSize
 
 DEBUG = True
 
@@ -55,35 +54,13 @@ elif config.value("theme") == "Dark":
 else:
     qfluentwidgets.setTheme(qfluentwidgets.Theme.AUTO)
     config.setValue("theme", "Auto")
+
+if config.value("theme color") == None:
+    config.setValue("theme color", qfluentwidgets.themeColor())
+
 if config.value("dock area") == None:
     config.setValue("dock area", 'left')
-class SettingsWindow (QMainWindow):
-    def __init__(self, parent):
-        super().__init__(parent)
 
-        layout = QVBoxLayout()
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
 
-        theme = ComboBox(items=["Auto","Light","Dark"], text='Theme')
-        theme.button.setCurrentText(config.value("theme"))
-        layout.addWidget(theme)
-        theme.button.currentTextChanged.connect(self.setTheme)  
 
-        dockwidget_pos = ComboBox(items=["left","right","top","bottom"],text='panel position')
-        layout.addWidget(dockwidget_pos)
-        dockwidget_pos.button.setCurrentText(config.value("dock area").title())
-        dockwidget_pos.button.currentTextChanged.connect(self.setPanelPosition)
-
-    def setTheme(self, theme:str):
-        config.setValue("theme", theme)
-        if theme == "Auto":
-            qfluentwidgets.setTheme(qfluentwidgets.Theme.AUTO)
-        elif theme == "Light":
-            qfluentwidgets.setTheme(qfluentwidgets.Theme.LIGHT)
-        elif theme == "Dark":
-            qfluentwidgets.setTheme(qfluentwidgets.Theme.DARK)     
-    
-    def setPanelPosition(self, pos:str):
-        config.setValue("dock area",pos.lower())
+   
