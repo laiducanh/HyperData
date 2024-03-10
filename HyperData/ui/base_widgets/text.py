@@ -34,6 +34,7 @@ class Completer (QCompleter):
 
 
 class _LineEdit (qfluentwidgets.LineEdit):
+    keyPressedEvent = pyqtSignal(object)
     def __init__(self, tooltip=None, completer_source=None, parent=None):
         super().__init__(parent=parent)
         self.completer_source = completer_source
@@ -51,6 +52,9 @@ class _LineEdit (qfluentwidgets.LineEdit):
             self.completer_.updateModel(self.completer_source)
         return super().focusInEvent(e)
     
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        self.keyPressedEvent.emit(a0)
+        return super().keyPressEvent(a0)
 
     
 class LineEdit (QWidget):
