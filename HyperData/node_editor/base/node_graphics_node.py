@@ -175,13 +175,10 @@ class NodeGraphicsNode (QGraphicsItem):
         self._brush_background = QBrush(Qt.GlobalColor.white)
 
         self.setTitle()
-        
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setAcceptHoverEvents(True)
-
-        self.wasMoved = False
 
         # create socket for inputs and outputs
         self.input_sockets = [] # keeps track input sockets by a list
@@ -228,32 +225,6 @@ class NodeGraphicsNode (QGraphicsItem):
         self.hovered = False
         self.update()
 
-    
-    def mouseMoveEvent(self, event):
-        super().mouseMoveEvent(event)
-        #self.updateConnectedEdges() # already implemented in node_graphics_view class
-        self.wasMoved = True
-    
-    def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-
-        if self.wasMoved:
-            self.wasMoved = False
-            if DEBUG: print('node moved')
-        
-        for socket in self.input_sockets + self.output_sockets:
-            for edge in socket.edges:
-                if DEBUG: print('Node', self, edge.start_socket.node)
-
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
-        super().mousePressEvent(event)
-
-        for socket in self.input_sockets:
-            if DEBUG: print(socket.edges)
-        for socket in self.output_sockets:
-            if DEBUG: print(socket.edges)
-
- 
     def updateConnectedEdges(self):
         """ This method will update the edge attached to the socket that is moved """
         for socket in self.input_sockets + self.output_sockets:
