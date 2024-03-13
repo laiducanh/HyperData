@@ -145,6 +145,7 @@ class NodeGraphicsNode (GraphicsNode):
                 self.width = self.content.width() + 6*self.edge_size
                 self.content_change = True
             else: self.content_change = False
+            self.height = self.title_height + min(self.content.sizeHint().height(), self.content.height()) + 2*self._padding
         
         if self.content_change:
             # update socket positions when content was enlarged

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QGraphicsRectItem, QGraphicsTextItem
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QFont, QAction, QPaintEvent
 import qfluentwidgets
@@ -12,7 +12,8 @@ class NodeComment (_TextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-
+        self.setFontItalic(True)
+        self.setPlaceholderText("Comment")
 
 class NodeContentWidget(QWidget):
     sig = pyqtSignal()
@@ -25,6 +26,7 @@ class NodeContentWidget(QWidget):
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()
+
         self.initUI()
         self.initMenu()
 
@@ -46,7 +48,12 @@ class NodeContentWidget(QWidget):
         #self.label.setContentsMargins(5,0,5,3)
         self.layout.addWidget(self.label)
         #self.setFixedHeight(46)
+        self.config_btn = qfluentwidgets.TransparentPushButton("Configuration")
+        self.config_btn.clicked.connect(self.config)
+        self.config_btn.setFont(font)
+        self.layout.addWidget(self.config_btn)
         self.layout.addWidget(self.comment)
+        
     
     def initMenu(self):
         action = QAction("Execute Card")
