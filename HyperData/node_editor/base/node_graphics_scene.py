@@ -114,7 +114,7 @@ class NodeGraphicsScene(QGraphicsScene):
         # create nodes
         nodes = data['nodes']
         for node_id in nodes.keys():
-            node = Node(nodes[node_id]['title'],self.parent)
+            node = Node(nodes[node_id]['title'],self)
             self.addNode(node)
             node.deserialize(nodes[node_id], hashmap)
 

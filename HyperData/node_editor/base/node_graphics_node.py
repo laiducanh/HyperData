@@ -16,7 +16,7 @@ PIPELINE_OUT = 6
 DEBUG = False
 
 class NodeGraphicsSocket (GraphicsSocket):
-    def __init__(self, node:'NodeGraphicsNode', index=0, socket_type=SINGLE_IN, parent=None):
+    def __init__(self, node:'NodeGraphicsNode', index=0, socket_type=SINGLE_IN, data=None, parent=None):
         super().__init__(socket_type, parent)
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
@@ -25,6 +25,7 @@ class NodeGraphicsSocket (GraphicsSocket):
         self.node = node # node that socket is attached to so that we can get socket position from 'NodeGraphicsNode' class
         self.index = index
         self.edges = [] # assigns a list of edges connected to (self) socket, init with an empty list, has type of list[NodeGraphicsEdge]
+        self.socket_data = data
 
         self.setTitle()
         
@@ -102,8 +103,6 @@ class NodeGraphicsNode (GraphicsNode):
         super().__init__(title, parent)
 
         #self.content = None
-        self.data_in = pd.DataFrame()
-        self.data_out = pd.DataFrame()
         self.content_change = False
         self.content = None
         self.menu = Menu()
@@ -125,7 +124,6 @@ class NodeGraphicsNode (GraphicsNode):
         self.socket_pipeline_in.setPos(0, self.getSocketPosition(index=0, socket_type=PIPELINE_IN)[1])
         self.socket_pipeline_out = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_OUT, parent=self)
         self.socket_pipeline_out.setPos(self.width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
-
 
     def updateConnectedEdges(self):
         """ This method will update the edge attached to the socket that is moved """

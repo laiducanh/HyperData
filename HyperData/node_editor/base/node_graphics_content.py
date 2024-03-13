@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QGraphicsRectItem, QGraphicsTextItem
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QFont, QAction, QPaintEvent
-import qfluentwidgets
+import qfluentwidgets, pandas
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.text import _TextEdit
@@ -17,18 +17,20 @@ class NodeComment (_TextEdit):
 
 class NodeContentWidget(QWidget):
     sig = pyqtSignal()
-    def __init__(self, node: NodeGraphicsNode,parent=None):
+    def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsSence"
         super().__init__()
         self.setStyleSheet('background-color:transparent')
         self.node = node
         self.parent = parent
-        self.view = DataView(self.node.data_out)
+        self.view = DataView(pandas.DataFrame())
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()
 
         self.initUI()
         self.initMenu()
+
+        self.data_to_view = pandas.DataFrame()
 
     def initUI(self):
         self.layout = QVBoxLayout()
@@ -72,13 +74,18 @@ class NodeContentWidget(QWidget):
         action = QAction("Hide Comment")
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
+        self.menu.addSeparator()
+        action = QAction("Delete Card")
+        action.triggered.connect(lambda: self.parent.removeNode(self.node))
+        self.menu.addAction(action)
 
     def config(self):
         pass
     
     def exec (self):
         """ use to process data_out """
-        self.label.setText(f'Shape: {str(self.node.data_out.shape)}')
+        
+        self.label.setText(f"Shape {self.data_to_view.shape}")    
 
         for socket in self.node.output_sockets:
             for edge in socket.edges:
@@ -98,7 +105,7 @@ class NodeContentWidget(QWidget):
         pass
 
     def viewData (self):
-        self.view.update_data(self.node.data_out)
+        self.view.update_data(self.data_to_view)
         self.view.showMaximized()
         
     def serialize(self):

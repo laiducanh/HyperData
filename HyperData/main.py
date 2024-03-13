@@ -3,12 +3,13 @@ import sys, qfluentwidgets, os, json
 from PyQt6.QtCore import QThreadPool, Qt
 from PyQt6.QtWidgets import (QWidget, QMenuBar, QVBoxLayout, QStackedLayout, QApplication, QFileDialog, QSplashScreen,
                              QMainWindow)
-from PyQt6.QtGui import QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPixmap, QAction
+from PyQt6.QtGui import QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPixmap, QAction, QColor
 
 from plot.plot_view import PlotView
 from node_editor.node_view import NodeView
 from node_editor.node_node import Node
-from config.settings import SettingsWindow
+from config.settings_window import SettingsWindow
+from config.settings import config
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -23,7 +24,7 @@ class Main(QMainWindow):
 
         self.threadpool = QThreadPool()
         self.list_figure = list()
-
+        self.settings_window = SettingsWindow(self)
            
         ### Adjust the main window's size
         #self.setMinimumSize(int(self.screen_size[2]*0.55),int(self.screen_size[3]*0.55)) # set minimum size for display
@@ -37,10 +38,7 @@ class Main(QMainWindow):
 
         self.add_node_view()
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        if qfluentwidgets.isDarkTheme():
-            self.setAutoFillBackground(True)
-        return super().paintEvent(a0)   
+        
     
     def setupMenuBar(self):
         menu_bar = QMenuBar(self)
@@ -53,16 +51,12 @@ class Main(QMainWindow):
         action.triggered.connect(self.saveToFile)
         fileMenu.addAction(action)
         action = QAction('&Settings',self)
-        action.triggered.connect(self.settingsWindow)
+        action.triggered.connect(self.settings_window.show)
         fileMenu.addAction(action)
         fileMenu.addSeparator()
         action = QAction('&Quit', self)
         action.triggered.connect(self.close)
         fileMenu.addAction(action)        
-        
-    def settingsWindow (self):
-        window = SettingsWindow(self)
-        window.show()
         
     def add_plot_view (self, node: Node):
         
@@ -116,6 +110,11 @@ class Main(QMainWindow):
                 raw_data = file.read()
                 data = json.loads(raw_data)
                 self.deserialize(data)
+    
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        with open("config.json.txt", "w") as file:
+            file.write( json.dumps(config, indent=4 ) )
+        return super().closeEvent(a0)
 
     def serialize(self):
         return {"id":id(self),

@@ -35,11 +35,13 @@ class NodeView (QMainWindow):
         self.nodesListWidget = Draggable_TreeWidget()
         self.nodesListWidget.setData({"Data Processing": ["Data Holder", "Data Concator", "Data Transpose", 
                                                           "Data Combiner", "Data Merge", "Data Compare",
-                                                          "Data Splitter",
+                                                          "Data Locator",
+                                                          "Label Encoder","Ordinal Encoder","One-Hot Encoder",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
-                                                          "Undefined Node"],
+                                                          ],
+                                        "Machine Learning": ["ML_Modeler","Data Splitter"],
                                         "Visualization": ["Figure"],
-                                        "Misc": ["Executor"]})
+                                        "Misc": ["Executor", "Undefined Node"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)
         self.list_widget_layout.addWidget(self.nodesListWidget)
         self.search_box.set_TreeView(self.nodesListWidget)
@@ -50,7 +52,7 @@ class NodeView (QMainWindow):
         self.nodesDock.setWidget(self.list_widget)
         
 
-        self.grScene = NodeGraphicsScene()
+        self.grScene = NodeGraphicsScene(self.parent)
         node_view = NodeGraphicsView(self.grScene, self.parent)
         self.grScene.sig.connect(lambda s: self.sig.emit(s))
         self.grScene.sig_keyPressEvent.connect(lambda s: self.keyPressEvent(s))
@@ -76,7 +78,7 @@ class NodeView (QMainWindow):
 
     def addNode (self, title):
         try:
-            node = Node(title,self.parent)
+            node = Node(title,self.grScene)
             self.grScene.addNode(node)
         except:pass
     

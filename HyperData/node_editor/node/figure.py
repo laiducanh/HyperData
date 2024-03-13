@@ -26,11 +26,11 @@ class Figure (NodeContentWidget):
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:
-            self.node.data_in = pd.DataFrame()
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
-            self.node.data_in = self.node.input_sockets[0].edges[0].start_socket.node.data_out
-        self.label.setText(f'Shape: {str(self.node.data_in.shape)}')
-        self.node.data_out = self.node.data_in
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        self.label.setText(f'Shape: {str(self.node.input_sockets[0].socket_data.shape)}')
+        self.data_to_view = self.node.input_sockets[0].socket_data
     
     def exec(self):
         self.sig.emit()

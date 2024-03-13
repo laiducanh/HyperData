@@ -17,6 +17,7 @@ class DataHolder (NodeContentWidget):
     def __init__(self, node,parent=None):
         super().__init__(node,parent)
         self.exec_btn.setText('Load data')
+        self.node.output_sockets[0].socket_data = pd.DataFrame()
         
     def exec (self):
         import_dlg = QFileDialog()
@@ -27,50 +28,53 @@ class DataHolder (NodeContentWidget):
             logger.info(f"Select {selectedFiles}.")
             suffix = pathlib.Path(selectedFiles).suffix
             if suffix == ".csv":
-                self.node.data_out = pd.read_csv(selectedFiles)
+                self.node.output_sockets[0].socket_data = pd.read_csv(selectedFiles)
                 logger.info(f"Load a csv file.")
             elif suffix in [".xls", ".xlsx"]:
-                self.node.data_out = pd.read_excel(selectedFiles)
+                self.node.output_sockets[0].socket_data = pd.read_excel(selectedFiles)
                 logger.info(f"Load an excel file.")
             else:
-                self.node.data_out = pd.DataFrame()
+                self.node.output_sockets[0].socket_data = pd.DataFrame()
                 logger.warning("Cannot read data file, return an empty DataFrame.")
             
-            self.node.data_in = self.node.data_out
-            
+            self.data_to_view = self.node.output_sockets[0].socket_data
+            logger.info("DataHolder run successfully.")
         
         super().exec()
-        logger.info("DataHolder run successfully.")
+        
 
 class DataTranspose (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
     
     def exec(self):
-        try: self.node.data_out = self.node.data_in.transpose()
+        try: 
+            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.transpose()
+            logger.info("DataTranspose run successfully.")
         except Exception as e: 
-            self.node.data_out = pd.DataFrame()
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
             logger.error(f"{repr(e)}, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
 
         super().exec()
-        logger.info("DataTranspose run successfully.")
+        
         
     def eval (self):
         if self.node.input_sockets[0].edges == []:
-            self.node.data_in = pd.DataFrame()
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
-            self.node.data_in = self.node.input_sockets[0].edges[0].start_socket.node.data_out
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
         
 
 class DataConcator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode,parent=None):
         super().__init__(node, parent)
-        self.node.data_out = pd.DataFrame()
-        self.node.data_in = list()
+        self.node.input_sockets[0].socket_data = list()
         self._config = dict(axis='index',join='outer',ignore_index=False)
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Configuration", self.parent.parent)
         axis = ComboBox(items=["index","columns"], text='Axis')
         axis.button.setCurrentText(self._config['axis'].title())
         dialog.textLayout.addWidget(axis)
@@ -88,129 +92,144 @@ class DataConcator (NodeContentWidget):
     
     def exec(self):
         
-        if self.node.data_in != []: 
-            try: self.node.data_out = pd.concat(objs=self.node.data_in,
+        if self.node.input_sockets[0].socket_data != []: 
+            try: 
+                self.node.output_sockets[0].socket_data = pd.concat(objs=self.node.input_sockets[0].socket_data,
                                            axis=self._config["axis"],
                                            join=self._config["join"],
                                            ignore_index=self._config["ignore_index"])
+                logger.info("DataConcator run successfully.")
             except Exception as e:
-                self.node.data_out = pd.DataFrame()
+                self.node.output_sockets[0].socket_data = pd.DataFrame()
                 logger.error(f"{repr(e)}, return an empty DataFrame.")
         else:
-            self.node.data_out = pd.DataFrame()
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.info("Not enough input, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
         
         super().exec()
-        logger.info("DataConcator run successfully.")
+        
 
     def eval(self):
-        self.node.data_in = list()
+        self.node.input_sockets[0].socket_data = list()
         for edge in self.node.input_sockets[0].edges:
-            self.node.data_in.append(edge.start_socket.node.data_out)
+            self.node.input_sockets[0].socket_data.append(edge.start_socket.socket_data)
 
 class DataCombiner (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
         self.exec_btn.setText('Combine')
-        self.node.data_out = pd.DataFrame()
-        self.node.data_in = list()
+        self.node.input_sockets[0].socket_data = list()
     
     def exec(self):
-        self.node.data_out = pd.DataFrame()
+        self.node.output_sockets[0].socket_data = pd.DataFrame()
         try:
-            for data in self.node.data_in:
-                self.node.data_out = self.node.data_out.combine(data, np.minimum)
+            for data in self.node.input_sockets[0].socket_data:
+                self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data.combine(data, np.minimum)
+            logger.info("DataCombiner run successfully.")
         except Exception as e:
-            self.node.data_out = pd.DataFrame()
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
             logger.error(f"{repr(e)}, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
 
         super().exec()
-        logger.info("DataCombiner run successfully.")
+        
 
     def eval(self):
-        self.node.data_in = list()
+        self.node.input_sockets[0].socket_data = list()
         for edge in self.node.input_sockets[0].edges:
-            self.node.data_in.append(edge.start_socket.node.data_out)
+            self.node.input_sockets[0].socket_data.append(edge.start_socket.socket_data)
 
 class DataMerge (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
         self.exec_btn.setText('Merge')
-        self.node.data_out = pd.DataFrame()
-        self.node.data_in = list()
-    
+
     def exec(self):
         try:
-            if len(self.node.data_in) == 2:
-                data_left = self.node.data_in[0]
-                data_right = self.node.data_in[1]
-                self.node.data_out = data_left.merge(data_right)
-            elif len(self.node.data_in) == 1:
-                self.node.data_out = self.node.data_in[0]
+            if self.node.input_sockets[0].socket_data != None and self.node.input_sockets[1].socket_data != None:
+                data_left = self.node.input_sockets[0].socket_data
+                data_right = self.node.input_sockets[1].socket_data
+                self.node.output_sockets[0].socket_data = data_left.merge(data_right)
+            elif self.node.input_sockets[0].socket_data != None:
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            elif self.node.input_sockets[1].socket_data != None:
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
             else:
-                self.node.data_out = pd.DataFrame()
+                self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.info("DataMerge run successfully.")
         except Exception as e:
-            self.node.data_out = pd.DataFrame()
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
             logger.error(f"{repr(e)}, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
 
         super().exec()
-        if DEBUG: print("DataMerge run successfully")
+        
     
     def eval(self):
-        self.node.data_in = list()
         for edge in self.node.input_sockets[0].edges:
-            self.node.data_in.insert(0,edge.start_socket.node.data_out)
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
         for edge in self.node.input_sockets[1].edges:
-            self.node.data_in.insert(1,edge.start_socket.node.data_out)
+            self.node.input_sockets[1].socket_data = edge.start_socket.socket_data
 
 class DataCompare (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
-
-        self.node.data_out = pd.DataFrame()
-        self.node.data_in = list()
     
     def exec(self):
         try:
-            if len(self.node.data_in) == 2:
-                data_left = self.node.data_in[0]
-                data_right = self.node.data_in[1]
-                self.node.data_out = data_left.compare(data_right)
-            elif len(self.node.data_in) == 1:
-                self.node.data_out = self.node.data_in[0]
+            if self.node.input_sockets[0].socket_data != None and self.node.input_sockets[1].socket_data != None:
+                data_left = self.node.input_sockets[0].socket_data
+                data_right = self.node.input_sockets[1].socket_data
+                self.node.output_sockets[0].socket_data = data_left.compare(data_right)
+            elif self.node.input_sockets[0].socket_data != None:
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            elif self.node.input_sockets[1].socket_data != None:
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
             else:
-                self.node.data_out = pd.DataFrame()
+                self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.info("DataCompare run successfully.")
         except Exception as e:
-            self.node.data_out = pd.DataFrame()
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
             logger.error(f"{repr(e)}, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
+
 
         super().exec()
-        logger.info("DataCompare run successfully.")
+        
     
     def eval(self):
-        self.node.data_in = list()
         for edge in self.node.input_sockets[0].edges:
-            self.node.data_in.insert(0,edge.start_socket.node.data_out)
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
         for edge in self.node.input_sockets[1].edges:
-            self.node.data_in.insert(1,edge.start_socket.node.data_out)
+            self.node.input_sockets[1].socket_data = edge.start_socket.socket_data
 
-class DataSplitter (NodeContentWidget):
+class DataLocator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        if self.node.data_in.empty:
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.initConfig()
+        
+    def initConfig (self):
+        if self.node.input_sockets[0].socket_data.empty:
             self._config = dict(type="columns",
                             column_from=None,column_to=None,
-                            row_from=1,row_to=None)
+                            row_from=None,row_to=None)
         else:
             self._config = dict(type="columns",
-                            column_from=self.node.data_in.columns[0],
-                            column_to=self.node.data_in.columns[-1],
-                            row_from=1,row_to=1+self.node.data_in.shape[0])
+                            column_from=self.node.input_sockets[0].socket_data.columns[0],
+                            column_to=self.node.input_sockets[0].socket_data.columns[-1],
+                            row_from=1,row_to=self.node.input_sockets[0].socket_data.shape[0])
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Configuration", self.parent.parent)
 
         type = ComboBox(items=["columns","rows"], text="type")
         type.button.setCurrentText(self._config["type"].title())
@@ -226,13 +245,13 @@ class DataSplitter (NodeContentWidget):
         stacklayout.addWidget(col)
 
         col_from = EditableComboBox(text="from column")
-        col_from.button.setCompleter(completer=Completer(self.node.data_in.columns))
-        col_from.button.setCurrentText(self._config["column_from"])
+        col_from.button.setCompleter(completer=Completer(self.node.input_sockets[0].socket_data.columns))
+        col_from.button.setText(str(self._config["column_from"]))
         col_layout.addWidget(col_from)
 
         col_to = EditableComboBox(text="to column")
-        col_to.button.setCompleter(completer=Completer(self.node.data_in.columns))
-        col_to.button.setCurrentText(self._config["column_to"])
+        col_to.button.setCompleter(completer=Completer(self.node.input_sockets[0].socket_data.columns))
+        col_to.button.setText(str(self._config["column_to"]))
         col_layout.addWidget(col_to)
 
         row = QWidget()
@@ -241,13 +260,13 @@ class DataSplitter (NodeContentWidget):
         stacklayout.addWidget(row)
 
         row_from = EditableComboBox(text="from row")
-        row_from.button.setCompleter(completer=Completer([str(i) for i in range(1,1+self.node.data_in.shape[0])]))
-        row_from.button.setCurrentText(self._config["row_from"])
+        row_from.button.setCompleter(completer=Completer([str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])]))
+        row_from.button.setText(str(self._config["row_from"]))
         row_layout.addWidget(row_from)
 
         row_to = EditableComboBox(text="to row")
-        row_to.button.setCompleter(completer=Completer([str(i) for i in range(1,1+self.node.data_in.shape[0])]))
-        row_to.button.setCurrentText(self._config["row_to"])
+        row_to.button.setCompleter(completer=Completer([str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])]))
+        row_to.button.setText(str(self._config["row_to"]))
         row_layout.addWidget(row_to)
 
         stacklayout.setCurrentIndex(type.button.currentIndex())
@@ -264,26 +283,29 @@ class DataSplitter (NodeContentWidget):
         try:
 
             if self._config["type"] == "columns":
-                col_from = self.node.data_in.columns.get_loc(self._config["column_from"])
-                col_to = self.node.data_in.columns.get_loc(self._config["column_to"])+1
-                self.node.data_out = self.node.data_in.iloc[:,col_from:col_to]
+                col_from = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_from"])
+                col_to = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_to"])+1
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[:,col_from:col_to]
 
             elif self._config["type"] == "rows":
                 row_from = int(self._config["row_from"])-1
                 row_to = int(self._config["row_to"])
-                self.node.data_out = self.node.data_in.iloc[row_from:row_to,:]
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
 
-            if DEBUG: print("DataSplitter run successfully")
+            logger.info("DataLocator run successfully")
 
         except Exception as e:
+            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
             logger.error(f"{repr(e)}, return the original DataFrame.") 
-            self.node.data_out = self.node.data_in
+            
+        self.data_to_view = self.node.output_sockets[0].socket_data
 
         super().exec()
-        logger.infor("DataSplitter run successfully.")
     
     def eval(self):
         if self.node.input_sockets[0].edges == []:
-            self.node.data_in = pd.DataFrame()
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
-            self.node.data_in = self.node.input_sockets[0].edges[0].start_socket.node.data_out
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+
+        self.initConfig()

@@ -167,7 +167,7 @@ class NodeGraphicsView(QGraphicsView):
         This method is called when a drag and drop event is dropped onto the view. It retrieves the name of the dropped node
         from the mime data and add the corresponding node.
         """
-        node = Node(title=event.mimeData().text(),parent=self.parent)
+        node = Node(title=event.mimeData().text(),parent=self.grScene)
         self.grScene.addNode(node)
         mouse_position = event.position()
         scene_position = self.grScene.views()[0].mapToScene(mouse_position.toPoint())

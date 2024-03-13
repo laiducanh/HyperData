@@ -5,11 +5,13 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.preprocessing import LabelEncoder as sk_LabelEncoder
 from sklearn.preprocessing import OrdinalEncoder as sk_OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder as sk_OneHotEncoder
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from config.settings import logger
 from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
@@ -24,17 +26,26 @@ class LabelEncoder (NodeContentWidget):
         pass
 
     def exec(self):
-        encoder = sk_LabelEncoder()
-        self.node.data_out = encoder.fit_transform(self.node.data_in)
+        try:
+            encoder = sk_LabelEncoder()
+            columns = self.node.input_sockets[0].socket_data.columns
+            self.node.output_sockets[0].socket_data = encoder.fit_transform(self.node.input_sockets[0].socket_data)
+            self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)
+            logger.info("LabelEncoder run successfully.")
+        except Exception as e:
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.error(f"{repr(e)}, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
 
         super().exec()
-        if DEBUG: print("LabelEncoder run successfully")
+        
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:
-            self.node.data_in = pd.DataFrame()
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
-            self.node.data_in = self.node.input_sockets[0].edges[0].start_socket.node.data_out
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
 
 class OrdinalEncoder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -44,15 +55,49 @@ class OrdinalEncoder (NodeContentWidget):
         pass
 
     def exec(self):
-        encoder = sk_OrdinalEncoder()
-        self.node.data_out = encoder.fit_transform(self.node.data_in)
+        try:
+            encoder = sk_OrdinalEncoder()
+            columns = self.node.input_sockets[0].socket_data.columns
+            self.node.output_sockets[0].socket_data = encoder.fit_transform(self.node.input_sockets[0].socket_data)
+            self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)
+            logger.info("OrdinalEncoder run successfully.")
+        except Exception as e:
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.error(f"{repr(e)}, return an empty DataFrame.")
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
 
         super().exec()
-        if DEBUG: print("LabelEncoder run successfully")
+        
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:
-            self.node.data_in = pd.DataFrame()
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
-            self.node.data_in = self.node.input_sockets[0].edges[0].start_socket.node.data_out
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
 
+class OneHotEncoder (NodeContentWidget):
+    def __init__(self, node: NodeGraphicsNode, parent=None):
+        super().__init__(node, parent)
+    
+    def config(self):
+        pass
+
+    def exec(self):
+        try:
+            self.node.output_sockets[0].socket_data = pd.get_dummies(self.node.input_sockets[0].socket_data)
+            logger.info("OneHotEncoder run successfully.")
+        except Exception as e:
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.error(f"{repr(e)}, return an empty DataFrame.")
+
+        self.data_to_view = self.node.output_sockets[0].socket_data
+
+        super().exec()
+        
+    
+    def eval (self):
+        if self.node.input_sockets[0].edges == []:
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
+        else:
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
