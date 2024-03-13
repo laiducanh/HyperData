@@ -35,6 +35,7 @@ class PlotView (QMainWindow):
         self.num_plot = 0
         self.current_plot = 0
         self.curvelist = list()
+        self.parent = parent
 
         self.treeview_list = {"Graph":["Manage graph"],
                                "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
@@ -123,7 +124,7 @@ class PlotView (QMainWindow):
         
         elif "manage graph" == text:
             if not hasattr(self, "insertplot"):
-                self.insertplot = InsertPlot (self.canvas, self.node)
+                self.insertplot = InsertPlot (self.canvas, self.node, self.parent)
                 self.insertplot.sig.connect(self.add_plot)
                 self.stackedlayout.addWidget(self.insertplot)
                 print('insert plot')
