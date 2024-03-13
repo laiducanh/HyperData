@@ -85,7 +85,7 @@ class NodeContentWidget(QWidget):
     def exec (self):
         """ use to process data_out """
         
-        self.label.setText(f"Shape {self.data_to_view.shape}")    
+        self.label.setText(f"Shape: {self.data_to_view.shape}")    
 
         for socket in self.node.output_sockets:
             for edge in socket.edges:
