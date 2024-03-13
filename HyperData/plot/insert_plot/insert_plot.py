@@ -168,8 +168,8 @@ class NewPlot (qfluentwidgets.CardWidget):
 class InsertPlot (QWidget):
     sig = pyqtSignal() # emit when new plot was created, also when a plot needs to be updated
 
-    def __init__(self, canvas:Canvas, node):
-        super().__init__()
+    def __init__(self, canvas:Canvas, node, parent=None):
+        super().__init__(parent)
         
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -180,7 +180,7 @@ class InsertPlot (QWidget):
         self.gidlist = list()
         self.node = node
 
-        plottype = Grid_Plottype()
+        plottype = Grid_Plottype(parent)
         self.layout.addLayout(plottype)
         plottype.sig.connect(self.add_plot)
         
