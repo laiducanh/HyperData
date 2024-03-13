@@ -45,10 +45,10 @@ class TreeWidget (qfluentwidgets.TreeWidget):
         items = []
         self.data = data
         for key, values in data.items():
-            item = QtWidgets.QTreeWidgetItem([key.title()])            
+            item = QtWidgets.QTreeWidgetItem([key])            
 
             for value in values:
-                child = QtWidgets.QTreeWidgetItem([value.title()])
+                child = QtWidgets.QTreeWidgetItem([value])
                 item.addChild(child)
             items.append(item)
 
