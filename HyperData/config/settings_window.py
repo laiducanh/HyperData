@@ -66,17 +66,18 @@ class Theme (qfluentwidgets.CardWidget):
     
     def setBackgroundColor (self):
         if qfluentwidgets.isDarkTheme():
-            self._parent.setStyleSheet("background-color:transparent;color:white")
+            self._parent.setStyleSheet("QMainWindow,QMenuBar {background-color:rgb(32, 32, 32);color:white}")
         else:
-            self._parent.setStyleSheet("color:black;")
+            self._parent.setStyleSheet("QMainWindow,QMenuBar {background-color:rgb(243, 243, 243);color:black}")
 
 class ThemeColor (qfluentwidgets.CardWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent:QDockWidget=None):
         super().__init__(parent=parent)
 
         self.setInit()
         layout = QHBoxLayout()
         self.setLayout(layout)
+        self._parent = parent
 
         layout.addWidget(qfluentwidgets.BodyLabel("Theme Color"))
         button = _ColorDropdown(config["theme color"], parent)
@@ -133,8 +134,8 @@ class SettingsWindow (QMainWindow):
         layout.addWidget(appearance)
 
         appearance_layout.addWidget(Theme(parent))
-        appearance_layout.addWidget(DockWidget_Position())
-        appearance_layout.addWidget(ThemeColor(parent=self))
+        appearance_layout.addWidget(DockWidget_Position(parent))
+        appearance_layout.addWidget(ThemeColor(parent))
 
         shortcut = QWidget()
         shortcut_layout = QVBoxLayout()
