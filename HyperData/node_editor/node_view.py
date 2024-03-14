@@ -35,7 +35,7 @@ class NodeView (QMainWindow):
         self.nodesListWidget = Draggable_TreeWidget()
         self.nodesListWidget.setData({"Data Processing": ["Data Holder", "Data Concator", "Data Transpose", 
                                                           "Data Combiner", "Data Merge", "Data Compare",
-                                                          "Data Locator",
+                                                          "Data Locator","Data Filter",
                                                           "Label Encoder","Ordinal Encoder","One-Hot Encoder",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],

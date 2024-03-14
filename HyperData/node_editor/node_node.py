@@ -42,6 +42,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Locator":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataLocator(self,parent)
+        elif title == "Data Filter":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DataFilter(self,parent)
         elif title == 'Nan Eliminator':
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = NAEliminator(self,parent)
