@@ -5,7 +5,7 @@ import qfluentwidgets, pathlib
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.text import EditableComboBox, Completer
+from ui.base_widgets.text import EditableComboBox, Completer, TextEdit
 from config.settings import logger
 from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout
 from PyQt6.QtGui import QAction
@@ -292,7 +292,7 @@ class DataLocator (NodeContentWidget):
                 row_to = int(self._config["row_to"])
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
 
-            logger.info("DataLocator run successfully")
+            logger.info("DataLocator run successfully.")
 
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
@@ -309,3 +309,87 @@ class DataLocator (NodeContentWidget):
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
 
         self.initConfig()
+
+class DataFilter (NodeContentWidget):
+    def __init__(self, node: NodeGraphicsNode, parent=None):
+        super().__init__(node, parent)
+
+        self._config = dict(axis="columns",type="items",apply=str())
+    
+    def config(self):
+        dialog = Dialog("Configuration", self.parent.parent)
+
+        def func1():
+            if axis.button.currentText().lower() == "columns":
+                labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.columns])) 
+            else:
+                labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.index])) 
+
+        axis = ComboBox(items=["columns","index"], text="Filter by")
+        axis.button.setCurrentText(self._config["axis"].title())
+        axis.button.currentTextChanged.connect(func1)
+        dialog.textLayout.addWidget(axis)
+
+        type = ComboBox(items=["items","contains","regular expression"], text="filter type")
+        type.button.setCurrentText(self._config["type"].title())
+        dialog.textLayout.addWidget(type)
+
+        def func2 ():
+            if type.button.currentText().lower() == "items":
+                if apply.button.toPlainText() == '':
+                    string = list()
+                else:
+                    string = apply.button.toPlainText().split(",")
+                string.append(labels.button.text())
+                apply.button.setText(",".join(string))
+            else:
+                apply.button.setText(labels.button.text())
+            labels.button.clear()
+
+        labels = EditableComboBox(text="labels")
+        labels.button.returnPressed.connect(func2)
+        func1()
+        dialog.textLayout.addWidget(labels)
+
+        apply = TextEdit(text="Keep labels")
+        apply.button.setText(",".join(self._config["apply"]))
+        dialog.textLayout.addWidget(apply)
+
+        
+
+        if dialog.exec():
+            self._config["axis"] = axis.button.currentText().lower()
+            self._config["type"] = type.button.currentText().lower()
+            self._config["apply"] = apply.button.toPlainText().split(",")
+            print(self._config)
+            self.exec()
+    
+
+    def exec(self):
+        try:
+            if self._config["type"] == "items":
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
+                                                                                                        items=self._config["apply"])
+            elif self._config["type"] == "contains":
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
+                                                                                                        like=self._config["apply"][0])
+            elif self._config["type"] == "regular expression":
+                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
+                                                                                                        regex=self._config["apply"][0])
+                
+            logger.info("DataFilter run successfully.")
+
+        except Exception as e:
+            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            logger.error(f"{repr(e)}, return the original DataFrame.") 
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
+
+        super().exec()   
+    
+    def eval(self):
+        if self.node.input_sockets[0].edges == []:
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
+        else:
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        
