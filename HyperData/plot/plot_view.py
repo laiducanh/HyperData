@@ -2,9 +2,9 @@
 import sys, requests, os, datetime, qfluentwidgets, pandas, matplotlib
 
 ### Import libraries from PyQt6
-from PyQt6.QtCore import QThreadPool, Qt, pyqtSignal
+from PyQt6.QtCore import QChildEvent, QEvent, QThreadPool, Qt, pyqtSignal
 from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget,
-                             QStackedLayout, QPushButton, QTreeWidgetItem, QFileDialog)
+                             QStackedLayout, QPushButton, QTreeWidgetItem, QProgressDialog)
 from PyQt6.QtGui import QGuiApplication, QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon, QShowEvent
 
 ### Import self classes
@@ -42,13 +42,18 @@ class PlotView (QMainWindow):
                                "Spine":["Spine bottom","Spine left","Spine top","Spine right"],
                                "Figure":["Plot size","Grid"],
                                "Label":["Title","Axis lebel","Legend","Data annotation"],}
+        
+        self.diag = QProgressDialog(parent, Qt.WindowType.FramelessWindowHint)
+        self.diag.setLabelText("Initializing figure")
+        self.diag.setCancelButton(None)
+        self.diag.show()
 
         ### Initialize UI components
-
         self.setup_visual()
         self.setup_sidebar()
+        
         ###
-
+            
     def setup_visual (self):
         self.plot_visual = GraphicsView(self.canvas)
         self.plot_visual.sig_keyPressEvent.connect(lambda s: self.keyPressEvent(s))
@@ -93,8 +98,7 @@ class PlotView (QMainWindow):
         self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
-
-    
+        
 
     def add_plot (self):
         self.treeview_list["Graph"] = ["Manage graph"]
@@ -123,11 +127,6 @@ class PlotView (QMainWindow):
             self.stackedlayout.setCurrentWidget(curve)
         
         elif "manage graph" == text:
-            if not hasattr(self, "insertplot"):
-                self.insertplot = InsertPlot (self.canvas, self.node, self.parent)
-                self.insertplot.sig.connect(self.add_plot)
-                self.stackedlayout.addWidget(self.insertplot)
-                print('insert plot')
             self.stackedlayout.setCurrentWidget(self.insertplot)
 
         elif "add graph" in text:
@@ -137,31 +136,17 @@ class PlotView (QMainWindow):
             self.treeview.setData(self.treeview_list)
             
         elif "tick " in text:
-            if not hasattr(self, "tick"):
-                self.tick = Tick(self.canvas)
-                self.stackedlayout.addWidget(self.tick)
-                print('tick')
             self.tick.choose_axis(text.split()[-1])
             self.stackedlayout.setCurrentWidget(self.tick)
         
         elif "spine " in text:
-            if not hasattr(self, 'spine'):
-                self.spine = Spine(self.canvas)
-                self.stackedlayout.addWidget(self.spine)
-                print('spine')
             self.spine.choose_axis(text.split()[-1])
             self.stackedlayout.setCurrentWidget(self.spine)
         
         elif text in ["plot size", "grid"]:
-            if not hasattr(self, 'grid'):
-                self.grid = Grid(self.canvas)
-                self.stackedlayout.addWidget(self.grid)
             self.stackedlayout.setCurrentWidget(self.grid)
         
         elif text == 'title':
-            if not hasattr(self, 'title'):
-                self.title = GraphTitle(self.canvas)
-                self.stackedlayout.addWidget(self.title)
             self.stackedlayout.setCurrentWidget(self.title)
         
     def keyPressEvent(self, key: QKeyEvent) -> None:
@@ -182,4 +167,30 @@ class PlotView (QMainWindow):
             self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.dock)
         elif dock_area == "bottom":
             self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock)
+        
+        if self.diag.isVisible():
+            if not hasattr(self, "insertplot"):
+                self.insertplot = InsertPlot (self.canvas, self.node, self.parent)
+                self.insertplot.sig.connect(self.add_plot)
+                self.stackedlayout.addWidget(self.insertplot)
+                self.diag.setValue(10)
+            if not hasattr(self, "tick"):
+                self.tick = Tick(self.canvas)
+                self.stackedlayout.addWidget(self.tick)
+                self.diag.setValue(60)
+            if not hasattr(self, "spine"):
+                self.spine = Spine(self.canvas)
+                self.stackedlayout.addWidget(self.spine)
+                self.diag.setValue(70)
+            if not hasattr(self, 'grid'):
+                self.grid = Grid(self.canvas)
+                self.stackedlayout.addWidget(self.grid)
+                self.diag.setValue(80)
+            if not hasattr(self, 'title'):
+                self.title = GraphTitle(self.canvas)
+                self.stackedlayout.addWidget(self.title)
+                self.diag.setValue(100)
+            
+
         return super().paintEvent(a0)
+

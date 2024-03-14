@@ -118,29 +118,26 @@ class Spine2D (QWidget):
         self.stackedlayout = QStackedLayout()
         self.layout.addLayout(self.stackedlayout)
 
+        self.bot = SpineBase('bottom',self.canvas)
+        self.stackedlayout.addWidget(self.bot)
+        self.left = SpineBase('left',self.canvas)
+        self.stackedlayout.addWidget(self.left)
+        self.top = SpineBase('top',self.canvas)
+        self.stackedlayout.addWidget(self.top)
+        self.right = SpineBase('right',self.canvas)
+        self.stackedlayout.addWidget(self.right)
+
         #self.layout.addStretch(1000)
     
     def choose_axis_func (self, axis:str):
         self.choose_axis.setCurrentItem(axis)
         if axis == 'bottom': 
-            if not hasattr(self, 'bot'):
-                self.bot = SpineBase('bottom',self.canvas)
-                self.stackedlayout.addWidget(self.bot)
             self.stackedlayout.setCurrentWidget(self.bot)
-        elif axis == 'left': 
-            if not hasattr(self,'left'):
-                self.left = SpineBase('left',self.canvas)
-                self.stackedlayout.addWidget(self.left)
+        elif axis == 'left':    
             self.stackedlayout.setCurrentWidget(self.left)
-        elif axis == 'top': 
-            if not hasattr(self, 'top'):
-                self.top = SpineBase('top',self.canvas)
-                self.stackedlayout.addWidget(self.top)
+        elif axis == 'top':    
             self.stackedlayout.setCurrentWidget(self.top)
         elif axis == 'right': 
-            if not hasattr(self,'right'):
-                self.right = SpineBase('right',self.canvas)
-                self.stackedlayout.addWidget(self.right)
             self.stackedlayout.setCurrentWidget(self.right)
 
 class SpineWidget3D (QWidget):

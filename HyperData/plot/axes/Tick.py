@@ -67,9 +67,9 @@ class TickBase2D_1 (QWidget):
         
         tick = qfluentwidgets.SegmentedWidget()
         tick.addItem(routeKey='major', text='Major Tick',
-                            onClick=lambda: self.choose_major_minor('major'))
+                            onClick=lambda: self.layout6.setCurrentIndex(0))
         tick.addItem(routeKey='minor', text='Minor Tick',
-                            onClick=lambda: self.choose_major_minor('minor'))
+                            onClick=lambda: self.layout6.setCurrentIndex(1))
         tick.setCurrentItem('major')
         
         widget.layout.addWidget(tick)
@@ -84,17 +84,10 @@ class TickBase2D_1 (QWidget):
 
         self.majortick = TickBase2D_2(self.axis, 'major',self.canvas)
         self.layout6.addWidget(self.majortick)
+        self.minortick = TickBase2D_2(self.axis,'minor', self.canvas)
+        self.layout6.addWidget(self.minortick)
             
         widget.layout.addStretch(1000)
-    
-    def choose_major_minor(self, which):
-        if which == 'major':
-            self.layout6.setCurrentWidget(self.majortick)
-        else:
-            if not hasattr(self, 'minortick'):
-                self.minortick = TickBase2D_2(self.axis,'minor', self.canvas)
-                self.layout6.addWidget(self.minortick)
-            self.layout6.setCurrentWidget(self.minortick)
 
     def find_object(self) -> Axis:
         for obj in self.canvas.fig.findobj(match=Axis):
@@ -355,29 +348,22 @@ class Tick2D (QWidget):
         self.stackedlayout = QStackedLayout()
         self.layout.addLayout(self.stackedlayout)
 
+        self.bot = TickBase2D_1('bottom',self.canvas)
+        self.stackedlayout.addWidget(self.bot)
+        self.left = TickBase2D_1('left',self.canvas)
+        self.stackedlayout.addWidget(self.left)
+        self.top = TickBase2D_1('top',self.canvas)
+        self.stackedlayout.addWidget(self.top)
+        self.right = TickBase2D_1('right',self.canvas)
+        self.stackedlayout.addWidget(self.right)
+
     def choose_axis_func (self, axis:str):
         self.choose_axis.setCurrentItem(axis)
         if axis == 'bottom': 
-            if not hasattr(self, "bot"):
-                self.bot = TickBase2D_1('bottom',self.canvas)
-                self.stackedlayout.addWidget(self.bot)
-                print('bottom')
             self.stackedlayout.setCurrentWidget(self.bot)
         elif axis == 'left': 
-            if not hasattr(self, 'left'):
-                self.left = TickBase2D_1('left',self.canvas)
-                self.stackedlayout.addWidget(self.left)
-                print('left')
             self.stackedlayout.setCurrentWidget(self.left)
         elif axis == 'top': 
-            if not hasattr(self,"top"):
-                self.top = TickBase2D_1('top',self.canvas)
-                self.stackedlayout.addWidget(self.top)
-                print('top')
             self.stackedlayout.setCurrentWidget(self.top)
         elif axis == 'right': 
-            if not hasattr(self, "right"):
-                self.right = TickBase2D_1('right',self.canvas)
-                self.stackedlayout.addWidget(self.right)
-                print('right')
             self.stackedlayout.setCurrentWidget(self.right)
