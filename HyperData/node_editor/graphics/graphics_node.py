@@ -50,14 +50,13 @@ class GraphicsNode (QGraphicsItem):
 
         if qfluentwidgets.isDarkTheme():
             self._brush_background = QBrush(QColor("#232323"))
-            self._brush_title = QBrush(QColor("#F5F5F5"))
-            self._title_color = Qt.GlobalColor.black
-            self._title_color_hovered = Qt.GlobalColor.darkGray
+            self._brush_title = QBrush(QColor("#444444"))
+            self._title_color = Qt.GlobalColor.white
         else:
             self._brush_background = QBrush(Qt.GlobalColor.white)
-            self._brush_title = QBrush(QColor("#434343"))
-            self._title_color = Qt.GlobalColor.lightGray
-            self._title_color_hovered = Qt.GlobalColor.white
+            #self._brush_title = QBrush(QColor("#434343"))
+            self._brush_title = QBrush(QColor("#E2E2E2"))
+            self._title_color = Qt.GlobalColor.black
 
     def boundingRect(self):
         return QRectF(
@@ -89,7 +88,7 @@ class GraphicsNode (QGraphicsItem):
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         
         self.setColor()
-
+    
         # title
         path_title = QPainterPath()
         path_title.setFillRule(Qt.FillRule.WindingFill)
@@ -99,6 +98,7 @@ class GraphicsNode (QGraphicsItem):
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._brush_title)
         painter.drawPath(path_title.simplified())
+        self.title_item.setDefaultTextColor(self._title_color)
 
 
         # content
@@ -120,12 +120,10 @@ class GraphicsNode (QGraphicsItem):
         if self.hovered:
             painter.setPen(self._pen_hovered)
             painter.drawPath(path_outline.simplified())
-            self.title_item.setDefaultTextColor(self._title_color_hovered)
             
         else:
             painter.setPen(self._pen_default if not self.isSelected() else self._pen_selected)
             painter.drawPath(path_outline.simplified())
-            self.title_item.setDefaultTextColor(self._title_color)
 
         
 
