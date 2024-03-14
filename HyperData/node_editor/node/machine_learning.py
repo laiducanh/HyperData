@@ -2,8 +2,9 @@ from node_editor.base.node_graphics_content import NodeContentWidget, NodeCommen
 import pandas as pd
 import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import cross_validate, ShuffleSplit
+from sklearn.linear_model import *
+from sklearn.model_selection import *
+from sklearn.metrics import *
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
@@ -48,15 +49,28 @@ class MLModeler (NodeContentWidget):
         self.eval()
         estimator = LinearRegression()
         self.node.output_sockets[0].socket_data = estimator
+        
         try:
             if isinstance(self.node.input_sockets[0].socket_data, pd.DataFrame) and isinstance(self.node.input_sockets[1].socket_data, pd.DataFrame):
-                X = self.node.input_sockets[0].socket_data
-                Y = self.node.input_sockets[1].socket_data
-                cv = self.node.input_sockets[2].socket_data
-                score = cross_validate(estimator, X, Y, cv=cv)
-                print('abc', X, Y, score)
-                self.node.output_sockets[1].socket_data = None
-                logger.info("MLModeler run successfully.")
+                if isinstance(cv, (BaseCrossValidator, BaseShuffleSplit)):
+                    X = self.node.input_sockets[0].socket_data
+                    Y = self.node.input_sockets[1].socket_data
+                    cv = self.node.input_sockets[2].socket_data
+                    self.data_to_view = pd.concat([X,Y],axis=1)
+
+                    for fold, (train_idx, test_idx) in enumerate(cv.split(X, Y)):
+                        X_train, X_test = X.loc[train_idx], X.loc[test_idx]
+                        Y_train, Y_test = Y.loc[train_idx], Y.loc[test_idx]
+                        estimator.fit(X_train, Y_train)
+                        Y_pred = estimator.predict(X).round(5)
+                        score = mean_absolute_error(Y, Y_pred)
+                    
+                        self.data_to_view = pd.concat([self.data_to_view, pd.DataFrame(Y_pred, columns=[f"Fold{fold+1}_Prediction"])],axis=1)
+                    
+                    self.node.output_sockets[1].socket_data = None
+                    logger.info("MLModeler run successfully.")
+                else:
+                    logger.warning(f"Did not define splitter.")
             else:
                 logger.warning(f"Not enough input data.")
         except Exception as e:
