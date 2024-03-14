@@ -22,7 +22,7 @@ class NodeContentWidget(QWidget):
         self.setStyleSheet('background-color:transparent')
         self.node = node
         self.parent = parent
-        self.view = DataView(pandas.DataFrame())
+        self.view = DataView(pandas.DataFrame(), parent.parent)
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()

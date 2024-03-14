@@ -13,8 +13,8 @@ from ui.base_widgets.icons import Icon
 from plot.canvas import Canvas
 
 class TableModel(QAbstractTableModel):
-    def __init__(self, data):
-        super().__init__()
+    def __init__(self, data, parent=None):
+        super().__init__(parent)
         self._data = data
         self.numRows=100    
         self.numColumns=100
@@ -109,8 +109,9 @@ class TableView (QWidget):
 
         self.setWindowTitle("Data")
         self.data = data
+        self.parent = parent
 
-        self.view = QTableView(self)
+        self.view = QTableView(parent)
         self.update_data(data)
         
         self.layout = QVBoxLayout()
@@ -256,16 +257,17 @@ class TableView (QWidget):
     
     def update_data (self, data):
         self.data = data
-        self.model = TableModel(data)
+        self.model = TableModel(data, self.parent)
         self.view.setModel(self.model)
         self.view.selectionModel().selectionChanged.connect(self.on_selection)
             
 class ExploreView (QWidget):
-    def __init__(self, data):
-        super().__init__()
+    def __init__(self, data, parent=None):
+        super().__init__(parent)
+        self.parent = parent
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.view = QTableView()
+        self.view = QTableView(parent)
         self.layout.addWidget(self.view)
         self.canvas = Canvas()
         self.canvas.fig.subplots_adjust(left=0.12,right=0.9,top=0.8,bottom=0.1)
@@ -289,7 +291,7 @@ class ExploreView (QWidget):
             self.canvas.draw()
             describe = data.describe()
         
-        self.model = TableModel(describe)
+        self.model = TableModel(describe, self.parent)
         self.view.setModel(self.model)
         
 class DataView (QMainWindow):
@@ -303,10 +305,10 @@ class DataView (QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.setWindowIcon(QIcon(os.path.join("data-window.png")))
         
-        self.tableview = TableView(data)
+        self.tableview = TableView(data, parent)
         layout.addWidget(self.tableview)
 
-        self.explore = ExploreView(data)
+        self.explore = ExploreView(data, parent)
         layout.addWidget(self.explore)
     
     def update_data (self, data):
@@ -325,7 +327,7 @@ class DataSelection (QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.setWindowIcon(QIcon(os.path.join("UI","Icons","data-window.png")))
         
-        self.tableview = TableView(data)
+        self.tableview = TableView(data, parent)
         layout.addWidget(self.tableview)
         self.tableview.copy_btn.setText('Insert to input field')
         self.tableview.copy_btn.pressed.connect(self.btn_pressed)

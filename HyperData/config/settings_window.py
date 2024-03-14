@@ -66,9 +66,9 @@ class Theme (qfluentwidgets.CardWidget):
     
     def setBackgroundColor (self):
         if qfluentwidgets.isDarkTheme():
-            self._parent.setStyleSheet("QMainWindow,QMenuBar {background-color:rgb(32, 32, 32);color:white}")
+            self._parent.setStyleSheet("QMainWindow,QMenuBar,QTableView,QAbstractTableModel {background-color:rgb(32, 32, 32);color:white}")
         else:
-            self._parent.setStyleSheet("QMainWindow,QMenuBar {background-color:rgb(243, 243, 243);color:black}")
+            self._parent.setStyleSheet("QMainWindow,QMenuBar,QTableView,QAbstractTableModel {background-color:rgb(243, 243, 243);color:black}")
 
 class ThemeColor (qfluentwidgets.CardWidget):
     def __init__(self, parent:QDockWidget=None):
