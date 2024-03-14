@@ -101,7 +101,6 @@ class TableModel(QAbstractTableModel):
                     return str(self._data.index[section]+1)
                 
                 return str(self._data.index[section])
-                 
             
 class TableView (QWidget):
     def __init__(self, data, parent=None):
