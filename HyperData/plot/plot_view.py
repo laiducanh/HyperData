@@ -19,12 +19,13 @@ from plot.canvas import Canvas
 from plot.grid.grid import Grid
 from plot.label.graph_title import GraphTitle
 from config.settings import config
+from node_editor.node_node import Node
 
 DEBUG = False
   
 class PlotView (QMainWindow):
     sig_back_to_grScene = pyqtSignal()
-    def __init__(self, node, canvas:Canvas, parent=None):
+    def __init__(self, node:Node, canvas:Canvas, parent=None):
         super().__init__(parent)
         
         ### 
@@ -102,11 +103,15 @@ class PlotView (QMainWindow):
 
     def add_plot (self):
         self.treeview_list["Graph"] = ["Manage graph"]
+
         for gid in self.insertplot.gidlist:
-            self.treeview_list["Graph"].insert(-1,str(gid))
+            self.treeview_list["Graph"].insert(-1,str(gid).title())
         
         self.treeview.setData(self.treeview_list)
+        self.update_plot()
+        
 
+    def update_plot (self):
         pixmap = QPixmap(12,12)
         for item in self.treeview.findItems("Graph",Qt.MatchFlag.MatchExactly):
             for child in range(item.childCount()):
@@ -117,12 +122,13 @@ class PlotView (QMainWindow):
                             color = graph.get_color()
                             break
                     pixmap.fill(QColor(color))
-                    item.child(child).setIcon(0,QIcon(pixmap))        
+                    item.child(child).setIcon(0,QIcon(pixmap))    
 
     def treeview_func (self, s:QTreeWidgetItem):
         text = s.text(0).lower()
         if "graph " in text:
             curve = Curve(text, self.plot_visual.canvas)
+            curve.sig.connect(self.update_plot)
             self.stackedlayout.addWidget(curve)
             self.stackedlayout.setCurrentWidget(curve)
         
@@ -174,14 +180,14 @@ class PlotView (QMainWindow):
                 self.insertplot.sig.connect(self.add_plot)
                 self.stackedlayout.addWidget(self.insertplot)
                 self.diag.setValue(10)
-            if not hasattr(self, "tick"):
-                self.tick = Tick(self.canvas)
-                self.stackedlayout.addWidget(self.tick)
-                self.diag.setValue(60)
-            if not hasattr(self, "spine"):
-                self.spine = Spine(self.canvas)
-                self.stackedlayout.addWidget(self.spine)
-                self.diag.setValue(70)
+            #if not hasattr(self, "tick"):
+            #    self.tick = Tick(self.canvas)
+            #    self.stackedlayout.addWidget(self.tick)
+            #    self.diag.setValue(60)
+            #if not hasattr(self, "spine"):
+            #    self.spine = Spine(self.canvas)
+            #    self.stackedlayout.addWidget(self.spine)
+            #    self.diag.setValue(70)
             if not hasattr(self, 'grid'):
                 self.grid = Grid(self.canvas)
                 self.stackedlayout.addWidget(self.grid)

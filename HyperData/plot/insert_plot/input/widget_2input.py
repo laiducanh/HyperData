@@ -6,10 +6,11 @@ from ui.base_widgets.menu import Menu
 from ui.base_widgets.text import _LineEdit, _EditableComboBox
 from ui.base_widgets.icons import Icon, Action
 from data_processing.data_window import DataSelection
+from node_editor.node_node import Node
 
 class Widget2D_2input (QWidget):
     sig = pyqtSignal()
-    def __init__(self, node):
+    def __init__(self, node:Node):
         super().__init__()
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -32,7 +33,7 @@ class Widget2D_2input (QWidget):
         self.choose_axis1.setMenu(self.x_axis)
         
         self.input1 = _EditableComboBox()
-        self.input1.textChanged.connect(self.input1_func)
+        self.input1.returnPressed.connect(self.input1_func)
         self.choose_data_1 = _ToolButton()
         self.choose_data_1.setIcon(Icon(os.path.join('open.png')))
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
@@ -48,7 +49,7 @@ class Widget2D_2input (QWidget):
         self.choose_axis2.setMenu(self.y_axis)
 
         self.input2 = _EditableComboBox()
-        self.input2.textChanged.connect(self.input2_func)
+        self.input2.returnPressed.connect(self.input2_func)
         self.choose_data_2 = _ToolButton()
         self.choose_data_2.setIcon(Icon(os.path.join('open.png')))
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
@@ -122,8 +123,8 @@ class Widget2D_2input (QWidget):
     
     def open_data (self, which_input):
 
-        self.dataview = DataSelection(self.node.data_out)
-        self.dataview.update_data(self.node.data_out)
+        self.dataview = DataSelection(self.node.input_sockets[0].socket_data)
+        self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
         self.dataview.show()
 
@@ -131,15 +132,12 @@ class Widget2D_2input (QWidget):
         """ this function is called when choose data from Data Selection Window """
 
         if which_input == 'input 1':
-
             self.input1.setText(text)
-            self.input1_done = True
-
         elif which_input == 'input 2':
-            
             self.input2.setText(text)
-            self.input2_done = True
 
+        self.input = [self.input1.text(), self.input2.text()]
+        
         if self.input1.text() != '' and self.input2.text() != '':
             self.sig.emit()
         

@@ -8,6 +8,7 @@ class Figure (NodeContentWidget):
         super().__init__(node,parent)
         self.exec_btn.setText('Open Figure')
         self.canvas = Canvas()
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
     
     def initMenu(self):
         action = QAction("Open Figurre")

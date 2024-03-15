@@ -1,4 +1,6 @@
+from PyQt6.QtGui import QMouseEvent, QPaintEvent
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PyQt6.QtCore import pyqtSignal
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
 from ui.base_widgets.color import ColorPicker
@@ -7,6 +9,7 @@ from plot.canvas import Canvas
 from matplotlib.lines import Line2D
 
 class LineBase (QWidget):
+    sig = pyqtSignal()
     def __init__(self, gid:str, canvas:Canvas):
         super().__init__()
         layout = QVBoxLayout()
@@ -45,21 +48,21 @@ class LineBase (QWidget):
 
     def set_linestyle(self, value):
         self.obj.set_linestyle(value.lower())
-        self.canvas.draw()
+        self.sig.emit()
     
     def get_linestyle(self):
         return self.obj.get_linestyle().title()
     
     def set_linewidth(self, value):
         self.obj.set_linewidth(value)
-        self.canvas.draw()
+        self.sig.emit()
     
     def get_linewidth (self):
         return self.obj.get_linewidth()
     
     def set_alpha(self, value):
         self.obj.set_alpha(float(value/100))
-        self.canvas.draw()
+        self.sig.emit()
     
     def get_alpha (self):
         if self.obj.get_alpha() == None:
@@ -68,10 +71,12 @@ class LineBase (QWidget):
 
     def set_color(self, color):
         self.obj.set_color(color.name())
-        self.canvas.draw()
+        self.sig.emit()
     
     def get_color(self):
         return self.obj.get_color()
     
-    def valueChange(self):
-        pass
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        # update self.obj as soon as possible
+        self.obj = self.find_object()
+        return super().paintEvent(a0)

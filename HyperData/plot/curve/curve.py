@@ -4,14 +4,13 @@ from PyQt6.QtWidgets import (QHBoxLayout,QVBoxLayout, QTextEdit, QScrollArea, QC
 
 from ui.base_widgets.text import StrongBodyLabel, TextEdit
 from ui.base_widgets.separator import SeparateHLine
-from plot.curve.base_plottype.line import Line
+from plot.curve.base_plottype.line import Line, Step
 from plot.canvas import Canvas
 import qfluentwidgets, matplotlib
 from matplotlib.artist import Artist
 
 class Curve (QWidget):
-    sig = pyqtSignal() # when want to the whole graph
-    sig_legend = pyqtSignal() # when editing legend only
+    sig = pyqtSignal() # fire signal when plot updated
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
@@ -59,17 +58,26 @@ class Curve (QWidget):
         self.obj.set_label(self.legend.button.toPlainText())
         self.canvas.axes.legend()
         self.canvas.draw_idle()
-    
+        
+
     def get_label (self):
         if "_child" in self.obj.get_label():
             return str()
         return self.obj.get_label()
 
-    def initialize_layout(self):
-        
-        if isinstance(self.obj, matplotlib.lines.Line2D):
-            line = Line(self.gid, self.canvas)
-            self.layout2.addWidget(line)
-        
+    def update_plot (self):
+        if self.canvas.axes.get_legend(): self.canvas.axes.legend()
+        self.canvas.draw()
+        self.sig.emit()
 
+    def initialize_layout(self):
+        plot_type = self.obj.plot_type
+        if plot_type == "2d line":
+            widget = Line(self.gid, self.canvas)
+            
+        elif plot_type == "2d step":
+            widget = Step(self.gid, self.canvas)
+
+        widget.sig.connect(self.update_plot)
+        self.layout2.addWidget(widget)
     

@@ -1,5 +1,6 @@
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PyQt6.QtGui import QPaintEvent
 from config.settings import marker_lib, color_lib
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
@@ -100,3 +101,8 @@ class MarkerBase (QWidget):
     
     def get_markeredgecolor(self):
         return self.obj.get_markeredgecolor()
+
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        # update self.obj as soon as possible
+        self.obj = self.find_object()
+        return super().paintEvent(a0)

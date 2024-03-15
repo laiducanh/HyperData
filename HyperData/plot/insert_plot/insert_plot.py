@@ -11,6 +11,8 @@ from ui.base_widgets.text import StrongBodyLabel
 from ui.base_widgets.icons import Icon
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
+from plot.plotting.plotting import plotting
+from node_editor.node_node import Node
 import pandas as pd
 
 DEBUG = False
@@ -69,7 +71,7 @@ class NewPlot (qfluentwidgets.CardWidget):
     sig_choose_type = pyqtSignal()
     sig_ani = pyqtSignal()
 
-    def __init__(self, current_plot, plot_type, canvas: Canvas, node, parent=None):
+    def __init__(self, current_plot, plot_type, canvas: Canvas, node:Node, parent=None):
         super().__init__(parent)
         #self.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.current_plot = current_plot
@@ -133,35 +135,23 @@ class NewPlot (qfluentwidgets.CardWidget):
         try: self.widget.deleteLater()
         except:pass
 
-        self.widget = widget_2input.Widget2D_2input(self.node)
+        if plot_type in ["2d line","2d step"]:
+            self.widget = widget_2input.Widget2D_2input(self.node)
+
         self.widget.sig.connect(self.plotting)
         self.layout1.addWidget(self.widget)
 
         self.plotting()    
 
     def plotting (self):
-        
-        for obj in self.canvas.fig.findobj():
-            if obj._gid != None and f"graph {self.current_plot}" in obj._gid:
-                self.old_artist = obj
-                obj.remove()
-        
-        self.gidlist = list()
 
         input = self.widget.input
-        x, y = None, None
+        X, Y  = list(), list()
         if input != list():
-            x = split_input(input[0], self.node.data_out)
-            y = split_input(input[1], self.node.data_out)
-            try:
-                a= self.canvas.axes.plot(x,y,gid=f'graph {self.current_plot}')
-                self.gidlist.append(a[0]._gid)
-                a[0].update_from(self.old_artist)
-            except Exception as e:print(e)
-
-        self.canvas.axes.relim()
-        self.canvas.axes.autoscale() # use autoscale_view if the axis lim is set before
-        self.canvas.draw()
+            X = split_input(input[0], self.node.input_sockets[0].socket_data)
+            Y = split_input(input[1], self.node.input_sockets[0].socket_data)
+        
+        self.gidlist = plotting(X, Y, ax=self.canvas.axes, gid=f"graph {self.current_plot}", plot_type=self.plot_type)
         self.sig.emit()
         
 
