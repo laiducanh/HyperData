@@ -4,22 +4,26 @@ from PyQt6.QtWidgets import (QHBoxLayout,QVBoxLayout, QTextEdit, QScrollArea, QC
 
 from ui.base_widgets.text import StrongBodyLabel, TextEdit
 from ui.base_widgets.separator import SeparateHLine
-from plot.curve.base_plottype.line import Line, Step
+from plot.curve.base_plottype.line import Line, Step, Area
 from plot.canvas import Canvas
+from plot.insert_plot.insert_plot import NewPlot
 import qfluentwidgets, matplotlib
 from matplotlib.artist import Artist
 
 class Curve (QWidget):
     sig = pyqtSignal() # fire signal when plot updated
-    def __init__(self, gid:str, canvas:Canvas, parent=None):
+    def __init__(self, gid:str, canvas:Canvas, plot: NewPlot, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         #layout.setContentsMargins(0,0,0,0)
+        self.parent = parent
         self.gid = gid
         self.canvas = canvas
         self.obj = self.find_object()
+        self.plot = plot
+        print(self.plot)
 
         layout.addWidget(StrongBodyLabel(str(self.gid).title()))
 
@@ -69,22 +73,24 @@ class Curve (QWidget):
         for obj in self.canvas.fig.findobj():
             if obj._gid != None and "graph" in obj._gid:
                 _leg.append(obj)
-        self.canvas.axes.legend(handles=_leg)
+        self.canvas.axesx2.legend(handles=_leg,draggable=True)
     
     def get_legend(self):
-        return self.canvas.axes.get_legend()
+        return self.canvas.axesx2.get_legend()
+
 
     def update_plot (self):
         if self.get_legend(): self.set_legend()
-        self.canvas.draw()
         self.sig.emit()
 
     def initialize_layout(self):
         plot_type = self.obj.plot_type
         if plot_type == "2d line":
-            widget = Line(self.gid, self.canvas)
+            widget = Line(self.gid, self.canvas, self.plot, self.parent)
         elif plot_type == "2d step":
-            widget = Step(self.gid, self.canvas)
+            widget = Step(self.gid, self.canvas, self.plot, self.parent)
+        elif plot_type == "2d area":
+            widget = Area(self.gid, self.canvas, self.plot, self.parent)
 
         widget.sig.connect(self.update_plot)
         self.layout2.addWidget(widget)

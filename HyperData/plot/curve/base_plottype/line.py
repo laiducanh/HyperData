@@ -7,12 +7,14 @@ from ui.base_widgets.separator import SeparateHLine
 from ui.base_widgets.text import TextEdit, StrongBodyLabel
 from ui.base_widgets.button import Toggle, ComboBox
 from matplotlib.lines import Line2D
+from matplotlib.collections import Collection
+from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from plot.plotting.base import line
+from plot.curve.base_widget.collection import SingleColorCollection
 
 class Line (QWidget):
     sig = pyqtSignal()
-    def __init__(self, gid, canvas:Canvas, parent=None):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         self._layout = QVBoxLayout()
         self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -24,7 +26,7 @@ class Line (QWidget):
         self._layout.addWidget(StrongBodyLabel('Line'))
         self._layout.addWidget(SeparateHLine())
 
-        line = LineBase(gid, canvas)
+        line = LineBase(gid, canvas, parent)
         line.sig.connect(self.sig.emit)
         self._layout.addWidget(line)
 
@@ -33,13 +35,14 @@ class Line (QWidget):
         self._layout.addWidget(StrongBodyLabel('Marker'))
         self._layout.addWidget(SeparateHLine())
 
-        marker = MarkerBase(gid, canvas)
+        marker = MarkerBase(gid, canvas, parent)
+        marker.sig.connect(self.sig.emit)
         self._layout.addWidget(marker)
 
         self._layout.addStretch()
 
 class Step (Line):
-    def __init__(self, gid, canvas:Canvas, parent=None):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(gid, canvas, parent)
 
         widget = QWidget()
@@ -56,13 +59,14 @@ class Step (Line):
         layout.addWidget(StrongBodyLabel("Step"))
         layout.addWidget(SeparateHLine())
 
-        self.toggle = Toggle(text="Apply to all")
+        self.toggle = Toggle(text="apply to all")
+        self.toggle.button.checkedChanged.connect(self.set_where)
         layout.addWidget(self.toggle)
 
-        where = ComboBox(items=['pre', 'post', 'mid'], text="where")
-        where.button.currentTextChanged.connect(self.set_where)
-        where.button.setCurrentText(self.get_where().title())
-        layout.addWidget(where)
+        self.where = ComboBox(items=['pre', 'post', 'mid'], text="where")
+        self.where.button.currentTextChanged.connect(self.set_where)
+        self.where.button.setCurrentText(self.get_where().title())
+        layout.addWidget(self.where)
     
     def find_obj (self) -> Line2D:
         for obj in self.canvas.fig.findobj(match=Line2D):
@@ -70,24 +74,75 @@ class Step (Line):
                 return obj
     
     def set_where (self, value:str):
-        
-        obj_old = self.obj
-        ax = self.obj.axes
-        self.obj.remove()
-        curve = line.step2d(*obj_old.get_data(), ax=ax, where=value.lower())
-        for ind, art in enumerate(curve):
-            art.set_gid(obj_old.get_gid())
-            art.plot_type = "2d step"
-            art.update_from(obj_old)
+        value = self.where.button.currentText().lower()
+        if self.toggle.button.isChecked():
+            for obj in self.canvas.fig.findobj(match=Line2D):
+                if obj._gid != None and self.gid.split(".")[0] in obj._gid:
+                    obj.set_drawstyle(f"steps-{value}")
+        else:
+            self.obj.set_drawstyle(f"steps-{value}")
 
         self.sig.emit()
     
     def get_where (self):
-        return self.obj.where
+        return self.obj.get_drawstyle().split("-")[-1]
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_obj()
         return super().paintEvent(a0)
     
+class Area (QWidget):
+    sig = pyqtSignal()
+    def __init__(self, gid, canvas: Canvas, plot:NewPlot=None, parent=None):
+        super().__init__(parent)
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+        self.gid = gid
+        self.canvas = canvas
+        self.plot = plot
+        self.obj = self.find_obj()
+        self.step = self.obj.step
 
+        self._layout.addWidget(StrongBodyLabel('Area'))
+        self._layout.addWidget(SeparateHLine())
+
+        self.toggle = Toggle(text="apply to all")
+        self.toggle.button.checkedChanged.connect(self.sig.emit)
+        self._layout.addWidget(self.toggle)
+
+        step = ComboBox(text='Step',items=['pre','post','mid','none'])
+        step.button.currentTextChanged.connect(self.set_step)
+        step.button.setCurrentText(self.step.title())
+        self._layout.addWidget(step)
+
+        self._layout.addSpacing(10)
+
+        self._layout.addWidget(StrongBodyLabel('PolyCollection'))
+        self._layout.addWidget(SeparateHLine())
+
+        patch = SingleColorCollection(gid, canvas, parent)
+        patch.sig.connect(self.update_plot)
+        self._layout.addWidget(patch)
+        
+        self._layout.addStretch()
     
+    def find_obj (self) -> Collection:
+        for obj in self.canvas.fig.findobj(match=Collection):
+            if obj._gid != None and obj._gid == self.gid:
+                return obj
+    
+    def update_plot(self):
+        
+        self.plot.plotting(step=self.step)
+        self.sig.emit()
+    
+    def set_step(self, value:str):
+        self.step = value.lower()
+        if self.step == 'none': self.step = None
+        self.update_plot()
+
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        self.obj = self.find_obj()
+        return super().paintEvent(a0)

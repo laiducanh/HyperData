@@ -3,15 +3,15 @@ from PyQt6.QtWidgets import QVBoxLayout, QWidget
 from PyQt6.QtCore import pyqtSignal
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
-from ui.base_widgets.color import ColorPicker
+from ui.base_widgets.color import ColorDropdown
 from config.settings import linestyle_lib
 from plot.canvas import Canvas
 from matplotlib.lines import Line2D
 
 class LineBase (QWidget):
     sig = pyqtSignal()
-    def __init__(self, gid:str, canvas:Canvas):
-        super().__init__()
+    def __init__(self, gid:str, canvas:Canvas,parent=None):
+        super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
         #self.setStyleSheet('LineBase {background-color:white}')
@@ -31,9 +31,8 @@ class LineBase (QWidget):
         width.button.valueChanged.connect(self.set_linewidth)
         layout.addWidget(width)
 
-        color = ColorPicker(title='line color',text='color')
+        color = ColorDropdown(text='line color',color=self.get_color(),parent=parent)
         color.button.colorChanged.connect(self.set_color)
-        color.button.setColor(self.get_color())
         layout.addWidget(color)
 
         alpha = Slider(text='Transparency',min=0,max=100)
@@ -70,7 +69,7 @@ class LineBase (QWidget):
         return float(self.obj.get_alpha()*100)
 
     def set_color(self, color):
-        self.obj.set_color(color.name())
+        self.obj.set_color(color)
         self.sig.emit()
     
     def get_color(self):

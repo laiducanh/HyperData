@@ -119,7 +119,8 @@ class PlotView (QMainWindow):
                 if "graph " in name:
                     for graph in self.canvas.fig.findobj():
                         if graph._gid != None and name in graph._gid:
-                            color = graph.get_color()
+                            try:color = graph.get_color()
+                            except: color = matplotlib.colors.to_hex(graph.get_facecolor())
                             break
                     pixmap.fill(QColor(color))
                     item.child(child).setIcon(0,QIcon(pixmap))    
@@ -127,7 +128,9 @@ class PlotView (QMainWindow):
     def treeview_func (self, s:QTreeWidgetItem):
         text = s.text(0).lower()
         if "graph " in text:
-            curve = Curve(text, self.plot_visual.canvas)
+            _plot_index = int(text.split(".")[0].split()[-1])-1
+            _plot = self.insertplot.plotlist[_plot_index]
+            curve = Curve(text, self.plot_visual.canvas, _plot, self.parent)
             curve.sig.connect(self.update_plot)
             self.stackedlayout.addWidget(curve)
             self.stackedlayout.setCurrentWidget(curve)

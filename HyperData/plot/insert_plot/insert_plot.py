@@ -145,7 +145,7 @@ class NewPlot (qfluentwidgets.CardWidget):
         except:
             _input = [str(), str(), str(), str()]
 
-        if plot_type in ["2d line","2d step"]:
+        if plot_type in ["2d line","2d step","2d area","2d column","2d scatter"]:
             self.widget = widget_2input.Widget2D_2input(self.node,_input,self.parent)
 
         self.widget.sig.connect(self.plotting)
@@ -153,7 +153,7 @@ class NewPlot (qfluentwidgets.CardWidget):
 
         self.plotting()
 
-    def plotting (self):
+    def plotting (self, **kwargs):
         
         input = self.widget.input
         _ax = self.widget.axes
@@ -173,7 +173,10 @@ class NewPlot (qfluentwidgets.CardWidget):
         if len(input) >= 4:
             T = split_input(input[3], self.node.input_sockets[0].socket_data)
         
-        self.gidlist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.current_plot}", plot_type=self.plot_type, update=not self.change_type)
+        try:
+            self.gidlist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.current_plot}", plot_type=self.plot_type, update=not self.change_type, **kwargs)
+        except Exception as e:
+            print(e)
         self.change_type = False
         self.sig.emit()
         

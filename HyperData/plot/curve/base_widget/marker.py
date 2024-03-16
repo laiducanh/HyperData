@@ -4,14 +4,14 @@ from PyQt6.QtGui import QPaintEvent
 from config.settings import marker_lib, color_lib
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
-from ui.base_widgets.color import ColorPicker
+from ui.base_widgets.color import ColorDropdown
 from plot.canvas import Canvas
 from matplotlib.lines import Line2D
 
 class MarkerBase (QWidget):
     sig = pyqtSignal()
-    def __init__(self, gid:str, canvas:Canvas):
-        super().__init__()
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.setContentsMargins(0,0,0,0)
@@ -40,14 +40,12 @@ class MarkerBase (QWidget):
         width.button.valueChanged.connect(self.set_markeredgewidth)
         layout.addWidget(width)
 
-        facecolor = ColorPicker(title='marker face color',text='face color')
+        facecolor = ColorDropdown(text='marker face color',color=self.get_markerfacecolor(),parent=parent)
         facecolor.button.colorChanged.connect(self.set_markerfacecolor)
-        facecolor.button.setColor(self.get_markerfacecolor())
         layout.addWidget(facecolor)
 
-        edgecolor = ColorPicker(title='marker edge color',text='edge color')
+        edgecolor = ColorDropdown(text='marker edge color',color=self.get_markeredgecolor(),parent=parent)
         edgecolor.button.colorChanged.connect(self.set_markeredgecolor)
-        edgecolor.button.setColor(self.get_markeredgecolor())
         layout.addWidget(edgecolor)
 
     def find_object (self) -> Line2D:
@@ -89,14 +87,14 @@ class MarkerBase (QWidget):
         return self.obj.get_markeredgewidth()
 
     def set_markerfacecolor(self, color):
-        self.obj.set_markerfacecolor(color.name())
+        self.obj.set_markerfacecolor(color)
         self.canvas.draw()
     
     def get_markerfacecolor(self):
         return self.obj.get_markerfacecolor()
 
     def set_markeredgecolor(self, color):
-        self.obj.set_markeredgecolor(color.name())
+        self.obj.set_markeredgecolor(color)
         self.canvas.draw()
     
     def get_markeredgecolor(self):
