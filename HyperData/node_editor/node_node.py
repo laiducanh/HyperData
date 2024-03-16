@@ -64,11 +64,11 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = OneHotEncoder(self,parent)
         elif title == "Train/Test Splitter":
-            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
-            self.content = DataSplitter(self,parent)
-        elif title == "ML_Modeler":
-            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
-            self.content = MLModeler(self,parent)
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            self.content = TrainTestSplitter(self,parent)
+        elif title == "Modeler":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            self.content = Modeler(self,parent)
         elif title == 'Executor':
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)

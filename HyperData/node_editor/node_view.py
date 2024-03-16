@@ -38,7 +38,7 @@ class NodeView (QMainWindow):
                                                           "Data Locator","Data Filter",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
-                                        "Machine Learning": ["ML_Modeler","Train/Test Splitter",
+                                        "Machine Learning": ["Modeler","Train/Test Splitter",
                                                              "Label Encoder","Ordinal Encoder","One-Hot Encoder",],
                                         "Visualization": ["Figure"],
                                         "Misc": ["Executor", "Undefined Node"]})
