@@ -56,17 +56,26 @@ class Curve (QWidget):
         
     def set_label (self):
         self.obj.set_label(self.legend.button.toPlainText())
-        self.canvas.axes.legend()
-        self.canvas.draw_idle()
-        
+        self.set_legend()
+        self.canvas.draw()
 
     def get_label (self):
         if "_child" in self.obj.get_label():
             return str()
         return self.obj.get_label()
+    
+    def set_legend(self):
+        _leg = list()
+        for obj in self.canvas.fig.findobj():
+            if obj._gid != None and "graph" in obj._gid:
+                _leg.append(obj)
+        self.canvas.axes.legend(handles=_leg)
+    
+    def get_legend(self):
+        return self.canvas.axes.get_legend()
 
     def update_plot (self):
-        if self.canvas.axes.get_legend(): self.canvas.axes.legend()
+        if self.get_legend(): self.set_legend()
         self.canvas.draw()
         self.sig.emit()
 
@@ -74,7 +83,6 @@ class Curve (QWidget):
         plot_type = self.obj.plot_type
         if plot_type == "2d line":
             widget = Line(self.gid, self.canvas)
-            
         elif plot_type == "2d step":
             widget = Step(self.gid, self.canvas)
 

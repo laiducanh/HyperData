@@ -1,15 +1,42 @@
 from plot.plotting.base.line import *
 from matplotlib.axes import Axes
-from typing import List
+from matplotlib.artist import Artist
+from typing import List, Union
+from plot.canvas import Canvas
 
-def plotting(X=list(), Y=list(), Z=list(), T=list(), ax:Axes=None, gid:str=None, plot_type:str=None) -> List[str]:
-    
+
+def remove_artist (ax:Axes, gid:str) -> List[Artist]:
     old_artist = list()
     for obj in ax.figure.findobj():
         if obj._gid != None and gid in obj._gid:
             old_artist.append(obj)
             obj.remove()
+            print("remove", obj)
 
+    return old_artist
+
+def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):        
+
+    exclude = ["xdata","ydata","xydata","data","transform"]
+
+    for _prop in from_obj.properties().keys():
+        if _prop not in exclude:
+            try:
+                to_obj.update({_prop:from_obj.properties()[_prop]})
+            except Exception as e:
+                pass
+                #print('cannot update property', _prop, 'because of', repr(e))
+   
+
+def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True) -> List[str]:
+    
+    old_artist = remove_artist(ax, gid)
+
+    # rescale all axes while remove old artist
+    for _ax in ax.figure.axes:
+        _ax.relim()
+        _ax.autoscale_view()
+    
     gidlist = list()    
 
     if plot_type == "2d line":
@@ -19,17 +46,22 @@ def plotting(X=list(), Y=list(), Z=list(), T=list(), ax:Axes=None, gid:str=None,
 
     
     for ind, obj in enumerate(artist):
+
+        if update:
+            try:update_props(old_artist[ind],obj)
+            except Exception as e:print(e)
+
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")
         else:
             obj.set_gid(gid)
+
         obj.plot_type = plot_type
         gidlist.append(obj._gid)
-        try:obj.update_from(old_artist[ind])
-        except:pass
+
+        
     
-    ax.relim()
-    ax.autoscale() # use autoscale_view if the axis lim is set before
+    
     ax.figure.canvas.draw()
 
     return gidlist

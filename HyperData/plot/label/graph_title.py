@@ -7,7 +7,7 @@ from ui.base_widgets.text import StrongBodyLabel, _TextEdit
 from ui.base_widgets.separator import SeparateHLine
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox, Slider
-from ui.base_widgets.color import ColorPicker
+from ui.base_widgets.color import ColorDropdown
 from plot.label.base import FontStyle
 from config.settings import font_lib
 
@@ -55,19 +55,16 @@ class GraphTitle (QScrollArea):
         style = FontStyle(obj=self.obj, canvas=self.canvas)
         layout.addWidget(style)
 
-        color = ColorPicker(text='font color',title='font color')
+        color = ColorDropdown(text='font color',color=self.get_color())
         color.button.colorChanged.connect(self.set_color)
-        color.button.setColor(self.get_color())
         layout.addWidget(color)
 
-        self.backgroundcolor = ColorPicker(text='background color',title='background color')
+        self.backgroundcolor = ColorDropdown(text='background color',color=self.get_backgroundcolor())
         self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        self.backgroundcolor.button.setColor(self.get_backgroundcolor())
         layout.addWidget(self.backgroundcolor)
 
-        edgecolor = ColorPicker(text='edge color',title='edge color')
+        edgecolor = ColorDropdown(text='edge color',color=self.get_edgecolor())
         edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        edgecolor.button.setColor(self.get_edgecolor())
         layout.addWidget(edgecolor)
 
         #align = FontAlignment(type='graph')

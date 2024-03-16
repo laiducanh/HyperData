@@ -1,7 +1,7 @@
 import qfluentwidgets
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QFrame, QApplication
-from PyQt6.QtGui import QColor, QMouseEvent, QPaintEvent, QPainter, QBrush, QAction, QPalette
-from PyQt6.QtCore import pyqtSignal, Qt, QPoint
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QFrame, QApplication, QToolButton
+from PyQt6.QtGui import QColor, QEnterEvent, QMouseEvent, QPaintEvent, QPainter, QCursor, QAction, QPalette
+from PyQt6.QtCore import QEvent, pyqtSignal, Qt, QPoint, QRectF
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.palette import PaletteMenu
 
@@ -197,51 +197,77 @@ class ColorDialog (QWidget):
         self.hexLineEdit.valueChanged.connect(self.__onHexColorChanged)
         self.opacityLineEdit.valueChanged.connect(self.__onOpacityChanged)
 
-class ColorPicker (QWidget):
-    def __init__(self, title:str, text:str=None, color:str=None, parent=None):
-        super().__init__(parent)
-
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if color == None:
-            color = 'white'
-        
-        if text != None:
-            layout.addWidget(BodyLabel(text.title()))
-
-        self.button = qfluentwidgets.ColorPickerButton(color=color, title=title, parent=parent)
-        layout.addWidget(self.button)
-
-
-class _ColorDropdown (qfluentwidgets.PrimarySplitPushButton):
+class ColorPickerButton (QToolButton):
     colorChanged = pyqtSignal(str)
-    def __init__(self, color=qfluentwidgets.themeColor(),parent=None):
-        super().__init__()
+    def __init__(self, color: QColor, title: str, parent=None, enableAlpha=False):
+        super().__init__(parent=parent)
+        self.title = title
+        self.enableAlpha = enableAlpha
+        self.setFixedSize(96, 32)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.arrowAni = qfluentwidgets.common.animation.TranslateYAnimation(self)
+        self.isHover = False
 
-        self.menu = PaletteMenu(colors='matplotlib',parent=self)
-        self.menu._palette.selected.connect(self.colorSelected)
-        self.menu._palette.sig_openDialog.connect(self.buttonClicked)
-        self.dropDownClicked.connect(self.execMenu)
-        self.button.clicked.connect(self.buttonClicked)
-        self.color = color
-        self.parent = parent
-    
-    def execMenu (self):
-        self.menu.exec(self.mapToGlobal(self.dropButton.pos()))
-    
-    def buttonClicked(self):
-        self.menu.close()
-        dialog = qfluentwidgets.ColorDialog(color=self.color,title='theme color',parent=self.parent)
-        dialog.colorChanged.connect(lambda color: self.colorSelected(color.name()))
-        dialog.exec()
-    
-    def colorSelected (self, color):
-        self.menu.close()
-        self.color = QColor(color)
+        self.setColor(color)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self._menu = PaletteMenu(colors='matplotlib',parent=self)
+        self._menu._palette.selected.connect(self.__onColorChanged)
+        self._menu._palette.sig_openDialog.connect(self.__showColorDialog)
+        self.setMenu(self._menu)
+
+        self.clicked.connect(lambda: self._menu.exec(QCursor().pos()))
+
+    def __showColorDialog(self):
+        """ show color dialog """
+        self._menu.hide()
+        w = qfluentwidgets.ColorDialog(self.color, self.tr(
+            'Choose ')+self.title, self.window(), self.enableAlpha)
+        w.colorChanged.connect(self.__onColorChanged)
+        w.exec()
+        
+    def __onColorChanged(self, color):
+        """ color changed slot """
+        self.setColor(color)
+        if isinstance(color, QColor): color = color.name()
         self.colorChanged.emit(color)
-        self.update()    
+        self._menu.hide()
+
+    def setColor(self, color):
+        """ set color """
+        self.color = QColor(color)
+        self.update()
+    
+    def enterEvent(self, a0: QEnterEvent) -> None:
+        self.isHover = True
+        return super().enterEvent(a0)
+
+    def leaveEvent(self, a0: QEvent) -> None:
+        self.isHover = False
+        return super().leaveEvent(a0)
+    
+    def _drawDropDownIcon(self, painter:QPainter, rect):
+        qfluentwidgets.FluentIcon.ARROW_DOWN.render(painter, rect)
+        
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+        pc = QColor(255, 255, 255, 10) if qfluentwidgets.isDarkTheme() else QColor(234, 234, 234)
+        painter.setPen(pc)
+
+        color = QColor(self.color)
+        if not self.enableAlpha:
+            color.setAlpha(255)
+        
+        if self.isHover:
+            painter.setOpacity(0.83)
+    
+        painter.setBrush(color)
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
+        rect = QRectF(self.width()-22, self.height() /
+                      2-5+self.arrowAni.y, 10, 10)
+        self._drawDropDownIcon(painter, rect)  
 
 class ColorDropdown (QWidget):
     def __init__(self, text:str=None,color=None,parent=None):
@@ -253,7 +279,7 @@ class ColorDropdown (QWidget):
 
         layout.addWidget(qfluentwidgets.BodyLabel(text.title()))
         
-        self.button = _ColorDropdown(parent=parent)
+        self.button = ColorPickerButton(color, text, parent=parent)
         layout.addWidget(self.button)
 
         

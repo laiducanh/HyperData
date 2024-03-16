@@ -14,6 +14,7 @@ from data_processing.utlis import split_input
 from plot.plotting.plotting import plotting
 from node_editor.node_node import Node
 import pandas as pd
+from typing import List
 
 DEBUG = False
 
@@ -80,6 +81,8 @@ class NewPlot (qfluentwidgets.CardWidget):
         self.gidlist = list()
         self.widget = QWidget()
         self.node = node
+        self.parent = parent
+        self.change_type = False
 
         effect = QGraphicsOpacityEffect(self)
         effect.setOpacity(1)
@@ -119,6 +122,8 @@ class NewPlot (qfluentwidgets.CardWidget):
 
 
     def update_layout (self, plot_type):
+
+        self.change_type = True
         self.plot_type = plot_type
         self.type.button.setText(plot_type.title())
 
@@ -132,26 +137,44 @@ class NewPlot (qfluentwidgets.CardWidget):
         ani.start()
         ani.finished.connect(self.sig_ani.emit)
 
-        try: self.widget.deleteLater()
-        except:pass
+        
+
+        try: 
+            _input = self.widget.input
+            self.widget.deleteLater()
+        except:
+            _input = [str(), str(), str(), str()]
 
         if plot_type in ["2d line","2d step"]:
-            self.widget = widget_2input.Widget2D_2input(self.node)
+            self.widget = widget_2input.Widget2D_2input(self.node,_input,self.parent)
 
         self.widget.sig.connect(self.plotting)
         self.layout1.addWidget(self.widget)
 
-        self.plotting()    
+        self.plotting()
 
     def plotting (self):
-
+        
         input = self.widget.input
-        X, Y  = list(), list()
-        if input != list():
+        _ax = self.widget.axes
+        if _ax == ["axis bottom", "axis left"]:
+            ax = self.canvas.axes
+        elif _ax == ["axis bottom", "axis right"]:
+            ax = self.canvas.axesy2
+        elif _ax == ["axis top", "axis left"]:
+            ax = self.canvas.axesx2
+
+        X, Y, Z, T  = list(), list(), list(), list()
+        if len(input) >= 2:
             X = split_input(input[0], self.node.input_sockets[0].socket_data)
             Y = split_input(input[1], self.node.input_sockets[0].socket_data)
+        if len(input) >= 3:
+            Z = split_input(input[2], self.node.input_sockets[0].socket_data)
+        if len(input) >= 4:
+            T = split_input(input[3], self.node.input_sockets[0].socket_data)
         
-        self.gidlist = plotting(X, Y, ax=self.canvas.axes, gid=f"graph {self.current_plot}", plot_type=self.plot_type)
+        self.gidlist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.current_plot}", plot_type=self.plot_type, update=not self.change_type)
+        self.change_type = False
         self.sig.emit()
         
 

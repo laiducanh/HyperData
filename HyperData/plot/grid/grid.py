@@ -2,7 +2,7 @@ from PyQt6.QtCore import pyqtSignal, Qt, QStandardPaths, QDir, QSettings
 from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QWidget, QStackedLayout, QScrollArea
 from ui.base_widgets.button import ComboBox, Toggle, _ComboBox
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
-from ui.base_widgets.color import ColorPicker
+from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.text import StrongBodyLabel
 from ui.base_widgets.separator import SeparateHLine
 from plot.canvas import Canvas
@@ -92,7 +92,7 @@ class Grid2D (QWidget):
         self.axis.button.setCurrentText(self.get_gridaxis())
         layout.addWidget(self.axis)
 
-        self.color = ColorPicker(text='line color',title='line color')
+        self.color = ColorDropdown(text='line color',color=self.get_color())
         self.color.button.colorChanged.connect(self.set_grid)
         self.color.button.setColor(self.get_color())
         layout.addWidget(self.color)
@@ -187,9 +187,8 @@ class Pane(QWidget):
         self.visible.button.checkedChanged.connect(self.set_visible)
         self.visible.button.setChecked(self.get_visible())
 
-        self.facecolor = ColorPicker(text='pane color',title='pane color')
+        self.facecolor = ColorDropdown(text='pane color',color=self.get_color())
         self.facecolor.button.colorChanged.connect(self.set_color)
-        self.facecolor.button.setColor(self.get_color())
         layout.addWidget(self.facecolor)
 
         self.alpha = Slider(text='axes transparency')

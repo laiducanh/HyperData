@@ -84,7 +84,7 @@ def split_1d_data (input:str, data:pandas.DataFrame):
                                 data_input.append(float(i))
                             elif "." in i:
                                 data_input.append(data[data.columns[list_name.index(start_point1)]][int(start_point2)-1])
-                            else:
+                            elif i != '':
                                 data_input.append(i)
                                 pass
     except Exception as e: print(e)

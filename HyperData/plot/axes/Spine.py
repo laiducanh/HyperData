@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, Q
 from PyQt6.QtCore import pyqtSignal, Qt
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
-from ui.base_widgets.color import ColorPicker
+from ui.base_widgets.color import ColorDropdown
 from plot.canvas import Canvas
 from config.settings import linestyle_lib
 import qfluentwidgets, matplotlib
@@ -26,7 +26,7 @@ class SpineBase (qfluentwidgets.CardWidget):
         visible.button.setChecked(self.get_visible())
         layout.addWidget(visible)
 
-        color = ColorPicker(text='color',title='color')
+        color = ColorDropdown(text='color',title='color')
         color.button.colorChanged.connect(self.set_color)
         color.button.setColor(self.get_color())
         layout.addWidget(color)

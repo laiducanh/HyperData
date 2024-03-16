@@ -2,7 +2,7 @@ from PyQt6.QtCore import pyqtSignal, Qt, QSettings, QStandardPaths, QDir
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QScrollArea, QComboBox, QLabel
 from ui.base_widgets.button import ComboBox, Toggle, _ComboBox
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
-from ui.base_widgets.color import ColorPicker
+from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.text import LineEdit, _LineEdit
 import qfluentwidgets, matplotlib
 from matplotlib.axis import Axis

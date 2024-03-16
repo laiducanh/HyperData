@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDoc
 from PyQt6.QtCore import QSize, Qt
 
 from ui.base_widgets.button import _ComboBox
-from ui.base_widgets.color import _ColorDropdown
+from ui.base_widgets.color import ColorPickerButton
 from ui.base_widgets.text import _LineEdit
 from config.settings import config
 import qfluentwidgets
@@ -80,7 +80,7 @@ class ThemeColor (qfluentwidgets.CardWidget):
         self._parent = parent
 
         layout.addWidget(qfluentwidgets.BodyLabel("Theme Color"))
-        button = _ColorDropdown(config["theme color"], parent)
+        button = ColorPickerButton(config["theme color"], "theme color", parent)
         button.colorChanged.connect(self.setColor)
         layout.addWidget(button)
     

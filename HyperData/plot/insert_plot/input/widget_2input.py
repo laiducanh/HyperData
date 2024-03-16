@@ -10,16 +10,16 @@ from node_editor.node_node import Node
 
 class Widget2D_2input (QWidget):
     sig = pyqtSignal()
-    def __init__(self, node:Node):
-        super().__init__()
+    def __init__(self, node:Node,input:list=[str(),str()],parent=None):
+        super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(0,0,0,0)
 
-        self.input = list()
+        self.input = input
         self.node = node
-        self.axes = list()
+        self.axes = ["axis bottom", "axis left"]
 
         self.choose_axis1 = _DropDownToolButton()
         self.choose_axis1.setIcon(Icon(os.path.join("axis-bottom.png")))
@@ -33,6 +33,7 @@ class Widget2D_2input (QWidget):
         self.choose_axis1.setMenu(self.x_axis)
         
         self.input1 = _EditableComboBox()
+        self.input1.setText(self.input[0])
         self.input1.returnPressed.connect(self.input1_func)
         self.choose_data_1 = _ToolButton()
         self.choose_data_1.setIcon(Icon(os.path.join('open.png')))
@@ -49,6 +50,7 @@ class Widget2D_2input (QWidget):
         self.choose_axis2.setMenu(self.y_axis)
 
         self.input2 = _EditableComboBox()
+        self.input2.setText(self.input[1])
         self.input2.returnPressed.connect(self.input2_func)
         self.choose_data_2 = _ToolButton()
         self.choose_data_2.setIcon(Icon(os.path.join('open.png')))
@@ -70,36 +72,40 @@ class Widget2D_2input (QWidget):
     def choose_axis_bottom(self):
         
         self.choose_axis1.setIcon(Icon(os.path.join("axis-bottom.png")))
-        self.axes[0] = 'axis bottom'
+        self.axes[0] = "axis bottom"
 
         self.y_axis.clear()
         self.y_axis.addActions([self.axis_left,self.axis_right])
+        self.sig.emit()
 
 
     def choose_axis_top(self):
 
         self.choose_axis1.setIcon(Icon(os.path.join("axis-top.png")))
-        self.axes[0] = 'axis top'
+        self.axes[0] = "axis top"
 
         self.y_axis.clear()
         self.y_axis.addAction(self.axis_left)
+        self.sig.emit()
 
 
     def choose_axis_left(self):
         
         self.choose_axis2.setIcon(Icon(os.path.join("axis-left.png")))
-        self.axes[1] = 'axis left'
+        self.axes[1] = "axis left"
 
         self.x_axis.clear()
         self.x_axis.addActions([self.axis_bottom,self.axis_top])
+        self.sig.emit()
 
     def choose_axis_right(self):
 
         self.choose_axis2.setIcon(Icon(os.path.join("axis-right.png")))
-        self.axes[1] = 'axis right'
+        self.axes[1] = "axis right"
 
         self.x_axis.clear()
         self.x_axis.addAction(self.axis_bottom)
+        self.sig.emit()
 
         
     def input1_func(self):
