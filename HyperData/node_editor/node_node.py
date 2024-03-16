@@ -63,7 +63,7 @@ class Node(NodeGraphicsNode):
         elif title == "One-Hot Encoder":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = OneHotEncoder(self,parent)
-        elif title == "Data Splitter":
+        elif title == "Train/Test Splitter":
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
             self.content = DataSplitter(self,parent)
         elif title == "ML_Modeler":

@@ -36,10 +36,10 @@ class NodeView (QMainWindow):
         self.nodesListWidget.setData({"Data Processing": ["Data Holder", "Data Concator", "Data Transpose", 
                                                           "Data Combiner", "Data Merge", "Data Compare",
                                                           "Data Locator","Data Filter",
-                                                          "Label Encoder","Ordinal Encoder","One-Hot Encoder",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
-                                        "Machine Learning": ["ML_Modeler","Data Splitter"],
+                                        "Machine Learning": ["ML_Modeler","Train/Test Splitter",
+                                                             "Label Encoder","Ordinal Encoder","One-Hot Encoder",],
                                         "Visualization": ["Figure"],
                                         "Misc": ["Executor", "Undefined Node"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)
