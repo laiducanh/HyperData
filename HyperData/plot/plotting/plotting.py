@@ -1,6 +1,7 @@
 from plot.plotting.base.line import *
 from plot.plotting.base.column import *
 from plot.plotting.base.scatter import *
+from plot.plotting.base.pie import *
 from matplotlib.axes import Axes
 from matplotlib.artist import Artist
 from typing import List, Union
@@ -52,6 +53,8 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
         artist = column2d(X, Y, ax, gid, **kwargs)
     elif plot_type == "2d scatter":
         artist = scatter2d(X, Y, ax, gid, **kwargs)
+    elif plot_type == "pie":
+        artist = pie(X, ax, gid, **kwargs)
     
     for ind, obj in enumerate(artist):
 

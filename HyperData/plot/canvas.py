@@ -35,10 +35,11 @@ class Canvas (FigureCanvasQTAgg):
         self.axes = self.fig.add_subplot()
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
+        self.axespie = self.fig.add_subplot()
 
-        tmp = ['bottom','left','bottom','right','top','left']
-        for ind, obj in enumerate(self.fig.findobj(match=matplotlib.axis.Axis)):
-            obj.set_gid(tmp[ind])
+        #tmp = ['bottom','left','bottom','right','top','left']
+        #for ind, obj in enumerate(self.fig.findobj(match=matplotlib.axis.Axis)):
+        #    obj.set_gid(tmp[ind])
 
         super().__init__(self.fig)
     
