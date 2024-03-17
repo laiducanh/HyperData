@@ -9,7 +9,7 @@ def pie (X, ax: Axes, gid) -> List[Wedge]:
 
     # artist has type of [[wedges],[text],[autotexts]] -> take the first elements to return a list of wedges
     artist = artist[0]
-    print(artist)
+
     for ind, obj in enumerate(artist):
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")
