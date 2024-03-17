@@ -20,7 +20,7 @@ def remove_artist (ax:Axes, gid:str) -> List[Artist]:
 
 def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):        
 
-    exclude = ["xdata","ydata","xydata","data","transform","paths","height","offsets","offset_transform"]
+    exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets","offset_transform","sizes"]
 
     for _prop in from_obj.properties().keys():
         if _prop not in exclude:
@@ -35,6 +35,11 @@ def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True, **kwargs) -> List[str]:
     
     old_artist = remove_artist(ax, gid)
+
+    # rescale all axes while remove old artists and add new artists
+    for _ax in ax.figure.axes:
+        _ax.relim()
+        _ax.autoscale_view()
     
     gidlist = list()    
 
@@ -50,10 +55,26 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
             artist = step2d(X, Y, ax, gid, **kwargs)
         elif plot_type == "2d area":
             artist = fill_between(X, Y, 0, ax, gid, **kwargs)
+        elif plot_type == "fill between":
+            artist = fill_between(X, Y, Z, ax, gid, **kwargs)
+        elif plot_type == "2d stacked area":
+            artist = stackedarea(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d 100% stacked area":
+            artist = stackedarea100(X, Y, ax, gid, **kwargs)
         elif plot_type == "2d column":
             artist = column2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d clustered column":
+            artist = clusteredcolumn2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d stacked column":
+            artist = stackedcolumn2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d 100% stacked column":
+            artist = stackedcolumn2d100(X, Y, ax, gid, **kwargs)
+        elif plot_type == "marimekko":
+            artist = marimekko(X, ax, gid, **kwargs)
         elif plot_type == "2d scatter":
             artist = scatter2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "bubble":
+            artist = bubble(X, Y, Z, ax, gid, **kwargs)
         elif plot_type == "pie":
             artist = pie(X, ax, gid, **kwargs)
         elif plot_type == "doughnut":
@@ -64,10 +85,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
                 try:update_props(old_artist[ind],obj)
                 except Exception as e:print(e)
     
-    # rescale all axes while remove old artists and add new artists
-    for _ax in ax.figure.axes:
-        _ax.relim()
-        _ax.autoscale_view()
+    
     
     for ind, obj in enumerate(artist):
 

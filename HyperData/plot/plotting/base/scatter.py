@@ -8,3 +8,9 @@ def scatter2d (X, Y, ax:Axes, gid) -> List[PathCollection]:
     artist = ax.scatter(X, Y, gid=gid)
     
     return [artist]
+
+def bubble (X, Y, Z, ax:Axes, gid) -> List[PathCollection]:
+
+    artist = ax.scatter(X, Y, Z, gid=gid)
+
+    return [artist]

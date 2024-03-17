@@ -5,7 +5,7 @@ from PyQt6.QtGui import QCursor
 import os, matplotlib, qfluentwidgets, time
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type
-from plot.insert_plot.input import widget_2input, widget_1input
+from plot.insert_plot.input import widget_2input, widget_1input, widget_3input
 from ui.base_widgets.button import _ToolButton, PrimaryDropDownPushButton
 from ui.base_widgets.text import StrongBodyLabel
 from ui.base_widgets.icons import Icon
@@ -146,10 +146,15 @@ class NewPlot (qfluentwidgets.CardWidget):
         except: pass
             
 
-        if plot_type in ["2d line","2d step","2d area","2d column","2d scatter"]:
+        if plot_type in ["2d line","2d step","2d area","2d column","2d scatter","2d stacked area","2d 100% stacked area",
+                         "2d clustered column","2d stacked column","2d 100% stacked column"]:
             self.widget = widget_2input.Widget2D_2input(self.node, _input, self.parent)
-        elif plot_type in ["pie","doughnut","treemap"]:
+        elif plot_type in ["pie","doughnut","treemap","marimekko"]:
             self.widget = widget_1input.WidgetPie(self.node, _input, self.parent)
+        elif plot_type in ["fill between","bubble"]:
+            self.widget = widget_3input.Widget2D_3input(self.node, _input, self.parent)
+        else:
+            self.widget = QWidget()
 
         self.widget.sig.connect(self.plotting)
         self.layout1.addWidget(self.widget)
