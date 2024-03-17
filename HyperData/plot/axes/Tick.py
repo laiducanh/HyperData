@@ -213,7 +213,7 @@ class TickBase2D_2 (QWidget):
 
     def find_object(self) -> Axis:
         for obj in self.canvas.fig.findobj(match=Axis):
-            if obj._gid == self.axis:
+            if obj.get_label_position() == self.axis:
                 return obj
             
     def func (self,s):
