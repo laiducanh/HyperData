@@ -5,7 +5,7 @@ from PyQt6.QtGui import QCursor
 import os, matplotlib, qfluentwidgets, time
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type
-from plot.insert_plot.input import widget_2input
+from plot.insert_plot.input import widget_2input, widget_1input
 from ui.base_widgets.button import _ToolButton, PrimaryDropDownPushButton
 from ui.base_widgets.text import StrongBodyLabel
 from ui.base_widgets.icons import Icon
@@ -138,15 +138,18 @@ class NewPlot (qfluentwidgets.CardWidget):
         ani.finished.connect(self.sig_ani.emit)
 
         
-
+        _input = [str(), str(), str(), str()]
         try: 
-            _input = self.widget.input
+            for ind, val in enumerate(self.widget.input):
+                _input[ind] = val
             self.widget.deleteLater()
-        except:
-            _input = [str(), str(), str(), str()]
+        except: pass
+            
 
         if plot_type in ["2d line","2d step","2d area","2d column","2d scatter"]:
-            self.widget = widget_2input.Widget2D_2input(self.node,_input,self.parent)
+            self.widget = widget_2input.Widget2D_2input(self.node, _input, self.parent)
+        elif plot_type in ["pie","doughnut","treemap"]:
+            self.widget = widget_1input.WidgetPie(self.node, _input, self.parent)
 
         self.widget.sig.connect(self.plotting)
         self.layout1.addWidget(self.widget)
@@ -157,28 +160,49 @@ class NewPlot (qfluentwidgets.CardWidget):
         
         input = self.widget.input
         _ax = self.widget.axes
+
+        self.canvas.axes.set_axis_on()
+        self.canvas.axesx2.set_axis_on()
+        self.canvas.axesy2.set_axis_on()
+        self.canvas.axespie.set_axis_off()
+
         if _ax == ["axis bottom", "axis left"]:
             ax = self.canvas.axes
         elif _ax == ["axis bottom", "axis right"]:
             ax = self.canvas.axesy2
         elif _ax == ["axis top", "axis left"]:
             ax = self.canvas.axesx2
+        elif _ax == "pie":
+
+            # only allow 1 graph at a time
+            self.canvas.fig.delaxes(self.canvas.axespie)
+            self.canvas.axespie = self.canvas.fig.add_subplot()
+            ax = self.canvas.axespie
+            self.canvas.axespie.set_axis_off()
+            self.canvas.axes.set_axis_off()
+            self.canvas.axesx2.set_axis_off()
+            self.canvas.axesy2.set_axis_off()
+        
+        
 
         X, Y, Z, T  = list(), list(), list(), list()
-        if len(input) >= 2:
+        if len(input) >= 1:
             X = split_input(input[0], self.node.input_sockets[0].socket_data)
+        if len(input) >= 2:
             Y = split_input(input[1], self.node.input_sockets[0].socket_data)
         if len(input) >= 3:
             Z = split_input(input[2], self.node.input_sockets[0].socket_data)
         if len(input) >= 4:
             T = split_input(input[3], self.node.input_sockets[0].socket_data)
-        
+     
         try:
             self.gidlist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.current_plot}", plot_type=self.plot_type, update=not self.change_type, **kwargs)
+            self.sig.emit()
         except Exception as e:
             print(e)
+        
         self.change_type = False
-        self.sig.emit()
+        
         
 
 class InsertPlot (QWidget):

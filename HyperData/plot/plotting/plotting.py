@@ -35,32 +35,41 @@ def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True, **kwargs) -> List[str]:
     
     old_artist = remove_artist(ax, gid)
+    
+    gidlist = list()    
 
-    # rescale all axes while remove old artist
+    if plot_type == "treemap":
+        # treemap cannot update props from old artists
+        artist = treemap(X, ax, gid, **kwargs)
+
+    else:
+
+        if plot_type == "2d line":
+            artist = line2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d step":
+            artist = step2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d area":
+            artist = fill_between(X, Y, 0, ax, gid, **kwargs)
+        elif plot_type == "2d column":
+            artist = column2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "2d scatter":
+            artist = scatter2d(X, Y, ax, gid, **kwargs)
+        elif plot_type == "pie":
+            artist = pie(X, ax, gid, **kwargs)
+        elif plot_type == "doughnut":
+            artist = doughnut(X, ax, gid, **kwargs)
+        
+        for ind, obj in enumerate(artist):
+            if update:
+                try:update_props(old_artist[ind],obj)
+                except Exception as e:print(e)
+    
+    # rescale all axes while remove old artists and add new artists
     for _ax in ax.figure.axes:
         _ax.relim()
         _ax.autoscale_view()
     
-    gidlist = list()    
-
-    if plot_type == "2d line":
-        artist = line2d(X, Y, ax, gid, **kwargs)
-    elif plot_type == "2d step":
-        artist = step2d(X, Y, ax, gid, **kwargs)
-    elif plot_type == "2d area":
-        artist = fill_between(X, Y, 0, ax, gid, **kwargs)
-    elif plot_type == "2d column":
-        artist = column2d(X, Y, ax, gid, **kwargs)
-    elif plot_type == "2d scatter":
-        artist = scatter2d(X, Y, ax, gid, **kwargs)
-    elif plot_type == "pie":
-        artist = pie(X, ax, gid, **kwargs)
-    
     for ind, obj in enumerate(artist):
-
-        if update:
-            try:update_props(old_artist[ind],obj)
-            except Exception as e:print(e)
 
         obj.plot_type = plot_type
         gidlist.append(obj._gid)
