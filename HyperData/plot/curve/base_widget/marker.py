@@ -66,6 +66,7 @@ class MarkerBase (QWidget):
     def set_markevery(self, value):
         self.obj.set_markevery(value)
         self.canvas.draw()
+        self.sig.emit()
     
     def get_markevery(self):
         if self.obj.get_markevery() == None:
@@ -75,6 +76,7 @@ class MarkerBase (QWidget):
     def set_markersize (self, value):
         self.obj.set_markersize(value)
         self.canvas.draw()
+        self.sig.emit()
     
     def get_markersize(self):
         return self.obj.get_markersize()
@@ -82,6 +84,7 @@ class MarkerBase (QWidget):
     def set_markeredgewidth(self, value):
         self.obj.set_markeredgewidth(value)
         self.canvas.draw()
+        self.sig.emit()
     
     def get_markeredgewidth(self):
         return self.obj.get_markeredgewidth()
@@ -89,6 +92,7 @@ class MarkerBase (QWidget):
     def set_markerfacecolor(self, color):
         self.obj.set_markerfacecolor(color)
         self.canvas.draw()
+        self.sig.emit()
     
     def get_markerfacecolor(self):
         return self.obj.get_markerfacecolor()
@@ -96,6 +100,7 @@ class MarkerBase (QWidget):
     def set_markeredgecolor(self, color):
         self.obj.set_markeredgecolor(color)
         self.canvas.draw()
+        self.sig.emit()
     
     def get_markeredgecolor(self):
         return self.obj.get_markeredgecolor()

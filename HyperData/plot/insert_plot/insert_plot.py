@@ -69,8 +69,7 @@ class NewPlot (qfluentwidgets.CardWidget):
     """ This Widget will be created when creating a new plot to display input fields for the new plot """
 
     sig = pyqtSignal()
-    sig_choose_type = pyqtSignal()
-    sig_ani = pyqtSignal()
+    sig_delete = pyqtSignal(object)
 
     def __init__(self, current_plot, plot_type, canvas: Canvas, node:Node, parent=None):
         super().__init__(parent)
@@ -110,10 +109,12 @@ class NewPlot (qfluentwidgets.CardWidget):
         
         self.menu = Menu_type(self)
         self.menu.sig.connect(self.update_layout)
-        self.menu.sig.connect(self.sig_choose_type.emit)
         self.type.button.setMenu(self.menu)
         self.type.button.released.connect(lambda: self.menu.exec(QCursor().pos()))
         layout.addWidget(self.type)
+
+        self.progressbar = qfluentwidgets.ProgressBar()
+        mainlayout.addWidget(self.progressbar)
         
         self.layout1 = QVBoxLayout()
         mainlayout.addLayout(self.layout1) 
@@ -127,15 +128,17 @@ class NewPlot (qfluentwidgets.CardWidget):
         self.plot_type = plot_type
         self.type.button.setText(plot_type.title())
 
-        effect = QGraphicsOpacityEffect(self)
-        effect.setOpacity(1)
-        ani = QPropertyAnimation(effect, b'opacity', self)
-        ani.setDuration(500)
-        self.setGraphicsEffect(effect)
-        ani.setStartValue(0)
-        ani.setEndValue(1)
-        ani.start()
-        ani.finished.connect(self.sig_ani.emit)
+        #effect = QGraphicsOpacityEffect(self)
+        #effect.setOpacity(1)
+        #ani = QPropertyAnimation(effect, b'opacity', self)
+        #ani.setDuration(200)
+        #self.setGraphicsEffect(effect)
+        #ani.setStartValue(0)
+        #ani.setEndValue(1)
+        #ani.start()
+
+        self.progressbar.setValue(0)
+        
 
         
         _input = [str(), str(), str(), str()]
@@ -146,22 +149,27 @@ class NewPlot (qfluentwidgets.CardWidget):
         except: pass
             
 
-        if plot_type in ["2d line","2d step","2d area","2d column","2d scatter","2d stacked area","2d 100% stacked area",
-                         "2d clustered column","2d stacked column","2d 100% stacked column"]:
-            self.widget = widget_2input.Widget2D_2input(self.node, _input, self.parent)
+        if plot_type == "delete":
+            self.sig_delete.emit(self)
+            self.deleteLater()
+            return None
         elif plot_type in ["pie","doughnut","treemap","marimekko"]:
             self.widget = widget_1input.WidgetPie(self.node, _input, self.parent)
         elif plot_type in ["fill between","bubble"]:
             self.widget = widget_3input.Widget2D_3input(self.node, _input, self.parent)
         else:
-            self.widget = QWidget()
+            self.widget = widget_2input.Widget2D_2input(self.node, _input, self.parent)
 
         self.widget.sig.connect(self.plotting)
         self.layout1.addWidget(self.widget)
 
         self.plotting()
 
-    def plotting (self, **kwargs):
+        self.progressbar.setValue(100)
+
+    def plotting (self, fire_signal=True, **kwargs):
+
+        self.progressbar.setValue(0)
         
         input = self.widget.input
         _ax = self.widget.axes
@@ -178,7 +186,6 @@ class NewPlot (qfluentwidgets.CardWidget):
         elif _ax == ["axis top", "axis left"]:
             ax = self.canvas.axesx2
         elif _ax == "pie":
-
             # only allow 1 graph at a time
             self.canvas.fig.delaxes(self.canvas.axespie)
             self.canvas.axespie = self.canvas.fig.add_subplot()
@@ -187,8 +194,6 @@ class NewPlot (qfluentwidgets.CardWidget):
             self.canvas.axes.set_axis_off()
             self.canvas.axesx2.set_axis_off()
             self.canvas.axesy2.set_axis_off()
-        
-        
 
         X, Y, Z, T  = list(), list(), list(), list()
         if len(input) >= 1:
@@ -202,13 +207,13 @@ class NewPlot (qfluentwidgets.CardWidget):
      
         try:
             self.gidlist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.current_plot}", plot_type=self.plot_type, update=not self.change_type, **kwargs)
-            self.sig.emit()
+            if fire_signal: self.sig.emit()
         except Exception as e:
             print(e)
         
         self.change_type = False
         
-        
+        self.progressbar.setValue(100)
 
 class InsertPlot (QWidget):
     sig = pyqtSignal() # emit when new plot was created, also when a plot needs to be updated
@@ -222,6 +227,7 @@ class InsertPlot (QWidget):
         self.canvas = canvas
         self.num_plot = 0 # keep track of the indexes of plots
         self.plotlist = list()
+        self.plotlist: List[NewPlot]
         self.gidlist = list()
         self.node = node
 
@@ -250,25 +256,35 @@ class InsertPlot (QWidget):
 
         self.num_plot += 1   
 
-        progressbar = qfluentwidgets.ProgressBar()
-        self.layout2.addWidget(progressbar)
-
         newplot = NewPlot(self.num_plot, plot_type, self.canvas, self.node)
         self.plotlist.append(newplot)
-        newplot.sig.connect(self.func)
+        newplot.sig.connect(self.update_gidlist)
+        newplot.sig_delete.connect(self.delete_plot)
         self.layout2.addWidget(newplot)
-        newplot.sig_choose_type.connect(lambda: progressbar.setValue(0))
-        newplot.sig_ani.connect(lambda: progressbar.setValue(100))
-
-        progressbar.setValue(100)
     
-    def func(self):
+    def delete_plot (self, plot:NewPlot):
+        self.plotlist.remove(plot)
+        self.num_plot = 0 # reset number of plots
+        for _ax in self.canvas.fig.axes: _ax.cla() # reset all axes
+        for i in self.plotlist:
+            self.num_plot += 1
+            i.text.setText("Graph %d"%self.num_plot)
+            i.current_plot = self.num_plot
+            i.plotting(False)
+        
+        self.update_gidlist()
+
+    def update_gidlist(self):
+        """ this function is used for updating a list of graphs that are visible on screen 
+            and fire signal to update the graph list on under "insert" of side panel """
+        
         self.gidlist = list()
         for i in self.plotlist:
             self.gidlist += i.gidlist
         
         self.sig.emit()
 
+    
                     
 
 

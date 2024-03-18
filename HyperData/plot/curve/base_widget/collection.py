@@ -54,6 +54,7 @@ class SingleColorCollection (QWidget):
         self.obj.set_linewidth(value)
         print(self.obj, self.get_edgewidth())
         self.sig.emit()
+        self.canvas.draw()
     
     def get_edgewidth (self):
         return self.obj.get_linewidth()
@@ -61,6 +62,7 @@ class SingleColorCollection (QWidget):
     def set_edgestyle (self, value):
         self.obj.set_linestyle(value.lower())
         self.sig.emit()
+        self.canvas.draw()
     
     def get_edgestyle (self):
         return self.obj.get_linestyle()[0][0]
@@ -68,6 +70,7 @@ class SingleColorCollection (QWidget):
     def set_facecolor (self, value):
         self.obj.set_facecolor(value)
         self.sig.emit()
+        self.canvas.draw()
     
     def get_facecolor(self):
         return colors.to_hex(self.obj.get_facecolor())
@@ -75,6 +78,7 @@ class SingleColorCollection (QWidget):
     def set_edgecolor (self, value):
         self.obj.set_edgecolor(value)
         self.sig.emit()
+        self.canvas.draw()
     
     def get_edgecolor (self):
         if len(self.obj.get_edgecolor()) > 1:
@@ -84,6 +88,7 @@ class SingleColorCollection (QWidget):
     def set_alpha (self, value):
         self.obj.set_alpha(value/100)
         self.sig.emit()
+        self.canvas.draw()
 
     def get_alpha (self):
         if self.obj.get_alpha() != None:

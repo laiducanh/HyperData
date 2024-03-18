@@ -100,8 +100,8 @@ class Menu_type (Menu):
         action.triggered.connect(lambda: self.sig.emit('2d function'))
         func.addAction(action)
 
-        none = QAction(QIcon(os.path.join("UI","Icons","none.png")),'None', self)
-        none.triggered.connect(lambda: self.sig.emit('none'))
+        none = QAction(QIcon(os.path.join("UI","Icons","exit.png")),'Delete', self)
+        none.triggered.connect(lambda: self.sig.emit('delete'))
 
 
         self.addMenu(line)

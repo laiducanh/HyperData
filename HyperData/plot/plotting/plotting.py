@@ -9,17 +9,18 @@ from plot.canvas import Canvas
 
 
 def remove_artist (ax:Axes, gid:str) -> List[Artist]:
+    print('remove artist')
     old_artist = list()
     for obj in ax.figure.findobj():
         if obj._gid != None and gid in obj._gid:
             old_artist.append(obj)
             obj.remove()
-            print("remove", obj)
+            print("remove", obj, obj._gid)
 
     return old_artist
 
 def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):        
-
+    print("update props")
     exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets","offset_transform","sizes"]
 
     for _prop in from_obj.properties().keys():
@@ -80,11 +81,12 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
         elif plot_type == "doughnut":
             artist = doughnut(X, ax, gid, **kwargs)
         
+        print("draw artist", artist)
+        
         for ind, obj in enumerate(artist):
             if update:
                 try:update_props(old_artist[ind],obj)
                 except Exception as e:print(e)
-    
     
     
     for ind, obj in enumerate(artist):
@@ -94,7 +96,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
 
     # remove duplicates in gidlist
     gidlist = list(set(gidlist))
-    
+    print("finish plotting", gidlist)
     
     ax.figure.canvas.draw()
 

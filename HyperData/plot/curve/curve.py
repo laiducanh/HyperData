@@ -23,7 +23,6 @@ class Curve (QWidget):
         self.canvas = canvas
         self.obj = self.find_object()
         self.plot = plot
-        print(self.plot)
 
         layout.addWidget(StrongBodyLabel(str(self.gid).title()))
 
@@ -81,6 +80,7 @@ class Curve (QWidget):
 
     def update_plot (self):
         if self.get_legend(): self.set_legend()
+        self.canvas.draw()
         self.sig.emit()
 
     def initialize_layout(self):

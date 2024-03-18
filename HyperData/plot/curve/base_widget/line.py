@@ -48,6 +48,7 @@ class LineBase (QWidget):
     def set_linestyle(self, value):
         self.obj.set_linestyle(value.lower())
         self.sig.emit()
+        self.canvas.draw()
     
     def get_linestyle(self):
         return self.obj.get_linestyle().title()
@@ -55,6 +56,7 @@ class LineBase (QWidget):
     def set_linewidth(self, value):
         self.obj.set_linewidth(value)
         self.sig.emit()
+        self.canvas.draw()
     
     def get_linewidth (self):
         return self.obj.get_linewidth()
@@ -62,6 +64,7 @@ class LineBase (QWidget):
     def set_alpha(self, value):
         self.obj.set_alpha(float(value/100))
         self.sig.emit()
+        self.canvas.draw()
     
     def get_alpha (self):
         if self.obj.get_alpha() == None:
@@ -71,6 +74,7 @@ class LineBase (QWidget):
     def set_color(self, color):
         self.obj.set_color(color)
         self.sig.emit()
+        self.canvas.draw()
     
     def get_color(self):
         return self.obj.get_color()
