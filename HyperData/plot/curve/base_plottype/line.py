@@ -2,7 +2,6 @@ from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPaintEvent
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QTextEdit
 from plot.curve.base_widget.line import LineBase
-from plot.curve.base_widget.marker import MarkerBase
 from ui.base_widgets.separator import SeparateHLine
 from ui.base_widgets.text import TextEdit, StrongBodyLabel
 from ui.base_widgets.button import Toggle, ComboBox
@@ -23,21 +22,9 @@ class Line (QWidget):
         self.gid = gid
         self.canvas = canvas
 
-        self._layout.addWidget(StrongBodyLabel('Line'))
-        self._layout.addWidget(SeparateHLine())
-
         line = LineBase(gid, canvas, parent)
         line.sig.connect(self.sig.emit)
         self._layout.addWidget(line)
-
-        self._layout.addSpacing(10)
-
-        self._layout.addWidget(StrongBodyLabel('Marker'))
-        self._layout.addWidget(SeparateHLine())
-
-        marker = MarkerBase(gid, canvas, parent)
-        marker.sig.connect(self.sig.emit)
-        self._layout.addWidget(marker)
 
         self._layout.addStretch()
 
