@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPaintEvent
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QTextEdit
-from plot.curve.base_widget.line import LineBase
+from plot.curve.base_elements.line import LineBase
 from ui.base_widgets.separator import SeparateHLine
 from ui.base_widgets.text import TextEdit, StrongBodyLabel
 from ui.base_widgets.button import Toggle, ComboBox
@@ -9,7 +9,7 @@ from matplotlib.lines import Line2D
 from matplotlib.collections import Collection
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from plot.curve.base_widget.collection import SingleColorCollection
+from plot.curve.base_elements.collection import SingleColorCollection
 
 class Line (QWidget):
     sig = pyqtSignal()
