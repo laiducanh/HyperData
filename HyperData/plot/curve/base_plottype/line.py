@@ -90,7 +90,7 @@ class Area (QWidget):
         self.canvas = canvas
         self.plot = plot
         self.obj = self.find_obj()
-        self.step = self.obj.step
+        self.step = None
 
         self._layout.addWidget(StrongBodyLabel('Area'))
         self._layout.addWidget(SeparateHLine())
@@ -101,7 +101,7 @@ class Area (QWidget):
 
         step = ComboBox(text='Step',items=['pre','post','mid','none'])
         step.button.currentTextChanged.connect(self.set_step)
-        step.button.setCurrentText(self.step.title())
+        step.button.setCurrentText(self.get_step().title())
         self._layout.addWidget(step)
 
         self._layout.addSpacing(10)
@@ -129,6 +129,9 @@ class Area (QWidget):
         self.step = value.lower()
         if self.step == 'none': self.step = None
         self.update_plot()
+    
+    def get_step(self) -> str:
+        return self.obj.step
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_obj()

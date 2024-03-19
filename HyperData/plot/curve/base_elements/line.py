@@ -87,7 +87,6 @@ class LineBase (QWidget):
     def set_linestyle(self, value):
         self.obj.set_linestyle(value.lower())
         self.sig.emit()
-        self.canvas.draw()
     
     def get_linestyle(self):
         return self.obj.get_linestyle().title()
@@ -95,7 +94,6 @@ class LineBase (QWidget):
     def set_linewidth(self, value):
         self.obj.set_linewidth(value)
         self.sig.emit()
-        self.canvas.draw()
     
     def get_linewidth (self):
         return self.obj.get_linewidth()
@@ -103,7 +101,6 @@ class LineBase (QWidget):
     def set_alpha(self, value):
         self.obj.set_alpha(float(value/100))
         self.sig.emit()
-        self.canvas.draw()
     
     def get_alpha (self):
         if self.obj.get_alpha() == None:
@@ -113,7 +110,6 @@ class LineBase (QWidget):
     def set_color(self, color):
         self.obj.set_color(color)
         self.sig.emit()
-        self.canvas.draw()
     
     def get_color(self):
         return self.obj.get_color()
@@ -121,7 +117,6 @@ class LineBase (QWidget):
     def set_marker (self, marker):
         marker = list(marker_lib.keys())[list(marker_lib.values()).index(marker.lower())]
         self.obj.set_marker(marker)
-        self.canvas.draw()
         self.sig.emit()
     
     def get_marker(self):
@@ -131,7 +126,6 @@ class LineBase (QWidget):
 
     def set_markevery(self, value):
         self.obj.set_markevery(value)
-        self.canvas.draw()
         self.sig.emit()
     
     def get_markevery(self):
@@ -141,7 +135,6 @@ class LineBase (QWidget):
 
     def set_markersize (self, value):
         self.obj.set_markersize(value)
-        self.canvas.draw()
         self.sig.emit()
     
     def get_markersize(self):
@@ -149,7 +142,6 @@ class LineBase (QWidget):
 
     def set_markeredgewidth(self, value):
         self.obj.set_markeredgewidth(value)
-        self.canvas.draw()
         self.sig.emit()
     
     def get_markeredgewidth(self):
@@ -157,7 +149,6 @@ class LineBase (QWidget):
 
     def set_markerfacecolor(self, color):
         self.obj.set_markerfacecolor(color)
-        self.canvas.draw()
         self.sig.emit()
     
     def get_markerfacecolor(self):
@@ -165,7 +156,6 @@ class LineBase (QWidget):
 
     def set_markeredgecolor(self, color):
         self.obj.set_markeredgecolor(color)
-        self.canvas.draw()
         self.sig.emit()
     
     def get_markeredgecolor(self):

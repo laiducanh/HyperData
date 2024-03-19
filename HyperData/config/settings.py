@@ -18,7 +18,9 @@ matplotlib.rcParams['font.family'] = 'DejaVu Sans'
 
 color_lib = matplotlib.rcParams["axes.prop_cycle"].by_key()["color"]
 
-linestyle_lib = {'-': 'Solid','--': 'Dashed','-.': 'DashDot',':': 'Dotted','None': 'None',}
+linestyle_lib = dict()
+for ls in ["solid","dashed","dotted","dashdot"]:
+    linestyle_lib[matplotlib.lines._get_dash_pattern(ls)] = ls
 
 hatch_lib = ['/', '\\', '|', '-', '+', 'x', 'o', 'O', '.', '*']
 

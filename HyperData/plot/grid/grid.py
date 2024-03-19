@@ -164,7 +164,7 @@ class Grid2D (QWidget):
         for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
             if obj._gid != None and obj._gid == '_grid':
                 return obj._gid.split('.')[5].title()
-        return linestyle_lib[matplotlib.rcParams['grid.linestyle']].lower()
+        return linestyle_lib[matplotlib.lines._get_dash_pattern(matplotlib.rcParams['grid.linestyle'])].lower()
 
     def get_color(self):
         for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
