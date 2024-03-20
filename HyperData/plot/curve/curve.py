@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (QHBoxLayout,QVBoxLayout, QTextEdit, QScrollArea, QC
 from ui.base_widgets.text import StrongBodyLabel, TextEdit
 from ui.base_widgets.separator import SeparateHLine
 from plot.curve.base_plottype.line import Line, Step, Area
+from plot.curve.base_plottype.scatter import Scatter
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
 import qfluentwidgets, matplotlib
@@ -91,6 +92,8 @@ class Curve (QWidget):
             widget = Step(self.gid, self.canvas, self.plot, self.parent)
         elif plot_type == "2d area":
             widget = Area(self.gid, self.canvas, self.plot, self.parent)
+        elif plot_type == "2d scatter":
+            widget = Scatter(self.gid, self.canvas, self.plot, self.parent)
 
         widget.sig.connect(self.update_plot)
         self.layout2.addWidget(widget)

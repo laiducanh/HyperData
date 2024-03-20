@@ -117,10 +117,13 @@ class PlotView (QMainWindow):
             for child in range(item.childCount()):
                 name = item.child(child).text(0).lower()
                 if "graph " in name:
+                    color = 'white' # whenever color changes to white, there is an error!
                     for graph in self.canvas.fig.findobj():
                         if graph._gid != None and name in graph._gid:
-                            try:color = graph.get_color()
-                            except: color = matplotlib.colors.to_hex(graph.get_facecolor())
+                            if isinstance(graph, matplotlib.lines.Line2D):
+                                color = graph.get_color()
+                            elif isinstance(graph, matplotlib.collections.Collection): 
+                                color = matplotlib.colors.to_hex(graph.get_facecolor()[0])
                             break
                     pixmap.fill(QColor(color))
                     item.child(child).setIcon(0,QIcon(pixmap))    
