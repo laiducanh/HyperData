@@ -4,7 +4,7 @@ import sys, requests, os, datetime, qfluentwidgets, pandas, matplotlib
 ### Import libraries from PyQt6
 from PyQt6.QtCore import QChildEvent, QEvent, QThreadPool, Qt, pyqtSignal
 from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget,
-                             QStackedLayout, QPushButton, QTreeWidgetItem, QProgressDialog)
+                             QStackedLayout, QTreeWidgetItem)
 from PyQt6.QtGui import QGuiApplication, QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon, QShowEvent
 
 ### Import self classes
@@ -15,6 +15,7 @@ from plot.plot_graphics_view import GraphicsView
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.button import _ToolButton
 from ui.base_widgets.text import _Search_Box
+from ui.base_widgets.window import ProgressDialog
 from plot.canvas import Canvas
 from plot.grid.grid import Grid
 from plot.label.graph_title import GraphTitle
@@ -22,7 +23,7 @@ from config.settings import config
 from node_editor.node_node import Node
 
 DEBUG = False
-  
+
 class PlotView (QMainWindow):
     sig_back_to_grScene = pyqtSignal()
     def __init__(self, node:Node, canvas:Canvas, parent=None):
@@ -44,9 +45,7 @@ class PlotView (QMainWindow):
                                "Figure":["Plot size","Grid"],
                                "Label":["Title","Axis lebel","Legend","Data annotation"],}
         
-        self.diag = QProgressDialog(parent, Qt.WindowType.FramelessWindowHint)
-        self.diag.setLabelText("Initializing figure")
-        self.diag.setCancelButton(None)
+        self.diag = ProgressDialog("Initializing figure", None, parent)
         self.diag.show()
 
         ### Initialize UI components
@@ -124,6 +123,8 @@ class PlotView (QMainWindow):
                                 color = graph.get_color()
                             elif isinstance(graph, matplotlib.collections.Collection): 
                                 color = matplotlib.colors.to_hex(graph.get_facecolor()[0])
+                            elif isinstance(graph, matplotlib.patches.Rectangle):
+                                color = matplotlib.colors.to_hex(graph.get_facecolor())
                             break
                     pixmap.fill(QColor(color))
                     item.child(child).setIcon(0,QIcon(pixmap))    
