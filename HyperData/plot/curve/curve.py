@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool
+from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool, QTimer
 from PyQt6.QtWidgets import (QHBoxLayout,QVBoxLayout, QTextEdit, QScrollArea, QComboBox,
                              QWidget)
 from PyQt6.QtGui import QPaintEvent
@@ -27,9 +27,10 @@ class Curve (QWidget):
         self.obj = self.find_object()
         self.plot = plot
 
-        layout.addWidget(StrongBodyLabel(str(self.gid).title()))
+        self.progressbar = qfluentwidgets.ProgressBar()
 
-        layout.addWidget(SeparateHLine())
+        layout.addWidget(StrongBodyLabel(str(self.gid).title()))
+        layout.addWidget(self.progressbar)
                 
         self.scroll_widget = qfluentwidgets.CardWidget()
         self.layout2 = QVBoxLayout()
@@ -45,15 +46,21 @@ class Curve (QWidget):
         layout.addWidget(self.scroll_area)
         self.scroll_area.setWidget(self.scroll_widget)
 
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.set_label)
+
         self.layout2.addWidget(StrongBodyLabel('Label'))
         self.layout2.addWidget(SeparateHLine())
         self.legend = TextEdit()
         self.legend.button.setPlainText(self.get_label())
         self.legend.setFixedHeight(100)
         self.layout2.addWidget(self.legend)
-        self.legend.button.textChanged.connect(self.set_label)
+        self.legend.button.textChanged.connect(lambda: self.timer.start(300))
 
         self.initialize_layout()
+
+        self.progressbar.setValue(100)
 
     def find_object (self) -> List[Artist]:
         obj_list = list()
@@ -63,10 +70,13 @@ class Curve (QWidget):
         return obj_list
         
     def set_label (self):
+        self.progressbar.setValue(0)
+        self.progressbar.setVal(0)
         for obj in self.obj:
             obj.set_label(self.legend.button.toPlainText())
         self.set_legend()
         self.canvas.draw()
+        self.progressbar.setValue(100)
 
     def get_label (self):
         # skip label if starts with "_"
@@ -90,9 +100,12 @@ class Curve (QWidget):
 
 
     def update_plot (self):
+        self.progressbar.setValue(0)
+        self.progressbar.setVal(0)
         if self.get_legend(): self.set_legend()
         self.canvas.draw()
         self.sig.emit()
+        self.progressbar.setValue(100)
 
     def initialize_layout(self):
         plot_type = self.obj[0].plot_type

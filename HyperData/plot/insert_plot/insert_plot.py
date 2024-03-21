@@ -128,18 +128,6 @@ class NewPlot (qfluentwidgets.CardWidget):
         self.plot_type = plot_type
         self.type.button.setText(plot_type.title())
 
-        #effect = QGraphicsOpacityEffect(self)
-        #effect.setOpacity(1)
-        #ani = QPropertyAnimation(effect, b'opacity', self)
-        #ani.setDuration(200)
-        #self.setGraphicsEffect(effect)
-        #ani.setStartValue(0)
-        #ani.setEndValue(1)
-        #ani.start()
-
-        self.progressbar.setValue(0)
-        
-
         
         _input = [str(), str(), str(), str()]
         try: 
@@ -165,11 +153,10 @@ class NewPlot (qfluentwidgets.CardWidget):
 
         self.plotting()
 
-        self.progressbar.setValue(100)
-
     def plotting (self, fire_signal=True, **kwargs):
-
+        
         self.progressbar.setValue(0)
+        self.progressbar.setVal(0)
         
         input = self.widget.input
         _ax = self.widget.axes

@@ -25,14 +25,15 @@ class Dialog (qfluentwidgets.MessageBox):
 
 
 class ProgressBar(qfluentwidgets.ProgressBar):
-    def __init__(self, parent=None) -> None:
+    """ this progressbar is only used for ProgressDialog """
+    def __init__(self, parent=None):
         super().__init__(parent)
-
         self.setFixedHeight(4)
-        
+
         self.lightBackgroundColor = QColor(0, 0, 0, 155)
         self.darkBackgroundColor = QColor(255, 255, 255, 155)
-    
+
+
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
@@ -52,6 +53,7 @@ class ProgressBar(qfluentwidgets.ProgressBar):
         w = int(self.value() / (self.maximum() - self.minimum()) * self.width())
         r = self.height() / 2
         painter.drawRoundedRect(0, 0, w, self.height(), r, r)
+
         
 class ProgressDialog (QProgressDialog):
     def __init__(self, text=None, cancel_btn=None, parent=None):
@@ -60,4 +62,5 @@ class ProgressDialog (QProgressDialog):
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setLabelText(text)
         self.setCancelButton(cancel_btn)
-        self.setBar(ProgressBar(self))
+        self.progressbar = ProgressBar(self)
+        self.setBar(self.progressbar)
