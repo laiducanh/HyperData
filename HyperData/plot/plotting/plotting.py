@@ -9,19 +9,20 @@ from plot.canvas import Canvas
 
 
 def remove_artist (ax:Axes, gid:str) -> List[Artist]:
-    print('remove artist')
+    #print('remove artist')
     old_artist = list()
     for obj in ax.figure.findobj():
         if obj._gid != None and gid in obj._gid:
             old_artist.append(obj)
             obj.remove()
-            print("remove", obj, obj._gid)
+            #print("remove", obj, obj._gid)
 
     return old_artist
 
 def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):        
-    print("update props")
-    exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets","offset_transform","sizes"]
+    #print("update props")
+    exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets",
+               "offset_transform","sizes","x","y","xy"]
 
     for _prop in from_obj.properties().keys():
         if _prop not in exclude:
@@ -81,7 +82,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
         elif plot_type == "doughnut":
             artist = doughnut(X, ax, gid, **kwargs)
         
-        print("draw artist", artist)
+        #print("draw artist", artist)
         
         for ind, obj in enumerate(artist):
             if update:
@@ -96,7 +97,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
 
     # remove duplicates in gidlist
     gidlist = list(set(gidlist))
-    print("finish plotting", gidlist)
+    #print("finish plotting", gidlist)
     
     ax.figure.canvas.draw()
 
