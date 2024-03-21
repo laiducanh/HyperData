@@ -57,7 +57,7 @@ class Curve (QWidget):
         self.legend.setFixedHeight(100)
         self.layout2.addWidget(self.legend)
         self.legend.button.textChanged.connect(lambda: self.timer.start(300))
-
+        self.legend.button.textChanged.connect(lambda: self.progressbar.setValue(0))
         self.initialize_layout()
 
         self.progressbar.setValue(100)
