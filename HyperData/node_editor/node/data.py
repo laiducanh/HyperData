@@ -41,7 +41,27 @@ class DataLoader (NodeContentWidget):
             logger.info("DataHolder run successfully.")
         
         super().exec()
+
+class DataHolder (NodeContentWidget):
+    def __init__(self, node: NodeGraphicsNode, parent=None):
+        super().__init__(node, parent)
+
+
+    def exec(self):
+        try:
+            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy(deep=True)
+            logger.info("DataTranspose run successfully.")
+        except Exception as e:
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.error(f"{repr(e)}, return an empty DataFrame.")
         
+        self.data_to_view = self.node.output_sockets[0].socket_data
+
+        super().exec()
+
+    def eval(self):
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
 class DataTranspose (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -65,7 +85,7 @@ class DataTranspose (NodeContentWidget):
             self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        
+
 
 class DataConcator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode,parent=None):

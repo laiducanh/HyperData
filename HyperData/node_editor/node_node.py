@@ -24,6 +24,9 @@ class Node(NodeGraphicsNode):
         elif title == 'Data Loader':
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
             self.content = DataLoader(self,parent)
+        elif title == 'Data Holder':
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DataHolder(self,parent)
         elif title == "Data Transpose":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataTranspose(self, parent)
