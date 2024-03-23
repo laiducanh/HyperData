@@ -22,7 +22,7 @@ def remove_artist (ax:Axes, gid:str) -> List[Artist]:
 def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):        
     #print("update props")
     exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets",
-               "offset_transform","sizes","x","y","xy"]
+               "offset_transform","sizes","x","y","xy","gid"]
 
     for _prop in from_obj.properties().keys():
         if _prop not in exclude:
