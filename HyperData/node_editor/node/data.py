@@ -50,14 +50,16 @@ class DataHolder (NodeContentWidget):
     def exec(self):
         try:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy(deep=True)
-            logger.info("DataTranspose run successfully.")
+            logger.info("DataHolder run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
             logger.error(f"{repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
 
-        super().exec()
+        super().exec(
+
+        )
 
     def eval(self):
         for edge in self.node.input_sockets[0].edges:
