@@ -1,0 +1,494 @@
+from node_editor.base.node_graphics_content import NodeContentWidget, NodeComment
+import pandas as pd
+import numpy as np
+from typing import Union
+from node_editor.base.node_graphics_node import NodeGraphicsNode
+from sklearn import model_selection
+from ui.base_widgets.window import Dialog
+from ui.base_widgets.window import Dialog
+from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
+from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from config.settings import logger
+from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
+from PyQt6.QtGui import QAction
+from PyQt6.QtCore import Qt
+
+class GroupKFold (QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+    
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5)
+        else: self._config = config
+        self.splitter = model_selection.GroupKFold(**self._config)
+    
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self.splitter = model_selection.GroupKFold(**self._config)
+
+class GroupShuffleSplit (QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+    
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5,test_size=0.2)
+        else: self._config = config
+        self.splitter = model_selection.GroupShuffleSplit(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of splits")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.test_size = DoubleSpinBox(min=0, max=1, step=0.01, text="test size")
+        self.test_size.button.valueChanged.connect(self.set_splitter)
+        self.test_size.button.setValue(self._config["test_size"])
+        self.vlayout.addWidget(self.test_size)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["test_size"] = self.test_size.button.value()
+        self.splitter = model_selection.GroupShuffleSplit(**self._config)
+
+class Kfold (QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5,shuffle=False)
+        else: self._config = config
+        self.splitter = model_selection.KFold(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.shuffle = Toggle(text="shuffle")
+        self.shuffle.button.checkedChanged.connect(self.set_splitter)
+        self.shuffle.button.setChecked(self._config["shuffle"])
+        self.vlayout.addWidget(self.shuffle)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["shuffle"] = self.shuffle.button.isChecked()
+        self.splitter = model_selection.KFold(**self._config)
+
+class LeaveOneGroupOut(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        self.set_splitter()
+    
+    def set_splitter(self):
+        self.splitter = model_selection.LeaveOneGroupOut()
+
+class LeavePGroupOut(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_groups=2)
+        else: self._config = config
+        self.splitter = model_selection.LeavePGroupsOut(**self._config)
+
+        self.splits = SpinBox(min=1, max=1000, step=1, text="number of groups")
+        self.splits.button.setValue(self._config["n_groups"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+    
+    def set_splitter(self):
+        self._config["n_groups"] = self.splits.button.value()
+        self.splitter = model_selection.LeavePGroupsOut(**self._config)
+
+class LeaveOneOut(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        self.set_splitter()
+    
+    def set_splitter(self):
+        self.splitter = model_selection.LeaveOneOut()
+
+class LeavePOut(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(p=2)
+        else: self._config = config
+        self.splitter = model_selection.LeavePOut(**self._config)
+
+        self.splits = SpinBox(min=1, max=1000, step=1, text="number of samples")
+        self.splits.button.setValue(self._config["p"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+    
+    def set_splitter(self):
+        self._config["p"] = self.splits.button.value()
+        self.splitter = model_selection.LeavePOut(**self._config)
+
+class RepeatedKFold(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5,n_repeats=10)
+        else: self._config = config
+        self.splitter = model_selection.RepeatedKFold(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.repeats = SpinBox(min=1, max=1000, step=1, text="number of repeats")
+        self.repeats.button.valueChanged.connect(self.set_splitter)
+        self.repeats.button.setValue(self._config["n_repeats"])
+        self.vlayout.addWidget(self.repeats)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["n_repeats"] = self.repeats.button.value()
+        self.splitter = model_selection.RepeatedKFold(**self._config)
+
+class RepeatedStratifiedKFold(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5,n_repeats=10)
+        else: self._config = config
+        self.splitter = model_selection.RepeatedStratifiedKFold(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.repeats = SpinBox(min=1, max=1000, step=1, text="number of repeats")
+        self.repeats.button.valueChanged.connect(self.set_splitter)
+        self.repeats.button.setValue(self._config["n_repeats"])
+        self.vlayout.addWidget(self.repeats)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["n_repeats"] = self.repeats.button.value()
+        self.splitter = model_selection.RepeatedStratifiedKFold(**self._config)
+
+class ShuffleSplit(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+    
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=10,test_size=0.2)
+        else: self._config = config
+        self.splitter = model_selection.ShuffleSplit(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of splits")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.test_size = DoubleSpinBox(min=0, max=1, step=0.01, text="test size")
+        self.test_size.button.valueChanged.connect(self.set_splitter)
+        self.test_size.button.setValue(self._config["test_size"])
+        self.vlayout.addWidget(self.test_size)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["test_size"] = self.test_size.button.value()
+        self.splitter = model_selection.ShuffleSplit(**self._config)
+    
+class StratifiedKFold(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5,shuffle=False)
+        else: self._config = config
+        self.splitter = model_selection.StratifiedKFold(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.shuffle = Toggle(text="shuffle")
+        self.shuffle.button.checkedChanged.connect(self.set_splitter)
+        self.shuffle.button.setChecked(self._config["shuffle"])
+        self.vlayout.addWidget(self.shuffle)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["shuffle"] = self.shuffle.button.isChecked()
+        self.splitter = model_selection.StratifiedKFold(**self._config)
+
+class StratifiedShuffleSplit(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+    
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=10,test_size=0.2)
+        else: self._config = config
+        self.splitter = model_selection.StratifiedShuffleSplit(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of splits")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.test_size = DoubleSpinBox(min=0, max=1, step=0.01, text="test size")
+        self.test_size.button.valueChanged.connect(self.set_splitter)
+        self.test_size.button.setValue(self._config["test_size"])
+        self.vlayout.addWidget(self.test_size)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["test_size"] = self.test_size.button.value()
+        self.splitter = model_selection.StratifiedShuffleSplit(**self._config)
+
+class StratifiedGroupKFold(QWidget):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
+        self.set_config(config)
+    
+    def clear(self):
+        for widget in self.findChildren(QWidget):
+            self.vlayout.removeWidget(widget)
+
+    def set_config(self, config):
+        self.clear()
+
+        if config == None: self._config = dict(n_splits=5,shuffle=False)
+        else: self._config = config
+        self.splitter = model_selection.StratifiedGroupKFold(**self._config)
+
+        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits.button.setValue(self._config["n_splits"])
+        self.splits.button.valueChanged.connect(self.set_splitter)
+        self.vlayout.addWidget(self.splits)
+        self.shuffle = Toggle(text="shuffle")
+        self.shuffle.button.checkedChanged.connect(self.set_splitter)
+        self.shuffle.button.setChecked(self._config["shuffle"])
+        self.vlayout.addWidget(self.shuffle)
+    
+    def set_splitter(self):
+        self._config["n_splits"] = self.splits.button.value()
+        self._config["shuffle"] = self.shuffle.button.isChecked()
+        self.splitter = model_selection.StratifiedGroupKFold(**self._config)
+
+class TrainTestSplitter (NodeContentWidget):
+    def __init__(self, node: NodeGraphicsNode, parent=None):
+        super().__init__(node, parent)
+
+        self.node.input_sockets[0].setTitle("Feature (X)")
+        self.node.input_sockets[1].setTitle("Label (Y)")
+        self.node.output_sockets[0].setTitle("Train/Test")
+        self.node.output_sockets[1].setTitle("Data")
+        self.data_to_view = pd.DataFrame()
+        self.exec()
+        self._config = dict(splitter="K Fold",config=None)
+
+
+    def config(self):
+        dialog = Dialog("Configuration", self.parent.parent)
+        splitter = ComboBox(items=["group k fold","group shuffle split","k fold",
+                                   "leave one group out", "leave p group out",
+                                   "leave one out", "leave p out","repeated k fold",
+                                   "repeated stratified k fold","shuffle split",
+                                   "stratified k fold","stratified shuffle split",
+                                   "stratified group k fold"], text="splitter")
+        splitter.button.setCurrentText(self._config["splitter"])
+        splitter.button.currentTextChanged.connect(lambda: stackedlayout.setCurrentIndex(splitter.button.currentIndex()))
+        dialog.textLayout.addWidget(splitter)
+        stackedlayout = QStackedLayout()
+        dialog.textLayout.addLayout(stackedlayout)
+        stackedlayout.addWidget(GroupKFold())
+        stackedlayout.addWidget(GroupShuffleSplit())
+        stackedlayout.addWidget(Kfold())
+        stackedlayout.addWidget(LeaveOneGroupOut())
+        stackedlayout.addWidget(LeavePGroupOut())
+        stackedlayout.addWidget(LeaveOneOut())
+        stackedlayout.addWidget(LeavePOut())
+        stackedlayout.addWidget(RepeatedKFold())
+        stackedlayout.addWidget(RepeatedStratifiedKFold())
+        stackedlayout.addWidget(ShuffleSplit())
+        stackedlayout.addWidget(StratifiedKFold())
+        stackedlayout.addWidget(StratifiedShuffleSplit())
+        stackedlayout.addWidget(StratifiedGroupKFold())
+        stackedlayout.setCurrentIndex(splitter.button.currentIndex())
+        stackedlayout.currentWidget().set_config(self._config["config"])
+
+        if dialog.exec():
+            self.splitter = stackedlayout.currentWidget().splitter
+            self.splitter: Union[model_selection.BaseCrossValidator, model_selection.BaseShuffleSplit]
+            self._config["splitter"] = splitter.button.currentText()
+            self._config["config"] = stackedlayout.currentWidget()._config
+            self.exec()
+
+    def exec(self):
+        self.eval()
+        result = list()
+
+        try:
+            if isinstance(self.node.input_sockets[0].socket_data, pd.DataFrame) and isinstance(self.node.input_sockets[1].socket_data, pd.DataFrame):
+                X = self.node.input_sockets[0].socket_data
+                Y = self.node.input_sockets[1].socket_data
+                self.data_to_view = pd.concat([X,Y],axis=1)
+
+                for fold, (train_idx, test_idx) in enumerate(self.splitter.split(X, Y)):
+
+                    self.data_to_view.loc[train_idx.tolist(),f"Fold{fold+1}"] = "Train"
+                    self.data_to_view.loc[test_idx.tolist(),f"Fold{fold+1}"] = "Test"     
+                    result.append((train_idx, test_idx))                       
+
+                logger.info("TrainTestSplitter run successfully.")
+            else:
+                X, Y = pd.DataFrame(), pd.DataFrame()
+                self.data_to_view = pd.DataFrame()
+                logger.warning(f"Not enough input data, return an empty DataFrame.")
+
+        except Exception as e:
+            X, Y = pd.DataFrame(), pd.DataFrame()
+            self.data_to_view = pd.DataFrame()
+            logger.error(f"{repr(e)}, return an empty DataFrame.")
+
+        super().exec()
+       
+        self.node.output_sockets[0].socket_data = [result, X, Y]
+        self.node.output_sockets[1].socket_data = self.data_to_view
+     
+    def eval(self):
+        # reset input sockets
+        for socket in self.node.input_sockets:
+            socket.socket_data = None
+        # update input sockets
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+        for edge in self.node.input_sockets[1].edges:
+            self.node.input_sockets[1].socket_data = edge.start_socket.socket_data

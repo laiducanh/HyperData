@@ -10,70 +10,11 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from node_editor.node.train_test_split import TrainTestSplitter
 from config.settings import logger
 from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
-
-DEBUG = True
-
-class TrainTestSplitter (NodeContentWidget):
-    def __init__(self, node: NodeGraphicsNode, parent=None):
-        super().__init__(node, parent)
-
-        self.node.input_sockets[0].setTitle("Feature (X)")
-        self.node.input_sockets[1].setTitle("Label (Y)")
-        self.node.output_sockets[0].setTitle("Train/Test")
-        self.node.output_sockets[1].setTitle("Data")
-        self.data_to_view = pd.DataFrame()
-        self.exec()
-
-
-    def config(self):
-        pass
-
-    def exec(self):
-        self.eval()
-        splitter = ShuffleSplit()
-        result = list()
-
-        try:
-            if isinstance(self.node.input_sockets[0].socket_data, pd.DataFrame) and isinstance(self.node.input_sockets[1].socket_data, pd.DataFrame):
-                X = self.node.input_sockets[0].socket_data
-                Y = self.node.input_sockets[1].socket_data
-                self.data_to_view = pd.concat([X,Y],axis=1)
-
-                for fold, (train_idx, test_idx) in enumerate(splitter.split(X, Y)):
-
-                    self.data_to_view.loc[train_idx.tolist(),f"Fold{fold+1}"] = "Train"
-                    self.data_to_view.loc[test_idx.tolist(),f"Fold{fold+1}"] = "Test"     
-                    result.append((train_idx, test_idx))                       
-
-                logger.info("TrainTestSplitter run successfully.")
-            else:
-                X, Y = pd.DataFrame(), pd.DataFrame()
-                self.data_to_view = pd.DataFrame()
-                logger.warning(f"Not enough input data, return an empty DataFrame.")
-
-        except Exception as e:
-            X, Y = pd.DataFrame(), pd.DataFrame()
-            self.data_to_view = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
-
-        super().exec()
-       
-        self.node.output_sockets[0].socket_data = [result, X, Y]
-        self.node.output_sockets[1].socket_data = self.data_to_view
-     
-    def eval(self):
-        # reset input sockets
-        for socket in self.node.input_sockets:
-            socket.socket_data = None
-        # update input sockets
-        for edge in self.node.input_sockets[0].edges:
-            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
-        for edge in self.node.input_sockets[1].edges:
-            self.node.input_sockets[1].socket_data = edge.start_socket.socket_data
 
 class Modeler (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

@@ -3,7 +3,8 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.node.data import *
 from node_editor.node.data_cleaning import *
 from node_editor.node.data_encoder import *
-from node_editor.node.machine_learning import *
+from node_editor.node.machine_learning import Modeler
+from node_editor.node.train_test_split import TrainTestSplitter
 from node_editor.node.figure import *
 from node_editor.node.misc import *
 from PyQt6.QtGui import QMouseEvent
