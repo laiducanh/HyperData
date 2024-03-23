@@ -72,8 +72,11 @@ class Curve (QWidget):
     def set_label (self):
         self.progressbar.setValue(0)
         self.progressbar.setVal(0)
+        _label = self.legend.button.toPlainText()
+        if _label == "":
+            _label = "_"
         for obj in self.obj:
-            obj.set_label(self.legend.button.toPlainText())
+            obj.set_label(_label)
         self.set_legend()
         self.canvas.draw()
         self.progressbar.setValue(100)
@@ -81,22 +84,29 @@ class Curve (QWidget):
     def get_label (self):
         # skip label if starts with "_"
         for obj in self.obj:
-            if obj.get_label()[0] == "_":
-                return str()
+            if obj.get_label().startswith("_"):
+                return None
             return obj.get_label()
     
     def set_legend(self):
         _artist = list()
+        _gid = list()
         _label = list()
         for obj in self.canvas.fig.findobj(match=Artist):
-            if obj._gid != None and "graph" in obj._gid and obj._gid not in _label:
-                _label.append(obj._gid)
+            if obj._gid != None and "graph" in obj._gid and obj._gid not in _gid:
+                _gid.append(obj._gid)
                 _artist.append(obj)
-
-        self.canvas.axesx2.legend(handles=_artist,draggable=True)
+                _label.append(obj._label)
+        for ind, val in enumerate(_label):
+            if val.startswith("_"):
+                _label.pop(ind)
+                _artist.pop(ind)
+        if self.get_legend(): self.get_legend().remove()
+        if _artist != []:
+            self.canvas.axesleg.legend(handles=_artist,draggable=True)
     
     def get_legend(self):
-        return self.canvas.axesx2.get_legend()
+        return self.canvas.axesleg.get_legend()
 
 
     def update_plot (self):

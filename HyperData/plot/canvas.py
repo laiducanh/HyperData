@@ -36,6 +36,9 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
         self.axespie = self.fig.add_subplot()
+        self.axesleg = self.fig.add_subplot(gid="legend")
+
+        self.axesleg.set_axis_off()
 
         #tmp = ['bottom','left','bottom','right','top','left']
         #for ind, obj in enumerate(self.fig.findobj(match=matplotlib.axis.Axis)):

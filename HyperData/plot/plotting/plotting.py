@@ -4,7 +4,7 @@ from plot.plotting.base.scatter import *
 from plot.plotting.base.pie import *
 from matplotlib.axes import Axes
 from matplotlib.artist import Artist
-from typing import List, Union
+from typing import List, Union, Literal
 from plot.canvas import Canvas
 
 
@@ -19,20 +19,48 @@ def remove_artist (ax:Axes, gid:str) -> List[Artist]:
 
     return old_artist
 
-def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D]):        
+def update_props (from_obj: Union[Line2D], to_obj: Union[Line2D], 
+                  include=list(), exclude:Literal["default",None]="default"):        
     #print("update props")
-    exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets",
+    if exclude == None:
+        exclude = from_obj.properties().keys()
+    else:
+        exclude = ["xdata","ydata","xydata","data","transform","paths","height","width","offsets",
                "offset_transform","sizes","x","y","xy","gid"]
 
     for _prop in from_obj.properties().keys():
-        if _prop not in exclude:
+        if _prop not in exclude or _prop in include:
             try:
                 to_obj.update({_prop:from_obj.properties()[_prop]})
                 #print("update", _prop, "value", from_obj.properties()[_prop])
             except Exception as e:
                 pass
                 #print('cannot update property', _prop, 'because of', repr(e))
-   
+
+def set_legend(ax:Axes):
+    _artist = list()
+    _gid = list()
+    _label = list()
+    
+    for obj in ax.figure.findobj(match=Artist):
+        if obj._gid != None and "graph" in obj._gid and obj._gid not in _gid:
+            _gid.append(obj._gid)
+            _artist.append(obj)
+            _label.append(obj._label)
+    for ind, val in enumerate(_label):
+        if val.startswith("_"):
+            _label.pop(ind)
+            _artist.pop(ind)
+
+    ax_leg = None
+    for _ax in ax.figure.axes:
+        if _ax.get_legend():
+           ax_leg = _ax # get the axis for legend
+           break
+    
+    if ax_leg != None: ax_leg.get_legend().remove()
+    if _artist != []:
+        ax_leg.legend(handles=_artist,draggable=True)
 
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True, **kwargs) -> List[str]:
     
@@ -85,11 +113,13 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
         #print("draw artist", artist)
         
         for ind, obj in enumerate(artist):
+            update_props(old_artist[ind], obj, include=["label"], exclude=None)
             if update:
-                try:update_props(old_artist[ind],obj)
-                except Exception as e:print(e)
+                update_props(old_artist[ind],obj,exclude="default")
     
-    
+    # update legend if necessary
+    set_legend(ax)
+
     for ind, obj in enumerate(artist):
 
         obj.plot_type = plot_type
