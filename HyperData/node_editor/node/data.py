@@ -38,7 +38,7 @@ class DataLoader (NodeContentWidget):
                 logger.warning("Cannot read data file, return an empty DataFrame.")
             
             self.data_to_view = self.node.output_sockets[0].socket_data
-            logger.info("DataHolder run successfully.")
+            logger.info("DataLoader run successfully.")
         
         super().exec()
 
