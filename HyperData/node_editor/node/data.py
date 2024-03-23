@@ -13,7 +13,7 @@ from PyQt6.QtCore import Qt
 
 DEBUG = True
     
-class DataHolder (NodeContentWidget):
+class DataLoader (NodeContentWidget):
     def __init__(self, node,parent=None):
         super().__init__(node,parent)
         self.exec_btn.setText('Load data')
