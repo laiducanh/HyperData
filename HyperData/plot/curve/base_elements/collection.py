@@ -175,11 +175,12 @@ class CmapCollection (SingleColorCollection):
     def set_cmap(self, value):
         if value != None:
             self.obj.set_array(self.obj.get_offsets().transpose()[0])
+            for _cmap in colormaps():
+                if _cmap.lower() == value.lower():
+                    self.obj.set_cmap(_cmap)
         else:
             self.obj.set_array(None)
-        for _cmap in colormaps():
-            if _cmap.lower() == value.lower():
-                self.obj.set_cmap(_cmap)
+            self.obj.set_cmap(None)
         self.sig.emit()
     
     def get_cmap(self) -> str:
