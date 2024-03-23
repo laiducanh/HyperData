@@ -270,9 +270,7 @@ class ExploreView (QWidget):
         self.layout.addWidget(self.view)
         self.canvas = Canvas()
         self.canvas.fig.subplots_adjust(left=0.12,right=0.9,top=0.8,bottom=0.1)
-        #self.canvas.axes.set_visible(False)
-        self.canvas.axesx2.set_axis_off()
-        self.canvas.axesy2.set_axis_off()
+        for _ax in self.canvas.fig.axes: _ax.set_axis_off()
         self.layout.addWidget(self.canvas)
         self.update_data(data)
 
