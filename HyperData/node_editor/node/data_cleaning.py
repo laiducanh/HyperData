@@ -14,8 +14,6 @@ from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStacked
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
-DEBUG = True
-
 class NAEliminator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
@@ -62,7 +60,7 @@ class NAEliminator (NodeContentWidget):
             self._config["ignore_index"] = ignore_index.button.isChecked()
             self.exec()
 
-    def exec(self):
+    def func(self):
         try:
             if self._config["thresh"] in ["any","all"]:
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.dropna(axis=self._config["axis"],
@@ -72,16 +70,13 @@ class NAEliminator (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.dropna(axis=self._config["axis"],
                                                           thresh=int(self._config["how"]),
                                                           ignore_index=self._config["ignore_index"])
-            logger.info("NAEliminator run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e: 
             self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data
-            logger.error(f"{repr(e)}, return the original DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return the original DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
-        
-        super().exec()
-        
-
+                
     def eval(self):
         if self.node.input_sockets[0].edges == []:
             self.node.input_sockets[0].socket_data = pd.DataFrame()
@@ -183,7 +178,7 @@ class NAImputer (NodeContentWidget):
             self._config["weights"] = weights.button.currentText().lower()
             self.exec()
 
-    def exec(self):
+    def func(self):
         imputer = None
         try:
             if self._config['imputer'] == 'univariate':
@@ -209,16 +204,13 @@ class NAImputer (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = imputer.fit_transform(self.node.input_sockets[0].socket_data)
                 self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)            
             
-            logger.info("NAImputer run successfully.")
+            logger.info(f"{self.name} run successfully.")
 
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data
-            logger.error(f"{repr(e)}, return the original DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return the original DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
 
     def eval(self):
         if self.node.input_sockets[0].edges == []:
@@ -253,14 +245,12 @@ class DropDuplicate (NodeContentWidget):
         else: keep = self._config["keep"]
         try:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.drop_duplicates(keep=keep,ignore_index=self._config["ignore_index"])
-            logger.info("DropDuplicate run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data
-            logger.error(f"{repr(e)}, return the original DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return the original DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
 
     def eval(self):
         if self.node.input_sockets[0].edges == []:

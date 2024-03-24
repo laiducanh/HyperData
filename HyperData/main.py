@@ -10,6 +10,7 @@ from node_editor.node_view import NodeView
 from node_editor.node_node import Node
 from config.settings_window import SettingsWindow
 from config.settings import config
+from config.threadpool import Worker
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -18,6 +19,7 @@ try:
 
 except ImportError:
     pass
+
 class Main(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -37,9 +39,18 @@ class Main(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.add_node_view()
-
         
+        self.btn = qfluentwidgets.PushButton()
+        self.btn.clicked.connect(self.func)
+        #self.mainlayout.addWidget(self.btn)
+        print(self.threadpool)
     
+    def func(self):
+        import pandas as pd
+        worker = Worker(pd.read_csv, r"F:\Box\Study at SMU\Course\Fall 2023\CADD\pdb_total.csv")
+        worker.signals.finished.connect(lambda: print('load data done'))
+        self.threadpool.start(worker)
+        
     def setupMenuBar(self):
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)

@@ -22,9 +22,9 @@ class Node(NodeGraphicsNode):
         elif title == 'Figure':
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[])
             self.content = Figure(self,parent)
-        elif title == 'Data Loader':
+        elif title == 'Data Reader':
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
-            self.content = DataLoader(self,parent)
+            self.content = DataReader(self,parent)
         elif title == 'Data Holder':
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataHolder(self,parent)

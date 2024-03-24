@@ -394,7 +394,7 @@ class TrainTestSplitter (NodeContentWidget):
             self._config["config"] = stackedlayout.currentWidget()._config
             self.exec()
 
-    def exec(self):
+    def func(self):
         self.eval()
         result = list()
 
@@ -410,18 +410,16 @@ class TrainTestSplitter (NodeContentWidget):
                     self.data_to_view.loc[test_idx.tolist(),f"Fold{fold+1}"] = "Test"     
                     result.append((train_idx, test_idx))                       
 
-                logger.info("TrainTestSplitter run successfully.")
+                logger.info(f"{self.name} run successfully.")
             else:
                 X, Y = pd.DataFrame(), pd.DataFrame()
                 self.data_to_view = pd.DataFrame()
-                logger.warning(f"Not enough input data, return an empty DataFrame.")
+                logger.warning(f"{self.name} Not enough input data, return an empty DataFrame.")
 
         except Exception as e:
             X, Y = pd.DataFrame(), pd.DataFrame()
             self.data_to_view = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
-
-        super().exec()
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
        
         self.node.output_sockets[0].socket_data = [result, X, Y]
         self.node.output_sockets[1].socket_data = self.data_to_view

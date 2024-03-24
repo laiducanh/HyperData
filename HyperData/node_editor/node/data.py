@@ -7,59 +7,59 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.text import EditableComboBox, Completer, TextEdit
 from config.settings import logger
+from config.threadpool import Worker
 from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout
 from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThreadPool
 
 DEBUG = True
     
-class DataLoader (NodeContentWidget):
-    def __init__(self, node,parent=None):
+class DataReader (NodeContentWidget):
+    def __init__(self, node:NodeGraphicsNode, parent=None):
         super().__init__(node,parent)
         self.exec_btn.setText('Load data')
         self.node.output_sockets[0].socket_data = pd.DataFrame()
         
-    def exec (self):
+    def exec (self):    
+        
         import_dlg = QFileDialog()
         import_dlg.setWindowTitle("Import data")
 
         if import_dlg.exec():
             selectedFiles = import_dlg.selectedFiles()[0]
             logger.info(f"Select {selectedFiles}.")
-            suffix = pathlib.Path(selectedFiles).suffix
-            if suffix == ".csv":
-                self.node.output_sockets[0].socket_data = pd.read_csv(selectedFiles)
-                logger.info(f"Load a csv file.")
-            elif suffix in [".xls", ".xlsx"]:
-                self.node.output_sockets[0].socket_data = pd.read_excel(selectedFiles)
-                logger.info(f"Load an excel file.")
-            else:
-                self.node.output_sockets[0].socket_data = pd.DataFrame()
-                logger.warning("Cannot read data file, return an empty DataFrame.")
-            
-            self.data_to_view = self.node.output_sockets[0].socket_data
-            logger.info("DataLoader run successfully.")
+
+            self.run_threadpool(selectedFiles)
+    
+    def func (self, selectedFiles):
+        suffix = pathlib.Path(selectedFiles).suffix
+        if suffix == ".csv":
+            self.node.output_sockets[0].socket_data = pd.read_csv(selectedFiles)
+            logger.info(f"Load a csv file.")
+        elif suffix in [".xls", ".xlsx"]:
+            self.node.output_sockets[0].socket_data = pd.read_excel(selectedFiles)
+            logger.info(f"Load an excel file.")
+        else:
+            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            logger.warning("Cannot read data file, return an empty DataFrame.")
+    
+    
+        self.data_to_view = self.node.output_sockets[0].socket_data
         
-        super().exec()
 
 class DataHolder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
-
-
-    def exec(self):
+    
+    def func(self):
         try:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy(deep=True)
-            logger.info("DataHolder run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec(
-
-        )
 
     def eval(self):
         for edge in self.node.input_sockets[0].edges:
@@ -69,18 +69,15 @@ class DataTranspose (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
     
-    def exec(self):
+    def func(self):
         try: 
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.transpose()
-            logger.info("DataTranspose run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e: 
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
         
     def eval (self):
         if self.node.input_sockets[0].edges == []:
@@ -112,7 +109,7 @@ class DataConcator (NodeContentWidget):
             self._config["ignore_index"] = ignore_index.button.isChecked()
             self.exec()
     
-    def exec(self):
+    def func(self):
         
         if self.node.input_sockets[0].socket_data != []: 
             try: 
@@ -120,18 +117,15 @@ class DataConcator (NodeContentWidget):
                                            axis=self._config["axis"],
                                            join=self._config["join"],
                                            ignore_index=self._config["ignore_index"])
-                logger.info("DataConcator run successfully.")
+                logger.info(f"{self.name} run successfully.")
             except Exception as e:
                 self.node.output_sockets[0].socket_data = pd.DataFrame()
-                logger.error(f"{repr(e)}, return an empty DataFrame.")
+                logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         else:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.info("Not enough input, return an empty DataFrame.")
+            logger.info(f"{self.name} Not enough input, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
-        
-        super().exec()
-        
 
     def eval(self):
         self.node.input_sockets[0].socket_data = list()
@@ -145,20 +139,17 @@ class DataCombiner (NodeContentWidget):
         self.exec_btn.setText('Combine')
         self.node.input_sockets[0].socket_data = list()
     
-    def exec(self):
+    def func(self):
         self.node.output_sockets[0].socket_data = pd.DataFrame()
         try:
             for data in self.node.input_sockets[0].socket_data:
                 self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data.combine(data, np.minimum)
-            logger.info("DataCombiner run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
 
     def eval(self):
         self.node.input_sockets[0].socket_data = list()
@@ -171,7 +162,7 @@ class DataMerge (NodeContentWidget):
 
         self.exec_btn.setText('Merge')
 
-    def exec(self):
+    def func(self):
         try:
             if self.node.input_sockets[0].socket_data != None and self.node.input_sockets[1].socket_data != None:
                 data_left = self.node.input_sockets[0].socket_data
@@ -183,15 +174,12 @@ class DataMerge (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
             else:
                 self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.info("DataMerge run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
     
     def eval(self):
         for edge in self.node.input_sockets[0].edges:
@@ -203,7 +191,7 @@ class DataCompare (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
     
-    def exec(self):
+    def func(self):
         try:
             if self.node.input_sockets[0].socket_data != None and self.node.input_sockets[1].socket_data != None:
                 data_left = self.node.input_sockets[0].socket_data
@@ -215,16 +203,12 @@ class DataCompare (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
             else:
                 self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.info("DataCompare run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
-
-
-        super().exec()
-        
     
     def eval(self):
         for edge in self.node.input_sockets[0].edges:
@@ -301,7 +285,7 @@ class DataLocator (NodeContentWidget):
             self._config["row_to"] = row_to.button.text()
             self.exec()
 
-    def exec(self):
+    def func(self):
         try:
 
             if self._config["type"] == "columns":
@@ -314,15 +298,13 @@ class DataLocator (NodeContentWidget):
                 row_to = int(self._config["row_to"])
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
 
-            logger.info("DataLocator run successfully.")
+            logger.info(f"{self.name} run successfully.")
 
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            logger.error(f"{repr(e)}, return the original DataFrame.") 
+            logger.error(f"{self.name} {repr(e)}, return the original DataFrame.") 
             
         self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
     
     def eval(self):
         if self.node.input_sockets[0].edges == []:
@@ -387,7 +369,7 @@ class DataFilter (NodeContentWidget):
             self.exec()
     
 
-    def exec(self):
+    def func(self):
         try:
             if self._config["type"] == "items":
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
@@ -399,15 +381,13 @@ class DataFilter (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
                                                                                                         regex=self._config["apply"][0])
                 
-            logger.info("DataFilter run successfully.")
+            logger.info(f"{self.name} run successfully.")
 
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            logger.error(f"{repr(e)}, return the original DataFrame.") 
+            logger.error(f"{self.name} {repr(e)}, return the original DataFrame.") 
         
         self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()   
     
     def eval(self):
         if self.node.input_sockets[0].edges == []:

@@ -344,7 +344,7 @@ class Classifier (NodeContentWidget):
         self.node.output_sockets[0].setTitle("Model")
         self.node.output_sockets[1].setTitle("Data out")
         
-        self._config = dict(classifier="",config=None)
+        self._config = dict(estimator="Logistic Regression",config=None)
         self.estimator_list = ["Ridge Classifier","Logistic Regression","SGD Classifier",
                                "Passive Aggressive Classifier"]
 
@@ -356,7 +356,7 @@ class Classifier (NodeContentWidget):
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: stackedlayout.setCurrentIndex(self.estimator_list.index(string)))
         algorithm = DropDownPushButton(text="Algorithm")
-        algorithm.button.setText(self.estimator_list[0])
+        algorithm.button.setText(self._config["estimator"].title())
         algorithm.button.setMenu(menu)
         algorithm.button.released.connect(lambda: menu.exec(QCursor().pos()))
         dialog.textLayout.addWidget(algorithm)
@@ -378,7 +378,7 @@ class Classifier (NodeContentWidget):
             self.exec()
 
 
-    def exec(self):
+    def func(self):
         self.eval()
         self.node.output_sockets[0].socket_data = self.estimator
 
@@ -401,13 +401,13 @@ class Classifier (NodeContentWidget):
                         self.data_to_view = pd.concat([self.data_to_view, pd.DataFrame(Y_pred, columns=[f"Fold{fold+1}_Prediction"])],axis=1)
                     
                     self.node.output_sockets[1].socket_data = None
-                    logger.info("MLModeler run successfully.")
+                    logger.info(f"{self.name} run successfully.")
 
             else:
-                logger.warning(f"Did not define splitter.")
+                logger.warning(f"{self.name} Did not define splitter.")
         
         except Exception as e:
-            logger.error(f"{repr(e)}.")
+            logger.error(f"{self.name} {repr(e)}.")
         
         
 

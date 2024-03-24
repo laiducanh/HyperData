@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStacked
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
-DEBUG = True
+# TODO: only encode categorical data
 
 class LabelEncoder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -25,21 +25,18 @@ class LabelEncoder (NodeContentWidget):
     def config(self):
         pass
 
-    def exec(self):
+    def func(self):
         try:
             encoder = sk_LabelEncoder()
             columns = self.node.input_sockets[0].socket_data.columns
             self.node.output_sockets[0].socket_data = encoder.fit_transform(self.node.input_sockets[0].socket_data)
             self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)
-            logger.info("LabelEncoder run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:
@@ -54,21 +51,18 @@ class OrdinalEncoder (NodeContentWidget):
     def config(self):
         pass
 
-    def exec(self):
+    def func(self):
         try:
             encoder = sk_OrdinalEncoder()
             columns = self.node.input_sockets[0].socket_data.columns
             self.node.output_sockets[0].socket_data = encoder.fit_transform(self.node.input_sockets[0].socket_data)
             self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)
-            logger.info("OrdinalEncoder run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:
@@ -86,15 +80,12 @@ class OneHotEncoder (NodeContentWidget):
     def exec(self):
         try:
             self.node.output_sockets[0].socket_data = pd.get_dummies(self.node.input_sockets[0].socket_data)
-            logger.info("OneHotEncoder run successfully.")
+            logger.info(f"{self.name} run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
 
-        self.data_to_view = self.node.output_sockets[0].socket_data
-
-        super().exec()
-        
+        self.data_to_view = self.node.output_sockets[0].socket_data        
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:

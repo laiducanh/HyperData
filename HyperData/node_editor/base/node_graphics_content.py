@@ -1,11 +1,13 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QGraphicsRectItem, QGraphicsTextItem
-from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool
 from PyQt6.QtGui import QFont, QAction, QPaintEvent
 import qfluentwidgets, pandas
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.text import _TextEdit
 from node_editor.base.node_graphics_node import NodeGraphicsNode
+from config.threadpool import Worker
+from config.settings import logger
 
 
 class NodeComment (_TextEdit):
@@ -22,10 +24,13 @@ class NodeContentWidget(QWidget):
         self.setStyleSheet('background-color:transparent')
         self.node = node
         self.parent = parent
+        self.threadpool = parent.threadpool
+        self.threadpool: QThreadPool
         self.view = DataView(pandas.DataFrame())
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()
+        self.name = type(self).__name__
 
         self.initUI()
         self.initMenu()
@@ -55,7 +60,8 @@ class NodeContentWidget(QWidget):
         self.config_btn.setFont(font)
         self.layout.addWidget(self.config_btn)
         self.layout.addWidget(self.comment)
-        
+        self.progress = qfluentwidgets.ProgressBar()
+        self.layout.addWidget(self.progress)
     
     def initMenu(self):
         action = QAction("Execute Card")
@@ -81,19 +87,35 @@ class NodeContentWidget(QWidget):
 
     def config(self):
         pass
+
+    def run_threadpool(self, *args, **kwargs):
+        """ use for threadpool run """
+        self.progress.setVal(0)
+        self.progress.setValue(0)
+        worker = Worker(self.func, *args, **kwargs)
+        worker.signals.finished.connect(self.exec_done)
+        self.threadpool.start(worker)
     
     def exec (self):
-        """ use to process data_out """
+        """ use to process data_out
+         this function will be called when pressing execute button """
         
-        self.label.setText(f"Shape: {self.data_to_view.shape}")    
+        self.run_threadpool()
 
+    def func(self, *args, **kwargs):
+        """ main function of the node """
+        pass
+    
+    def exec_done(self):
+        self.label.setText(f"Shape: {self.data_to_view.shape}")    
+        
         for socket in self.node.output_sockets:
             for edge in socket.edges:
                 try: edge.end_socket.node.content.eval()
                 except Exception as e: print(e)
 
         self.pipeline()
-        
+        self.progress.setValue(100)
 
     def pipeline (self):
 

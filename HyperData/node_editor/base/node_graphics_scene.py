@@ -41,6 +41,7 @@ class NodeGraphicsScene(QGraphicsScene):
         self.scene_height = 64000
 
         self.id = id(self)
+        self.threadpool = self.parent.threadpool
 
         self.initUI()
     
