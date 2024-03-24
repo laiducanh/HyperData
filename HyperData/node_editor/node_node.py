@@ -3,7 +3,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.node.data import *
 from node_editor.node.data_cleaning import *
 from node_editor.node.data_encoder import *
-from node_editor.node.machine_learning import Modeler
+from node_editor.node.classifier import Classifier
 from node_editor.node.train_test_split import TrainTestSplitter
 from node_editor.node.figure import *
 from node_editor.node.misc import *
@@ -70,9 +70,9 @@ class Node(NodeGraphicsNode):
         elif title == "Train/Test Splitter":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
             self.content = TrainTestSplitter(self,parent)
-        elif title == "Modeler":
+        elif title == "Classifier":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
-            self.content = Modeler(self,parent)
+            self.content = Classifier(self,parent)
         elif title == 'Executor':
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)
