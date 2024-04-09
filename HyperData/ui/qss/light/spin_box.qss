@@ -32,7 +32,7 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
 }
 
 _SpinBox:hover, _DoubleSpinBox:hover {
-    border: 1px solid rgba(0, 120, 215, 1);
+    border: 2px solid rgba(0, 120, 215, 1);
 }
 
 _SpinBox:focus, _DoubleSpinBox:focus {

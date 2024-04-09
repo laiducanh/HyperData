@@ -61,7 +61,7 @@ _TogglePushButton:checked, _ToggleToolButton:checked {
 _PrimaryPushButton:hover, _DropDownPrimaryPushButton:hover, _PrimaryToolButton:hover,
 _TogglePushButton:checked:hover, _ToggleToolButton:checked:hover {
     background-color: rgba(0, 120, 215, 0.9);
-    border: 1px solid rgba(0, 120, 215, 1);
+    border: 2px solid rgba(0, 120, 215, 1);
 }
 
 _PrimaryPushButton:pressed, _PrimaryToolButton:pressed,

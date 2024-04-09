@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool
+from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool, QTimer
 from PyQt6.QtGui import QFont, QAction, QPaintEvent
 import pandas
 from data_processing.data_window import DataView
@@ -33,6 +33,9 @@ class NodeContentWidget(QWidget):
         self.comment = NodeComment() 
         self.comment.hide()
         self.name = type(self).__name__
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.timerStop)
 
         self.initUI()
         self.initMenu()
@@ -100,6 +103,16 @@ class NodeContentWidget(QWidget):
         worker = Worker(self.func, *args, **kwargs)
         worker.signals.finished.connect(self.exec_done)
         self.threadpool.start(worker)
+        self.timerStart()
+        self.progress.setValue(30)
+    
+    def timerStart (self):
+        self.timer.start(5000)
+    
+    def timerStop (self, step:int=10):
+        if self.progress.value() < 100-step:
+            self.progress.setValue(self.progress.value()+step)
+        self.timerStart()
     
     def exec (self):
         """ use to process data_out
@@ -112,6 +125,7 @@ class NodeContentWidget(QWidget):
         pass
     
     def exec_done(self):
+        self.timer.stop()
         self.label.setText(f"Shape: {self.data_to_view.shape}")    
         
         for socket in self.node.output_sockets:

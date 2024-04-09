@@ -9,7 +9,7 @@ _ComboBox {
 }
 
 _ComboBox:hover {
-    border: 1px solid rgba(0, 120, 215, 1);
+    border: 2px solid rgba(0, 120, 215, 1);
 }
 
 _TransparentComboBox {

@@ -28,10 +28,12 @@ Menu::item {
     background: transparent;
     font: 10.5pt;
     padding: 3px 30px 3px 20px;
+    border-radius: 6px;
+    border: none;
+    
 }
 
 Menu::item:hover {
-    border-radius: 10px;
     background: rgba(220, 220, 220, 0.8);
 }
 
