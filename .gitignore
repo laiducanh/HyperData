@@ -4,11 +4,12 @@
 .DS_Store
 
 
-#cached files
+# cached files
 *.pyc
 __pycache__
 
 
-#debug files
+# debug files
 *.txt
 *.ini
+test.py
