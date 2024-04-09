@@ -1,0 +1,47 @@
+Menu {
+    border: 1px solid rgba(200, 200, 200, 0.8);
+    border-radius: 6px;
+    background: white;
+    padding: 4px 3px 4px 3px;
+    font: 10.5pt;
+    outline: none;
+}
+
+Menu::right-arrow {
+    width: 10px;
+    height: 10px;
+    right: 10px;
+    border-image: url(ui/icons/black/ChevronRight_black.svg);
+}
+
+Menu::separator {
+    height: 1px;
+    background: rgba(0, 0, 0, 104);
+    margin-right: 13px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    margin-left: 10px;
+}
+
+Menu::item {
+    color: black;
+    background: transparent;
+    font: 10.5pt;
+    padding: 3px 30px 3px 20px;
+}
+
+Menu::item:hover {
+    border-radius: 10px;
+    background: rgba(220, 220, 220, 0.8);
+}
+
+Menu::item:selected {
+    border-width: 1px;
+    border-color: rgb(212, 212, 212);
+    background: rgba(0, 0, 0, 25);
+    color: black;
+}
+
+Menu::icon {
+    padding-left: 20px;
+}

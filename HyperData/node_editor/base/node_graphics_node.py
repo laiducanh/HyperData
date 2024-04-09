@@ -1,11 +1,8 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
-from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction, QMouseEvent
-import pandas as pd
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsProxyWidget, QWidget
+from PyQt6.QtGui import QPainter
 from ui.base_widgets.menu import Menu
 from node_editor.graphics.graphics_node import GraphicsNode
 from node_editor.graphics.graphics_socket import GraphicsSocket
-import qfluentwidgets
 
 SINGLE_IN = 1
 MULTI_IN = 2

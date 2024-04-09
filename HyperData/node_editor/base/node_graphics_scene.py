@@ -5,7 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphics
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.node_node import Node
 from config.settings import logger
-import qfluentwidgets
+from ui.utils import isDark
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -50,7 +50,7 @@ class NodeGraphicsScene(QGraphicsScene):
                                   self.scene_width, self.scene_height)
     
     def setBackgroundColor (self):
-        if qfluentwidgets.isDarkTheme(): self._color_background = QColor("#383838")
+        if isDark(): self._color_background = QColor("#383838")
         else: self._color_background = QColor("#FAF9F9")
 
         self.setBackgroundBrush(self._color_background)

@@ -1,9 +1,9 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QTextEdit
+from PyQt6.QtWidgets import QVBoxLayout, QWidget
 from plot.curve.base_elements.line import LineBase
-from ui.base_widgets.separator import SeparateHLine
-from ui.base_widgets.text import TextEdit, StrongBodyLabel
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.button import Toggle, ComboBox
 from matplotlib.lines import Line2D
 from matplotlib.collections import Collection
@@ -43,7 +43,7 @@ class Step (Line):
         self.gid = gid
         self.obj = self.find_obj()
 
-        layout.addWidget(StrongBodyLabel("Step"))
+        layout.addWidget(TitleLabel("Step"))
         layout.addWidget(SeparateHLine())
 
         self.toggle = Toggle(text="apply to all")
@@ -92,7 +92,7 @@ class Area (QWidget):
         self.obj = self.find_obj()
         self.step = None
 
-        self._layout.addWidget(StrongBodyLabel('Area'))
+        self._layout.addWidget(TitleLabel('Area'))
         self._layout.addWidget(SeparateHLine())
 
         self.toggle = Toggle(text="apply to all")
@@ -106,7 +106,7 @@ class Area (QWidget):
 
         self._layout.addSpacing(10)
 
-        self._layout.addWidget(StrongBodyLabel('PolyCollection'))
+        self._layout.addWidget(TitleLabel('PolyCollection'))
         self._layout.addWidget(SeparateHLine())
 
         patch = SingleColorCollection(gid, canvas, parent)

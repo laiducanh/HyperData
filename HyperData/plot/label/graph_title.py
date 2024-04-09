@@ -1,12 +1,11 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QSize, QStandardPaths, QDir, QSettings
-from PyQt6.QtWidgets import (QVBoxLayout, QScrollArea, QGridLayout, QWidget, QStackedLayout, QTextEdit)
-from PyQt6.QtGui import QIcon
-import os, matplotlib, qfluentwidgets
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QVBoxLayout, QScrollArea
 from plot.canvas import Canvas
-from ui.base_widgets.text import StrongBodyLabel, _TextEdit
-from ui.base_widgets.separator import SeparateHLine
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.line_edit import _TextEdit
+from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox, Slider
+from ui.base_widgets.spinbox import SpinBox, Slider
 from ui.base_widgets.color import ColorDropdown
 from plot.label.base import FontStyle
 from config.settings import font_lib
@@ -19,7 +18,7 @@ class GraphTitle (QScrollArea):
         self.setLayout(self.layout)
         self.canvas = canvas
 
-        widget = qfluentwidgets.CardWidget()
+        widget = Frame()
         layout = QVBoxLayout()
         #layout.setContentsMargins(10,0,10,15)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -28,9 +27,8 @@ class GraphTitle (QScrollArea):
         self.setWidgetResizable(True)
         self.verticalScrollBar().setValue(1900)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setStyleSheet('background-color:transparent;border:none')
 
-        layout.addWidget(StrongBodyLabel('Graph Title'))
+        layout.addWidget(TitleLabel('Graph Title'))
         layout.addWidget(SeparateHLine())
         
         self.title = _TextEdit()

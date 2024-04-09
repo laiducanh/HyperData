@@ -6,12 +6,10 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import model_selection
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
-from ui.base_widgets.separator import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger
-from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
-from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
 from PyQt6.QtCore import Qt
 
 class SplitterBase(QWidget):
@@ -357,8 +355,7 @@ class TrainTestSplitter (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent.parent)
-        dialog.vBoxLayout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
-        dialog.widget.setMinimumWidth(400)
+        dialog.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
         splitter = ComboBox(items=["group k fold","group shuffle split","k fold",
                                    "leave one group out", "leave p group out",
                                    "leave one out", "leave p out","repeated k fold",
@@ -367,10 +364,10 @@ class TrainTestSplitter (NodeContentWidget):
                                    "stratified group k fold"], text="splitter")
         splitter.button.setCurrentText(self._config["splitter"])
         splitter.button.currentTextChanged.connect(lambda: stackedlayout.setCurrentIndex(splitter.button.currentIndex()))
-        dialog.textLayout.addWidget(splitter)
-        dialog.textLayout.addWidget(SeparateHLine())
+        dialog.main_layout.addWidget(splitter)
+        dialog.main_layout.addWidget(SeparateHLine())
         stackedlayout = QStackedLayout()
-        dialog.textLayout.addLayout(stackedlayout)
+        dialog.main_layout.addLayout(stackedlayout)
         stackedlayout.addWidget(GroupKFold())
         stackedlayout.addWidget(GroupShuffleSplit())
         stackedlayout.addWidget(Kfold())

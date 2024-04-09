@@ -6,7 +6,7 @@ from node_editor.base.node_graphics_view import NodeGraphicsView
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
 from ui.base_widgets.list import Draggable_TreeWidget
-from ui.base_widgets.text import _Search_Box
+from ui.base_widgets.line_edit import _SearchBox
 from config.settings import config
 
 class NodeView (QMainWindow):
@@ -29,7 +29,7 @@ class NodeView (QMainWindow):
         self.list_widget.setLayout(self.list_widget_layout)
         self.mainlayout.addWidget(self.list_widget)
 
-        self.search_box = _Search_Box()
+        self.search_box = _SearchBox(parent=self.parent)
         self.list_widget_layout.addWidget(self.search_box)
 
         self.nodesListWidget = Draggable_TreeWidget()

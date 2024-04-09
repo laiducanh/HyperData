@@ -1,0 +1,4 @@
+QMainWindow, QMenuBar, QTableView, QAbstractTableModel {
+    background-color:rgb(32, 32, 32);
+    color:white;
+}

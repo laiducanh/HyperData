@@ -1,0 +1,38 @@
+QMainWindow, QMenuBar, QTableView, QAbstractTableModel {
+    background-color:rgb(243, 243, 243);
+    color:black;
+}
+
+NodeContentWidget {
+    background: transparent;
+}
+
+QScrollBar:vertical {
+    background: rgba(166, 166, 166, 0.3);
+    width: 8px;
+    border: none;
+    border-radius: 4px;
+}
+
+QScrollBar:horizontal {
+    background: rgba(166, 166, 166, 0.3);
+    height: 8px;
+    border: none;
+    border-radius: 4px;
+}
+
+QScrollBar::handle {
+    background: rgba(166, 166, 166, 1);
+    border-radius: 4px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    border: none;
+    background: none;
+}
+
+QScrollBar::down-arrow, QScrollBar::up-arrow, QScrollBar::left-arrow, QScrollBar::right-arrow {
+    border: none;
+    background: none;
+    color: none;
+}

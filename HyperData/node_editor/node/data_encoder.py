@@ -6,15 +6,9 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.preprocessing import LabelEncoder as sk_LabelEncoder
 from sklearn.preprocessing import OrdinalEncoder as sk_OrdinalEncoder
 from sklearn.preprocessing import OneHotEncoder as sk_OneHotEncoder
-from ui.base_widgets.window import Dialog
-from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+
 from config.settings import logger
-from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
-from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt
+
 
 # TODO: only encode categorical data
 

@@ -1,12 +1,31 @@
-import qfluentwidgets
 from PyQt6 import QtCore, QtWidgets, QtGui
 
-class Draggable_ListWidget(qfluentwidgets.ListWidget):
+
+class ListWidget (QtWidgets.QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
     
         self.setIconSize(QtCore.QSize(32, 32))
         #self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.verticalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
+        self.horizontalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
+    
+    def enterEvent(self, event: QtGui.QEnterEvent) -> None:
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        return super().enterEvent(event)
+
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        return super().leaveEvent(a0)
+
+class Draggable_ListWidget(ListWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
         self.setDragEnabled(True)
     
     def mousePressEvent(self, event:QtGui.QMouseEvent):
@@ -29,13 +48,17 @@ class Draggable_ListWidget(qfluentwidgets.ListWidget):
             super().mousePressEvent(event)
 
 
-class TreeWidget (qfluentwidgets.TreeWidget):
+class TreeWidget (QtWidgets.QTreeWidget):
     sig_doubleClick = QtCore.pyqtSignal(str)
     def __init__(self, parent=None):
         super().__init__(parent)
     
         self.setIconSize(QtCore.QSize(24, 24))
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.verticalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
+        self.horizontalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
         self.setHeaderHidden(True)
 
     def setData (self, data:dict):
@@ -68,6 +91,16 @@ class TreeWidget (qfluentwidgets.TreeWidget):
         if isinstance(item, QtWidgets.QTreeWidgetItem): 
             self.sig_doubleClick.emit(str(item.data(0,0)))
         return super().mouseDoubleClickEvent(event)
+
+    def enterEvent(self, event: QtGui.QEnterEvent) -> None:
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        return super().enterEvent(event)
+
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        return super().leaveEvent(a0)
 
 class Draggable_TreeWidget (TreeWidget):   
     

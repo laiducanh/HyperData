@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import QHBoxLayout, QComboBox, QWidget, QLabel
-import os, qfluentwidgets
-from ui.base_widgets.button import _ComboBox
-from ui.base_widgets.icons import Icon
+from PyQt6.QtWidgets import QHBoxLayout, QWidget
+import os
+from ui.base_widgets.button import _ComboBox, _ToggleToolButton
+from ui.utils import icon
 from ui.base_widgets.text import BodyLabel
 from matplotlib.text import Text
 from plot.canvas import Canvas
@@ -16,18 +16,18 @@ class FontStyle (QWidget):
         self.canvas = canvas
     
         layout.addWidget(BodyLabel('Font Style'))
-        style = qfluentwidgets.ToggleToolButton()
+        style = _ToggleToolButton()
         style.clicked.connect(self.set_italic)
         style.setCheckable(True)
         style.setChecked(self.get_italic())
-        style.setIcon(Icon(os.path.join("text-italic.svg")))
+        style.setIcon(icon(os.path.join("text-italic.svg")))
         layout.addWidget(style)
         
-        weight = qfluentwidgets.ToggleToolButton()
+        weight = _ToggleToolButton()
         weight.clicked.connect(self.set_bold)
         weight.setCheckable(True)
         weight.setChecked(self.get_bold())
-        weight.setIcon(Icon(os.path.join("text-bold.svg")))
+        weight.setIcon(icon(os.path.join("text-bold.svg")))
         layout.addWidget(weight)
     
     def set_italic (self, bool):

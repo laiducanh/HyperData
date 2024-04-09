@@ -2,14 +2,14 @@ from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApp
                              QCompleter, QPushButton, QMainWindow, QScrollBar)
 from PyQt6.QtGui import QIcon, QGuiApplication
 from PyQt6.QtCore import QModelIndex, QSize, pyqtSignal, Qt, QAbstractTableModel, QVariant
-import os, missingno, qfluentwidgets, math
+import os, missingno
 from collections import Counter
 import pandas as pd
 import numpy as np
 from config.settings import list_name
-from ui.base_widgets.button import _PushButton, _ToolButton, _PrimaryPushButton
+from ui.base_widgets.button import _PushButton, _PrimaryPushButton
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.icons import Icon
+#from ui.base_widgets.icons import Icon
 from plot.canvas import Canvas
 
 class TableModel(QAbstractTableModel):
@@ -136,7 +136,7 @@ class TableView (QWidget):
         self.data_type = BodyLabel()
         layout1.addWidget(self.data_type)
         self.copy_btn = _PrimaryPushButton()
-        self.copy_btn.setIcon(Icon(os.path.join('copy.png')))
+        #self.copy_btn.setIcon(Icon(os.path.join('copy.png')))
         self.copy_btn.setText('Copy to clipboard')
         #self.copy_btn.setToolTip('Copy to clipboard')
         self.copy_btn.setToolTipDuration(2000)

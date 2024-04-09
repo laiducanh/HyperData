@@ -1,12 +1,12 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QStandardPaths, QDir, QSettings
-from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QWidget, QStackedLayout, QScrollArea
-from ui.base_widgets.button import ComboBox, Toggle, _ComboBox
-from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QScrollArea
+from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.spinbox import Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.text import StrongBodyLabel
-from ui.base_widgets.separator import SeparateHLine
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine, Frame
 from plot.canvas import Canvas
-import qfluentwidgets, matplotlib
+import matplotlib
 from config.settings import linestyle_lib
 
 class PlotSize2D (QWidget):
@@ -69,8 +69,8 @@ class PlotSize2D (QWidget):
 
     
 class Grid2D (QWidget):
-    def __init__(self, canvas: Canvas):
-        super().__init__()
+    def __init__(self, canvas: Canvas, parent=None):
+        super().__init__(parent)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -113,22 +113,23 @@ class Grid2D (QWidget):
         layout.addWidget(self.transparency)
 
     def set_grid(self):
-        
-        self.canvas.axes.grid(visible=False)
-        if self.visible.button.isChecked():
-            which = self.type.button.currentText().lower()
-            axis = self.axis.button.currentText().lower()
-            alpha = self.transparency.button.value()/100
-            linewidth = self.linewidth.button.value()
-            linestyle = self.linestyle.button.currentText().lower()
-            color = self.color.button.color.name()
+        try:
+            self.canvas.axes.grid(visible=False)
+            if self.visible.button.isChecked():
+                which = self.type.button.currentText().lower()
+                axis = self.axis.button.currentText().lower()
+                alpha = self.transparency.button.value()/100
+                linewidth = self.linewidth.button.value()
+                linestyle = self.linestyle.button.currentText().lower()
+                color = self.color.button.color.name()
 
-            self.canvas.axes.grid(which=which, axis=axis, alpha=alpha, linewidth=linewidth,
-                                  linestyle=linestyle, color=color,
-                                  gid = f'_grid.{which}.{axis}.{alpha}.{linewidth}.{linestyle}.{color}',
-                                  )
-        else: self.canvas.axes.grid(visible=False)
-        self.canvas.draw()
+                self.canvas.axes.grid(which=which, axis=axis, alpha=alpha, linewidth=linewidth,
+                                    linestyle=linestyle, color=color,
+                                    gid = f'_grid.{which}.{axis}.{alpha}.{linewidth}.{linestyle}.{color}',
+                                    )
+            else: self.canvas.axes.grid(visible=False)
+            self.canvas.draw()
+        except: pass
     
     def get_visible(self):
         for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
@@ -174,8 +175,8 @@ class Grid2D (QWidget):
 
 
 class Pane(QWidget):
-    def __init__(self, canvas: Canvas):
-        super().__init__()
+    def __init__(self, canvas: Canvas, parent=None):
+        super().__init__(parent)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -220,8 +221,8 @@ class Pane(QWidget):
         else: return 100
 
 class Grid (QScrollArea):
-    def __init__(self, canvas:Canvas):
-        super().__init__()
+    def __init__(self, canvas:Canvas,parent=None):
+        super().__init__(parent)
 
         widget = QWidget()
         layout = QVBoxLayout()
@@ -232,36 +233,35 @@ class Grid (QScrollArea):
         self.setWidgetResizable(True)
         self.verticalScrollBar().setValue(1900)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setStyleSheet("""border: none;background-color:transparent""")  
 
-        card1 = qfluentwidgets.CardWidget()
+        card1 = Frame()
         layout1 = QVBoxLayout()
         card1.setLayout(layout1)
         layout.addWidget(card1)
 
-        layout1.addWidget(StrongBodyLabel('Figure Margin'))
+        layout1.addWidget(TitleLabel('Figure Margin'))
         layout1.addWidget(SeparateHLine())
         self.plotsize = PlotSize2D(canvas)
         layout1.addWidget(self.plotsize)
 
-        card2 = qfluentwidgets.CardWidget()
+        card2 = Frame()
         layout2 = QVBoxLayout()
         card2.setLayout(layout2)
         layout.addWidget(card2)
 
-        layout2.addWidget(StrongBodyLabel("Pane"))
+        layout2.addWidget(TitleLabel("Pane"))
         layout2.addWidget(SeparateHLine())
         self.pane = Pane(canvas)
         layout2.addWidget(self.pane)
         
-        card3 = qfluentwidgets.CardWidget()
+        card3 = Frame()
         layout3 = QVBoxLayout()
         card3.setLayout(layout3)
         layout.addWidget(card3)
 
-        layout3.addWidget(StrongBodyLabel('Grid'))
+        layout3.addWidget(TitleLabel('Grid'))
         layout3.addWidget(SeparateHLine())
-        self.grid = Grid2D(canvas)
+        self.grid = Grid2D(canvas,parent)
         layout3.addWidget(self.grid)
  
 

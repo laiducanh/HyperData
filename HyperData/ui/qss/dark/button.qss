@@ -1,0 +1,71 @@
+_PushButton {
+    color: rgba(67, 67, 67, 1);
+    background: white;
+    border: 1px solid rgba(200, 200, 200, 0.8);
+    border-radius:6px;
+    font: 10.5pt;
+    padding: 5px 12px 6px 12px;
+    outline: none;
+}
+
+_PushButton:hover {
+    border: 1px solid rgba(200, 200, 200, 0.8);
+    border-radius: 6px;
+    background: rgba(220, 220, 220, 0.8);
+}
+
+_PushButton:pressed {
+    color: rgba(0, 0, 0, 0.63);
+    background: rgba(220, 220, 220, 0.4);
+    border: 1px solid rgba(200, 200, 200, 0.8);
+}
+
+_PushButton:disabled {
+    color: rgba(0, 0, 0, 0.36);
+    background: rgba(249, 249, 249, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+_PushButton::menu-indicator {
+    image: url(ui/icons/black/ChevronDown_black.svg);
+    width: 10px;
+    height: 10px;
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    margin: 0px;
+    margin-right: 10px;
+}
+
+
+_TransparentPushButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    margin: 0;
+}
+
+_TransparentPushButton:hover {
+    background: rgba(220, 220, 220, 0.8);
+    border: none;
+}
+
+_TransparentPushButton:pressed {
+    color: rgba(0, 0, 0, 0.63);
+    background: rgba(220, 220, 220, 0.4);
+    border: none;
+}
+
+_PrimaryPushButton {
+    color: white;
+    background-color: rgba(0, 120, 215, 1);
+}
+
+_PrimaryPushButton:hover {
+    background-color: rgba(0, 120, 215, 0.9);
+    border: 1px solid rgba(0, 120, 215, 1);
+}
+
+_PrimaryPushButton:pressed {
+    color: rgba(255, 255, 255, 0.63);
+}

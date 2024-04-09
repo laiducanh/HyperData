@@ -3,8 +3,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, Q
 from ui.base_widgets.button import ComboBox, Toggle, _ComboBox
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.text import LineEdit, _LineEdit
-import qfluentwidgets, matplotlib
+from ui.base_widgets.line_edit import LineEdit, _LineEdit
+from ui.base_widgets.frame import Frame
+import matplotlib
 from matplotlib.axis import Axis
 from plot.canvas import Canvas
 
@@ -35,10 +36,9 @@ class TickBase2D_1 (QWidget):
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setWidget(widget)
         self.scroll_area.verticalScrollBar().setValue(1900)
-        self.scroll_area.setStyleSheet('border:none;background-color:transparent')
         layout.addWidget(self.scroll_area)
 
-        card1 = qfluentwidgets.CardWidget()
+        card1 = Frame()
         layout1 = QVBoxLayout()
         card1.setLayout(layout1)
         widget.layout.addWidget(card1)
@@ -64,22 +64,13 @@ class TickBase2D_1 (QWidget):
         scale.button.currentTextChanged.connect(self.set_scale)
         scale.button.setCurrentText(self.get_scale())
         layout1.addWidget(scale)   
-        
-        tick = qfluentwidgets.SegmentedWidget()
-        tick.addItem(routeKey='major', text='Major Tick',
-                            onClick=lambda: self.layout6.setCurrentIndex(0))
-        tick.addItem(routeKey='minor', text='Minor Tick',
-                            onClick=lambda: self.layout6.setCurrentIndex(1))
-        tick.setCurrentItem('major')
-        
-        widget.layout.addWidget(tick)
 
-        card2 = qfluentwidgets.CardWidget()
+        card2 = Frame()
         layout2 = QVBoxLayout()
         card2.setLayout(layout2)
         widget.layout.addWidget(card2)
 
-        self.layout6 = QStackedLayout()
+        self.layout6 = QVBoxLayout()
         layout2.addLayout(self.layout6)
 
         self.majortick = TickBase2D_2(self.axis, 'major',self.canvas)
@@ -333,37 +324,13 @@ class Tick2D (QWidget):
         self.layout.setContentsMargins(10,0,10,15)
         self.canvas = canvas
 
-        self.choose_axis = qfluentwidgets.SegmentedWidget()
-        self.layout.addWidget(self.choose_axis)
-
-        self.choose_axis.addItem(routeKey='bottom', text='Bottom',
-                            onClick=lambda: self.choose_axis_func('bottom'))
-        self.choose_axis.addItem(routeKey='left', text='Left',
-                            onClick=lambda: self.choose_axis_func('left'))
-        self.choose_axis.addItem(routeKey='top', text='Top',
-                            onClick=lambda: self.choose_axis_func('top'))
-        self.choose_axis.addItem(routeKey='right', text='Right',
-                            onClick=lambda: self.choose_axis_func('right'))
-                
-        self.stackedlayout = QStackedLayout()
-        self.layout.addLayout(self.stackedlayout)
-
         self.bot = TickBase2D_1('bottom',self.canvas)
-        self.stackedlayout.addWidget(self.bot)
+        self.layout.addWidget(self.bot)
         self.left = TickBase2D_1('left',self.canvas)
-        self.stackedlayout.addWidget(self.left)
+        self.layout.addWidget(self.left)
         self.top = TickBase2D_1('top',self.canvas)
-        self.stackedlayout.addWidget(self.top)
+        self.layout.addWidget(self.top)
         self.right = TickBase2D_1('right',self.canvas)
-        self.stackedlayout.addWidget(self.right)
+        self.layout.addWidget(self.right)
 
-    def choose_axis_func (self, axis:str):
-        self.choose_axis.setCurrentItem(axis)
-        if axis == 'bottom': 
-            self.stackedlayout.setCurrentWidget(self.bot)
-        elif axis == 'left': 
-            self.stackedlayout.setCurrentWidget(self.left)
-        elif axis == 'top': 
-            self.stackedlayout.setCurrentWidget(self.top)
-        elif axis == 'right': 
-            self.stackedlayout.setCurrentWidget(self.right)
+    

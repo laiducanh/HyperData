@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
-import qfluentwidgets
+from ui.utils import isDark
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -48,7 +48,7 @@ class GraphicsNode (QGraphicsItem):
         self._pen_hovered = QPen(self._color_hovered)
         self._pen_hovered.setWidthF(3.0)
 
-        if qfluentwidgets.isDarkTheme():
+        if isDark():
             self._brush_background = QBrush(QColor("#232323"))
             self._brush_title = QBrush(QColor("#444444"))
             self._title_color = Qt.GlobalColor.white

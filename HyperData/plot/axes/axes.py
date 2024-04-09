@@ -1,5 +1,3 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 from plot.axes.spine import Spine2D
 from plot.axes.tick import Tick2D
@@ -18,8 +16,8 @@ class Spine (QWidget):
         self.spine2d = Spine2D(canvas)
         self.layout.addWidget(self.spine2d)
     
-    def choose_axis(self, axis:str):
-        self.spine2d.choose_axis_func(axis)
+    def choose_axis_func(self, axis):
+        self.spine2d.choose_axis._onClick(axis)
         
     
 class Tick (QWidget):
@@ -31,6 +29,3 @@ class Tick (QWidget):
 
         self.tick2d = Tick2D(canvas)
         self.layout.addWidget(self.tick2d)
-    
-    def choose_axis (self, axis:str):
-        self.tick2d.choose_axis_func(axis)

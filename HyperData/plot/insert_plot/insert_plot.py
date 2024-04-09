@@ -1,24 +1,24 @@
-from PyQt6.QtCore import QThreadPool, pyqtSignal, QSize, Qt, QPropertyAnimation, QEasingCurve
-from PyQt6.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QProgressBar,
-                             QGraphicsOpacityEffect, QScrollArea, QWidget)
+from PyQt6.QtCore import pyqtSignal, QSize, Qt
+from PyQt6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QScrollArea, QWidget)
 from PyQt6.QtGui import QCursor
-import os, matplotlib, qfluentwidgets, time
+import os
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type
 from plot.insert_plot.input import widget_2input, widget_1input, widget_3input
-from ui.base_widgets.button import _ToolButton, PrimaryDropDownPushButton
-from ui.base_widgets.text import StrongBodyLabel
-from ui.base_widgets.icons import Icon
+from ui.base_widgets.button import _PushButton, DropDownPrimaryPushButton
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.window import ProgressBar
+from ui.base_widgets.frame import Frame
+from ui.utils import icon
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import plotting
 from node_editor.node_node import Node
-import pandas as pd
 from typing import List
 
 DEBUG = False
 
-icon={'2d line':os.path.join("Plot","line.png"),
+ICON_PATH={'2d line':os.path.join("Plot","line.png"),
       '2d area':os.path.join("Plot","area.png"),
       '2d column':os.path.join("Plot","clustered-column.png"),
       '2d scatter':os.path.join("Plot","scatter.png"),
@@ -37,12 +37,12 @@ class Grid_Plottype (QHBoxLayout):
         ### Create grid 
         xpos, ypos = 0,0
         for self.basic_plot in ['2d line','2d area','2d column','2d scatter','pie']:
-            self.button = _ToolButton()
-            self.button.setIcon(Icon(icon[self.basic_plot]))
+            self.button = _PushButton()
+            self.button.setIcon(icon(ICON_PATH[self.basic_plot]))
             self.button.setIconSize(QSize(50,50))
             self.button.setFixedSize(QSize(50,50))
             self.button.setToolTip(self.basic_plot.title())
-            self.button.installEventFilter(qfluentwidgets.ToolTipFilter(self, 0, qfluentwidgets.ToolTipPosition.BOTTOM))
+            #self.button.installEventFilter(qfluentwidgets.ToolTipFilter(self, 0, qfluentwidgets.ToolTipPosition.BOTTOM))
             self.button.clicked.connect(lambda checked, s=self.basic_plot: self.sig.emit(s))
             self.addWidget(self.button,xpos)
             
@@ -55,8 +55,8 @@ class Grid_Plottype (QHBoxLayout):
         self.plottype_window = Plottype_Window(parent) # Plot type window
         self.plottype_window.sig.connect(lambda s: self.sig.emit(s))
         
-        add_plot = _ToolButton()
-        add_plot.setIcon(Icon(os.path.join("add.png")))
+        add_plot = _PushButton()
+        add_plot.setIcon(icon("add.png"))
         add_plot.setIconSize(QSize(30,30))
         add_plot.setFixedSize(QSize(50,50))
         add_plot.setToolTip('More Graphs')
@@ -65,7 +65,7 @@ class Grid_Plottype (QHBoxLayout):
         self.addWidget(add_plot,xpos)
         
 
-class NewPlot (qfluentwidgets.CardWidget):
+class NewPlot (Frame):
     """ This Widget will be created when creating a new plot to display input fields for the new plot """
 
     sig = pyqtSignal()
@@ -100,10 +100,10 @@ class NewPlot (qfluentwidgets.CardWidget):
 
         layout = QHBoxLayout()
         mainlayout.addLayout(layout)
-        self.text = StrongBodyLabel("Graph %d"%self.current_plot)
+        self.text = TitleLabel("Graph %d"%self.current_plot)
         layout.addWidget(self.text)
         layout.addStretch()
-        self.type = PrimaryDropDownPushButton()
+        self.type = DropDownPrimaryPushButton()
         self.type.button.setText(self.plot_type)
         
         
@@ -113,7 +113,7 @@ class NewPlot (qfluentwidgets.CardWidget):
         self.type.button.released.connect(lambda: self.menu.exec(QCursor().pos()))
         layout.addWidget(self.type)
 
-        self.progressbar = qfluentwidgets.ProgressBar()
+        self.progressbar = ProgressBar()
         mainlayout.addWidget(self.progressbar)
         
         self.layout1 = QVBoxLayout()
@@ -156,7 +156,7 @@ class NewPlot (qfluentwidgets.CardWidget):
     def plotting (self, fire_signal=True, **kwargs):
         
         self.progressbar.setValue(0)
-        self.progressbar.setVal(0)
+        self.progressbar._setValue(0)
         
         input = self.widget.input
         _ax = self.widget.axes

@@ -1,45 +1,63 @@
-from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QProgressDialog
-from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
+from PyQt6.QtCore import pyqtSignal, Qt, QPropertyAnimation, pyqtProperty
 from PyQt6.QtGui import QResizeEvent, QColor, QPainter
-import qfluentwidgets, math
+import math
+from ui.base_widgets.button import _PrimaryPushButton, _PushButton
 
-class _Dialog (qfluentwidgets.dialog.MaskDialogBase):
-    def __init__(self, parent):
+class Dialog (QDialog):
+    def __init__(self, title:str=None, parent=None):
         super().__init__(parent)
 
-        self.setShadowEffect(60, (0, 10), QColor(0, 0, 0, 50))
-        self.setMaskColor(QColor(0, 0, 0, 76))
-        self.widget.setStyleSheet("""#centerWidget{background-color:white;
-                                        border: 1px solid rgb(144, 144, 142);
-                                        border-radius: 10px;}""")
-        #self.widget.setFixedSize(200,200)
-        self.viewLayout = QVBoxLayout(self.widget)
+        self.setWindowFlags(Qt.WindowType.Dialog)   
+        self.setWindowTitle(title)  
+        
+        self.vlayout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout()
+        self.vlayout.addLayout(self.main_layout)
 
-
-class Dialog (qfluentwidgets.MessageBox):
-    def __init__(self, title, parent):
-        super().__init__(title,"",parent)
-
-        self.textLayout.removeWidget(self.contentLabel)
-
-
-
-class ProgressBar(qfluentwidgets.ProgressBar):
-    """ this progressbar is only used for ProgressDialog """
+        self.groupButton = QHBoxLayout()
+        self.vlayout.addLayout(self.groupButton)
+        self.ok_btn = _PrimaryPushButton("OK")
+        self.ok_btn.setMinimumWidth(200)
+        self.ok_btn.clicked.connect(self.accept)
+        self.groupButton.addWidget(self.ok_btn)
+        self.cancel_btn = _PushButton("Cancel")
+        self.cancel_btn.setMinimumWidth(200)
+        self.cancel_btn.clicked.connect(self.reject)
+        self.groupButton.addWidget(self.cancel_btn)
+    
+class ProgressBar(QProgressBar):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedHeight(4)
+        self._val = 0
 
         self.lightBackgroundColor = QColor(0, 0, 0, 155)
         self.darkBackgroundColor = QColor(255, 255, 255, 155)
+        self.ani = QPropertyAnimation(self, b'val', self)
+        self.setValue(self._val)
+        self.valueChanged.connect(self._onValueChanged)
+    
+    def _setValue(self, value: int) -> None:
+        self._val = value
+        self.update()
+    
+    def _value(self) -> int:
+        return self._val
 
+    def _onValueChanged(self, value):
+        self.ani.stop()
+        self.ani.setEndValue(value)
+        self.ani.setDuration(300)
+        self.ani.start()
+        super().setValue(value)
 
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
 
         # draw background
-        bc = self.darkBackgroundColor if qfluentwidgets.isDarkTheme() else self.lightBackgroundColor
+        bc = self.lightBackgroundColor
         painter.setPen(bc)
         y =  math.floor(self.height() / 2)
         painter.drawLine(0, y, self.width(), y)
@@ -49,11 +67,12 @@ class ProgressBar(qfluentwidgets.ProgressBar):
 
         # draw bar
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(qfluentwidgets.themeColor())
-        w = int(self.value() / (self.maximum() - self.minimum()) * self.width())
+        painter.setBrush(QColor("#0085f1"))
+        w = int(self.val / (self.maximum() - self.minimum()) * self.width())
         r = self.height() / 2
         painter.drawRoundedRect(0, 0, w, self.height(), r, r)
 
+    val = pyqtProperty(int, _value, _setValue)
         
 class ProgressDialog (QProgressDialog):
     def __init__(self, text=None, cancel_btn=None, parent=None):

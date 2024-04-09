@@ -1,240 +1,162 @@
-import qfluentwidgets
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QFrame, QApplication, QToolButton
-from PyQt6.QtGui import QColor, QEnterEvent, QMouseEvent, QPaintEvent, QPainter, QCursor, QAction, QPalette
-from PyQt6.QtCore import QEvent, pyqtSignal, Qt, QPoint, QRectF
+import os
+from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, 
+                             QGridLayout)
+from PyQt6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
+from PyQt6.QtCore import QEvent, pyqtSignal, Qt, QRectF, QSize
+from PyQt6.QtSvg import QSvgRenderer
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.palette import PaletteMenu
+from ui.base_widgets.button import _PushButton, _TransparentPushButton
+from ui.base_widgets.menu import Menu
+from config.settings import color_lib
 
-class ColorDialog (QWidget):
-    colorChanged = pyqtSignal(QColor)
+PALETTES = {
+    # Matplotlib default
+    "matplotlib": color_lib,
+    # bokeh paired 12
+    'paired12':['#000000', '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a', '#ffff99', '#b15928', '#ffffff'],
+    # d3 category 10
+    'category10':['#000000', '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#ffffff'],
+    # 17 undertones https://lospec.com/palette-list/17undertones
+    '17undertones': ['#000000', '#141923', '#414168', '#3a7fa7', '#35e3e3', '#8fd970', '#5ebb49', '#458352','#dcd37b', '#fffee5', '#ffd035', '#cc9245', '#a15c3e', '#a42f3b', '#f45b7a', '#c24998', '#81588d', '#bcb0c2', '#ffffff']
+}
 
-    def __init__(self, color=QColor(255, 0, 0), title: str='color', parent=None, enableAlpha=False):
-        """
-        Parameters
-        ----------
-        color: `QColor` | `GlobalColor` | str
-            initial color
 
-        title: str
-            the title of dialog
-
-        parent: QWidget
-            parent widget
-
-        enableAlpha: bool
-            whether to enable the alpha channel
-        """
-        super().__init__(parent)
-        self.enableAlpha = enableAlpha
-        if not enableAlpha:
-            color = QColor(color)
-            color.setAlpha(255)
-
-        self.oldColor = QColor(color)
-        self.color = QColor(color)
-
-        self.scrollArea = QScrollArea(self)
-        self.scrollWidget = QWidget(self.scrollArea)
-
-        self.buttonGroup = QFrame(self)
-        self.yesButton = qfluentwidgets.PushButton(self.tr('OK'), self.buttonGroup)
-        self.cancelButton = qfluentwidgets.PushButton(self.tr('Cancel'), self.buttonGroup)
-
-        self.titleLabel = qfluentwidgets.BodyLabel(title, self.scrollWidget)
-        self.huePanel = qfluentwidgets.dialog_box.color_dialog.HuePanel(color, self.scrollWidget)
-        self.newColorCard = qfluentwidgets.dialog_box.color_dialog.ColorCard(color, self.scrollWidget, enableAlpha)
-        self.oldColorCard = qfluentwidgets.dialog_box.color_dialog.ColorCard(color, self.scrollWidget, enableAlpha)
-        self.brightSlider = qfluentwidgets.dialog_box.color_dialog.BrightnessSlider(color, self.scrollWidget)
-
-        self.editLabel = qfluentwidgets.BodyLabel(self.tr('Edit Color'), self.scrollWidget)
-        self.redLabel = qfluentwidgets.BodyLabel(self.tr('Red'), self.scrollWidget)
-        self.blueLabel = qfluentwidgets.BodyLabel(self.tr('Blue'), self.scrollWidget)
-        self.greenLabel = qfluentwidgets.BodyLabel(self.tr('Green'), self.scrollWidget)
-        self.opacityLabel = qfluentwidgets.BodyLabel(self.tr('Opacity'), self.scrollWidget)
-        self.hexLineEdit = qfluentwidgets.dialog_box.color_dialog.HexColorLineEdit(color, self.scrollWidget, enableAlpha)
-        self.redLineEdit = qfluentwidgets.dialog_box.color_dialog.ColorLineEdit(self.color.red(), self.scrollWidget)
-        self.redLineEdit.setFixedWidth(80)
-        self.greenLineEdit = qfluentwidgets.dialog_box.color_dialog.ColorLineEdit(self.color.green(), self.scrollWidget)
-        self.greenLineEdit.setFixedWidth(80)
-        self.blueLineEdit = qfluentwidgets.dialog_box.color_dialog.ColorLineEdit(self.color.blue(), self.scrollWidget)
-        self.blueLineEdit.setFixedWidth(80)
-        self.opacityLineEdit = qfluentwidgets.dialog_box.color_dialog.OpacityLineEdit(self.color.alpha(), self.scrollWidget)
-
-        self.vBoxLayout = QVBoxLayout(self)
-
-        self.__initWidget()
-
-    def __initWidget(self):
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea.setViewportMargins(48, 24, 0, 24)
-        self.scrollArea.setWidget(self.scrollWidget)
-
-        self.setMaximumSize(488, 600+40*self.enableAlpha)
-        self.resize(488, 600+40*self.enableAlpha)
-        self.scrollWidget.resize(440, 500+40*self.enableAlpha)
-        self.buttonGroup.setFixedSize(486, 81)
-        self.yesButton.setFixedWidth(216)
-        self.cancelButton.setFixedWidth(216)
-
-        #self.setShadowEffect(60, (0, 10), QColor(0, 0, 0, 80))
-        #self.setMaskColor(QColor(0, 0, 0, 76))
-
-        self.__initLayout()
-        self.__connectSignalToSlot()
-
-    def __initLayout(self):
-        self.huePanel.move(0, 46)
-        self.newColorCard.move(288, 46)
-        self.oldColorCard.move(288, self.newColorCard.geometry().bottom()+1)
-        self.brightSlider.move(0, 324)
-
-        self.editLabel.move(0, 385)
-        self.redLineEdit.move(0, 426)
-        self.greenLineEdit.move(120, 426)
-        self.blueLineEdit.move(260, 426)
-        self.redLabel.move(90, 434)
-        self.greenLabel.move(210, 434)
-        self.blueLabel.move(350, 434)
-        self.hexLineEdit.move(150, 381)
-
-        if self.enableAlpha:
-            self.opacityLineEdit.move(0, 560)
-            self.opacityLabel.move(144, 567)
-        else:
-            self.opacityLineEdit.hide()
-            self.opacityLabel.hide()
-
-        self.vBoxLayout.setSpacing(0)
-        self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.vBoxLayout.addWidget(self.scrollArea, 1)
-        self.vBoxLayout.addWidget(self.buttonGroup, 0, Qt.AlignmentFlag.AlignBottom)
-
-        self.yesButton.move(24, 25)
-        self.cancelButton.move(250, 25)
-
-    def setColor(self, color, movePicker=True):
-        """ set color """
-        self.color = QColor(color)
-        self.brightSlider.setColor(color)
-        self.newColorCard.setColor(color)
-        self.hexLineEdit.setColor(color)
-        self.redLineEdit.setText(str(color.red()))
-        self.blueLineEdit.setText(str(color.blue()))
-        self.greenLineEdit.setText(str(color.green()))
-        if movePicker:
-            self.huePanel.setColor(color)
-
-    def __onHueChanged(self, color):
-        """ hue changed slot """
-        self.color.setHsv(
-            color.hue(), color.saturation(), self.color.value(), self.color.alpha())
-        self.setColor(self.color)
-
-    def __onBrightnessChanged(self, color):
-        """ brightness changed slot """
-        self.color.setHsv(
-            self.color.hue(), self.color.saturation(), color.value(), color.alpha())
-        self.setColor(self.color, False)
-
-    def __onRedChanged(self, red):
-        """ red channel changed slot """
-        self.color.setRed(int(red))
-        self.setColor(self.color)
-
-    def __onBlueChanged(self, blue):
-        """ blue channel changed slot """
-        self.color.setBlue(int(blue))
-        self.setColor(self.color)
-
-    def __onGreenChanged(self, green):
-        """ green channel changed slot """
-        self.color.setGreen(int(green))
-        self.setColor(self.color)
-
-    def __onOpacityChanged(self, opacity):
-        """ opacity channel changed slot """
-        self.color.setAlpha(int(int(opacity)/100*255))
-        self.setColor(self.color)
-
-    def __onHexColorChanged(self, color):
-        """ hex color changed slot """
-        self.color.setNamedColor("#" + color)
-        self.setColor(self.color)
-
-    def __onYesButtonClicked(self):
-        """ yes button clicked slot """
-        
-        if self.color != self.oldColor:
-            self.colorChanged.emit(self.color)
-        self.close()
-
-    def updateStyle(self):
-        """ update style sheet """
-        self.setStyle(QApplication.style())
-        self.titleLabel.adjustSize()
-        self.editLabel.adjustSize()
-        self.redLabel.adjustSize()
-        self.greenLabel.adjustSize()
-        self.blueLabel.adjustSize()
-        self.opacityLabel.adjustSize()
-
-    def showEvent(self, e):
-        self.updateStyle()
-        super().showEvent(e)
-
-    def __connectSignalToSlot(self):
-        """ connect signal to slot """
-        self.cancelButton.clicked.connect(self.close)
-        self.yesButton.clicked.connect(self.__onYesButtonClicked)
-
-        self.huePanel.colorChanged.connect(self.__onHueChanged)
-        self.brightSlider.colorChanged.connect(self.__onBrightnessChanged)
-
-        self.redLineEdit.valueChanged.connect(self.__onRedChanged)
-        self.blueLineEdit.valueChanged.connect(self.__onBlueChanged)
-        self.greenLineEdit.valueChanged.connect(self.__onGreenChanged)
-        self.hexLineEdit.valueChanged.connect(self.__onHexColorChanged)
-        self.opacityLineEdit.valueChanged.connect(self.__onOpacityChanged)
-
-class ColorPickerButton (QToolButton):
-    colorChanged = pyqtSignal(str)
-    def __init__(self, color: QColor, title: str, parent=None, enableAlpha=False):
+class _PaletteButton(_PushButton):
+    def __init__(self, color, parent=None):
         super().__init__(parent=parent)
-        self.title = title
-        self.enableAlpha = enableAlpha
+        self.setFixedSize(70, 30)
+        self.setColor(color)
+        self.isHover = False
+
+    def setColor(self, color):
+        """ set the color of card """
+        self.color = QColor(color)
+        self.update()
+    
+    def enterEvent(self, a0: QEnterEvent) -> None:
+        self.isHover = True
+        return super().enterEvent(a0)
+
+    def leaveEvent(self, a0: QEvent) -> None:
+        self.isHover = False
+        return super().leaveEvent(a0)
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+
+        if self.isHover:
+            painter.setOpacity(0.83)
+
+        # draw color
+        painter.setBrush(self.color)
+        painter.setPen(QColor(0, 0, 0, 13))
+        painter.drawRoundedRect(self.rect(), 4, 4)
+
+class _PaletteBase(QWidget):
+
+    selected = pyqtSignal(object)
+
+    def _emit_color(self, color):
+        self.selected.emit(color)
+
+class _PaletteLinearBase(_PaletteBase):
+    def __init__(self, colors, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if isinstance(colors, str):
+            if colors in PALETTES:
+                colors = PALETTES[colors]
+        
+        palette = self.layoutvh()
+
+        for c in colors:
+            b = _PaletteButton(c)
+            b.pressed.connect(
+                lambda c=c: self._emit_color(c)
+            )
+            palette.addWidget(b)
+
+        self.setLayout(palette)
+
+class PaletteHorizontal(_PaletteLinearBase):
+    layoutvh = QHBoxLayout
+
+class PaletteVertical(_PaletteLinearBase):
+    layoutvh = QVBoxLayout
+
+class PaletteGrid(_PaletteBase):
+    sig_openDialog = pyqtSignal()
+    def __init__(self, colors, n_columns=5, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if isinstance(colors, str):
+            if colors in PALETTES:
+                colors = PALETTES[colors]
+
+        palette = QGridLayout()
+        
+        row, col = 0, 0
+
+        for c in colors:
+            b = _PaletteButton(c)
+            b.pressed.connect(
+                lambda c=c: self._emit_color(c)
+            )
+            palette.addWidget(b, row, col)
+            col += 1
+            if col == n_columns:
+                col = 0
+                row += 1
+        
+        add = _TransparentPushButton()
+        
+        add.setIcon(QIcon(os.path.join('UI','Icons','add.png')))
+        add.setIconSize(QSize(20,20))
+        add.clicked.connect(self.sig_openDialog.emit)
+        palette.addWidget(add)
+        add.setFixedSize(QSize(70,30))
+        
+        self.setLayout(palette)
+        self.setFixedSize(QSize(int(78*n_columns),int(42*(row+1))))
+
+class PaletteMenu (Menu):
+    def __init__(self, colors, n_columns=5, *args, **kwargs):
+        super().__init__()
+        self._palette = PaletteGrid(colors=colors, n_columns=n_columns, *args, **kwargs)
+        layout = QVBoxLayout(self)
+        layout.addWidget(self._palette)
+
+class ColorPickerButton (_PushButton):
+    colorChanged = pyqtSignal(str)
+    def __init__(self, color: QColor, parent=None):
+        super().__init__(parent=parent)
         self.setFixedSize(96, 32)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.arrowAni = qfluentwidgets.common.animation.TranslateYAnimation(self)
         self.isHover = False
 
         self.setColor(color)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self._menu = PaletteMenu(colors='matplotlib',parent=self)
         self._menu._palette.selected.connect(self.__onColorChanged)
         self._menu._palette.sig_openDialog.connect(self.__showColorDialog)
         self.setMenu(self._menu)
 
-        self.clicked.connect(lambda: self._menu.exec(QCursor().pos()))
-
     def __showColorDialog(self):
         """ show color dialog """
-        self._menu.hide()
-        w = qfluentwidgets.ColorDialog(self.color, self.tr(
-            'Choose ')+self.title, self.window(), self.enableAlpha)
-        w.colorChanged.connect(self.__onColorChanged)
-        w.exec()
+        dialog = QColorDialog(self.color, self.window())
+        dialog.colorSelected.connect(self.__onColorChanged)
+        dialog.exec()
         
     def __onColorChanged(self, color):
         """ color changed slot """
         self.setColor(color)
         if isinstance(color, QColor): color = color.name()
         self.colorChanged.emit(color)
-        self._menu.hide()
 
     def setColor(self, color):
         """ set color """
+        if not color: color = 'white'
         self.color = QColor(color)
         self.update()
     
@@ -247,18 +169,16 @@ class ColorPickerButton (QToolButton):
         return super().leaveEvent(a0)
     
     def _drawDropDownIcon(self, painter:QPainter, rect):
-        qfluentwidgets.FluentIcon.ARROW_DOWN.render(painter, rect)
+        icon = os.path.join("ui","icons","black","ChevronDown_black.svg")
+        renderer = QSvgRenderer(icon)
+        renderer.render(painter, rect)
         
-
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
-        pc = QColor(255, 255, 255, 10) if qfluentwidgets.isDarkTheme() else QColor(234, 234, 234)
+        pc = QColor(234, 234, 234)
         painter.setPen(pc)
-
         color = QColor(self.color)
-        if not self.enableAlpha:
-            color.setAlpha(255)
         
         if self.isHover:
             painter.setOpacity(0.83)
@@ -266,7 +186,7 @@ class ColorPickerButton (QToolButton):
         painter.setBrush(color)
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
         rect = QRectF(self.width()-22, self.height() /
-                      2-5+self.arrowAni.y, 10, 10)
+                      2-5, 10, 10)
         self._drawDropDownIcon(painter, rect)  
 
 class ColorDropdown (QWidget):
@@ -277,9 +197,9 @@ class ColorDropdown (QWidget):
         self.setLayout(layout)
         layout.setContentsMargins(0,0,0,0)
 
-        layout.addWidget(qfluentwidgets.BodyLabel(text.title()))
+        layout.addWidget(BodyLabel(text))
         
-        self.button = ColorPickerButton(color, text, parent=parent)
+        self.button = ColorPickerButton(color, parent=parent)
         layout.addWidget(self.button)
 
         

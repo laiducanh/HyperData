@@ -1,0 +1,20 @@
+TreeWidget {
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    outline: 0;
+    padding-right: 5px;
+    font: 10.5pt;
+}
+
+TreeWidget::item {
+    padding: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding-left: 20px;
+    color: white;
+}
+
+TreeWidget::item:hover {
+    background-color: rgba(222, 222, 222, 1);
+}

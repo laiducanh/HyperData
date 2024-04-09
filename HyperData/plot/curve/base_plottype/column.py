@@ -1,8 +1,9 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QTextEdit
-from ui.base_widgets.separator import SeparateHLine
-from ui.base_widgets.text import LineEdit, StrongBodyLabel
+from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.button import ComboBox
 from plot.insert_plot.insert_plot import NewPlot
@@ -24,7 +25,7 @@ class Column (QWidget):
         self.plot = plot
         self.obj = self.find_object()
 
-        self._layout.addWidget(StrongBodyLabel("Column"))
+        self._layout.addWidget(TitleLabel("Column"))
         self._layout.addWidget(SeparateHLine())
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="orientation")
@@ -110,7 +111,7 @@ class ClusteredColumn(Column):
         self._layout.insertWidget(0,widget)
         self._layout.addSpacing(10)
 
-        layout.addWidget(StrongBodyLabel("Clustered Column"))
+        layout.addWidget(TitleLabel("Clustered Column"))
         layout.addWidget(SeparateHLine())
 
         self.distance = DoubleSpinBox(min=0,max=1,step=0.1,text="distance")
@@ -143,7 +144,7 @@ class Marimekko (QWidget):
         self.plot = plot
         self.obj = self.find_object()
 
-        self._layout.addWidget(StrongBodyLabel("Column"))
+        self._layout.addWidget(TitleLabel("Column"))
         self._layout.addWidget(SeparateHLine())
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="orientation")

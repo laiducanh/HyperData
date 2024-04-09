@@ -1,10 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QGraphicsRectItem, QGraphicsTextItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool
 from PyQt6.QtGui import QFont, QAction, QPaintEvent
-import qfluentwidgets, pandas
+import pandas
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
-from ui.base_widgets.text import _TextEdit
+from ui.base_widgets.line_edit import _TextEdit
+from ui.base_widgets.button import _TransparentPushButton, _PrimaryPushButton
+from ui.base_widgets.window import ProgressBar
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.threadpool import Worker
 from config.settings import logger
@@ -21,7 +23,7 @@ class NodeContentWidget(QWidget):
     sig = pyqtSignal()
     def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsSence"
         super().__init__()
-        self.setStyleSheet('background-color:transparent')
+        #self.setStyleSheet('background-color:transparent')
         self.node = node
         self.parent = parent
         self.threadpool = parent.threadpool
@@ -44,44 +46,47 @@ class NodeContentWidget(QWidget):
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         font = QFont('Monospace', 8)
-        self.exec_btn = qfluentwidgets.PillPushButton('Execute')
-        self.exec_btn.setFont(font)
-        self.exec_btn.setCheckable(False)
+        self.exec_btn = _TransparentPushButton()
+        self.exec_btn.setText('Execute')
+        #self.exec_btn.setFont(font)
+        #self.exec_btn.setCheckable(False)
         self.exec_btn.pressed.connect(self.exec)
         self.layout.addWidget(self.exec_btn)
-        self.label = qfluentwidgets.TransparentPushButton(f'Shape: (0, 0)')
-        self.label.setFont(font)
+        self.label = _TransparentPushButton()
+        self.label.setText(f'Shape: (0, 0)')
+        #self.label.setFont(font)
         self.label.pressed.connect(self.viewData)
         #self.label.setContentsMargins(5,0,5,3)
         self.layout.addWidget(self.label)
         #self.setFixedHeight(46)
-        self.config_btn = qfluentwidgets.TransparentPushButton("Configuration")
+        self.config_btn = _TransparentPushButton()
+        self.config_btn.setText("Configuration")
         self.config_btn.clicked.connect(self.config)
-        self.config_btn.setFont(font)
+        #self.config_btn.setFont(font)
         self.layout.addWidget(self.config_btn)
         self.layout.addWidget(self.comment)
-        self.progress = qfluentwidgets.ProgressBar()
+        self.progress = ProgressBar()
         self.layout.addWidget(self.progress)
     
     def initMenu(self):
-        action = QAction("Execute Card")
+        action = QAction("Execute Card",self.menu)
         action.triggered.connect(self.exec)
         self.menu.addAction(action)
-        action = QAction("View Output")
+        action = QAction("View Output",self.menu)
         action.triggered.connect(self.viewData)
         self.menu.addAction(action)
-        action = QAction("Configuration")
+        action = QAction("Configuration",self.menu)
         action.triggered.connect(self.config)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Show Comment")
+        action = QAction("Show Comment",self.menu)
         action.triggered.connect(self.comment.show)
         self.menu.addAction(action)
-        action = QAction("Hide Comment")
+        action = QAction("Hide Comment",self.menu)
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Delete Card")
+        action = QAction("Delete Card",self.menu)
         action.triggered.connect(lambda: self.parent.removeNode(self.node))
         self.menu.addAction(action)
 
@@ -90,8 +95,8 @@ class NodeContentWidget(QWidget):
 
     def run_threadpool(self, *args, **kwargs):
         """ use for threadpool run """
-        self.progress.setVal(0)
         self.progress.setValue(0)
+        self.progress._setValue(0)
         worker = Worker(self.func, *args, **kwargs)
         worker.signals.finished.connect(self.exec_done)
         self.threadpool.start(worker)

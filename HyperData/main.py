@@ -1,16 +1,17 @@
-import sys, qfluentwidgets, os, json
+import sys, os, json
 
 from PyQt6.QtCore import QThreadPool, Qt
-from PyQt6.QtWidgets import (QWidget, QMenuBar, QVBoxLayout, QStackedLayout, QApplication, QFileDialog, QSplashScreen,
+from PyQt6.QtWidgets import (QWidget, QMenuBar, QStackedLayout, QApplication, QFileDialog, QSplashScreen,
                              QMainWindow)
-from PyQt6.QtGui import QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPixmap, QAction, QColor
+from PyQt6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPixmap, 
+                         QAction)
 
 from plot.plot_view import PlotView
 from node_editor.node_view import NodeView
 from node_editor.node_node import Node
 from config.settings_window import SettingsWindow
 from config.settings import config
-
+from ui.base_widgets.button import ComboBox
 try:
     from ctypes import windll  # Only exists on Windows.
     myappid = 'mycompany.myproduct.subproduct.version'
@@ -36,7 +37,7 @@ class Main(QMainWindow):
         self.mainlayout = QStackedLayout()
         self.central_widget.setLayout(self.mainlayout)
         self.setCentralWidget(self.central_widget)
-
+        
         self.add_node_view()
         
     def setupMenuBar(self):
@@ -93,6 +94,10 @@ class Main(QMainWindow):
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
         return super().mouseMoveEvent(a0)
 
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        
+        return super().paintEvent(a0)
+    
     def saveToFile(self):
         dialog = QFileDialog(self)
         if dialog.exec():
@@ -131,12 +136,13 @@ if __name__ == "__main__":
     
     
     app = QApplication(sys.argv)
+    
     pixmap = QPixmap(os.path.join('UI','Icons','app-icon.png'))
     splashScreen = QSplashScreen(pixmap)
     splashScreen.show()
     splashScreen.showMessage('Loading modules ...',alignment=Qt.AlignmentFlag.AlignBottom|Qt.AlignmentFlag.AlignCenter)
     app.processEvents()
-    app.setStyle('Fusion')
+    #app.setStyle('Fusion')
     main_window = Main()
     main_window.show()
     splashScreen.close()

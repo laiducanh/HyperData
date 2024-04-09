@@ -4,8 +4,8 @@ from PyQt6.QtCore import pyqtSignal
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider, SpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.separator import SeparateHLine
-from ui.base_widgets.text import StrongBodyLabel
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel
 from config.settings import linestyle_lib, marker_lib
 from plot.canvas import Canvas
 from matplotlib.lines import Line2D
@@ -23,7 +23,7 @@ class LineBase (QWidget):
         self.canvas = canvas  
         self.obj = self.find_object()        
 
-        layout.addWidget(StrongBodyLabel('Line'))
+        layout.addWidget(TitleLabel('Line'))
         layout.addWidget(SeparateHLine())
         
         self.linestyle = ComboBox(text='line style',items=linestyle_lib.values())
@@ -46,7 +46,7 @@ class LineBase (QWidget):
         self.alpha.button.valueChanged.connect(self.set_alpha)
         layout.addWidget(self.alpha)
 
-        layout.addWidget(StrongBodyLabel('Marker'))
+        layout.addWidget(TitleLabel('Marker'))
         layout.addWidget(SeparateHLine())
 
         self.marker = ComboBox(text='marker style',items=marker_lib.values())

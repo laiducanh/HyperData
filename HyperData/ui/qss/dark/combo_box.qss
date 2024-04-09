@@ -1,0 +1,55 @@
+_ComboBox {
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px 6px 12px;
+    font: 10.5pt;
+    color: rgba(67, 67, 67, 1);
+    background-color: transparent;
+    text-align: left;
+}
+
+_ComboBox:hover {
+    background-color: rgba(220, 220, 220, 0.8);
+}
+
+_ComboBox:disabled {
+    color: rgba(0, 0, 0, 0.36);
+    background: rgba(249, 249, 249, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+_ComboBox::drop-down {
+    border: none;
+    margin: 0px;
+    margin-right: 17px;
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+}
+
+_ComboBox::down-arrow {
+    image: url(ui/icons/black/ChevronDown_black.svg);
+    width: 10px;
+    height: 10px;
+}
+
+_ComboBox QAbstractItemView {
+    border: 1px solid rgba(200, 200, 200, 0.8);
+    border-radius: 6px;
+    background: white;
+    padding: 4px 3px 4px 3px;
+    font: 10.5pt;
+    outline: none;
+}
+
+_ComboBox QAbstractItemView::item {
+    color: black;
+    background: transparent;
+    font: 10.5pt;
+    padding: 3px 10px 3px 10px;
+}
+
+_ComboBox QAbstractItemView::item:hover {
+    border-radius: 6px;
+    background: rgba(220, 220, 220, 0.8);
+}

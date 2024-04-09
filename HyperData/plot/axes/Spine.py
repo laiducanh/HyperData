@@ -1,15 +1,16 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QLabel
 from PyQt6.QtCore import pyqtSignal, Qt
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.frame import Frame
 from plot.canvas import Canvas
 from config.settings import linestyle_lib
-import qfluentwidgets, matplotlib
+import matplotlib
 from matplotlib.spines import Spine
 
 
-class SpineBase (qfluentwidgets.CardWidget):
+class SpineBase (Frame):
     def __init__(self, axis, canvas:Canvas):
         super().__init__()
 
@@ -26,7 +27,7 @@ class SpineBase (qfluentwidgets.CardWidget):
         visible.button.setChecked(self.get_visible())
         layout.addWidget(visible)
 
-        color = ColorDropdown(text='color',title='color')
+        color = ColorDropdown(text='color')
         color.button.colorChanged.connect(self.set_color)
         color.button.setColor(self.get_color())
         layout.addWidget(color)
@@ -103,17 +104,13 @@ class Spine2D (QWidget):
         self.layout.setContentsMargins(10,0,10,15)
         self.canvas = canvas
 
-        self.choose_axis = qfluentwidgets.SegmentedWidget()
+        self.choose_axis = SegmentedWidget()
         self.layout.addWidget(self.choose_axis)
 
-        self.choose_axis.addItem(routeKey='bottom', text='Bottom',
-                            onClick=lambda: self.choose_axis_func('bottom'))
-        self.choose_axis.addItem(routeKey='left', text='Left',
-                            onClick=lambda: self.choose_axis_func('left'))
-        self.choose_axis.addItem(routeKey='top', text='Top',
-                            onClick=lambda: self.choose_axis_func('top'))
-        self.choose_axis.addItem(routeKey='right', text='Right',
-                            onClick=lambda: self.choose_axis_func('right'))
+        self.choose_axis.addButton(text='Bottom', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_axis.addButton(text='Left', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_axis.addButton(text='Top', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.choose_axis.addButton(text='Right', func=lambda: self.stackedlayout.setCurrentIndex(3))
 
         self.stackedlayout = QStackedLayout()
         self.layout.addLayout(self.stackedlayout)
@@ -126,20 +123,7 @@ class Spine2D (QWidget):
         self.stackedlayout.addWidget(self.top)
         self.right = SpineBase('right',self.canvas)
         self.stackedlayout.addWidget(self.right)
-
-        #self.layout.addStretch(1000)
     
-    def choose_axis_func (self, axis:str):
-        self.choose_axis.setCurrentItem(axis)
-        if axis == 'bottom': 
-            self.stackedlayout.setCurrentWidget(self.bot)
-        elif axis == 'left':    
-            self.stackedlayout.setCurrentWidget(self.left)
-        elif axis == 'top':    
-            self.stackedlayout.setCurrentWidget(self.top)
-        elif axis == 'right': 
-            self.stackedlayout.setCurrentWidget(self.right)
-
 class SpineWidget3D (QWidget):
     sig = pyqtSignal()
     def __init__(self):

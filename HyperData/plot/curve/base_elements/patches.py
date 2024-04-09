@@ -2,14 +2,12 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QPaintEvent
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 from config.settings import linestyle_lib
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox, Slider
-from ui.base_widgets.text import LineEdit
+from ui.base_widgets.button import ComboBox
+from ui.base_widgets.spinbox import DoubleSpinBox, Slider
 from ui.base_widgets.color import ColorDropdown
 from plot.canvas import Canvas
 from matplotlib import patches
 from matplotlib import colors, scale
-import matplotlib, numpy
 from typing import List
 
 class Rectangle (QWidget):

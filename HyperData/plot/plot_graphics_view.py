@@ -38,8 +38,8 @@ class GraphicsView (QGraphicsView):
     sig_edit_legendtitle = pyqtSignal()
     sig_edit_legend = pyqtSignal(str) # string is the current plot being edited legend
     sig_keyPressEvent = pyqtSignal(object)
-    def __init__(self, canvas:Canvas):
-        super().__init__()
+    def __init__(self, canvas:Canvas,parent=None):
+        super().__init__(parent)
 
         self._scene = QGraphicsScene()
         self.setScene(self._scene)
@@ -53,7 +53,7 @@ class GraphicsView (QGraphicsView):
         self.plotview = WidgetItem(canvas)
         self._scene.addItem(self.plotview) 
     
-        self.tooltip = Node()
+        self.tooltip = Node(parent=parent)
         self._scene.addItem(self.tooltip)
         self.tooltip.hide()
 

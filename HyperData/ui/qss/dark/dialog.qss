@@ -1,0 +1,22 @@
+QDialog {
+    background-color: white;
+}
+
+#buttonGroup {
+    background-color: rgb(243, 243, 243);
+    border-top: 1px solid rgb(229, 229, 229);
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+MessageBox #buttonGroup {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+#centerWidget {
+    border: 1px solid rgb(144, 144, 142);
+    border-radius: 6px;
+    background-color: white;
+}

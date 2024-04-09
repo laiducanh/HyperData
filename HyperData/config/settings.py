@@ -1,6 +1,5 @@
-import string, itertools, matplotlib, os, logging, qfluentwidgets, json
-from PyQt6.QtGui import QMouseEvent
-from PyQt6.QtCore import Qt, QStandardPaths, QDir, QSettings, QSize
+import string, itertools, matplotlib, os, logging, json
+from PyQt6.QtCore import QStandardPaths, QDir
 
 DEBUG = True
 
@@ -12,7 +11,8 @@ from matplotlib import font_manager
 font_lib = font_manager.get_font_names()
 font_lib.append('sans-serif')
 
-marker_lib = matplotlib.lines.Line2D.markers
+from matplotlib import lines
+marker_lib = lines.Line2D.markers
 
 matplotlib.rcParams['font.family'] = 'DejaVu Sans'
 
@@ -41,7 +41,7 @@ if os.path.exists(configFile):
         raw_data = file.read()
         config = json.loads(raw_data)
         print(config)
-else: config = {"theme":"Auto","theme color":qfluentwidgets.themeColor().name(),"dock area":"left",}
+else: config = {"theme":"Auto", "dock area":"left",}
 
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"log.txt")
 if DEBUG: logFile = "DEBUG.txt"

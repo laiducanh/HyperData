@@ -1,8 +1,8 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QTextEdit
-from ui.base_widgets.separator import SeparateHLine
-from ui.base_widgets.text import TextEdit, StrongBodyLabel
+from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.spinbox import SpinBox
 from matplotlib.collections import Collection
 from plot.insert_plot.insert_plot import NewPlot
@@ -22,7 +22,7 @@ class Scatter(QWidget):
         self.plot = plot
         self.obj = self.find_obj()
 
-        self._layout.addWidget(StrongBodyLabel('Scatter'))
+        self._layout.addWidget(TitleLabel('Scatter'))
         self._layout.addWidget(SeparateHLine())
 
         self.sizes = SpinBox(min=1,max=1000,step=2,text="sizes")

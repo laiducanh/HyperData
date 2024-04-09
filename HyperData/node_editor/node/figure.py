@@ -11,17 +11,17 @@ class Figure (NodeContentWidget):
         self.node.input_sockets[0].socket_data = pd.DataFrame()
     
     def initMenu(self):
-        action = QAction("Open Figurre")
+        action = QAction("Open Figurre",self.menu)
         action.triggered.connect(self.exec)
         self.menu.addAction(action)
-        action = QAction("View Data")
+        action = QAction("View Data",self.menu)
         action.triggered.connect(self.viewData)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Show Comment")
+        action = QAction("Show Comment",self.menu)
         action.triggered.connect(self.comment.show)
         self.menu.addAction(action)
-        action = QAction("Hide Comment")
+        action = QAction("Hide Comment",self.menu)
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
     

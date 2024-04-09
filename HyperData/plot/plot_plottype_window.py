@@ -1,10 +1,11 @@
-from PyQt6.QtWidgets import QListWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget, QLabel, QMainWindow
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget, QLabel, QMainWindow
 from PyQt6.QtCore import pyqtSignal, QSize, Qt
 from PyQt6.QtGui import QIcon, QPixmap
-import os, qfluentwidgets
+import os
 from ui.base_widgets.button import _PrimaryPushButton
-from ui.base_widgets.text import StrongBodyLabel, TitleLabel, BodyLabel
-from ui.base_widgets.separator import SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.list import ListWidget
 
 class Plottype_Button (_PrimaryPushButton):
     sig = pyqtSignal(str)
@@ -17,13 +18,12 @@ class Plottype_Button (_PrimaryPushButton):
         self.setToolTip(tooltip)
         self.setToolTipDuration(1000)
         #self.setFixedSize(QSize(icon_size,icon_size))
-        self.installEventFilter(qfluentwidgets.ToolTipFilter(self, 0, qfluentwidgets.ToolTipPosition.BOTTOM))
         self.setMaximumWidth(200)
         self.clicked.connect(lambda: self.sig.emit(self.type))
         
 
 
-class SideBar (qfluentwidgets.ListWidget):
+class SideBar (ListWidget):
     sig = pyqtSignal()
     def __init__(self):
         super().__init__()
@@ -62,7 +62,7 @@ class Line (QWidget):
         fig.setFixedWidth(100)
         layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('2D Line'))
+        layout.addWidget(TitleLabel('2D Line'))
         layout_line2d = QHBoxLayout()
         layout_line2d.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_line2d)
@@ -72,7 +72,7 @@ class Line (QWidget):
             layout_line2d.addWidget(button)
         #layout_line2d.addStretch()
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('3D Line'))
+        layout.addWidget(TitleLabel('3D Line'))
         layout_line3d = QHBoxLayout()
         layout_line3d.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_line3d)
@@ -82,7 +82,7 @@ class Line (QWidget):
             layout_line3d.addWidget(button)
         #layout_line3d.addStretch()
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('2D Area'))
+        layout.addWidget(TitleLabel('2D Area'))
         layout_line2darea = QHBoxLayout()
         layout_line2darea.setAlignment(Qt.AlignmentFlag.AlignLeft)
         for i in ['fill between','2d area','2d stacked area', "2d 100% stacked area"]:
@@ -92,7 +92,7 @@ class Line (QWidget):
         layout.addLayout(layout_line2darea)
         #layout_line2darea.addStretch()
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('3D Area'))
+        layout.addWidget(TitleLabel('3D Area'))
         layout_line3darea = QHBoxLayout()
         for i in ['3d area']:
             button = Plottype_Button(i,50,f"{i.title()}")
@@ -128,7 +128,7 @@ class Bar (QWidget):
         fig.setFixedWidth(100)
         layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('2D Column'))
+        layout.addWidget(TitleLabel('2D Column'))
         layout_column2d_1 = QHBoxLayout()
         layout_column2d_1.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_column2d_1)
@@ -144,7 +144,7 @@ class Bar (QWidget):
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_column2d_2.addWidget(button)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('3D Column'))
+        layout.addWidget(TitleLabel('3D Column'))
         layout_column3d = QHBoxLayout()
         layout.addLayout(layout_column3d)
         for i in ['3d column']:
@@ -181,7 +181,7 @@ class Scatter (QWidget):
         fig.setFixedWidth(100)
         layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('Scatter'))
+        layout.addWidget(TitleLabel('Scatter'))
         layout_scatter3 = QHBoxLayout()
         layout.addLayout(layout_scatter3)
         for i in ['2d scatter','3d scatter']:
@@ -190,7 +190,7 @@ class Scatter (QWidget):
             layout_scatter3.addWidget(button)
         layout_scatter3.addStretch()
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('Bubble'))
+        layout.addWidget(TitleLabel('Bubble'))
         layout_bubble = QHBoxLayout()
         layout.addLayout(layout_bubble)
         for i in ['bubble']:
@@ -227,7 +227,7 @@ class Pie (QWidget):
         fig.setFixedWidth(100)
         layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('2D Pie'))
+        layout.addWidget(TitleLabel('2D Pie'))
         layout_2dpie = QHBoxLayout()
         layout.addLayout(layout_2dpie)
         for i in ['pie']:
@@ -236,7 +236,7 @@ class Pie (QWidget):
             layout_2dpie.addWidget(button)
         layout_2dpie.addStretch()
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('Others'))
+        layout.addWidget(TitleLabel('Others'))
         layout_otherpie = QHBoxLayout()
         layout.addLayout(layout_otherpie)
         for i in ['doughnut','treemap']:
@@ -272,7 +272,7 @@ class Statistics (QWidget):
         fig.setFixedWidth(100)
         layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('Histogram'))
+        layout.addWidget(TitleLabel('Histogram'))
         layout_hist = QHBoxLayout()
         for i in ['histogram','stacked histogram']:
             button = Plottype_Button(i,50,f"{i.title()}")
@@ -281,7 +281,7 @@ class Statistics (QWidget):
         layout_hist.addStretch()
         layout.addLayout(layout_hist)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('Box and Whisker'))
+        layout.addWidget(TitleLabel('Box and Whisker'))
         layout_box = QHBoxLayout()
         layout.addLayout(layout_box)
         for i in ['boxplot','violinplot']:
@@ -319,7 +319,7 @@ class Surface (QWidget):
         fig.setFixedWidth(100)
         layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('3D'))
+        layout.addWidget(TitleLabel('3D'))
         layout_surface = QHBoxLayout()
         layout.addLayout(layout_surface)
         layout_surface.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -328,7 +328,7 @@ class Surface (QWidget):
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_surface.addWidget(button)
         layout.addWidget(SeparateHLine())
-        layout.addWidget(StrongBodyLabel('Mesh'))
+        layout.addWidget(TitleLabel('Mesh'))
         layout_mesh = QHBoxLayout()
         layout_mesh.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_mesh)

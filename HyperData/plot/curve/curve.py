@@ -1,15 +1,15 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool, QTimer
-from PyQt6.QtWidgets import (QHBoxLayout,QVBoxLayout, QTextEdit, QScrollArea, QComboBox,
-                             QWidget)
+from PyQt6.QtCore import pyqtSignal, Qt, QTimer
+from PyQt6.QtWidgets import QVBoxLayout,  QScrollArea, QWidget
 from PyQt6.QtGui import QPaintEvent
-from ui.base_widgets.text import StrongBodyLabel, TextEdit
-from ui.base_widgets.separator import SeparateHLine
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.line_edit import TextEdit
+from ui.base_widgets.frame import SeparateHLine, Frame
+from ui.base_widgets.window import ProgressBar
 from plot.curve.base_plottype.line import Line, Step, Area
 from plot.curve.base_plottype.scatter import Scatter
 from plot.curve.base_plottype.column import Column, ClusteredColumn, Marimekko
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
-import qfluentwidgets, matplotlib
 from matplotlib.artist import Artist
 from typing import List
 
@@ -27,12 +27,12 @@ class Curve (QWidget):
         self.obj = self.find_object()
         self.plot = plot
 
-        self.progressbar = qfluentwidgets.ProgressBar()
+        self.progressbar = ProgressBar()
 
-        layout.addWidget(StrongBodyLabel(str(self.gid).title()))
+        layout.addWidget(TitleLabel(str(self.gid).title()))
         layout.addWidget(self.progressbar)
                 
-        self.scroll_widget = qfluentwidgets.CardWidget()
+        self.scroll_widget = Frame()
         self.layout2 = QVBoxLayout()
         self.layout2.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.scroll_widget.setLayout(self.layout2)
@@ -50,7 +50,7 @@ class Curve (QWidget):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.set_label)
 
-        self.layout2.addWidget(StrongBodyLabel('Label'))
+        self.layout2.addWidget(TitleLabel('Label'))
         self.layout2.addWidget(SeparateHLine())
         self.legend = TextEdit()
         self.legend.button.setPlainText(self.get_label())
@@ -71,7 +71,7 @@ class Curve (QWidget):
         
     def set_label (self):
         self.progressbar.setValue(0)
-        self.progressbar.setVal(0)
+        self.progressbar._setValue(0)
         _label = self.legend.button.toPlainText()
         if _label == "":
             _label = "_"
@@ -111,7 +111,7 @@ class Curve (QWidget):
 
     def update_plot (self):
         self.progressbar.setValue(0)
-        self.progressbar.setVal(0)
+        self.progressbar._setValue(0)
         if self.get_legend(): self.set_legend()
         self.canvas.draw()
         self.sig.emit()

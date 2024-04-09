@@ -1,16 +1,15 @@
-from node_editor.base.node_graphics_content import NodeContentWidget, NodeComment
+from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
-import qfluentwidgets, pathlib
+import pathlib
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.text import EditableComboBox, Completer, TextEdit
+from ui.base_widgets.line_edit import CompleterLineEdit, Completer, TextEdit
+from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger
-from config.threadpool import Worker
 from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout
-from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt, QThreadPool
+
 
 DEBUG = True
     
@@ -96,13 +95,13 @@ class DataConcator (NodeContentWidget):
         dialog = Dialog("Configuration", self.parent.parent)
         axis = ComboBox(items=["index","columns"], text='Axis')
         axis.button.setCurrentText(self._config['axis'].title())
-        dialog.textLayout.addWidget(axis)
+        dialog.main_layout.addWidget(axis)
         join = ComboBox(items=['inner','outer'],text='Join')
         join.button.setCurrentText(self._config['join'].title())
-        dialog.textLayout.addWidget(join)
+        dialog.main_layout.addWidget(join)
         ignore_index = Toggle("Ignore index")
         ignore_index.button.setChecked(self._config['ignore_index'])
-        dialog.textLayout.addWidget(ignore_index)
+        dialog.main_layout.addWidget(ignore_index)
         if dialog.exec(): 
             self._config["axis"] = axis.button.currentText().lower()
             self._config["join"] = join.button.currentText().lower()
@@ -240,49 +239,57 @@ class DataLocator (NodeContentWidget):
         type = ComboBox(items=["columns","rows"], text="type")
         type.button.setCurrentText(self._config["type"].title())
         type.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(type.button.currentIndex()))
-        dialog.textLayout.addWidget(type)
+        dialog.main_layout.addWidget(type)
+
+        dialog.main_layout.addWidget(SeparateHLine())
 
         stacklayout = QStackedLayout()
-        dialog.textLayout.addLayout(stacklayout)
+        dialog.main_layout.addLayout(stacklayout)
 
         col = QWidget()
         col_layout = QVBoxLayout()
+        col_layout.setContentsMargins(0,0,0,0)
         col.setLayout(col_layout)
         stacklayout.addWidget(col)
 
-        col_from = EditableComboBox(text="from column")
-        col_from.button.setCompleter(completer=Completer(self.node.input_sockets[0].socket_data.columns))
-        col_from.button.setText(str(self._config["column_from"]))
+        col_from = CompleterLineEdit(text="from column")
+        try:col_from.button._addItems(items=self.node.input_sockets[0].socket_data.columns.to_list())
+        except Exception as e:print(e)
+        col_from.button.setCurrentText(str(self._config["column_from"]))
         col_layout.addWidget(col_from)
 
-        col_to = EditableComboBox(text="to column")
-        col_to.button.setCompleter(completer=Completer(self.node.input_sockets[0].socket_data.columns))
-        col_to.button.setText(str(self._config["column_to"]))
+        col_to = CompleterLineEdit(text="to column")
+        try:col_to.button._addItems(items=self.node.input_sockets[0].socket_data.columns.to_list())
+        except:pass
+        col_to.button.setCurrentText(str(self._config["column_to"]))
         col_layout.addWidget(col_to)
 
         row = QWidget()
         row_layout = QVBoxLayout()
+        row_layout.setContentsMargins(0,0,0,0)
         row.setLayout(row_layout)
         stacklayout.addWidget(row)
 
-        row_from = EditableComboBox(text="from row")
-        row_from.button.setCompleter(completer=Completer([str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])]))
-        row_from.button.setText(str(self._config["row_from"]))
+        row_from = CompleterLineEdit(text="from row")
+        try:row_from.button._addItems(items=[str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])])
+        except:pass
+        row_from.button.setCurrentText(str(self._config["row_from"]))
         row_layout.addWidget(row_from)
 
-        row_to = EditableComboBox(text="to row")
-        row_to.button.setCompleter(completer=Completer([str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])]))
-        row_to.button.setText(str(self._config["row_to"]))
+        row_to = CompleterLineEdit(text="to row")
+        try:row_to.button._addItems(items=[str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])])
+        except:pass
+        row_to.button.setCurrentText(str(self._config["row_to"]))
         row_layout.addWidget(row_to)
 
         stacklayout.setCurrentIndex(type.button.currentIndex())
 
         if dialog.exec():
             self._config["type"] = type.button.currentText().lower()
-            self._config["column_from"] = col_from.button.text()
-            self._config["column_to"] = col_to.button.text()
-            self._config["row_from"] = row_from.button.text()
-            self._config["row_to"] = row_to.button.text()
+            self._config["column_from"] = col_from.button.currentText()
+            self._config["column_to"] = col_to.button.currentText()
+            self._config["row_from"] = row_from.button.currentText()
+            self._config["row_to"] = row_to.button.currentText()
             self.exec()
 
     def func(self):
@@ -324,19 +331,21 @@ class DataFilter (NodeContentWidget):
         dialog = Dialog("Configuration", self.parent.parent)
 
         def func1():
-            if axis.button.currentText().lower() == "columns":
-                labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.columns])) 
-            else:
-                labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.index])) 
+            try:
+                if axis.button.currentText().lower() == "columns":
+                    labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.columns])) 
+                else:
+                    labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.index])) 
+            except: pass
 
         axis = ComboBox(items=["columns","index"], text="Filter by")
         axis.button.setCurrentText(self._config["axis"].title())
         axis.button.currentTextChanged.connect(func1)
-        dialog.textLayout.addWidget(axis)
+        dialog.main_layout.addWidget(axis)
 
         type = ComboBox(items=["items","contains","regular expression"], text="filter type")
         type.button.setCurrentText(self._config["type"].title())
-        dialog.textLayout.addWidget(type)
+        dialog.main_layout.addWidget(type)
 
         def func2 ():
             if type.button.currentText().lower() == "items":
@@ -344,20 +353,20 @@ class DataFilter (NodeContentWidget):
                     string = list()
                 else:
                     string = apply.button.toPlainText().split(",")
-                string.append(labels.button.text())
+                string.append(labels.button.currentText())
                 apply.button.setText(",".join(string))
             else:
-                apply.button.setText(labels.button.text())
+                apply.button.setText(labels.button.currentText())
             labels.button.clear()
 
-        labels = EditableComboBox(text="labels")
-        labels.button.returnPressed.connect(func2)
+        labels = CompleterLineEdit(text="labels")
+        labels.button.lineedit.returnPressed.connect(func2)
         func1()
-        dialog.textLayout.addWidget(labels)
+        dialog.main_layout.addWidget(labels)
 
         apply = TextEdit(text="Keep labels")
         apply.button.setText(",".join(self._config["apply"]))
-        dialog.textLayout.addWidget(apply)
+        dialog.main_layout.addWidget(apply)
 
         
 

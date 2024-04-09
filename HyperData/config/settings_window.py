@@ -1,104 +1,55 @@
 from PyQt6.QtGui import QKeyEvent
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout, QApplication
 from PyQt6.QtCore import QSize, Qt
 
-from ui.base_widgets.button import _ComboBox
+from ui.base_widgets.button import _ComboBox, ComboBox
 from ui.base_widgets.color import ColorPickerButton
-from ui.base_widgets.text import _LineEdit
+from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import Frame
+from ui.base_widgets.list import ListWidget
 from config.settings import config
-import qfluentwidgets
+import os, darkdetect
 
-class Theme (qfluentwidgets.CardWidget):
+class Theme (Frame):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent)
 
         self._parent = parent
+        self.app = QApplication.instance()
 
         layout = QHBoxLayout()
         self.setLayout(layout)
 
-        layout.addWidget(qfluentwidgets.BodyLabel("Theme"))
+        theme = ComboBox(items=["Auto","Light","Dark"], parent=parent)
+        theme.button.currentTextChanged.connect(self.setTheme)
+        layout.addWidget(theme)
 
-        button_widget = QWidget()
-        button_layout = QHBoxLayout()
-        button_widget.setLayout(button_layout)
-        layout.addWidget(button_widget)
+        self.setTheme(config["theme"])
 
-        self.auto = qfluentwidgets.RadioButton("Auto")
-        self.auto.clicked.connect(self.setAuto)
-        button_layout.addWidget(self.auto)
 
-        self.light = qfluentwidgets.RadioButton("Light")
-        self.light.clicked.connect(self.setLight)
-        button_layout.addWidget(self.light)
+    def setTheme (self, theme):
+        config["theme"] = theme
+        if theme == "Auto":
+            theme = darkdetect.theme()
+        self._setStyleSheet(theme.lower())
+        
+    def _setStyleSheet (self, theme=["light","dark"]):
+        string = str()
+        path = os.path.join("ui","qss", theme)
+        for file in os.listdir(path):
+            with open(os.path.join(path, file), 'r') as f:
+                string += f.read()
+        self.app.setStyleSheet(string)
 
-        self.dark = qfluentwidgets.RadioButton("Dark")
-        self.dark.clicked.connect(self.setDark)
-        button_layout.addWidget(self.dark)
-
-        self.setInit()
-    
-    def setInit (self):
-        if config["theme"] == 'Light':
-            self.light.setChecked(True)
-            self.setLight()
-        elif config["theme"] == "Dark":
-            self.dark.setChecked(True)
-            self.setDark()
-        else:
-            self.auto.setChecked(True)
-            self.setAuto()
-
-    def setAuto (self):
-        qfluentwidgets.setTheme(qfluentwidgets.Theme.AUTO)
-        config["theme"] = "Auto"
-        self.setBackgroundColor()
-
-    def setLight (self):
-        qfluentwidgets.setTheme(qfluentwidgets.Theme.LIGHT)
-        config["theme"] = "Light"
-        self.setBackgroundColor()
-    
-    def setDark (self):
-        qfluentwidgets.setTheme(qfluentwidgets.Theme.DARK)  
-        config["theme"] = "Dark"
-        self.setBackgroundColor()
-    
-    def setBackgroundColor (self):
-        if qfluentwidgets.isDarkTheme():
-            self._parent.setStyleSheet("QMainWindow,QMenuBar,QTableView,QAbstractTableModel {background-color:rgb(32, 32, 32);color:white}")
-        else:
-            self._parent.setStyleSheet("QMainWindow,QMenuBar,QTableView,QAbstractTableModel {background-color:rgb(243, 243, 243);color:black}")
-
-class ThemeColor (qfluentwidgets.CardWidget):
-    def __init__(self, parent:QDockWidget=None):
-        super().__init__(parent=parent)
-
-        self.setInit()
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        self._parent = parent
-
-        layout.addWidget(qfluentwidgets.BodyLabel("Theme Color"))
-        button = ColorPickerButton(config["theme color"], "theme color", parent)
-        button.colorChanged.connect(self.setColor)
-        layout.addWidget(button)
-    
-    def setInit (self):
-        qfluentwidgets.setThemeColor(config["theme color"])
-    
-    def setColor (self, color):
-        qfluentwidgets.setThemeColor(color)
-        config["theme color"] = color
-
-class DockWidget_Position (qfluentwidgets.CardWidget):
+class DockWidget_Position (Frame):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         layout = QHBoxLayout()
         self.setLayout(layout)
 
-        layout.addWidget(qfluentwidgets.BodyLabel("Panel Position"))
+        layout.addWidget(BodyLabel("Panel Position"))
         button = _ComboBox(items=["left","right","top","bottom"])
         button.currentTextChanged.connect(self.setPos)
         button.setCurrentText(config["dock area"].title())
@@ -111,7 +62,7 @@ class SettingsWindow (QMainWindow):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent)
 
-        self.sidebar = qfluentwidgets.ListWidget()
+        self.sidebar = ListWidget()
         self.sidebar.addItems(["Appearance","Shortcuts"])
         self.sidebar.setCurrentRow(0)
         self.sidebar.currentRowChanged.connect(lambda: layout.setCurrentIndex(self.sidebar.currentRow()))
@@ -135,7 +86,6 @@ class SettingsWindow (QMainWindow):
 
         appearance_layout.addWidget(Theme(parent))
         appearance_layout.addWidget(DockWidget_Position(parent))
-        appearance_layout.addWidget(ThemeColor(parent))
 
         shortcut = QWidget()
         shortcut_layout = QVBoxLayout()

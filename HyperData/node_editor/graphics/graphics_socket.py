@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
-import qfluentwidgets
+from ui.utils import isDark
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -54,7 +54,7 @@ class GraphicsSocket (QGraphicsItem):
             painter.setPen(self._pen_default)
             painter.drawEllipse(int(-self.radius), int(-self.radius), int(2 * self.radius), int(2 * self.radius))
         
-        if qfluentwidgets.isDarkTheme():
+        if isDark():
             self._text.setDefaultTextColor(Qt.GlobalColor.white)
         else:
             self._text.setDefaultTextColor(Qt.GlobalColor.black)

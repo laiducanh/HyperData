@@ -1,16 +1,14 @@
-from node_editor.base.node_graphics_content import NodeContentWidget, NodeComment
+from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
+from ui.base_widgets.line_edit import LineEdit, CompleterLineEdit
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from config.settings import logger
-from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
@@ -21,20 +19,20 @@ class NAEliminator (NodeContentWidget):
         self._config = dict(axis='index',thresh='any',ignore_index=False)
     
     def initMenu(self):
-        action = QAction("Execute card")
+        action = QAction("Execute card",self.menu)
         action.triggered.connect(self.exec)
         self.menu.addAction(action)
-        action = QAction("View output")
+        action = QAction("View output",self.menu)
         action.triggered.connect(self.viewData)
         self.menu.addAction(action)
-        action = QAction("Configuration")
+        action = QAction("Configuration",self.menu)
         action.triggered.connect(self.config)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Show Comment")
+        action = QAction("Show Comment",self.menu)
         action.triggered.connect(self.comment.show)
         self.menu.addAction(action)
-        action = QAction("Hide Comment")
+        action = QAction("Hide Comment",self.menu)
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
 
@@ -43,20 +41,19 @@ class NAEliminator (NodeContentWidget):
 
         axis = ComboBox(items=["index","columns"], text="drop")
         axis.button.setCurrentText(self._config["axis"].title())
-        dialog.textLayout.addWidget(axis)
+        dialog.main_layout.addWidget(axis)
 
-        thresh = EditableComboBox(text='thresh')
-        thresh.button.setCompleter(Completer(["any","all"]))
-        thresh.button.setText(self._config['thresh'])
-        dialog.textLayout.addWidget(thresh)
+        thresh = CompleterLineEdit(text='thresh', items=["any","all"])
+        thresh.button.setCurrentText(self._config['thresh'])
+        dialog.main_layout.addWidget(thresh)
 
         ignore_index = Toggle(text='ignore index')
         ignore_index.button.setChecked(self._config['ignore_index'])
-        dialog.textLayout.addWidget(ignore_index)
+        dialog.main_layout.addWidget(ignore_index)
 
         if dialog.exec():
             self._config["axis"] = axis.button.currentText().lower()
-            self._config["thresh"] = thresh.button.text()
+            self._config["thresh"] = thresh.button.currentText()
             self._config["ignore_index"] = ignore_index.button.isChecked()
             self.exec()
 
@@ -97,10 +94,10 @@ class NAImputer (NodeContentWidget):
         imputer = ComboBox(items=["univariate","multivariate","KNN"], text='imputer')
         imputer.button.setCurrentText(self._config['imputer'].title())
         imputer.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(imputer.button.currentIndex()))
-        dialog.textLayout.addWidget(imputer)
+        dialog.main_layout.addWidget(imputer)
 
         stacklayout = QStackedLayout()
-        dialog.textLayout.addLayout(stacklayout)
+        dialog.main_layout.addLayout(stacklayout)
 
         univariate_widget = QWidget()
         univariate_layout = QVBoxLayout()
@@ -229,11 +226,11 @@ class DropDuplicate (NodeContentWidget):
 
         keep = ComboBox(items=["first","last","none"], text='keep')
         keep.button.setCurrentText(self._config["keep"].title())
-        dialog.textLayout.addWidget(keep)
+        dialog.main_layout.addWidget(keep)
 
         ignore_index = Toggle(text='ignore index')
         ignore_index.button.setChecked(self._config["ignore_index"])
-        dialog.textLayout.addWidget(ignore_index)
+        dialog.main_layout.addWidget(ignore_index)
 
         if dialog.exec():
             self._config["keep"] = keep.button.currentText().lower()

@@ -7,13 +7,12 @@ from sklearn import linear_model
 from sklearn.base import ClassifierMixin
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox
-from ui.base_widgets.text import LineEdit, EditableComboBox, Completer
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
-from ui.base_widgets.separator import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.menu import Menu
 from node_editor.node.train_test_split import TrainTestSplitter
 from config.settings import logger
-from PyQt6.QtWidgets import QFileDialog, QDialog, QWidget, QVBoxLayout, QStackedLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
 from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtCore import Qt, pyqtSignal
 
