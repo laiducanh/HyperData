@@ -41,7 +41,6 @@ class NodeGraphicsScene(QGraphicsScene):
         self.scene_height = 64000
 
         self.id = id(self)
-        self.threadpool = self.parent.threadpool
 
         self.initUI()
     
@@ -65,7 +64,7 @@ class NodeGraphicsScene(QGraphicsScene):
     def addNode(self, node:Node):
         self.addItem(node)
         self.nodes.append(node)
-        node.content.sig.connect(lambda: self.sig.emit(node))
+        if node.content: node.content.sig.connect(lambda: self.sig.emit(node))
         logger.info(f"Scene::addNode: add node {node.id}.")
 
     def addEdge(self, edge:NodeGraphicsEdge):
@@ -125,7 +124,6 @@ class NodeGraphicsScene(QGraphicsScene):
             start_socket = hashmap[edges[edge_id]['start']]
             end_socket = hashmap[edges[edge_id]['end']]
             edge = NodeGraphicsEdgeBezier(start_socket, end_socket)
-            if edge.start_socket.socket_type in [PIPELINE_IN, PIPELINE_OUT]: edge.setColor(Qt.GlobalColor.green)
             edge.updatePositions()
             self.addEdge(edge)
             edge.deserialize(edges[edge_id], hashmap)
