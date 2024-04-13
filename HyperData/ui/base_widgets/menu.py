@@ -1,7 +1,7 @@
-import os
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QIcon, QKeySequence
+from PyQt6.QtGui import QAction, QKeySequence, QCursor
+from ui.utils import icon
 
 class Menu (QMenu):
     def __init__(self, text:str=None, parent=None):
@@ -11,39 +11,76 @@ class Menu (QMenu):
                             Qt.WindowType.Popup | 
                             Qt.WindowType.NoDropShadowWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self._icon = None
+    
+    def setIcon(self, icon: str) -> None:
+        self._icon = icon
+        self.update()
+
+    def update(self):
+        if self._icon: super().setIcon(icon(self._icon))
+        for action in self.actions():
+            if isinstance(action, Action): action.update()
+        super().update()
+    
+
+class Action (QAction):
+    """ 
+    this class is an alternative of QAction 
+    in cases we need to change the action's icon according to the theme change 
+    
+    """
+    def __init__(self, icon=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setIcon(icon)
+
+    def setIcon(self, icon: str) -> None:
+        self._icon = icon
+        self.update()
+
+    def update(self):
+        if self._icon: super().setIcon(icon(self._icon))
 
 class LineEdit_Menu (Menu):
     def __init__(self, text: str = None, parent=None):
         super().__init__(text, parent)
-        icon_path = os.path.join("ui","icons","black")
-        self.cutAct = QAction(text="Cut", icon=QIcon(os.path.join(icon_path, "Cut_black.svg")),
-                              shortcut=QKeySequence("Ctrl+X"), parent=parent)
-        self.cutAct.triggered.connect(parent.cut)
-        self.addAction(self.cutAct)
 
-        self.copyAct = QAction(text="Copy", icon=QIcon(os.path.join(icon_path, "Copy_black.svg")),
-                              shortcut=QKeySequence("Ctrl+C"), parent=parent)
-        self.copyAct.triggered.connect(parent.copy)
-        self.addAction(self.copyAct)
-
-        self.pasteAct = QAction(text="Paste", icon=QIcon(os.path.join(icon_path, "Paste_black.svg")),
-                                shortcut=QKeySequence("Ctrl+V"), parent=parent)
-        self.pasteAct.triggered.connect(parent.paste)
-        self.addAction(self.pasteAct)
-
-        self.selectAllAct = QAction(text="Select All",
-                                    shortcut=QKeySequence("Ctrl+A"), parent=parent)
-        self.selectAllAct.triggered.connect(parent.selectAll)
-        self.addAction(self.selectAllAct)
-
-        self.addSeparator()
-
-        self.undoAct = QAction(text="Undo", icon=QIcon(os.path.join(icon_path, "Undo_black.svg")),
-                               shortcut=QKeySequence("Ctrl+Z"), parent=parent)
+        self.undoAct = QAction(text="Undo", shortcut=QKeySequence("Ctrl+Z"), parent=parent)
         self.undoAct.triggered.connect(parent.undo)
         self.addAction(self.undoAct)
 
-        self.redoAct = QAction(text="Redo",
-                               shortcut=QKeySequence("Ctrl+Y"), parent=parent)
+        self.redoAct = QAction(text="Redo", shortcut=QKeySequence("Ctrl+Y"), parent=parent)
         self.redoAct.triggered.connect(parent.redo)
         self.addAction(self.redoAct)
+
+        self.addSeparator()
+
+        self.cutAct = Action(text="Cut", shortcut=QKeySequence("Ctrl+X"), parent=parent)
+        self.cutAct.triggered.connect(parent.cut)
+        self.addAction(self.cutAct)
+
+        self.copyAct = QAction(text="Copy", shortcut=QKeySequence("Ctrl+C"), parent=parent)
+        self.copyAct.triggered.connect(parent.copy)
+        self.addAction(self.copyAct)
+
+        self.pasteAct = QAction(text="Paste", shortcut=QKeySequence("Ctrl+V"), parent=parent)
+        self.pasteAct.triggered.connect(parent.paste)
+        self.addAction(self.pasteAct)
+
+        self.deleteAct = QAction(text="Delete", shortcut=QKeySequence("Del"), parent=parent)
+        self.deleteAct.triggered.connect(parent.del_)
+        self.addAction(self.deleteAct)
+
+        self.addSeparator()
+
+        self.selectAllAct = QAction(text="Select All", shortcut=QKeySequence("Ctrl+A"), parent=parent)
+        self.selectAllAct.triggered.connect(parent.selectAll)
+        self.addAction(self.selectAllAct)
+
+        
+
+
+
+        

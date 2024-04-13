@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtGui import QKeyEvent, QAction
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout, QApplication
 from PyQt6.QtCore import QSize, Qt
 
@@ -41,6 +41,9 @@ class Theme (Frame):
             with open(os.path.join(path, file), 'r') as f:
                 string += f.read()
         self.app.setStyleSheet(string)
+        for widget in self.app.allWidgets():
+            try: widget.update()
+            except: pass
 
 class DockWidget_Position (Frame):
     def __init__(self, parent=None):
@@ -50,13 +53,13 @@ class DockWidget_Position (Frame):
         self.setLayout(layout)
 
         layout.addWidget(BodyLabel("Panel Position"))
-        button = _ComboBox(items=["left","right","top","bottom"])
+        button = _ComboBox(items=["Left","Right","Top","Bottom"])
         button.currentTextChanged.connect(self.setPos)
-        button.setCurrentText(config["dock area"].title())
+        button.setCurrentText(config["dock area"])
         layout.addWidget(button)
     
     def setPos (self, pos):
-        config["dock area"] = pos.lower()
+        config["dock area"] = pos
     
 class SettingsWindow (QMainWindow):
     def __init__(self, parent:QMainWindow=None):

@@ -1,15 +1,25 @@
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtCore import QObject, Qt, pyqtSignal
 from PyQt6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
                              QSizePolicy, QGridLayout, QToolButton)
-from PyQt6.QtGui import QCursor
+from PyQt6.QtGui import QCursor, QIcon, QPaintEvent
 from typing import Iterable
 from ui.base_widgets.text import BodyLabel
+from ui.utils import icon
 
 class _PushButton (QPushButton):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self._icon = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+    
+    def setIcon(self, icon:str) -> None:
+        self._icon = icon
+        self.update()
+    
+    def update(self):
+        if self._icon: super().setIcon(icon(self._icon))
+        super().update()
 
 class _TransparentPushButton (_PushButton):
     """ PushButton with no border and background color """
@@ -20,8 +30,17 @@ class _PrimaryPushButton (_PushButton):
 class _DropDownPushButton (QPushButton):
     def __init__(self, parent=None):
         super().__init__(parent)
-    
+
+        self._icon = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+    
+    def setIcon(self, icon:str) -> None:
+        self._icon = icon
+        self.update()
+    
+    def update(self):
+        if self._icon: super().setIcon(icon(self._icon))
+        super().update()
 
 class _DropDownTransparentPushButton (_DropDownPushButton):
     """ DropDownPushButton with no border and background color """
@@ -39,13 +58,22 @@ class _TogglePushButton (_PushButton):
 class _ToolButton (QToolButton):
     def __init__(self, parent=None):
         super().__init__(parent)
-    
+
+        self._icon = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
     
     def setMenu(self, menu: QMenu) -> None:
         self.setProperty("hasMenu",True)
         return super().setMenu(menu)
+
+    def setIcon(self, icon:str) -> None:
+        self._icon = icon
+        self.update()
+    
+    def update(self):
+        if self._icon: super().setIcon(icon(self._icon))
+        super().update()
 
 class _TransparentToolButton (_ToolButton):
     """ ToolButton with no border and background color """
