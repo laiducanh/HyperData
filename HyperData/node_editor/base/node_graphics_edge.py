@@ -8,16 +8,20 @@ import math
 EDGE_TYPE_DIRECT = 1
 EDGE_TYPE_BEZIER = 2
 EDGE_CP_ROUNDNESS = 100
-LEFT_TOP = 1
-LEFT_BOTTOM = 2
-RIGHT_TOP = 3
-RIGHT_BOTTOM = 4
+SINGLE_IN = 1
+MULTI_IN = 2
+SINGLE_OUT = 3
+MULTI_OUT = 4
+PIPELINE_IN = 5
+PIPELINE_OUT = 6
+CONNECTOR_IN = 7
+CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsEdge(GraphicsEdge):
     def __init__(self, start_socket:NodeGraphicsSocket=None, 
                  end_socket:NodeGraphicsSocket=None, parent=None):
-        super().__init__(parent)
+        super().__init__(start_socket, end_socket, parent)
 
         self.start_socket = start_socket
         self.end_socket = end_socket
@@ -88,7 +92,7 @@ class NodeGraphicsEdgeBezier(NodeGraphicsEdge):
 
         sspos = self.start_socket.socket_type
 
-        if (s[0] > d[0] and sspos in (RIGHT_TOP, RIGHT_BOTTOM)) or (s[0] < d[0] and sspos in (LEFT_BOTTOM, LEFT_TOP)):
+        if (s[0] > d[0] and sspos in (SINGLE_OUT, MULTI_OUT, PIPELINE_OUT, CONNECTOR_OUT)) or (s[0] < d[0] and sspos in (SINGLE_IN, MULTI_IN, PIPELINE_IN, CONNECTOR_IN)):
             cpx_d *= -1
             cpx_s *= -1
 
