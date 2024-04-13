@@ -1,8 +1,10 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsProxyWidget, QWidget
-from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsProxyWidget, QGraphicsSceneMouseEvent, QWidget
+from PyQt6.QtGui import QPainter, QColor, QBrush, QPen
+from PyQt6.QtCore import Qt
 from ui.base_widgets.menu import Menu
 from node_editor.graphics.graphics_node import GraphicsNode
 from node_editor.graphics.graphics_socket import GraphicsSocket
+from ui.utils import isDark
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -10,6 +12,8 @@ SINGLE_OUT = 3
 MULTI_OUT = 4
 PIPELINE_IN = 5
 PIPELINE_OUT = 6
+CONNECTOR_IN = 7
+CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsSocket (GraphicsSocket):
@@ -38,6 +42,8 @@ class NodeGraphicsSocket (GraphicsSocket):
                 self.title = 'Multiple Outputs'
             elif self.socket_type in [PIPELINE_IN, PIPELINE_OUT]:
                 self.title = "Pipeline"
+            elif self.socket_type in [CONNECTOR_IN, CONNECTOR_OUT]:
+                self.title = "Connector"
         else:
             self.title = title
         
@@ -46,13 +52,13 @@ class NodeGraphicsSocket (GraphicsSocket):
 
     def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
         self._text.show()
-        self.node.content.hide()
+        if self.node.content: self.node.content.hide()
         self.hovered = True
         self.update()
     
     def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
         self._text.hide()
-        self.node.content.show()
+        if self.node.content: self.node.content.show()
         self.hovered = False
         self.update()
 
@@ -76,10 +82,12 @@ class NodeGraphicsSocket (GraphicsSocket):
         else: print("Socket::removeEdge", "wanna remove edge", edge, "from self.edges but it's not in the list!")
 
     def removeAllEdges(self):
-        raise NotImplemented("This method might be used in future")
-        self.edges = []
+        for edge in self.edges:
+            self.edges.remove(edge)
+            if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
+        if DEBUG: print("Socket::removeAllEdges", "the edge list is", self.edges)
 
-    def hasEdge(self):
+    def hasEdge(self) -> bool:
         """ return True if there is at least one edge attached to the socket """
         return self.edges is not []    
     
@@ -187,7 +195,22 @@ class NodeGraphicsNode (GraphicsNode):
         
         if socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.append(socket)
         else: self.output_sockets.append(socket)
-
+    
+    def removeSocket (self, index=None, socket_type=None, socket=None):
+        if index and socket_type:
+            index += 1
+            for socket in self.childItems():
+                if isinstance(socket, NodeGraphicsSocket):
+                    if index == socket.index and socket_type == socket.socket_type:
+                        socket.removeAllEdges()
+                        self.scene().removeItem(socket)
+                        if socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.remove(socket)
+                        else: self.output_sockets.remove(socket)
+        if socket: 
+            socket.removeAllEdges()
+            self.scene().removeItem(socket)
+            if socket.socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.remove(socket)
+            else: self.output_sockets.remove(socket)
         
     def serialize(self):
         inputs, outputs = dict(), dict()
@@ -232,4 +255,64 @@ class NodeGraphicsNode (GraphicsNode):
 
 
     
+class NodeEditor (GraphicsNode):
+    def __init__(self, title:str, socket_type, parent=None):
+        super().__init__(title, parent)
+        
+        self.content = None
 
+        
+        self.socket = NodeGraphicsSocket(node=self, index=0, socket_type=socket_type, parent=self)
+        self.socket.setPos(*self.getSocketPosition(index=0, socket_type=socket_type))
+        self.socket_type = socket_type
+    
+    
+    def updateConnectedEdges(self):
+        """ This method will update the edge attached to the socket that is moved """
+        for edge in self.socket.edges:
+            edge.updatePositions()
+       
+    
+    def getSocketPosition(self, index, socket_type):
+        """ 
+        This method is used to compute socket position, temporarily set socket position always on top 
+        """
+
+        x = 0 if (socket_type in (SINGLE_IN, MULTI_IN, CONNECTOR_IN, PIPELINE_IN)) else self.width
+
+        if socket_type in (SINGLE_OUT, MULTI_OUT, CONNECTOR_OUT, PIPELINE_OUT):
+            # start from bottom
+            y = self.height - self.edge_size - self._padding - index * self.socket_spacing
+
+        # start from top
+        y = self.title_height + self._padding + self.edge_size + index * self.socket_spacing
+
+        return [x, y]
+
+    def setColor(self):
+        
+        self._color = QColor("#7F000000")
+        self._color_selected = QColor("#252525")
+        self._color_hovered = QColor("#FF37A6FF")
+
+        self._pen_default = QPen(self._color)
+        self._pen_default.setWidthF(2.0)
+        self._pen_selected = QPen(self._color_selected)
+        self._pen_selected.setWidthF(2.0)
+        self._pen_hovered = QPen(self._color_hovered)
+        self._pen_hovered.setWidthF(3.0)
+
+        if isDark():
+            self._brush_background = QBrush(QColor("#232323"))
+            self._brush_title = QBrush(QColor("#444444"))
+            self._title_color = Qt.GlobalColor.white
+        else:
+            self._brush_background = QBrush(QColor("#FF4848"))
+            #self._brush_title = QBrush(QColor("#434343"))
+            self._brush_title = QBrush(QColor("#E2E2E2"))
+            self._title_color = Qt.GlobalColor.black
+
+            if self.hovered:
+                self._brush_background = QBrush(QColor("#FF8484"))
+
+        
