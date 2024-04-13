@@ -349,8 +349,6 @@ class Classifier (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent.parent)
-        dialog.vBoxLayout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
-        dialog.widget.setMinimumWidth(400)
         menu = AlgorithmMenu()
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: stackedlayout.setCurrentIndex(self.estimator_list.index(string)))
@@ -358,10 +356,10 @@ class Classifier (NodeContentWidget):
         algorithm.button.setText(self._config["estimator"].title())
         algorithm.button.setMenu(menu)
         algorithm.button.released.connect(lambda: menu.exec(QCursor().pos()))
-        dialog.textLayout.addWidget(algorithm)
-        dialog.textLayout.addWidget(SeparateHLine())
+        dialog.main_layout.addWidget(algorithm)
+        dialog.main_layout.addWidget(SeparateHLine())
         stackedlayout = QStackedLayout()
-        dialog.textLayout.addLayout(stackedlayout)
+        dialog.main_layout.addLayout(stackedlayout)
         stackedlayout.addWidget(RidgeClassifier())
         stackedlayout.addWidget(LogisticRegression())
         stackedlayout.addWidget(SGDClassifier())
