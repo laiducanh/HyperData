@@ -76,6 +76,9 @@ class Node(NodeGraphicsNode):
         elif title == 'Executor':
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)
+        elif title == 'User Define Card':
+            super().__init__(title=title, inputs=[], outputs=[])
+            self.content = UserDefine(self,parent)
         
         self.menu = self.content.menu
         self.set_Content(self.content)

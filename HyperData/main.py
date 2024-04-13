@@ -7,8 +7,8 @@ from PyQt6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, Q
                          QAction)
 
 from plot.plot_view import PlotView
-from node_editor.node_view import NodeView
-from node_editor.node_node import Node
+from node_editor.node_view import NodeView, NodeUserDefine
+from node_editor.node_node import Node, Figure, UserDefine
 from config.settings_window import SettingsWindow
 from config.settings import config
 from ui.base_widgets.button import ComboBox
@@ -25,7 +25,7 @@ class Main(QMainWindow):
         super().__init__()
 
         self.threadpool = QThreadPool()
-        self.list_figure = list()
+        self.stack_scene = list()
         self.settings_window = SettingsWindow(self)
            
         ### Adjust the main window's size
@@ -56,15 +56,8 @@ class Main(QMainWindow):
         fileMenu.addSeparator()
         action = QAction('&Quit', self)
         action.triggered.connect(self.close)
-        fileMenu.addAction(action)        
+        fileMenu.addAction(action)              
         
-    def add_plot_view (self, node: Node):
-        
-        plot_view = PlotView( node, node.content.canvas, self)
-        self.list_figure.append(node.id)
-        plot_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
-        self.mainlayout.addWidget(plot_view)
-        self.mainlayout.setCurrentWidget(plot_view)
 
     def add_node_view (self):
         self.node_view = NodeView(self)
@@ -73,14 +66,30 @@ class Main(QMainWindow):
         self.mainlayout.setCurrentIndex(0)
     
     def node_signal (self, node:Node):
-        if node.title == 'Figure':
+        if isinstance(node.content, Figure):
             self.to_plot_view(node)
+        elif isinstance(node.content, UserDefine):
+            self.to_graphics_view(node)
     
     def to_plot_view (self, node: Node):
-        if node.id in self.list_figure:
-            self.mainlayout.setCurrentIndex(self.list_figure.index(node.id)+1)
+        if node.id in self.stack_scene:
+            self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
         else:
-            self.add_plot_view(node)
+            plot_view = PlotView( node, node.content.canvas, self)
+            self.stack_scene.append(node.id)
+            plot_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
+            self.mainlayout.addWidget(plot_view)
+            self.mainlayout.setCurrentWidget(plot_view)
+    
+    def to_graphics_view (self, node: Node):
+        if node.id in self.stack_scene:
+            self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
+        else:
+            node_view = NodeUserDefine(main_node=node, parent=self)
+            self.mainlayout.addWidget(node_view)
+            self.mainlayout.setCurrentWidget(node_view)
+            node_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
+            self.stack_scene.append(node.id)
         
     def keyPressEvent(self, event:QKeyEvent) -> None:
 
@@ -131,20 +140,17 @@ class Main(QMainWindow):
      
 
 if __name__ == "__main__":
-    QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     
     
     app = QApplication(sys.argv)
     
-    pixmap = QPixmap(os.path.join('UI','Icons','app-icon.png'))
-    splashScreen = QSplashScreen(pixmap)
-    splashScreen.show()
-    splashScreen.showMessage('Loading modules ...',alignment=Qt.AlignmentFlag.AlignBottom|Qt.AlignmentFlag.AlignCenter)
-    app.processEvents()
-    #app.setStyle('Fusion')
+    #pixmap = QPixmap(os.path.join('UI','Icons','app-icon.png'))
+    #splashScreen = QSplashScreen(pixmap)
+    #splashScreen.show()
+    #splashScreen.showMessage('Loading modules ...',alignment=Qt.AlignmentFlag.AlignBottom|Qt.AlignmentFlag.AlignCenter)
+    #app.processEvents()
     main_window = Main()
     main_window.show()
-    splashScreen.close()
-    
+    #splashScreen.close()
+
     sys.exit(app.exec())
