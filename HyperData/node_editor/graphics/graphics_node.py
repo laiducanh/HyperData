@@ -3,12 +3,6 @@ from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
 from ui.utils import isDark
 
-SINGLE_IN = 1
-MULTI_IN = 2
-SINGLE_OUT = 3
-MULTI_OUT = 4
-PIPELINE_IN = 5
-PIPELINE_OUT = 6
 DEBUG = False
 
 class GraphicsNode (QGraphicsItem):
@@ -67,6 +61,9 @@ class GraphicsNode (QGraphicsItem):
         ).normalized()     
 
     def setTitle(self):
+        for obj in self.childItems():
+            if isinstance(obj, QGraphicsTextItem):
+                obj.deleteLater()
         self.title_item = QGraphicsTextItem(self.title.upper(),parent=self)
         self.title_item.setDefaultTextColor(self._title_color)
         self.title_item.setFont(self._title_font)

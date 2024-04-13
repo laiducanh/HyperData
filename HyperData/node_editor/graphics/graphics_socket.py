@@ -9,10 +9,12 @@ SINGLE_OUT = 3
 MULTI_OUT = 4
 PIPELINE_IN = 5
 PIPELINE_OUT = 6
+CONNECTOR_IN = 7
+CONNECTOR_OUT = 8
 DEBUG = False
 
 class GraphicsSocket (QGraphicsItem):
-    def __init__(self, socket_type=SINGLE_IN, parent=None):
+    def __init__(self, socket_type, parent=None):
         super().__init__(parent)
 
         self.radius = 6.0
@@ -24,6 +26,8 @@ class GraphicsSocket (QGraphicsItem):
             QColor("#6DFA8D"),
             QColor("#f0f1f2"),
             QColor("#f0f1f2"),
+            QColor("#F2F209"),
+            QColor("#F2F209"),
         ]
         self._color_background = self._colors[socket_type-1]
         self._color_outline = QColor("#FF000000")

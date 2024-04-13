@@ -2,6 +2,15 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsSceneHove
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen, QPainter
 
+SINGLE_IN = 1
+MULTI_IN = 2
+SINGLE_OUT = 3
+MULTI_OUT = 4
+PIPELINE_IN = 5
+PIPELINE_OUT = 6
+CONNECTOR_IN = 7
+CONNECTOR_OUT = 8
+
 class GraphicsEdge(QGraphicsPathItem):
     def __init__(self, start_socket=None, end_socket=None, parent=None):
         super().__init__(parent)
@@ -15,9 +24,14 @@ class GraphicsEdge(QGraphicsPathItem):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setZValue(-1)
+
+        self.initUI()
     
-    def setColor (self, color=QColor("#616161"),):
-        self._color = color
+    def initUI(self):
+        if self.start_socket.socket_type in [PIPELINE_OUT]:
+            self._color = Qt.GlobalColor.darkBlue
+        else:
+            self._color = QColor("#616161")
         self._color_selected = QColor("#252525")
         self._color_hovered = QColor("#FF37A6FF")
         self._pen = QPen(self._color)
@@ -38,7 +52,7 @@ class GraphicsEdge(QGraphicsPathItem):
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         self.updatePath()
-        self.setColor()
+        self.initUI()
         painter.setBrush(Qt.BrushStyle.NoBrush)
 
         if self.hovered and self.end_socket is not None:
