@@ -1,11 +1,11 @@
-from PyQt6.QtWidgets import QGraphicsView, QMenu
+from PyQt6.QtWidgets import QGraphicsView
 from PyQt6.QtCore import Qt, QEvent, QPoint, QTimeLine, pyqtSignal
-from PyQt6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QAction
-from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
+from PyQt6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
+from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode, NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
-from ui.base_widgets.menu import Menu
+from ui.base_widgets.menu import Menu, Action
 from config.settings import logger
 
 MODE_EDGE_DRAG = True
@@ -17,6 +17,8 @@ SINGLE_OUT = 3
 MULTI_OUT = 4
 PIPELINE_IN = 5
 PIPELINE_OUT = 6
+CONNECTOR_IN = 7
+CONNECTOR_OUT = 8
 
 class NodeGraphicsView(QGraphicsView):
     def __init__(self, grScene:NodeGraphicsScene, parent=None):
@@ -35,6 +37,8 @@ class NodeGraphicsView(QGraphicsView):
         self._pan_start_y = 0
         self._numScheduledScalings = 0
         self.lastMousePos = QPoint()
+        self.threadpool = self.parent.threadpool
+
 
 
     def initUI(self):
@@ -74,7 +78,7 @@ class NodeGraphicsView(QGraphicsView):
             self.dragEdge.update()
             
         for item in self.grScene.selectedItems():
-            if isinstance(item, Node): item.updateConnectedEdges()
+            if isinstance(item, (Node, NodeEditor)): item.updateConnectedEdges()
             pass
                 
 
@@ -107,7 +111,7 @@ class NodeGraphicsView(QGraphicsView):
 
         # logic
         if type(item) is NodeGraphicsSocket:
-            if not self.drag_mode and item.socket_type in [SINGLE_OUT, MULTI_OUT, PIPELINE_OUT]:
+            if not self.drag_mode and item.socket_type in [SINGLE_OUT, MULTI_OUT, PIPELINE_OUT, CONNECTOR_OUT]:
                 self.drag_mode = True
                 self.edgeDragStart(item)
                 return
@@ -119,7 +123,11 @@ class NodeGraphicsView(QGraphicsView):
         
 
 
-    def leftMouseButtonRelease(self, event:QMouseEvent):
+    def leftMouseButtonRelease(self, event:QMouseEvent, node_title:str=None):
+        """
+        parse node title to 'node_title' to create new node at the mouse position
+
+        """
         super().mouseReleaseEvent(event)
 
         # get item which we release mouse button on
@@ -131,7 +139,12 @@ class NodeGraphicsView(QGraphicsView):
                 res = self.edgeDragEnd(item)
                 if res: return
 
-
+        if node_title:
+            node = Node(title=node_title,parent=self)
+            self.grScene.addNode(node)
+            mouse_position = event.position()
+            scene_position = self.grScene.views()[0].mapToScene(mouse_position.toPoint())
+            node.setPos(scene_position.x(), scene_position.y())
         
 
 
@@ -143,15 +156,58 @@ class NodeGraphicsView(QGraphicsView):
         pos = self.mapToGlobal(event.pos())
         if item != None:
             if isinstance(item, Node):
+                item.setSelected(True)
                 item.menu.exec(pos)
+                
             elif isinstance(item.parentItem(), Node):
+                item.parentItem().setSelected(True)
                 item.parentItem().menu.exec(pos)
+                
             
         else:
             menu = Menu(parent=self)
-            action = QAction("menu")
+            action = Action(text="Select All", shortcut="Ctrl+A", parent=menu)
+            action.triggered.connect(self.selectAll)
+            menu.addAction(action)            
+            action = Action(text="Zoom in", shortcut="Ctrl+Up", parent=menu)
+            action.triggered.connect(lambda: self.scaling_time(1.2))
             menu.addAction(action)
+            action = Action(text="Zoom out", shortcut="Ctrl+Down", parent=menu)
+            action.triggered.connect(lambda: self.scaling_time(0.8))
+            menu.addAction(action)
+            menu.addSeparator()
+
+            data_processing = Menu(text="Data Processing")
+            menu.addMenu(data_processing)
+            for text in ["Data Reader", "Data Concator", "Data Transpose", 
+                                                          "Data Combiner", "Data Merge", "Data Compare",
+                                                          "Data Locator","Data Filter", "Data Holder",
+                                                          "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
+                                                          ]:
+                action = Action(text=text, parent=data_processing)
+                action.triggered.connect(lambda checked, text=text: self.leftMouseButtonRelease(event,text))
+                data_processing.addAction(action)
+            machine_learning = Menu(text="Machine Learning")
+            menu.addMenu(machine_learning)
+            for text in ["Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
+                action = Action(text=text, parent=machine_learning)
+                action.triggered.connect(lambda checked, text=text: self.leftMouseButtonRelease(event,text))
+                machine_learning.addAction(action)
+            visualization = Menu(text="Visualization")
+            menu.addMenu(visualization)
+            for text in ["Figure"]:
+                action = Action(text=text, parent=visualization)
+                action.triggered.connect(lambda checked, text=text: self.leftMouseButtonRelease(event,text))
+                visualization.addAction(action)
+            misc = Menu(text="Misc")
+            menu.addMenu(misc)
+            for text in ["Executor", "User Define Card", "Undefined Node"]:
+                action = Action(text=text, parent=misc)
+                action.triggered.connect(lambda checked, text=text: self.leftMouseButtonRelease(event,text))
+                misc.addAction(action)
+                
             menu.exec(pos)
+
         super().mouseReleaseEvent(event)
 
     def dragEnterEvent(self, event:QDragEnterEvent):
@@ -169,7 +225,7 @@ class NodeGraphicsView(QGraphicsView):
         This method is called when a drag and drop event is dropped onto the view. It retrieves the name of the dropped node
         from the mime data and add the corresponding node.
         """
-        node = Node(title=event.mimeData().text(),parent=self.grScene)
+        node = Node(title=event.mimeData().text(),parent=self)
         self.grScene.addNode(node)
         mouse_position = event.position()
         scene_position = self.grScene.views()[0].mapToScene(mouse_position.toPoint())
@@ -196,22 +252,26 @@ class NodeGraphicsView(QGraphicsView):
         self.anim = QTimeLine(350)
         self.anim.setUpdateInterval(20)
 
-        self.anim.valueChanged.connect(self.scaling_time)
+        self.anim.valueChanged.connect(lambda: self.scaling_time(None))
         self.anim.finished.connect(self.anim_finished)
         self.anim.start()
 
-    def scaling_time(self, x):
+    def scaling_time(self, factor=None):
         """
         Updates the current scale based on the wheel events.
 
-        :param x: The value of the current time.
         """
-        factor = 1.0 + self._numScheduledScalings / 300.0
 
-        self.currentScale *= factor
-
-        self.scale(factor, factor)
-
+        if not factor: factor = 1.0 + self._numScheduledScalings / 300.0
+                
+        if self.currentScale*factor <= 1:
+            self.currentScale *= factor
+            self.scale(factor, factor)
+        else: 
+            factor = 1/self.currentScale
+            self.scale(factor, factor)
+            self.currentScale = 1
+            
     def anim_finished(self):
         """
         Called when the zoom animation is finished.
@@ -234,25 +294,26 @@ class NodeGraphicsView(QGraphicsView):
 
     def edgeDragEnd(self, item):
         """ return True if skip the rest of the code """
-        self.drag_mode = False
-        if type(item) is NodeGraphicsSocket and self.dragEdge.start_socket.socket_type == PIPELINE_OUT:
+        self.drag_mode = False     
+
+        if isinstance(item, NodeGraphicsSocket) and self.dragEdge.start_socket.socket_type == PIPELINE_OUT:
             if item.socket_type == PIPELINE_IN:
                 self.dragEdge.end_socket = item
                 self.dragEdge.end_socket.addEdge(self.dragEdge)
-                self.dragEdge.setColor(Qt.GlobalColor.green)
                 logger.info(f'View::edgeDragEnd: assign end socket index {item.index} of node {item.node.id} to drag edge.')
                 self.dragEdge.updatePositions()
                 return True
 
-        elif type(item) is NodeGraphicsSocket and item.socket_type in [SINGLE_IN, MULTI_IN] and item.node != self.dragEdge.start_socket.node:
-            if item.socket_type == SINGLE_IN and item.hasEdge(): 
+        elif isinstance(item, NodeGraphicsSocket) and item.socket_type in [SINGLE_IN, MULTI_IN, CONNECTOR_IN] and item.node != self.dragEdge.start_socket.node:
+            # remove edge in single in, connector in
+            if item.socket_type in [SINGLE_IN, CONNECTOR_IN] and item.hasEdge(): 
                 for edge in item.edges:
                     edge.remove()
                     self.grScene.removeEdge(edge) 
                     logger.info(f'View::edgeDragEnd: remove Edge for single-in socket.')
                             
-                        
-            if self.dragEdge.start_socket.socket_type == SINGLE_OUT: 
+            # remove edge in single out
+            if self.dragEdge.start_socket.socket_type in [SINGLE_OUT]: 
                 for edge in self.dragEdge.start_socket.edges:
                     if edge != self.dragEdge:
                         edge.remove()
@@ -287,12 +348,24 @@ class NodeGraphicsView(QGraphicsView):
 
         if event.key() == Qt.Key.Key_Delete:
             self.deleteSelected()
+        elif event.key() == Qt.Key.Key_Escape:
+            self.deselectSelected()
         elif event.key() == Qt.Key.Key_A and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            for item in self.grScene.items(): item.setSelected(True)
-
+            self.selectAll()
+        elif event.key() == Qt.Key.Key_Up and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.scaling_time(factor=1.2)
+        elif event.key() == Qt.Key.Key_Down and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.scaling_time(factor=1/1.2)
         else:
             super().keyPressEvent(event)
 
+    def selectAll(self):
+        for item in self.grScene.items(): 
+            item.setSelected(True)
+    
+    def deselectSelected(self):
+        for item in self.grScene.selectedItems():
+            item.setSelected(False)
 
     def deleteSelected(self):
         for item in self.grScene.selectedItems():
@@ -308,7 +381,7 @@ class NodeGraphicsView(QGraphicsView):
                 if item.start_socket not in self.grScene.items() or item.end_socket not in self.grScene.items():
                     self.grScene.removeEdge(item)
                     item.remove()
-
+    
     def paintEvent(self, event: QPaintEvent) -> None:
         self.grScene.setBackgroundColor()
         return super().paintEvent(event)
