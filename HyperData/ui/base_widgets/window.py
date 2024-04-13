@@ -13,6 +13,7 @@ class Dialog (QDialog):
         
         self.vlayout = QVBoxLayout(self)
         self.main_layout = QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.vlayout.addLayout(self.main_layout)
 
         self.groupButton = QHBoxLayout()

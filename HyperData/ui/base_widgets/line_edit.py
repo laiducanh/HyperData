@@ -5,7 +5,6 @@ from PyQt6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxL
 from ui.base_widgets.menu import Menu, LineEdit_Menu
 from ui.base_widgets.button import _TransparentPushButton, _ComboBox
 from ui.base_widgets.text import BodyLabel
-from ui.utils import icon
 
 class _LineEdit (QLineEdit):
     def __init__(self, parent=None):
@@ -33,7 +32,7 @@ class _SearchBox (_LineEdit):
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         
         self.searchButton = _TransparentPushButton(parent=parent)
-        self.searchButton.setIcon(icon("Search.svg"))
+        self.searchButton.setIcon("search.png")
         self.searchButton.setIconSize(QSize(12,12))
         self.searchButton.setFixedSize(29, 25)
         self.hBoxLayout.addWidget(self.searchButton, 0, Qt.AlignmentFlag.AlignRight)

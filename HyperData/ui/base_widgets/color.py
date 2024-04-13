@@ -111,7 +111,7 @@ class PaletteGrid(_PaletteBase):
         
         add = _TransparentPushButton()
         
-        add.setIcon(QIcon(os.path.join('UI','Icons','add.png')))
+        add.setIcon('add.png')
         add.setIconSize(QSize(20,20))
         add.clicked.connect(self.sig_openDialog.emit)
         palette.addWidget(add)
