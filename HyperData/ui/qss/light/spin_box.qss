@@ -1,5 +1,5 @@
 _SpinBox, _DoubleSpinBox {
-    color: black;
+    color: rgba(67, 67, 67, 1);
     background-color: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
     border-radius: 6px;
@@ -33,6 +33,7 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
 
 _SpinBox:hover, _DoubleSpinBox:hover {
     border: 2px solid rgba(0, 120, 215, 1);
+    color: black;
 }
 
 _SpinBox:focus, _DoubleSpinBox:focus {

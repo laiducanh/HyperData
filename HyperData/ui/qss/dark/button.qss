@@ -1,4 +1,4 @@
-_PushButton {
+_PushButton, _DropDownPushButton, _ToolButton, _TogglePushButton, _ToggleToolButton {
     color: rgba(67, 67, 67, 1);
     background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
@@ -8,26 +8,77 @@ _PushButton {
     outline: none;
 }
 
-_PushButton:hover {
-    border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 6px;
+_ToolButton[hasMenu=true] {
+    padding: 5px 20px 6px 8px;
+}
+
+_PushButton:hover, _DropDownPushButton:hover, _ToolButton:hover, 
+_TogglePushButton:hover, _ToggleToolButton:hover {
     background: rgba(220, 220, 220, 0.8);
 }
 
-_PushButton:pressed {
-    color: rgba(0, 0, 0, 0.63);
+_PushButton:pressed, _ToolButton:pressed, _TogglePushButton:pressed, _ToggleToolButton:pressed {
+    color: rgba(67, 67, 67, 0.6);
     background: rgba(220, 220, 220, 0.4);
     border: 1px solid rgba(200, 200, 200, 0.8);
 }
 
-_PushButton:disabled {
+_PushButton:disabled, _ToolButton:disabled, _TogglePushButton:disabled, _ToggleToolButton:disabled {
     color: rgba(0, 0, 0, 0.36);
     background: rgba(249, 249, 249, 0.3);
     border: 1px solid rgba(0, 0, 0, 0.06);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-_PushButton::menu-indicator {
+_TransparentPushButton, _DropDownTransparentPushButton, _TransparentToolButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    margin: 0;
+}
+
+_TransparentPushButton:hover, _DropDownTransparentPushButton:hover, _TransparentToolButton:hover {
+    background: rgba(220, 220, 220, 0.8);
+    border: none;
+}
+
+_TransparentPushButton:pressed, _TransparentToolButton:pressed {
+    color: rgba(0, 0, 0, 0.63);
+    background: rgba(220, 220, 220, 0.4);
+    border: none;
+}
+
+_TransparentPushButton:disabled, _DropDownTransparentPushButton:disabled, _TransparentToolButton:disabled {
+    background: transparent;
+    border: none;
+}
+
+_PrimaryPushButton, _DropDownPrimaryPushButton, _PrimaryToolButton,
+_TogglePushButton:checked, _ToggleToolButton:checked {
+    color: white;
+    background-color: rgba(0, 120, 215, 1);
+}
+
+_PrimaryPushButton:hover, _DropDownPrimaryPushButton:hover, _PrimaryToolButton:hover,
+_TogglePushButton:checked:hover, _ToggleToolButton:checked:hover {
+    background-color: rgba(0, 120, 215, 0.9);
+    border: 2px solid rgba(0, 120, 215, 1);
+}
+
+_PrimaryPushButton:pressed, _PrimaryToolButton:pressed,
+_TogglePushButton:checked:pressed, _ToggleToolButton:checked:pressed {
+    color: rgba(255, 255, 255, 0.63);
+}
+
+_PrimaryPushButton:disabled, _DropDownPrimaryPushButton:disabled, _PrimaryToolButton:disabled,
+_TogglePushButton:checked:disabled, _ToggleToolButton:checked:pressed {
+    color: rgba(255, 255, 255, 0.63);
+    background-color: rgba(0, 120, 215, 0.3);
+}
+
+_DropDownPushButton::menu-indicator,
+_DropDownPrimaryPushButton::menu-indicator,
+_DropDownTransparentPushButton::menu-indicator,
+_ToolButton::menu-indicator {
     image: url(ui/icons/black/ChevronDown_black.svg);
     width: 10px;
     height: 10px;
@@ -35,37 +86,4 @@ _PushButton::menu-indicator {
     subcontrol-position: center right;
     margin: 0px;
     margin-right: 10px;
-}
-
-
-_TransparentPushButton {
-    background-color: transparent;
-    border: none;
-    border-radius: 6px;
-    margin: 0;
-}
-
-_TransparentPushButton:hover {
-    background: rgba(220, 220, 220, 0.8);
-    border: none;
-}
-
-_TransparentPushButton:pressed {
-    color: rgba(0, 0, 0, 0.63);
-    background: rgba(220, 220, 220, 0.4);
-    border: none;
-}
-
-_PrimaryPushButton {
-    color: white;
-    background-color: rgba(0, 120, 215, 1);
-}
-
-_PrimaryPushButton:hover {
-    background-color: rgba(0, 120, 215, 0.9);
-    border: 1px solid rgba(0, 120, 215, 1);
-}
-
-_PrimaryPushButton:pressed {
-    color: rgba(255, 255, 255, 0.63);
 }

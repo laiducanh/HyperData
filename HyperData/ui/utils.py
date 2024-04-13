@@ -9,10 +9,10 @@ def icon(fileName:str) -> QIcon:
     return QIcon(os.path.join("ui","icons","black",fileName))
 
 def isDark() -> bool:
-    return False
+    
     if config["theme"] == "Dark":
         return True
     elif config["theme"] == "Light":
         return False
-    else:
+    else: # if theme is AUTO, theme by system
         return darkdetect.isDark()

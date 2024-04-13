@@ -43,7 +43,7 @@ _ComboBox::down-arrow, _TransparentComboBox::down-arrow {
 
 _ComboBox QAbstractItemView {
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 6px;
+    border-radius: 8px;
     background: white;
     padding: 4px 3px 4px 3px;
     font: 10.5pt;
@@ -51,7 +51,7 @@ _ComboBox QAbstractItemView {
 }
 
 _ComboBox QAbstractItemView::item {
-    color: black;
+    color: rgba(67, 67, 67, 1);
     background: white;
     border-radius: 6px;
     font: 10.5pt;
@@ -61,4 +61,5 @@ _ComboBox QAbstractItemView::item {
 _ComboBox QAbstractItemView::item:hover {
     border-radius: 6px;
     background: rgba(220, 220, 220, 0.8);
+    color: black;
 }

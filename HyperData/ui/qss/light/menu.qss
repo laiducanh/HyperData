@@ -1,6 +1,6 @@
 Menu {
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 6px;
+    border-radius: 8px;
     background: white;
     padding: 4px 3px 4px 3px;
     font: 10.5pt;
@@ -16,18 +16,16 @@ Menu::right-arrow {
 
 Menu::separator {
     height: 1px;
-    background: rgba(0, 0, 0, 104);
-    margin-right: 13px;
+    background: rgba(200, 200, 200, 0.5);
     margin-top: 4px;
     margin-bottom: 4px;
-    margin-left: 10px;
 }
 
 Menu::item {
-    color: black;
+    color: rgba(67, 67, 67, 1);
     background: transparent;
     font: 10.5pt;
-    padding: 3px 30px 3px 20px;
+    padding: 5px 30px 5px 20px;
     border-radius: 6px;
     border: none;
     
@@ -35,6 +33,7 @@ Menu::item {
 
 Menu::item:hover {
     background: rgba(220, 220, 220, 0.8);
+    color: black;
 }
 
 Menu::item:selected {
