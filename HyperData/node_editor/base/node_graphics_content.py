@@ -1,11 +1,11 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PyQt6.QtCore import pyqtSignal, Qt, QThreadPool, QTimer
-from PyQt6.QtGui import QFont, QAction, QPaintEvent
+from PyQt6.QtGui import QAction
 import pandas
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.line_edit import _TextEdit
-from ui.base_widgets.button import _TransparentPushButton, _PrimaryPushButton
+from ui.base_widgets.button import _TransparentPushButton, _TransparentToolButton
 from ui.base_widgets.window import ProgressBar
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.threadpool import Worker
@@ -16,18 +16,18 @@ class NodeComment (_TextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setFontItalic(True)
         self.setPlaceholderText("Comment")
 
 class NodeContentWidget(QWidget):
     sig = pyqtSignal()
-    def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsSence"
+    def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__()
-        #self.setStyleSheet('background-color:transparent')
+        
         self.node = node
         self.parent = parent
         self.threadpool = parent.threadpool
         self.threadpool: QThreadPool
+        self.num_signal_pipeline = 0
         self.view = DataView(pandas.DataFrame())
         self.menu = Menu()
         self.comment = NodeComment() 
@@ -48,25 +48,33 @@ class NodeContentWidget(QWidget):
         self.setLayout(self.layout)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        font = QFont('Monospace', 8)
-        self.exec_btn = _TransparentPushButton()
-        self.exec_btn.setText('Execute')
-        #self.exec_btn.setFont(font)
-        #self.exec_btn.setCheckable(False)
+        self.hboxlayout = QHBoxLayout()
+        self.layout.addLayout(self.hboxlayout)
+
+        
+        self.exec_btn = _TransparentToolButton()
+        self.exec_btn.setIcon("play.png")
+        self.exec_btn.setToolTip("Execute")
         self.exec_btn.pressed.connect(self.exec)
-        self.layout.addWidget(self.exec_btn)
+        self.hboxlayout.addWidget(self.exec_btn)
+        self.config_btn = _TransparentToolButton()
+        self.config_btn.setIcon("settings.png")
+        self.config_btn.setToolTip("Configuration")
+        self.config_btn.clicked.connect(self.config)
+        self.hboxlayout.addWidget(self.config_btn)
+        comment = _TransparentToolButton()
+        comment.setIcon("comment.png")
+        comment.setToolTip("Comment")
+        comment.clicked.connect(lambda: self.comment.hide() if self.comment.isVisible() else self.comment.show())
+        self.hboxlayout.addWidget(comment)
+
         self.label = _TransparentPushButton()
         self.label.setText(f'Shape: (0, 0)')
-        #self.label.setFont(font)
         self.label.pressed.connect(self.viewData)
         #self.label.setContentsMargins(5,0,5,3)
         self.layout.addWidget(self.label)
         #self.setFixedHeight(46)
-        self.config_btn = _TransparentPushButton()
-        self.config_btn.setText("Configuration")
-        self.config_btn.clicked.connect(self.config)
-        #self.config_btn.setFont(font)
-        self.layout.addWidget(self.config_btn)
+        
         self.layout.addWidget(self.comment)
         self.progress = ProgressBar()
         self.layout.addWidget(self.progress)
@@ -90,7 +98,7 @@ class NodeContentWidget(QWidget):
         self.menu.addAction(action)
         self.menu.addSeparator()
         action = QAction("Delete Card",self.menu)
-        action.triggered.connect(lambda: self.parent.removeNode(self.node))
+        action.triggered.connect(lambda: self.parent.deleteSelected())
         self.menu.addAction(action)
 
     def config(self):
@@ -117,7 +125,7 @@ class NodeContentWidget(QWidget):
     def exec (self):
         """ use to process data_out
          this function will be called when pressing execute button """
-        
+        self.num_signal_pipeline = 0 # reset number of pipeline signal
         self.run_threadpool()
 
     def func(self, *args, **kwargs):
@@ -125,6 +133,7 @@ class NodeContentWidget(QWidget):
         pass
     
     def exec_done(self):
+        
         self.timer.stop()
         self.label.setText(f"Shape: {self.data_to_view.shape}")    
         
@@ -139,7 +148,12 @@ class NodeContentWidget(QWidget):
     def pipeline (self):
 
         for edge in self.node.socket_pipeline_out.edges:
-            edge.end_socket.node.content.exec()
+            edge.end_socket.node.content.pipeline_signal()
+    
+    def pipeline_signal (self):
+        self.num_signal_pipeline += 1
+        if self.num_signal_pipeline >= len(self.node.socket_pipeline_in.edges):
+            self.exec()
 
     def eval (self):
         """ use to process data_in """
