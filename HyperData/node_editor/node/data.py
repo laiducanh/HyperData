@@ -237,7 +237,7 @@ class DataLocator (NodeContentWidget):
         dialog = Dialog("Configuration", self.parent.parent)
 
         type = ComboBox(items=["columns","rows"], text="type")
-        type.button.setCurrentText(self._config["type"].title())
+        type.button.setCurrentText(self._config["type"])
         type.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(type.button.currentIndex()))
         dialog.main_layout.addWidget(type)
 
@@ -253,15 +253,9 @@ class DataLocator (NodeContentWidget):
         stacklayout.addWidget(col)
 
         col_from = CompleterLineEdit(text="from column")
-        try:col_from.button._addItems(items=self.node.input_sockets[0].socket_data.columns.to_list())
-        except Exception as e:print(e)
-        col_from.button.setCurrentText(str(self._config["column_from"]))
         col_layout.addWidget(col_from)
 
         col_to = CompleterLineEdit(text="to column")
-        try:col_to.button._addItems(items=self.node.input_sockets[0].socket_data.columns.to_list())
-        except:pass
-        col_to.button.setCurrentText(str(self._config["column_to"]))
         col_layout.addWidget(col_to)
 
         row = QWidget()
@@ -271,21 +265,31 @@ class DataLocator (NodeContentWidget):
         stacklayout.addWidget(row)
 
         row_from = CompleterLineEdit(text="from row")
-        try:row_from.button._addItems(items=[str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])])
-        except:pass
-        row_from.button.setCurrentText(str(self._config["row_from"]))
         row_layout.addWidget(row_from)
 
         row_to = CompleterLineEdit(text="to row")
-        try:row_to.button._addItems(items=[str(i) for i in range(1,1+self.node.input_sockets[0].socket_data.shape[0])])
-        except:pass
-        row_to.button.setCurrentText(str(self._config["row_to"]))
         row_layout.addWidget(row_to)
+        
+        if self.node.input_sockets[0].socket_data.shape[0] < 1000:
+            try:
+                row_from.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
+                row_to.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
+            except: pass
+        if self.node.input_sockets[0].socket_data.shape[1] < 1000:
+            try:
+                col_from.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
+                col_to.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
+            except: pass
+
+        col_from.button.setCurrentText(str(self._config["column_from"]))
+        col_to.button.setCurrentText(str(self._config["column_to"]))
+        row_from.button.setCurrentText(str(self._config["row_from"]))
+        row_to.button.setCurrentText(str(self._config["row_to"]))
 
         stacklayout.setCurrentIndex(type.button.currentIndex())
-
+        
         if dialog.exec():
-            self._config["type"] = type.button.currentText().lower()
+            self._config["type"] = type.button.currentText()
             self._config["column_from"] = col_from.button.currentText()
             self._config["column_to"] = col_to.button.currentText()
             self._config["row_from"] = row_from.button.currentText()
