@@ -1,6 +1,6 @@
 from PyQt6.QtCore import pyqtSignal, Qt, QSettings, QStandardPaths, QDir
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QScrollArea, QComboBox, QLabel
-from ui.base_widgets.button import ComboBox, Toggle, _ComboBox
+from ui.base_widgets.button import ComboBox, Toggle, _ComboBox, SegmentedWidget
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit, _LineEdit
@@ -10,8 +10,6 @@ from matplotlib.axis import Axis
 from plot.canvas import Canvas
 
 class TickBase2D_1 (QWidget):
-    sig = pyqtSignal() # this signal will update tick only
-    sig2 = pyqtSignal()  # this signal will force to rebuild the whole graph
     def __init__(self,axis,canvas:Canvas):
         super().__init__()
         self.axis = axis
@@ -65,6 +63,9 @@ class TickBase2D_1 (QWidget):
         scale.button.setCurrentText(self.get_scale())
         layout1.addWidget(scale)   
 
+        self.choose_tick = SegmentedWidget()
+        widget.layout.addWidget(self.choose_tick)
+
         card2 = Frame()
         layout2 = QVBoxLayout()
         card2.setLayout(layout2)
@@ -73,12 +74,17 @@ class TickBase2D_1 (QWidget):
         self.layout6 = QVBoxLayout()
         layout2.addLayout(self.layout6)
 
+        self.choose_tick.addButton(text='Major', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_tick.addButton(text='Minor', func=lambda: self.stackedlayout.setCurrentIndex(1))
+
+        self.stackedlayout = QStackedLayout()
+        self.layout6.addLayout(self.stackedlayout)
+
         self.majortick = TickBase2D_2(self.axis, 'major',self.canvas)
-        self.layout6.addWidget(self.majortick)
+        self.stackedlayout.addWidget(self.majortick)
         self.minortick = TickBase2D_2(self.axis,'minor', self.canvas)
-        self.layout6.addWidget(self.minortick)
-            
-        widget.layout.addStretch(1000)
+        self.stackedlayout.addWidget(self.minortick)
+        self.choose_tick._onClick("Major")
 
     def find_object(self) -> Axis:
         for obj in self.canvas.fig.findobj(match=Axis):
@@ -130,7 +136,6 @@ class TickBase2D_1 (QWidget):
         else: return self.obj.axes.get_yscale().title()
 
 class TickBase2D_2 (QWidget):
-    sig = pyqtSignal()
     def __init__(self,axis,type,canvas:Canvas):
         super().__init__()
         self.type = type
@@ -141,7 +146,6 @@ class TickBase2D_2 (QWidget):
         self.setLayout(self.layout)
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setStyleSheet('background-color:transparent')
 
         layout1 = QHBoxLayout()
         self.layout.addLayout(layout1)
@@ -173,14 +177,13 @@ class TickBase2D_2 (QWidget):
         tick_direction.button.setCurrentText(self.get_tickdir())
         self.layout.addWidget(tick_direction)
 
-        #tick_labelcolor = ColorPicker(source=f'axes/{axis}/tick/{type}/tick label color',title='tick label color',
-        #                              text='label color')
-        ##tick_labelcolor.button.colorChanged.connect(self.sig.emit)
-        #self.layout.addWidget(tick_labelcolor)
+        tick_labelcolor = ColorDropdown(text='label color', color=self.get_labelcolor())
+        tick_labelcolor.button.colorChanged.connect(self.set_labelcolor)
+        self.layout.addWidget(tick_labelcolor)
 
-        #tickcolor = ColorPicker(source=f'axes/{axis}/tick/{type}/tick color',title='tick color',text='tick color')
-        #tickcolor.button.colorChanged.connect(self.sig.emit)
-        #self.layout.addWidget(tickcolor)
+        tickcolor = ColorDropdown(text='tick color', color=self.get_tickcolor())
+        tickcolor.button.colorChanged.connect(self.set_tickcolor)
+        self.layout.addWidget(tickcolor)
 
         tick_rotation = DoubleSpinBox(text='tick label rotation',min=-180,max=180,step=10)
         tick_rotation.button.valueChanged.connect(self.set_labelrotation)
@@ -204,7 +207,7 @@ class TickBase2D_2 (QWidget):
 
     def find_object(self) -> Axis:
         for obj in self.canvas.fig.findobj(match=Axis):
-            if obj.get_label_position() == self.axis:
+            if obj._gid == self.axis:
                 return obj
             
     def func (self,s):
@@ -272,6 +275,28 @@ class TickBase2D_2 (QWidget):
             try: return self.obj.get_minor_ticks()[0].get_tickdir().title()
             except: return 'out'.title()
     
+    def set_labelcolor(self, color):
+        axis = 'x' if self.axis in ['bottom','top'] else 'y'
+        self.obj.axes.tick_params(which=self.type,axis=axis,labelcolor=color)
+        self.canvas.draw()
+    
+    def get_labelcolor(self):
+        if self.type == 'major': return self.obj.get_majorticklabels()[0].get_color()
+        else: 
+            try: return self.obj.get_minorticklabels()[0].get_color()
+            except: return "black"
+
+    def set_tickcolor(self, color):
+        axis = 'x' if self.axis in ['bottom','top'] else 'y'
+        self.obj.axes.tick_params(which=self.type,axis=axis,color=color)
+        self.canvas.draw()
+    
+    def get_tickcolor(self):
+        if self.type == 'major': return self.obj.get_majorticklines()[0].get_color()
+        else: 
+            try: return self.obj.get_minorticklines()[0].get_color()
+            except: return "black"
+    
     def set_labelrotation (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,labelrotation=value)
@@ -324,13 +349,24 @@ class Tick2D (QWidget):
         self.layout.setContentsMargins(10,0,10,15)
         self.canvas = canvas
 
+        self.choose_axis = SegmentedWidget()
+        self.layout.addWidget(self.choose_axis)
+
+        self.choose_axis.addButton(text='Bottom', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_axis.addButton(text='Left', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_axis.addButton(text='Top', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.choose_axis.addButton(text='Right', func=lambda: self.stackedlayout.setCurrentIndex(3))
+
+        self.stackedlayout = QStackedLayout()
+        self.layout.addLayout(self.stackedlayout)
+
         self.bot = TickBase2D_1('bottom',self.canvas)
-        self.layout.addWidget(self.bot)
+        self.stackedlayout.addWidget(self.bot)
         self.left = TickBase2D_1('left',self.canvas)
-        self.layout.addWidget(self.left)
+        self.stackedlayout.addWidget(self.left)
         self.top = TickBase2D_1('top',self.canvas)
-        self.layout.addWidget(self.top)
+        self.stackedlayout.addWidget(self.top)
         self.right = TickBase2D_1('right',self.canvas)
-        self.layout.addWidget(self.right)
+        self.stackedlayout.addWidget(self.right)
 
     

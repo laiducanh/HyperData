@@ -1,10 +1,8 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QWidget, QHBoxLayout
-import os
 from data_processing.data_window import DataSelection
 from ui.base_widgets.line_edit import LineEdit, _CompleterLineEdit
-from ui.base_widgets.button import _PushButton
-from ui.utils import icon
+from ui.base_widgets.button import _ToolButton
 from node_editor.node_node import Node
 
 class WidgetPie (QWidget):
@@ -25,8 +23,8 @@ class WidgetPie (QWidget):
         self.input1.lineedit.returnPressed.connect(self.input_func)
         layout.addWidget(self.input1)
 
-        self.choose_data = _PushButton()
-        self.choose_data.setIcon(icon('open.png'))
+        self.choose_data = _ToolButton()
+        self.choose_data.setIcon('open.png')
         self.choose_data.clicked.connect(self.open_data)
         layout.addWidget(self.choose_data)
 

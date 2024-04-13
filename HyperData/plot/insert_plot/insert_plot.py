@@ -9,7 +9,6 @@ from ui.base_widgets.button import _PushButton, DropDownPrimaryPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.window import ProgressBar
 from ui.base_widgets.frame import Frame
-from ui.utils import icon
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import plotting
@@ -38,7 +37,7 @@ class Grid_Plottype (QHBoxLayout):
         xpos, ypos = 0,0
         for self.basic_plot in ['2d line','2d area','2d column','2d scatter','pie']:
             self.button = _PushButton()
-            self.button.setIcon(icon(ICON_PATH[self.basic_plot]))
+            self.button.setIcon(ICON_PATH[self.basic_plot])
             self.button.setIconSize(QSize(50,50))
             self.button.setFixedSize(QSize(50,50))
             self.button.setToolTip(self.basic_plot.title())
@@ -56,7 +55,7 @@ class Grid_Plottype (QHBoxLayout):
         self.plottype_window.sig.connect(lambda s: self.sig.emit(s))
         
         add_plot = _PushButton()
-        add_plot.setIcon(icon("add.png"))
+        add_plot.setIcon("add.png")
         add_plot.setIconSize(QSize(30,30))
         add_plot.setFixedSize(QSize(50,50))
         add_plot.setToolTip('More Graphs')
@@ -210,7 +209,7 @@ class InsertPlot (QWidget):
         
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setContentsMargins(10,0,10,15)
         self.canvas = canvas
         self.num_plot = 0 # keep track of the indexes of plots
         self.plotlist = list()

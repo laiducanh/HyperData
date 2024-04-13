@@ -8,7 +8,7 @@ from plot.canvas import Canvas
 from config.settings import linestyle_lib
 import matplotlib
 from matplotlib.spines import Spine
-
+from typing import List
 
 class SpineBase (Frame):
     def __init__(self, axis, canvas:Canvas):
@@ -47,7 +47,7 @@ class SpineBase (Frame):
         linewidth.button.setValue(self.get_linewidth())
         layout.addWidget(linewidth)
     
-    def find_object (self) -> list:
+    def find_object (self) -> List[Spine]:
         list_obj = list()
         for obj in self.canvas.fig.findobj(match=Spine):
             if obj.spine_type == self.axis:
@@ -74,11 +74,11 @@ class SpineBase (Frame):
     
     def set_linestyle(self, value):
         for obj in self.obj:
-            obj.set_linestyle(value.lower())
+            obj.set_linestyle(value)
         self.canvas.draw()
     
     def get_linestyle(self):
-        return self.obj[0].get_linestyle().title()
+        return self.obj[0].get_linestyle()
 
     def set_linewidth(self, value):
         for obj in self.obj:
@@ -90,7 +90,7 @@ class SpineBase (Frame):
 
     def set_color(self, color):
         for obj in self.obj:
-            obj.set_color(color.name())
+            obj.set_color(color)
         self.canvas.draw()
     
     def get_color(self):
@@ -124,32 +124,3 @@ class Spine2D (QWidget):
         self.right = SpineBase('right',self.canvas)
         self.stackedlayout.addWidget(self.right)
     
-class SpineWidget3D (QWidget):
-    sig = pyqtSignal()
-    def __init__(self):
-        super().__init__()
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.setContentsMargins(10,0,10,15)
-
-        choose_axis = qfluentwidgets.SegmentedWidget()
-        self.layout.addWidget(choose_axis)
-
-        choose_axis.addItem(routeKey='x', text='X Axis',
-                            onClick=lambda: self.stackedlayout.setCurrentIndex(0))
-        choose_axis.addItem(routeKey='y', text='Y Axis',
-                            onClick=lambda: self.stackedlayout.setCurrentIndex(1))
-        choose_axis.addItem(routeKey='z', text='Z Axis',
-                            onClick=lambda: self.stackedlayout.setCurrentIndex(2))
-
-        self.stackedlayout = QStackedLayout()
-        self.layout.addLayout(self.stackedlayout)
-        self.bot = SpineBase('x3d')
-        self.bot.sig.connect(lambda: self.sig.emit())
-        self.stackedlayout.addWidget(self.bot)
-        self.left = SpineBase('y3d')
-        self.left.sig.connect(lambda: self.sig.emit())
-        self.stackedlayout.addWidget(self.left)
-        self.top = SpineBase('z3d')
-        self.top.sig.connect(lambda: self.sig.emit())
-        self.stackedlayout.addWidget(self.top)

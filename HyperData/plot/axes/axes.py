@@ -29,3 +29,6 @@ class Tick (QWidget):
 
         self.tick2d = Tick2D(canvas)
         self.layout.addWidget(self.tick2d)
+
+    def choose_axis_func(self, axis):
+        self.tick2d.choose_axis._onClick(axis)

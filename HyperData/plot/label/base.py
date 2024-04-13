@@ -1,7 +1,5 @@
 from PyQt6.QtWidgets import QHBoxLayout, QWidget
-import os
 from ui.base_widgets.button import _ComboBox, _ToggleToolButton
-from ui.utils import icon
 from ui.base_widgets.text import BodyLabel
 from matplotlib.text import Text
 from plot.canvas import Canvas
@@ -20,14 +18,14 @@ class FontStyle (QWidget):
         style.clicked.connect(self.set_italic)
         style.setCheckable(True)
         style.setChecked(self.get_italic())
-        style.setIcon(icon(os.path.join("text-italic.svg")))
+        style.setIcon("text-italic.svg")
         layout.addWidget(style)
         
         weight = _ToggleToolButton()
         weight.clicked.connect(self.set_bold)
         weight.setCheckable(True)
         weight.setChecked(self.get_bold())
-        weight.setIcon(icon(os.path.join("text-bold.svg")))
+        weight.setIcon("text-bold.svg")
         layout.addWidget(weight)
     
     def set_italic (self, bool):
@@ -36,7 +34,6 @@ class FontStyle (QWidget):
         self.canvas.draw()
     
     def get_italic (self):
-        print(self.obj.get_fontstyle())
         if self.obj.get_fontstyle() == 'normal':
             return False
         return True
@@ -47,7 +44,6 @@ class FontStyle (QWidget):
         self.canvas.draw()
     
     def get_bold (self):
-        print(self.obj.get_fontweight())
         if self.obj.get_fontweight() == 'normal':
             return False
         return True

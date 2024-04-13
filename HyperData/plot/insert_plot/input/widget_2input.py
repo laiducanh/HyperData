@@ -1,11 +1,8 @@
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
-from PyQt6.QtGui import QAction
-import os, pandas
 from ui.base_widgets.button import _ToolButton
-from ui.base_widgets.menu import Menu
+from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.line_edit import _LineEdit, _CompleterLineEdit
-from ui.utils import icon
 from data_processing.data_window import DataSelection
 from node_editor.node_node import Node
 
@@ -23,11 +20,11 @@ class Widget2D_2input (QWidget):
         self.axes = ["axis bottom", "axis left"]
 
         self.choose_axis1 = _ToolButton()
-        self.choose_axis1.setIcon(icon("axis-bottom.png"))
+        self.choose_axis1.setIcon("axis-bottom.png")
         self.x_axis = Menu(parent=self)
-        self.axis_bottom = QAction(icon=icon("axis-bottom.png"),text='Bottom Axis', parent=self)
+        self.axis_bottom = Action(icon="axis-bottom.png",text='Bottom Axis', parent=self)
         self.axis_bottom.triggered.connect(self.choose_axis_bottom)
-        self.axis_top = QAction(icon=icon("axis-top.png"),text='Top Axis', parent=self)
+        self.axis_top = Action(icon="axis-top.png",text='Top Axis', parent=self)
         self.axis_top.triggered.connect(self.choose_axis_top)
         self.x_axis.addAction(self.axis_bottom)
         self.x_axis.addAction(self.axis_top)
@@ -37,15 +34,15 @@ class Widget2D_2input (QWidget):
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input1_func)
         self.choose_data_1 = _ToolButton()
-        self.choose_data_1.setIcon(icon('open.png'))
+        self.choose_data_1.setIcon('open.png')
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
         
         self.choose_axis2 = _ToolButton()
-        self.choose_axis2.setIcon(icon("axis-left.png"))
+        self.choose_axis2.setIcon("axis-left.png")
         self.y_axis = Menu(parent=self)
-        self.axis_left = QAction(icon=icon("axis-left.png"),text='Left Axis', parent=self)
+        self.axis_left = Action(icon="axis-left.png",text='Left Axis', parent=self)
         self.axis_left.triggered.connect(self.choose_axis_left)
-        self.axis_right = QAction(icon=icon("axis-right.png"),text='Right Axis', parent=self)
+        self.axis_right = Action(icon="axis-right.png",text='Right Axis', parent=self)
         self.axis_right.triggered.connect(self.choose_axis_right)
         self.y_axis.addActions([self.axis_left,self.axis_right])
         self.choose_axis2.setMenu(self.y_axis)
@@ -54,7 +51,7 @@ class Widget2D_2input (QWidget):
         self.input2.setCurrentText(self.input[1])
         self.input2.lineedit.returnPressed.connect(self.input2_func)
         self.choose_data_2 = _ToolButton()
-        self.choose_data_2.setIcon(icon('open.png'))
+        self.choose_data_2.setIcon('open.png')
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
 
         layout1 = QHBoxLayout()
@@ -72,7 +69,7 @@ class Widget2D_2input (QWidget):
     
     def choose_axis_bottom(self):
         
-        self.choose_axis1.setIcon(icon("axis-bottom.png"))
+        self.choose_axis1.setIcon("axis-bottom.png")
         self.axes[0] = "axis bottom"
 
         self.y_axis.clear()
@@ -82,7 +79,7 @@ class Widget2D_2input (QWidget):
 
     def choose_axis_top(self):
 
-        self.choose_axis1.setIcon(icon("axis-top.png"))
+        self.choose_axis1.setIcon("axis-top.png")
         self.axes[0] = "axis top"
 
         self.y_axis.clear()
@@ -92,7 +89,7 @@ class Widget2D_2input (QWidget):
 
     def choose_axis_left(self):
         
-        self.choose_axis2.setIcon(icon("axis-left.png"))
+        self.choose_axis2.setIcon("axis-left.png")
         self.axes[1] = "axis left"
 
         self.x_axis.clear()
@@ -101,7 +98,7 @@ class Widget2D_2input (QWidget):
 
     def choose_axis_right(self):
 
-        self.choose_axis2.setIcon(icon("axis-right.png"))
+        self.choose_axis2.setIcon("axis-right.png")
         self.axes[1] = "axis right"
 
         self.x_axis.clear()

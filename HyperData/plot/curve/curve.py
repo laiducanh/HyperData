@@ -1,5 +1,5 @@
 from PyQt6.QtCore import pyqtSignal, Qt, QTimer
-from PyQt6.QtWidgets import QVBoxLayout,  QScrollArea, QWidget
+from PyQt6.QtWidgets import QVBoxLayout,  QScrollArea, QWidget, QSizePolicy
 from PyQt6.QtGui import QPaintEvent
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import TextEdit
@@ -33,13 +33,12 @@ class Curve (QWidget):
         layout.addWidget(self.progressbar)
                 
         self.scroll_widget = Frame()
+        self.scroll_widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         self.layout2 = QVBoxLayout()
         self.layout2.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.scroll_widget.setLayout(self.layout2)
         
         self.scroll_area = QScrollArea(parent)
-        self.scroll_area.setObjectName('QScrollArea')
-        self.scroll_area.setStyleSheet('QScrollArea {border: none; background-color:transparent}')
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.verticalScrollBar().setValue(1900)
@@ -53,6 +52,7 @@ class Curve (QWidget):
         self.layout2.addWidget(TitleLabel('Label'))
         self.layout2.addWidget(SeparateHLine())
         self.legend = TextEdit()
+        self.legend.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         self.legend.button.setPlainText(self.get_label())
         self.legend.setFixedHeight(100)
         self.layout2.addWidget(self.legend)

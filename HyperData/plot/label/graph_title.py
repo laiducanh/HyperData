@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QScrollArea
+from PyQt6.QtWidgets import QVBoxLayout, QScrollArea, QSizePolicy
 from plot.canvas import Canvas
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import _TextEdit
@@ -14,24 +14,23 @@ class GraphTitle (QScrollArea):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.canvas = canvas
-
         widget = Frame()
+        widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         layout = QVBoxLayout()
-        #layout.setContentsMargins(10,0,10,15)
+        layout.setContentsMargins(10,0,10,15)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         widget.setLayout(layout)
         self.setWidget(widget)
         self.setWidgetResizable(True)
         self.verticalScrollBar().setValue(1900)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        layout.addWidget(TitleLabel('Graph Title'))
-        layout.addWidget(SeparateHLine())
+        self.canvas = canvas
         
+        layout.addWidget(TitleLabel("Graph Title"))
+        layout.addWidget(SeparateHLine())
+
         self.title = _TextEdit()
+        self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         self.title.setPlaceholderText("Enter the Graph's Title")
         self.title.textChanged.connect(self.set_title)
         self.title.setText(self.get_title())
@@ -65,20 +64,20 @@ class GraphTitle (QScrollArea):
         edgecolor.button.colorChanged.connect(self.set_edgecolor)
         layout.addWidget(edgecolor)
 
-        #align = FontAlignment(type='graph')
-        #align.sig.connect(lambda: self.sig.emit())
-        #layout.addWidget(align)
+        # #align = FontAlignment(type='graph')
+        # #align.sig.connect(lambda: self.sig.emit())
+        # #layout.addWidget(align)
         
-        #pad = DoubleSpinBox(text='label pad',min=-100,max=100,step=5)
-        #pad.button.valueChanged.connect(lambda: self.sig.emit())
-        #layout.addWidget(pad)
+        # #pad = DoubleSpinBox(text='label pad',min=-100,max=100,step=5)
+        # #pad.button.valueChanged.connect(lambda: self.sig.emit())
+        # #layout.addWidget(pad)
 
         alpha = Slider(text='transparency')
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
         layout.addWidget(alpha)
 
-        layout.addStretch()
+        # #self.layout.addStretch()
 
     def set_title (self):
         self.obj = self.canvas.axes.set_title(label=self.title.toPlainText())   
@@ -102,14 +101,14 @@ class GraphTitle (QScrollArea):
         return int(self.obj.get_fontsize())
 
     def set_color (self, color):
-        self.obj.set_color(color.name())
+        self.obj.set_color(color)
         self.canvas.draw()
     
     def get_color (self):
         return self.obj.get_color()
 
     def set_backgroundcolor (self, color):
-        self.obj.set_backgroundcolor(color.name())
+        self.obj.set_backgroundcolor(color)
         self.canvas.draw()
     
     def get_backgroundcolor(self):
@@ -118,7 +117,7 @@ class GraphTitle (QScrollArea):
         return 'white'
 
     def set_edgecolor (self, color):
-        self.obj.set_bbox({"edgecolor":color.name(),
+        self.obj.set_bbox({"edgecolor":color,
                            "facecolor":self.backgroundcolor.button.color.name()})
         self.canvas.draw()
     

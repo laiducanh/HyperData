@@ -38,11 +38,13 @@ class Canvas (FigureCanvasQTAgg):
         self.axespie = self.fig.add_subplot()
         self.axesleg = self.fig.add_subplot(gid="legend")
 
+        self.axespie.set_axis_off()
         self.axesleg.set_axis_off()
 
-        #tmp = ['bottom','left','bottom','right','top','left']
-        #for ind, obj in enumerate(self.fig.findobj(match=matplotlib.axis.Axis)):
-        #    obj.set_gid(tmp[ind])
+        self.axes.xaxis.set_gid("bottom")
+        self.axes.yaxis.set_gid("left")
+        self.axesy2.yaxis.set_gid("right")
+        self.axesx2.xaxis.set_gid("top")
 
         super().__init__(self.fig)
     

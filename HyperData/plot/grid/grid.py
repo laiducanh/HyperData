@@ -9,14 +9,17 @@ from plot.canvas import Canvas
 import matplotlib
 from config.settings import linestyle_lib
 
-class PlotSize2D (QWidget):
+class PlotSize2D (Frame):
     def __init__(self, canvas:Canvas):
         super().__init__()
 
         layout = QVBoxLayout()
         self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
+        #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
+
+        layout.addWidget(TitleLabel('Figure Margin'))
+        layout.addWidget(SeparateHLine())
 
         top = DoubleSpinBox(text='margin top',min=0,max=1,step=0.05)
         top.button.valueChanged.connect(self.set_top)
@@ -68,14 +71,17 @@ class PlotSize2D (QWidget):
         return self.canvas.fig.subplotpars.right
 
     
-class Grid2D (QWidget):
+class Grid2D (Frame):
     def __init__(self, canvas: Canvas, parent=None):
         super().__init__(parent)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
+        #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
+
+        layout.addWidget(TitleLabel('Grid'))
+        layout.addWidget(SeparateHLine())
 
         self.visible = Toggle(text='visible')
         layout.addWidget(self.visible)
@@ -174,14 +180,17 @@ class Grid2D (QWidget):
         return matplotlib.rcParams['grid.color']
 
 
-class Pane(QWidget):
+class Pane(Frame):
     def __init__(self, canvas: Canvas, parent=None):
         super().__init__(parent)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
+        #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
+
+        layout.addWidget(TitleLabel('Pane'))
+        layout.addWidget(SeparateHLine())
 
         self.visible = Toggle(text='visible')
         layout.addWidget(self.visible)
@@ -226,7 +235,7 @@ class Grid (QScrollArea):
 
         widget = QWidget()
         layout = QVBoxLayout()
-        layout.setContentsMargins(10,0,10,15)
+        #layout.setContentsMargins(10,0,10,15)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         widget.setLayout(layout)
         self.setWidget(widget)
@@ -234,35 +243,15 @@ class Grid (QScrollArea):
         self.verticalScrollBar().setValue(1900)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        card1 = Frame()
-        layout1 = QVBoxLayout()
-        card1.setLayout(layout1)
-        layout.addWidget(card1)
-
-        layout1.addWidget(TitleLabel('Figure Margin'))
-        layout1.addWidget(SeparateHLine())
-        self.plotsize = PlotSize2D(canvas)
-        layout1.addWidget(self.plotsize)
-
-        card2 = Frame()
-        layout2 = QVBoxLayout()
-        card2.setLayout(layout2)
-        layout.addWidget(card2)
-
-        layout2.addWidget(TitleLabel("Pane"))
-        layout2.addWidget(SeparateHLine())
-        self.pane = Pane(canvas)
-        layout2.addWidget(self.pane)
         
-        card3 = Frame()
-        layout3 = QVBoxLayout()
-        card3.setLayout(layout3)
-        layout.addWidget(card3)
+        self.plotsize = PlotSize2D(canvas)
+        layout.addWidget(self.plotsize)
 
-        layout3.addWidget(TitleLabel('Grid'))
-        layout3.addWidget(SeparateHLine())
+        self.pane = Pane(canvas)
+        layout.addWidget(self.pane)
+        
         self.grid = Grid2D(canvas,parent)
-        layout3.addWidget(self.grid)
+        layout.addWidget(self.grid)
  
 
 

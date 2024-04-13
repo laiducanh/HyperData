@@ -80,7 +80,6 @@ class GraphicsView (QGraphicsView):
         self.tooltip.setPos(self.mouse_position.x()+30, self.mouse_position.y()+30)
         for obj in stack:
             if obj._gid != None and obj.contains(event)[0]:
-                print(obj)
                 if not self.tooltip.isVisible():
                     self.tooltip.show()
                 break

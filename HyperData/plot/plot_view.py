@@ -13,7 +13,7 @@ from plot.curve.curve import Curve
 from plot.axes.axes import Tick, Spine
 from plot.plot_graphics_view import GraphicsView
 from ui.base_widgets.list import TreeWidget
-from ui.base_widgets.button import _PushButton
+from ui.base_widgets.button import _TransparentToolButton
 from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.window import ProgressDialog
 from plot.canvas import Canvas
@@ -73,12 +73,15 @@ class PlotView (QMainWindow):
         self.sidebar.setLayout(self.sidebar_layout)
 
         static_layout = QHBoxLayout()
+        static_layout.setContentsMargins(10,0,10,15)
         self.sidebar_layout.addLayout(static_layout)
 
-        self.graphicscreen_btn = _PushButton()
+        self.graphicscreen_btn = _TransparentToolButton()
+        self.graphicscreen_btn.setIcon("stack.png")
         self.graphicscreen_btn.pressed.connect(self.sig_back_to_grScene.emit)
         static_layout.addWidget(self.graphicscreen_btn)
-        self.treeview_btn = _PushButton()
+        self.treeview_btn = _TransparentToolButton()
+        self.treeview_btn.setIcon("home.svg")
         self.treeview_btn.pressed.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         static_layout.addWidget(self.treeview_btn)
         self.search_box = _SearchBox(parent=self.parent)
@@ -100,7 +103,7 @@ class PlotView (QMainWindow):
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
         
-        self.diag.progressbar._setValue(30)
+        self.diag.progressbar._setValue(10)
         self.diag.setLabelText("Loading plot types")
         QApplication.processEvents()
 
@@ -108,11 +111,12 @@ class PlotView (QMainWindow):
         self.insertplot.sig.connect(self.add_plot)
         self.stackedlayout.addWidget(self.insertplot)
         
-        self.diag.progressbar._setValue(50)
+        self.diag.progressbar._setValue(20)
         self.diag.setLabelText("Loading ticks")
         QApplication.processEvents()
-        #self.tick = Tick(self.canvas)
-        #self.stackedlayout.addWidget(self.tick)
+        self.tick = Tick(self.canvas)
+        self.stackedlayout.addWidget(self.tick)
+
         self.diag.progressbar._setValue(60)
         self.diag.setLabelText("Loading spines")
         QApplication.processEvents()
@@ -180,6 +184,7 @@ class PlotView (QMainWindow):
             self.treeview.setData(self.treeview_list)
             
         elif "tick " in text:
+            self.tick.choose_axis_func(text.split()[-1].title())
             self.stackedlayout.setCurrentWidget(self.tick)
         
         elif "spine " in text:
@@ -202,13 +207,13 @@ class PlotView (QMainWindow):
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         dock_area = config["dock area"]
-        if dock_area == "left":
+        if dock_area == "Left":
             self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dock)
-        elif dock_area == "right":
+        elif dock_area == "Right":
             self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
-        elif dock_area == "top":
+        elif dock_area == "Top":
             self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.dock)
-        elif dock_area == "bottom":
+        elif dock_area == "Bottom":
             self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock)
             
         return super().paintEvent(a0)
