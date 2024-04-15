@@ -85,6 +85,7 @@ class PlotView (QMainWindow):
         self.treeview_btn.pressed.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         static_layout.addWidget(self.treeview_btn)
         self.search_box = _SearchBox(parent=self.parent)
+        self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
         
 

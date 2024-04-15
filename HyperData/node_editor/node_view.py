@@ -46,6 +46,7 @@ class NodeView (QMainWindow):
         self.list_widget_layout.addLayout(self.static_layout)
 
         self.search_box = _SearchBox(parent=self.parent)
+        self.search_box.setPlaceholderText("Type / to search")
         self.static_layout.addWidget(self.search_box)
 
         self.nodesListWidget = Draggable_TreeWidget()
