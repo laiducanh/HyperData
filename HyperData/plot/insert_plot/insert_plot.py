@@ -77,7 +77,7 @@ class NewPlot (Frame):
         self.plot_type = plot_type
         self.canvas = canvas
         self.gidlist = list()
-        self.widget = QWidget()
+        #self.widget = QWidget()
         self.node = node
         self.parent = parent
         self.change_type = False
@@ -94,8 +94,6 @@ class NewPlot (Frame):
 
         mainlayout = QVBoxLayout()
         self.setLayout(mainlayout)
-        #mainlayout.setContentsMargins(0,0,0,0)
-        #mainlayout.addWidget(Shape.SeparateHLine())
 
         layout = QHBoxLayout()
         mainlayout.addLayout(layout)
@@ -222,20 +220,17 @@ class InsertPlot (QWidget):
         plottype.sig.connect(self.add_plot)
         
         self.scroll_area = QScrollArea()
-        self.scroll_area.setObjectName('QScrollArea')
-        self.scroll_area.setStyleSheet('QScrollArea {border: none; background-color:transparent}')
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         widget = QWidget() 
         widget.setObjectName('InsertTab')
         widget.setStyleSheet("QWidget#InsertTab {border: none}")
         self.layout2 = QVBoxLayout()
+        self.layout2.setContentsMargins(0,0,0,0)
         self.layout.addWidget(self.scroll_area)
         widget.setLayout(self.layout2)
         self.scroll_area.setWidget(widget)
         self.scroll_area.setWidgetResizable(True)
         self.layout2.setAlignment(Qt.AlignmentFlag.AlignTop|Qt.AlignmentFlag.AlignJustify)
-        #self.setScrollAnimation(Qt.Orientation.Vertical,400, QEasingCurve.)
-        #self.setStyleSheet("""border: none""")
         self.scroll_area.verticalScrollBar().rangeChanged.connect(lambda min, max: self.scroll_area.verticalScrollBar().setSliderPosition(max))
 
     def add_plot (self, plot_type):
