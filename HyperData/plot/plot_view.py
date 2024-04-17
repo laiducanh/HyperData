@@ -105,30 +105,32 @@ class PlotView (QMainWindow):
         self.dock.setTitleBarWidget(QWidget())
         
         self.diag.progressbar._setValue(10)
+
         self.diag.setLabelText("Loading plot types")
         QApplication.processEvents()
-
         self.insertplot = InsertPlot (self.canvas, self.node, self.parent)
         self.insertplot.sig.connect(self.add_plot)
         self.stackedlayout.addWidget(self.insertplot)
-        
         self.diag.progressbar._setValue(20)
+
         self.diag.setLabelText("Loading ticks")
         QApplication.processEvents()
         self.tick = Tick(self.canvas)
         self.stackedlayout.addWidget(self.tick)
-
         self.diag.progressbar._setValue(60)
+
         self.diag.setLabelText("Loading spines")
         QApplication.processEvents()
         self.spine = Spine(self.canvas)
         self.stackedlayout.addWidget(self.spine)
         self.diag.progressbar._setValue(70)
+
         self.diag.setLabelText("Loading grid")
         QApplication.processEvents()
         self.grid = Grid(self.canvas,self.parent)
         self.stackedlayout.addWidget(self.grid)
         self.diag.progressbar._setValue(80)
+        
         self.diag.setLabelText("Loading labels")
         QApplication.processEvents()
         self.title = GraphTitle(self.canvas)

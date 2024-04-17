@@ -58,9 +58,10 @@ def set_legend(ax:Axes):
            ax_leg = _ax # get the axis for legend
            break
     
-    if ax_leg != None: ax_leg.get_legend().remove()
-    if _artist != []:
-        ax_leg.legend(handles=_artist,draggable=True)
+    if ax_leg: 
+        ax_leg.get_legend().remove()
+        if _artist != []:
+            ax_leg.legend(handles=_artist,draggable=True)
 
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True, **kwargs) -> List[str]:
     
@@ -69,8 +70,8 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
     # rescale all axes while remove old artists and add new artists
     for _ax in ax.figure.axes:
         _ax.relim()
-        _ax.autoscale_view()
-    
+        _ax.autoscale()
+        
     gidlist = list()    
 
     if plot_type == "treemap":

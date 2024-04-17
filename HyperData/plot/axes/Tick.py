@@ -102,28 +102,29 @@ class TickBase2D_1 (QWidget):
         return self.obj.get_visible()
 
     def set_min(self, value):
-            
+        value = None if value == "" else float(value)
         try:
             if self.axis in ['bottom','top']:
-                self.obj.axes.set_xlim(left=float(value))
+                self.obj.axes.set_xlim(left=value)
             else:
-                self.obj.axes.set_ylim(bottom=float(value))
+                self.obj.axes.set_ylim(bottom=value)
         except Exception as e: print(e)
-
+        
         self.canvas.draw()
     
     def set_max (self, value):
-            
+        value = None if value == "" else float(value)
         try:
             if self.axis in ['bottom','top']:
-                self.obj.axes.set_xlim(right=float(value))
+                self.obj.axes.set_xlim(right=value)
             else:
-                self.obj.axes.set_ylim(top=float(value))
+                self.obj.axes.set_ylim(top=value)
         except Exception as e: print(e)
 
         self.canvas.draw()
 
     def get_lim(self):
+        
         if self.axis in ['bottom','top']: return self.obj.axes.get_xlim()
         else: return self.obj.axes.get_ylim()
     
@@ -137,6 +138,12 @@ class TickBase2D_1 (QWidget):
     def get_scale (self):
         if self.axis in ['bottom','top']: return self.obj.axes.get_xscale()
         else: return self.obj.axes.get_yscale()
+    
+    def showEvent(self, a0: QShowEvent) -> None:
+        # update min, max when show
+        self.min.button.setText(str(round(self.get_lim()[0],5)))
+        self.max.button.setText(str(round(self.get_lim()[1],5)))
+        return super().showEvent(a0)
 
 class TickBase2D_2 (QWidget):
     def __init__(self,axis,type,canvas:Canvas):

@@ -195,7 +195,7 @@ class NewPlot (Frame):
             self.gidlist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.current_plot}", plot_type=self.plot_type, update=not self.change_type, **kwargs)
             if fire_signal: self.sig.emit()
         except Exception as e:
-            print(e)
+            print("NewPlot::plotting", e)
         
         self.change_type = False
         
