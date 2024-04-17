@@ -1,5 +1,5 @@
 from PyQt6.QtCore import pyqtSignal, Qt, QStringListModel, QSize
-from PyQt6.QtGui import QContextMenuEvent, QFont, QKeyEvent
+from PyQt6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
 from PyQt6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxLayout,
                              QTreeWidget, QLineEdit)
 from ui.base_widgets.menu import Menu, LineEdit_Menu
@@ -85,12 +85,24 @@ class _CompleterLineEdit (_ComboBox):
         menu = LineEdit_Menu(parent=self.lineedit)
         menu.exec(a0.globalPos())
     
-    def _addItems (self, items):
+    def _addItems (self, items:list):
         self.items += items
+        self.items = list(set(self.items)) # remove duplicates
         self.clear()
         self.addItems(self.items)
         self.setCompleter(Completer(string_list=self.items))
     
+    def _addItem(self, item:str):
+        self.items.append(item)
+        self.items = list(set(self.items)) # remove duplicates
+        self.clear()
+        self.addItems(self.items)
+        self.setCompleter(Completer(string_list=self.items))
+    
+    def focusOutEvent(self, e: QFocusEvent) -> None:
+        # add current text in lineedit when focus out
+        self._addItem(self.currentText())
+        return super().focusOutEvent(e)
     
 class LineEdit (QWidget):
     def __init__(self, text=None, parent=None):
