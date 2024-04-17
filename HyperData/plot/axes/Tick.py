@@ -1,7 +1,8 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QSettings, QStandardPaths, QDir
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QScrollArea, QComboBox, QLabel
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QShowEvent
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QScrollArea
 from ui.base_widgets.button import ComboBox, Toggle, _ComboBox, SegmentedWidget
-from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
+from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit, _LineEdit
 from ui.base_widgets.frame import Frame
@@ -82,8 +83,10 @@ class TickBase2D_1 (QWidget):
 
         self.majortick = TickBase2D_2(self.axis, 'major',self.canvas)
         self.stackedlayout.addWidget(self.majortick)
+
         self.minortick = TickBase2D_2(self.axis,'minor', self.canvas)
         self.stackedlayout.addWidget(self.minortick)
+        
         self.choose_tick._onClick("Major")
 
     def find_object(self) -> Axis:
@@ -102,9 +105,9 @@ class TickBase2D_1 (QWidget):
             
         try:
             if self.axis in ['bottom','top']:
-                self.obj.axes.set_xlim([float(value),float(self.max.button.text())])
+                self.obj.axes.set_xlim(left=float(value))
             else:
-                self.obj.axes.set_ylim([float(value),float(self.max.button.text())])
+                self.obj.axes.set_ylim(bottom=float(value))
         except Exception as e: print(e)
 
         self.canvas.draw()
@@ -113,9 +116,9 @@ class TickBase2D_1 (QWidget):
             
         try:
             if self.axis in ['bottom','top']:
-                self.obj.axes.set_xlim([float(self.min.button.text()),float(value)])
+                self.obj.axes.set_xlim(right=float(value))
             else:
-                self.obj.axes.set_ylim([float(self.min.button.text()),float(value)])
+                self.obj.axes.set_ylim(top=float(value))
         except Exception as e: print(e)
 
         self.canvas.draw()
@@ -126,14 +129,14 @@ class TickBase2D_1 (QWidget):
     
     def set_scale (self, value:str):
         try:
-            if self.axis in ['bottom','top']: self.obj.axes.set_xscale(value.lower())
-            else: self.obj.axes.set_yscale(value.lower())
+            if self.axis in ['bottom','top']: self.obj.axes.set_xscale(value)
+            else: self.obj.axes.set_yscale(value)
             self.canvas.draw()
         except:pass
     
     def get_scale (self):
-        if self.axis in ['bottom','top']: return self.obj.axes.get_xscale().title()
-        else: return self.obj.axes.get_yscale().title()
+        if self.axis in ['bottom','top']: return self.obj.axes.get_xscale()
+        else: return self.obj.axes.get_yscale()
 
 class TickBase2D_2 (QWidget):
     def __init__(self,axis,type,canvas:Canvas):
