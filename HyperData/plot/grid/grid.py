@@ -93,7 +93,7 @@ class Grid2D (Frame):
         self.type.button.setCurrentText(self.get_gridtype())
         layout.addWidget(self.type)
 
-        self.axis = ComboBox(text='axis',items=['x','y','both'])
+        self.axis = ComboBox(text='axis',items=['X','Y','Both'])
         self.axis.button.currentTextChanged.connect(self.set_grid)
         self.axis.button.setCurrentText(self.get_gridaxis())
         layout.addWidget(self.axis)
@@ -133,7 +133,6 @@ class Grid2D (Frame):
                                     linestyle=linestyle, color=color,
                                     gid = f'_grid.{which}.{axis}.{alpha}.{linewidth}.{linestyle}.{color}',
                                     )
-            else: self.canvas.axes.grid(visible=False)
             self.canvas.draw()
         except: pass
     
@@ -214,7 +213,7 @@ class Pane(Frame):
         return self.canvas.axes.patch.get_visible()
     
     def set_color(self, color):
-        self.canvas.axes.patch.set_color(color.name())
+        self.canvas.axes.patch.set_color(color)
         self.canvas.draw()
     
     def get_color(self):
