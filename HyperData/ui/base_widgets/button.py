@@ -141,9 +141,9 @@ class _Toggle(QFrame):
             "border-radius : %d; background-color: rgb(255, 255, 255)"%((self.height - 28)//2))
         self.button_3.setVisible(False)
         
-        self.button_1.clicked.connect(self.setChecked)
-        self.button_2.clicked.connect(self.setChecked)
-        self.button_3.clicked.connect(self.setChecked)
+        self.button_1.clicked.connect(self._toggle)
+        self.button_2.clicked.connect(self._toggle)
+        self.button_3.clicked.connect(self._toggle)
 
         layout = QGridLayout()
         layout.addWidget(self.button_1, 0, 0, 1, 2)
@@ -152,14 +152,16 @@ class _Toggle(QFrame):
         
         self.setLayout(layout)
 
-    def setChecked(self, check:bool=False):
-
-        if check:
-            self.toggle_on = check
-        else:
-            self.toggle_on = not self.toggle_on
-            
-
+    def setChecked(self, check:bool):
+        self.toggle_on = check
+        self.checkChange()
+    
+    def _toggle (self):
+        self.toggle_on = not self.toggle_on
+        self.checkChange()
+    
+    def checkChange (self):
+        
         match self.toggle_on:
             case True:
                 self.button_1.setStyleSheet("border-radius : %d; border : none; background-color: rgb(0, 120, 215)"%((self.height - 20)//2))
