@@ -41,7 +41,7 @@ if os.path.exists(configFile):
         raw_data = file.read()
         config = json.loads(raw_data)
         print(config)
-else: config = {"theme":"Auto", "dock area":"left",}
+else: config = {"theme":"Auto", "dock area":"Left",}
 
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"log.txt")
 if DEBUG: logFile = "DEBUG.txt"
