@@ -2,9 +2,8 @@ _PushButton, _DropDownPushButton, _ToolButton, _TogglePushButton, _ToggleToolBut
     color: rgba(67, 67, 67, 1);
     background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius:6px;
-    font: 10.5pt;
-    padding: 5px 12px 6px 12px;
+    border-radius:4px;
+    padding: 4px 12px 5px 12px;
     outline: none;
 }
 

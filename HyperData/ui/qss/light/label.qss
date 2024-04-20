@@ -1,11 +1,9 @@
 BodyLabel {
     color: rgba(62, 62, 62, 1);
-    font: 10.5pt;
 }
 
 TitleLabel {
     color: black;
-    font: 11pt;
     font-weight: bold;
 }
 

@@ -5,7 +5,6 @@ ListWidget, TreeWidget {
     outline: 0;
     padding-right: 5px;
     padding-left: 5px;
-    font: 10.5pt;
 }
 
 ListWidget::item, TreeWidget::item {

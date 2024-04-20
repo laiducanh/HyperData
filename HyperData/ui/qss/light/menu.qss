@@ -3,7 +3,6 @@ Menu {
     border-radius: 8px;
     background: white;
     padding: 4px 3px 4px 3px;
-    font: 10.5pt;
     outline: none;
 }
 
@@ -24,7 +23,6 @@ Menu::separator {
 Menu::item {
     color: rgba(67, 67, 67, 1);
     background: transparent;
-    font: 10.5pt;
     padding: 5px 30px 5px 20px;
     border-radius: 6px;
     border: none;

@@ -2,7 +2,6 @@ _ComboBox {
     border: 1px solid rgba(200, 200, 200, 0.8);
     border-radius: 6px;
     padding: 4px 12px 5px 12px;
-    font: 10.5pt;
     color: rgba(67, 67, 67, 1);
     background-color: white;
     text-align: left;
@@ -46,7 +45,6 @@ _ComboBox QAbstractItemView {
     border-radius: 8px;
     background: white;
     padding: 4px 3px 4px 3px;
-    font: 10.5pt;
     outline: none;
 }
 
@@ -54,7 +52,6 @@ _ComboBox QAbstractItemView::item {
     color: rgba(67, 67, 67, 1);
     background: white;
     border-radius: 6px;
-    font: 10.5pt;
     padding: 3px 10px 3px 10px;
 }
 

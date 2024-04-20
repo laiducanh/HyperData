@@ -34,7 +34,8 @@ class _SearchBox (_LineEdit):
         self.searchButton = _TransparentPushButton(parent=parent)
         self.searchButton.setIcon("search.png")
         self.searchButton.setIconSize(QSize(12,12))
-        self.searchButton.setFixedSize(29, 25)
+        self.searchButton.setFixedWidth(29)
+        self.searchButton.clicked.connect(self.search_func)
         self.hBoxLayout.addWidget(self.searchButton, 0, Qt.AlignmentFlag.AlignRight)
 
         self.setTextMargins(0, 0, 59, 0)
@@ -45,7 +46,8 @@ class _SearchBox (_LineEdit):
     def set_TreeView (self, data_lookup:QTreeWidget):
         self.lookup = data_lookup
     
-    def search_func (self, s:str):
+    def search_func (self):
+        s = self.text()
         for i in range(self.lookup.topLevelItemCount()):
             self.lookup.topLevelItem(i).setHidden(True)
        

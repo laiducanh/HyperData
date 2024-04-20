@@ -12,14 +12,14 @@ QScrollArea {
 }
 
 QScrollBar:vertical {
-    background: rgba(166, 166, 166, 0.3);
+    background: transparent;
     width: 8px;
     border: none;
     border-radius: 4px;
 }
 
 QScrollBar:horizontal {
-    background: rgba(166, 166, 166, 0.3);
+    background: transparent;
     height: 8px;
     border: none;
     border-radius: 4px;

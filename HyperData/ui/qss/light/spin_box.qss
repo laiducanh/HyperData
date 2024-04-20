@@ -3,7 +3,6 @@ _SpinBox, _DoubleSpinBox {
     background-color: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
     border-radius: 6px;
-    font: 10.5pt;
     padding: 5px 80px 5px 12px;
 
 }
