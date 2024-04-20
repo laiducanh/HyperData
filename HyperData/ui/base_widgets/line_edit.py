@@ -88,18 +88,24 @@ class _CompleterLineEdit (_ComboBox):
         menu.exec(a0.globalPos())
     
     def _addItems (self, items:list):
-        self.items += items
-        self.items = list(set(self.items)) # remove duplicates
+        _text = self.currentText()
+        for i in items:
+            if i not in self.items:
+                self.items.append(i)
         self.clear()
         self.addItems(self.items)
         self.setCompleter(Completer(string_list=self.items))
+        self.setCurrentText(_text)
+        self.update()
     
     def _addItem(self, item:str):
-        self.items.append(item)
-        self.items = list(set(self.items)) # remove duplicates
+        _text = self.currentText()
+        if item not in self.items: self.items.append(item)
         self.clear()
         self.addItems(self.items)
         self.setCompleter(Completer(string_list=self.items))
+        self.setCurrentText(_text)
+        self.update()
     
     def focusOutEvent(self, e: QFocusEvent) -> None:
         # add current text in lineedit when focus out
