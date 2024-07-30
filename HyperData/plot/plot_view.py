@@ -38,6 +38,10 @@ class PlotView (QMainWindow):
         self.current_plot = 0
         self.curvelist = list()
         self.parent = parent
+        self.main_layout = QHBoxLayout()
+        self.central_widget = QWidget()
+        self.central_widget.setLayout(self.main_layout)
+        self.setCentralWidget(self.central_widget)
 
         self.treeview_list = {"Graph":["Manage graph"],
                                "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
@@ -63,7 +67,8 @@ class PlotView (QMainWindow):
             if i._gid != None and "graph" in i._gid:
                 self.treeview_list['Graph'].insert(-1,i._gid.title())
                 i.set_color('red')
-        self.setCentralWidget(self.plot_visual)
+        #self.setCentralWidget(self.plot_visual)
+        self.main_layout.addWidget(self.plot_visual)
     
     def setup_sidebar(self):
 
