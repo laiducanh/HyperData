@@ -8,8 +8,9 @@ from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.line_edit import CompleterLineEdit, Completer, TextEdit
 from ui.base_widgets.frame import SeparateHLine
-from config.settings import logger
-from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout
+from data_processing.data_window import TableModel
+from config.settings import logger, encode
+from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView
 
 
 DEBUG = True
@@ -20,19 +21,73 @@ class DataReader (NodeContentWidget):
         self.exec_btn.setText('Load data')
         self.node.output_sockets[0].socket_data = pd.DataFrame()
         self.parent = parent
-        self._config = dict(nrows=1000,ignore_index=False)
+        self._config = dict(nrows=100000,delimiter=",",header=0,
+                            skip_blank_lines=True,encoding="utf_8")
+        self.selectedFiles = None
     
     def config(self):
+        # Note that this configuration works for csv file
+        
         dialog = Dialog("Configuration", self.parent.parent)
-        nrows = SpinBox(max=1e5, text="Maximum lines")
+        nrows = SpinBox(max=100000, text="Number of rows")
         dialog.main_layout.addWidget(nrows)
         nrows.button.setValue(self._config["nrows"])
+        self.delimiter = ComboBox(items=["Tab","Semicolon","Comma","Space"],
+                             text="Delimiter")
+        self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
+        self.delimiter.button.setCurrentText(list(self._delimiterDict.keys())
+                                        [list(self._delimiterDict.values()).index(self._config["delimiter"])])
+        dialog.main_layout.addWidget(self.delimiter)
+        self.delimiter.button.currentTextChanged.connect(self.update_preview)
+        self.header = Toggle(text="Header")
+        if self._config["header"] == "infer":
+            self.header.button.setChecked(True)
+        else: self.header.button.setChecked(False)
+        dialog.main_layout.addWidget(self.header)
+        self.header.button.checkedChanged.connect(self.update_preview)
+        self.skip_blank_lines = Toggle(text="Skip blank lines")
+        self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
+        dialog.main_layout.addWidget(self.skip_blank_lines)
+        self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
+        self.encoding = ComboBox(items=encode,text="Encoding")
+        dialog.main_layout.addWidget(self.encoding)
+        self.encoding.button.setCurrentText(self._config["encoding"])
+        self.encoding.button.currentTextChanged.connect(self.update_preview)
+
+        self.preview = QTableView()
+        self.update_preview()
+        dialog.main_layout.addWidget(self.preview)
+        
 
         if dialog.exec(): 
             self._config["nrows"] = nrows.button.value()
-
-            self.exec()
+            self._config["delimiter"] = self._delimiterDict[self.delimiter.button.currentText()]
+            self._config["header"] = "infer" if self.header.button.isChecked() else None
+            self._config["encoding"] = self.encoding.button.currentText()
+            super().exec(self.selectedFiles)
+    
+    def update_preview (self):
+        delimiter = self._delimiterDict[self.delimiter.button.currentText()]
+        header = self.header.button.isChecked()
+        skip_blank_lines = self.skip_blank_lines.button.isChecked()
+        encoding = self.encoding.button.currentText()
         
+        if header: header=0
+        else: header=None
+
+        if self.selectedFiles:
+            try:
+                data = pd.read_csv(self.selectedFiles,nrows=10,
+                               delimiter=delimiter,header=header,
+                               skip_blank_lines=skip_blank_lines,encoding=encoding)
+                self.model = TableModel(data, self.parent)
+                self.preview.setModel(self.model)
+            except Exception as e: 
+                print(e)
+                self.model = TableModel(pd.DataFrame(), self.parent)
+                self.preview.setModel(self.model)
+            
+
     def exec (self):    
         
         import_dlg = QFileDialog()
@@ -43,15 +98,15 @@ class DataReader (NodeContentWidget):
         import_dlg.setWindowTitle("Import data")
 
         if import_dlg.exec():
-            selectedFiles = import_dlg.selectedFiles()[0]
-            logger.info(f"Select {selectedFiles}.")
+            self.selectedFiles = import_dlg.selectedFiles()[0]
+            logger.info(f"Select {self.selectedFiles}.")
             self.label.setText(f'Shape: (--, --)') # reset Shape label
-            super().exec(selectedFiles)
+            super().exec(self.selectedFiles)
     
     def func (self, selectedFiles):
         suffix = pathlib.Path(selectedFiles).suffix
         if suffix == ".csv":
-            self.node.output_sockets[0].socket_data = pd.read_csv(selectedFiles)
+            self.node.output_sockets[0].socket_data = pd.read_csv(selectedFiles,**self._config)
             logger.info(f"Load a csv file.")
         elif suffix in [".xls", ".xlsx"]:
             self.node.output_sockets[0].socket_data = pd.read_excel(selectedFiles)
