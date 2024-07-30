@@ -122,11 +122,11 @@ class NodeContentWidget(QWidget):
             self.progress.setValue(self.progress.value()+step)
         self.timerStart()
     
-    def exec (self):
+    def exec (self, *args, **kwargs):
         """ use to process data_out
          this function will be called when pressing execute button """
         self.num_signal_pipeline = 0 # reset number of pipeline signal
-        self.run_threadpool()
+        self.run_threadpool(*args, **kwargs)
 
     def func(self, *args, **kwargs):
         """ main function of the node """
