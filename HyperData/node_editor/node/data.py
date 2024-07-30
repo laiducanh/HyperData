@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
-import pathlib
+import pathlib, platform
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
@@ -22,13 +22,17 @@ class DataReader (NodeContentWidget):
     def exec (self):    
         
         import_dlg = QFileDialog()
+        if platform.system() == "Darwin":
+            # MacOS has a bug that prevents native dialog from properly working
+            # then use the option of DontUseNativeDialog
+            import_dlg.setOption(QFileDialog.Option.DontUseNativeDialog)
         import_dlg.setWindowTitle("Import data")
 
         if import_dlg.exec():
             selectedFiles = import_dlg.selectedFiles()[0]
             logger.info(f"Select {selectedFiles}.")
-
-            self.run_threadpool(selectedFiles)
+            self.label.setText(f'Shape: (--, --)') # reset Shape label
+            super().exec(selectedFiles)
     
     def func (self, selectedFiles):
         suffix = pathlib.Path(selectedFiles).suffix
@@ -38,10 +42,19 @@ class DataReader (NodeContentWidget):
         elif suffix in [".xls", ".xlsx"]:
             self.node.output_sockets[0].socket_data = pd.read_excel(selectedFiles)
             logger.info(f"Load an excel file.")
+        elif suffix == "":
+            _functionList = [pd.read_csv, pd.read_excel]
+            _logList = ["Load a csv file.",
+                        "Load an excel file."]
+            for _func, _log in zip(_functionList, _logList):
+                try:
+                    self.node.output_sockets[0].socket_data = _func(selectedFiles)
+                    logger.info(_log)
+                    break
+                except Exception as e: print(e)
         else:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
             logger.warning("Cannot read data file, return an empty DataFrame.")
-    
     
         self.data_to_view = self.node.output_sockets[0].socket_data
         
