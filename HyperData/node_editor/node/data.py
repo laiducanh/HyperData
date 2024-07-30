@@ -1,13 +1,14 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
-import pathlib, platform
+import platform
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.line_edit import CompleterLineEdit, Completer, TextEdit
 from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode
 from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView
@@ -24,7 +25,23 @@ class DataReader (NodeContentWidget):
         self._config = dict(nrows=100000,delimiter=",",header=0,
                             skip_blank_lines=True,encoding="utf_8")
         self.selectedFiles = None
+        self.filetype = "csv"
+        self.isReadable = True
     
+    def check_filetype (self, file):
+        functionList = [pd.read_csv, pd.read_excel]
+        filetypeList= ["csv","excel"]
+        
+        read = 0
+        for func, self.filetype in zip(functionList,filetypeList):
+            try:
+                self.node.output_sockets[0].socket_data = func(file,nrows=1)
+                self.isReadable = True
+                break
+            except: read += 1
+        if read == len(functionList):
+            self.isReadable = False
+        
     def config(self):
         # Note that this configuration works for csv file
         
@@ -40,7 +57,7 @@ class DataReader (NodeContentWidget):
         dialog.main_layout.addWidget(self.delimiter)
         self.delimiter.button.currentTextChanged.connect(self.update_preview)
         self.header = Toggle(text="Header")
-        if self._config["header"] == "infer":
+        if self._config["header"] == 0:
             self.header.button.setChecked(True)
         else: self.header.button.setChecked(False)
         dialog.main_layout.addWidget(self.header)
@@ -53,7 +70,14 @@ class DataReader (NodeContentWidget):
         dialog.main_layout.addWidget(self.encoding)
         self.encoding.button.setCurrentText(self._config["encoding"])
         self.encoding.button.currentTextChanged.connect(self.update_preview)
+        self.sheet_name = ComboBox(text="Sheet name")
+        dialog.main_layout.addWidget(self.sheet_name)
+        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
+        if self.filetype == "excel":
+            self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
 
+        dialog.main_layout.addWidget(BodyLabel("Data Preview"))
+        dialog.main_layout.addWidget(SeparateHLine())
         self.preview = QTableView()
         self.update_preview()
         dialog.main_layout.addWidget(self.preview)
@@ -64,6 +88,7 @@ class DataReader (NodeContentWidget):
             self._config["delimiter"] = self._delimiterDict[self.delimiter.button.currentText()]
             self._config["header"] = "infer" if self.header.button.isChecked() else None
             self._config["encoding"] = self.encoding.button.currentText()
+            self._config["sheet_name"] = self.sheet_name.button.currentText()
             super().exec(self.selectedFiles)
     
     def update_preview (self):
@@ -71,23 +96,24 @@ class DataReader (NodeContentWidget):
         header = self.header.button.isChecked()
         skip_blank_lines = self.skip_blank_lines.button.isChecked()
         encoding = self.encoding.button.currentText()
+        sheet_name = self.sheet_name.button.currentText()
         
         if header: header=0
         else: header=None
 
-        if self.selectedFiles:
-            try:
-                data = pd.read_csv(self.selectedFiles,nrows=10,
-                               delimiter=delimiter,header=header,
-                               skip_blank_lines=skip_blank_lines,encoding=encoding)
-                self.model = TableModel(data, self.parent)
-                self.preview.setModel(self.model)
-            except Exception as e: 
-                print(e)
-                self.model = TableModel(pd.DataFrame(), self.parent)
-                self.preview.setModel(self.model)
-            
+        data = pd.DataFrame()
 
+        if self.selectedFiles and self.isReadable:
+            if self.filetype == "csv":
+                data = pd.read_csv(self.selectedFiles, nrows=10,header=header,
+                                   delimiter=delimiter,skip_blank_lines=skip_blank_lines,
+                                   encoding=encoding)
+            elif self.filetype == "excel":
+                data = pd.read_excel(self.selectedFiles, nrows=10,header=header,
+                                     sheet_name=sheet_name)
+        self.model = TableModel(data, self.parent)
+        self.preview.setModel(self.model)
+            
     def exec (self):    
         
         import_dlg = QFileDialog()
@@ -104,28 +130,26 @@ class DataReader (NodeContentWidget):
             super().exec(self.selectedFiles)
     
     def func (self, selectedFiles):
-        suffix = pathlib.Path(selectedFiles).suffix
-        if suffix == ".csv":
-            self.node.output_sockets[0].socket_data = pd.read_csv(selectedFiles,**self._config)
-            logger.info(f"Load a csv file.")
-        elif suffix in [".xls", ".xlsx"]:
-            self.node.output_sockets[0].socket_data = pd.read_excel(selectedFiles)
-            logger.info(f"Load an excel file.")
-        elif suffix == "":
-            _functionList = [pd.read_csv, pd.read_excel]
-            _logList = ["Load a csv file.",
-                        "Load an excel file."]
-            for _func, _log in zip(_functionList, _logList):
-                try:
-                    self.node.output_sockets[0].socket_data = _func(selectedFiles)
-                    logger.info(_log)
-                    break
-                except Exception as e: print(e)
+        
+        if self.isReadable:
+            if self.filetype == "csv":
+                data = pd.read_csv(selectedFiles, nrows=self._config["nrows"],
+                                   header=self._config["header"],
+                                   delimiter=self._config["delimiter"],
+                                   skip_blank_lines=self._config["skip_blank_lines"],
+                                   encoding=self._config["encoding"])
+                logger.info(f"Load a csv file.")
+            elif self.filetype == "excel":
+                data = pd.read_excel(selectedFiles, nrows=self._config["nrows"],
+                                     header=self._config["header"])
+                logger.info(f"Load an excel file.")
         else:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data = pd.DataFrame()
             logger.warning("Cannot read data file, return an empty DataFrame.")
+        
+        self.node.output_sockets[0].socket_data = data
     
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.data_to_view = data
     
     def eval(self):
         for edge in self.node.input_sockets[0].edges:
