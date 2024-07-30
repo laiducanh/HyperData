@@ -57,7 +57,11 @@ class DataReader (NodeContentWidget):
             logger.warning("Cannot read data file, return an empty DataFrame.")
     
         self.data_to_view = self.node.output_sockets[0].socket_data
-        
+    
+    def eval(self):
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+
 
 class DataHolder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
