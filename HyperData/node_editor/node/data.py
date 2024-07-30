@@ -5,6 +5,7 @@ import pathlib, platform
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.line_edit import CompleterLineEdit, Completer, TextEdit
 from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger
@@ -18,6 +19,19 @@ class DataReader (NodeContentWidget):
         super().__init__(node,parent)
         self.exec_btn.setText('Load data')
         self.node.output_sockets[0].socket_data = pd.DataFrame()
+        self.parent = parent
+        self._config = dict(nrows=1000,ignore_index=False)
+    
+    def config(self):
+        dialog = Dialog("Configuration", self.parent.parent)
+        nrows = SpinBox(max=1e5, text="Maximum lines")
+        dialog.main_layout.addWidget(nrows)
+        nrows.button.setValue(self._config["nrows"])
+
+        if dialog.exec(): 
+            self._config["nrows"] = nrows.button.value()
+
+            self.exec()
         
     def exec (self):    
         
