@@ -140,7 +140,7 @@ class Widget2D_2input (QWidget):
         elif which_input == 'input 2':
             self.input2.setCurrentText(text)
 
-        self.input = [self.input1.text(), self.input2.text()]
+        self.input = [self.input1.currentText(), self.input2.currentText()]
         
         if self.input1.currentText() != '' and self.input2.currentText() != '':
             self.sig.emit()
