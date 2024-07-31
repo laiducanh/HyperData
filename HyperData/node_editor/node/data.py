@@ -305,10 +305,10 @@ class DataMerge (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
             else:
                 self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.info(f"{self.name} run successfully.")
+            logger.info(f"{self.name} {self.node.id}::run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data        
     
