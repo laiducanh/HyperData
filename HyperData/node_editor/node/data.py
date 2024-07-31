@@ -125,7 +125,7 @@ class DataReader (NodeContentWidget):
 
         if import_dlg.exec():
             self.selectedFiles = import_dlg.selectedFiles()[0]
-            logger.info(f"Select {self.selectedFiles}.")
+            logger.info(f"{self.name}::Select {self.selectedFiles}.")
             self.label.setText(f'Shape: (--, --)') # reset Shape label
             super().exec(self.selectedFiles)
     
@@ -138,14 +138,14 @@ class DataReader (NodeContentWidget):
                                    delimiter=self._config["delimiter"],
                                    skip_blank_lines=self._config["skip_blank_lines"],
                                    encoding=self._config["encoding"])
-                logger.info(f"Load a csv file.")
+                logger.info(f"{self.name}::Load a csv file.")
             elif self.filetype == "excel":
                 data = pd.read_excel(selectedFiles, nrows=self._config["nrows"],
                                      header=self._config["header"])
-                logger.info(f"Load an excel file.")
+                logger.info(f"{self.name}::Load an excel file.")
         else:
             data = pd.DataFrame()
-            logger.warning("Cannot read data file, return an empty DataFrame.")
+            logger.warning(f"{self.name}::Cannot read data file, return an empty DataFrame.")
         
         self.node.output_sockets[0].socket_data = data
     
