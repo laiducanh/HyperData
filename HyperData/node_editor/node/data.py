@@ -464,11 +464,11 @@ class DataLocator (NodeContentWidget):
                 row_to = int(self._config["row_to"])
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
 
-            logger.info(f"{self.name} run successfully.")
+            logger.info(f"{self.name} {self.node.id}::run successfully.")
 
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            logger.error(f"{self.name} {repr(e)}, return the original DataFrame.") 
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return the original DataFrame.") 
             
         self.data_to_view = self.node.output_sockets[0].socket_data
     
