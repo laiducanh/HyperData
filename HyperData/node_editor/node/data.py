@@ -321,23 +321,46 @@ class DataMerge (NodeContentWidget):
 class DataCompare (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
+        self._config = dict(align_axis="columns",keep_shape=False,keep_equal=False)
+    
+    def config(self):
+        dialog = Dialog(title="configuration", parent=self.parent.parent)
+        align_axis = ComboBox(items=["index","columns"],text="Axis")
+        dialog.main_layout.addWidget(align_axis)
+        align_axis.button.setCurrentText(self._config["align_axis"])
+        keep_shape = Toggle(text="Keep shape")
+        dialog.main_layout.addWidget(keep_shape)
+        keep_shape.button.setChecked(self._config["keep_shape"])
+        keep_equal = Toggle(text="Keep equal")
+        dialog.main_layout.addWidget(keep_equal)
+        keep_equal.button.setChecked(self._config["keep_equal"])
+
+        if dialog.exec():
+            self._config["align_axis"] = align_axis.button.currentText()
+            self._config["keep_shape"] = keep_shape.button.isChecked()
+            self._config["keep_equal"] = keep_equal.button.isChecked()
+            self.exec()
     
     def func(self):
+        align_axis = self._config["align_axis"]
+        keep_shape = self._config["keep_shape"]
+        keep_equal = self._config["keep_equal"]
         try:
             if self.node.input_sockets[0].socket_data != None and self.node.input_sockets[1].socket_data != None:
                 data_left = self.node.input_sockets[0].socket_data
                 data_right = self.node.input_sockets[1].socket_data
-                self.node.output_sockets[0].socket_data = data_left.compare(data_right)
+                self.node.output_sockets[0].socket_data = data_left.compare(data_right,align_axis=align_axis,
+                                                                            keep_shape=keep_shape,keep_equal=keep_equal)
             elif self.node.input_sockets[0].socket_data != None:
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
             elif self.node.input_sockets[1].socket_data != None:
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
             else:
                 self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.info(f"{self.name} run successfully.")
+            logger.info(f"{self.name} {self.node.id}::run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
     
