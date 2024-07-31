@@ -183,10 +183,10 @@ class DataTranspose (NodeContentWidget):
     def func(self):
         try: 
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.transpose()
-            logger.info(f"{self.name} run successfully.")
+            logger.info(f"{self.name} {self.node.id}::run successfully.")
         except Exception as e: 
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data        
         
@@ -228,13 +228,13 @@ class DataConcator (NodeContentWidget):
                                            axis=self._config["axis"],
                                            join=self._config["join"],
                                            ignore_index=self._config["ignore_index"])
-                logger.info(f"{self.name} run successfully.")
+                logger.info(f"{self.name} {self.node.id}::run successfully.")
             except Exception as e:
                 self.node.output_sockets[0].socket_data = pd.DataFrame()
-                logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
+                logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         else:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.info(f"{self.name} Not enough input, return an empty DataFrame.")
+            logger.info(f"{self.name} {self.node.id}::Not enough input, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
 
