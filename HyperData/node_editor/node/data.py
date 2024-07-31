@@ -249,16 +249,36 @@ class DataCombiner (NodeContentWidget):
 
         self.exec_btn.setText('Combine')
         self.node.input_sockets[0].socket_data = list()
+        self._config = dict(func="minimum",overwrite=True)
+    
+    def config(self):
+        dialog = Dialog("Configuration", self.parent.parent)
+        function = ComboBox(items=["take smaller","minimum"],text="Function")
+        dialog.main_layout.addWidget(function)
+        function.button.setCurrentText(self._config["func"])
+        overwrite = Toggle(text="Overwrite")
+        dialog.main_layout.addWidget(overwrite)
+        overwrite.button.setChecked(self._config["overwrite"])
+
+        if dialog.exec():
+            self._config["func"] = function.button.currentText()
+            self._config["overwrite"] = overwrite.button.isChecked()
+            self.exec()
     
     def func(self):
         self.node.output_sockets[0].socket_data = pd.DataFrame()
+        if self._config["func"] == "take smaller":
+            func = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
+        else:
+            func = np.minimum
+        overwrite = self._config["overwrite"]
         try:
             for data in self.node.input_sockets[0].socket_data:
-                self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data.combine(data, np.minimum)
-            logger.info(f"{self.name} run successfully.")
+                self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data.combine(data, func=func, overwrite=overwrite)
+            logger.info(f"{self.name} {self.node.id}::run successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data        
 
