@@ -533,7 +533,6 @@ class DataFilter (NodeContentWidget):
             self._config["axis"] = axis.button.currentText().lower()
             self._config["type"] = type.button.currentText().lower()
             self._config["apply"] = apply.button.toPlainText().split(",")
-            print(self._config)
             self.exec()
     
 
