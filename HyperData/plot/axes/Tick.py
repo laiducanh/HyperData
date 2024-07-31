@@ -102,23 +102,23 @@ class TickBase2D_1 (QWidget):
         return self.obj.get_visible()
 
     def set_min(self, value):
-        value = None if value == "" else float(value)
+        value = None if value == "" else value
         try:
             if self.axis in ['bottom','top']:
-                self.obj.axes.set_xlim(left=value)
+                self.obj.axes.set_xlim(left=float(value))
             else:
-                self.obj.axes.set_ylim(bottom=value)
+                self.obj.axes.set_ylim(bottom=float(value))
         except Exception as e: print(e)
         
         self.canvas.draw()
     
     def set_max (self, value):
-        value = None if value == "" else float(value)
+        value = None if value == "" else value
         try:
             if self.axis in ['bottom','top']:
-                self.obj.axes.set_xlim(right=value)
+                self.obj.axes.set_xlim(right=float(value))
             else:
-                self.obj.axes.set_ylim(top=value)
+                self.obj.axes.set_ylim(top=float(value))
         except Exception as e: print(e)
 
         self.canvas.draw()
