@@ -125,7 +125,7 @@ class DataReader (NodeContentWidget):
 
         if import_dlg.exec():
             self.selectedFiles = import_dlg.selectedFiles()[0]
-            logger.info(f"{self.name}::Select {self.selectedFiles}.")
+            logger.info(f"{self.name} {self.node.id}::Select {self.selectedFiles}.")
             self.label.setText(f'Shape: (--, --)') # reset Shape label
             super().exec(self.selectedFiles)
     
@@ -138,14 +138,14 @@ class DataReader (NodeContentWidget):
                                    delimiter=self._config["delimiter"],
                                    skip_blank_lines=self._config["skip_blank_lines"],
                                    encoding=self._config["encoding"])
-                logger.info(f"{self.name}::Load a csv file.")
+                logger.info(f"{self.name} {self.node.id}::Load a csv file.")
             elif self.filetype == "excel":
                 data = pd.read_excel(selectedFiles, nrows=self._config["nrows"],
                                      header=self._config["header"])
-                logger.info(f"{self.name}::Load an excel file.")
+                logger.info(f"{self.name} {self.node.id}::Load an excel file.")
         else:
             data = pd.DataFrame()
-            logger.warning(f"{self.name}::Cannot read data file, return an empty DataFrame.")
+            logger.warning(f"{self.name} {self.node.id}::Cannot read data file, return an empty DataFrame.")
         
         self.node.output_sockets[0].socket_data = data
     
@@ -159,14 +159,16 @@ class DataReader (NodeContentWidget):
 class DataHolder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
-    
+        
     def func(self):
         try:
+            connect_to_edge = self.node.input_sockets[0].edges[0]
+            connect_to_node = connect_to_edge.start_socket.node
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy(deep=True)
-            logger.info(f"{self.name} run successfully.")
+            logger.info(f"{self.name} {self.node.id}::copy data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         
         self.data_to_view = self.node.output_sockets[0].socket_data
 
