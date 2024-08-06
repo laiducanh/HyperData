@@ -58,6 +58,23 @@ class AlgorithmMenu(Menu):
             neighbors.addAction(action)
         self.addMenu(neighbors)
 
+        ensembles = Menu("Ensembles", self)
+        for i in ["Gradient Boosting Classifier","Histogram Gradient Boosting Classifier",
+                  "Random Forest Classifier","Extra Trees Classifier","Bagging Classifier",
+                  "Voting Classifier","Stacking Classifier","AdaBoost Classifier"]:
+            action = QAction(i, self)
+            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            ensembles.addAction(action)
+        self.addMenu(ensembles)
+
+        others = Menu("Others", self)
+        for i in ["Decision Tree Classifier", "Gaussian Process Classifier"]:
+            action = QAction(i, self)
+            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            others.addAction(action)
+        self.addMenu(others)
+
+
 class RidgeClassifier(ClassifierBase):
     def __init__(self, config=None, parent=None):
         super().__init__(parent)
