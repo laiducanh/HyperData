@@ -189,7 +189,7 @@ class NodeGraphicsView(QGraphicsView):
                 data_processing.addAction(action)
             machine_learning = Menu(text="Machine Learning")
             menu.addMenu(machine_learning)
-            for text in ["Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
+            for text in ["Classifier","Meta-Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
                 action = Action(text=text, parent=machine_learning)
                 action.triggered.connect(lambda checked, text=text: self.leftMouseButtonRelease(event,text))
                 machine_learning.addAction(action)
