@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Union
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from sklearn import linear_model, svm
+from sklearn import linear_model, svm, neighbors
 from sklearn.base import ClassifierMixin
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox
@@ -644,6 +644,135 @@ class Linear_SVC (ClassifierBase):
         
         self.estimator = svm.LinearSVC(**self._config)
 
+class KNeighbors (ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(n_neighbors=5, weights="uniform",algorithm="auto",
+                                               leaf_size=30, p=2)
+        else: self._config = config
+        self.estimator = neighbors.KNeighborsClassifier(**self._config)
+
+        self.n_neighbors = SpinBox(text="Number of neighbors")
+        self.n_neighbors.button.setValue(self._config["n_neighbors"])
+        self.n_neighbors.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_neighbors)
+
+        self.weights = ComboBox(items=["uniform","distance"], text="Weight function")
+        self.weights.button.setCurrentText(self._config["weights"])
+        self.weights.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.weights)
+
+        self.algorithm = ComboBox(items=["auto","ball_tree","kd_tree","brute"], text="Algorithm")
+        self.algorithm.button.setCurrentText(self._config["algorithm"])
+        self.algorithm.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.algorithm)
+
+        self.leaf_size = SpinBox(text="Leaf Size")
+        self.leaf_size.button.setValue(self._config["leaf_size"])
+        self.leaf_size.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.leaf_size)
+
+        self.p = DoubleSpinBox(max=10, text="Power parameter")
+        self.p.button.setValue(self._config["p"])
+        self.p.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.p)
+        
+    def set_estimator(self):
+        self._config["n_neighbors"] = self.n_neighbors.button.value()
+        self._config["weights"] = self.weights.button.currentText()
+        self._config["algorithm"] = self.algorithm.button.currentText()
+        self._config["leaf_size"] = self.leaf_size.button.value()
+        self._config["p"] = self.p.button.value()
+        
+        self.estimator = neighbors.KNeighborsClassifier(**self._config)
+
+class NearestCentroid(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(metric="euclidean")
+        else: self._config = config
+        self.estimator = neighbors.NearestCentroid(**self._config)
+
+        self.metric_ = ComboBox(items=["euclidean","manhattan"], text="Metric")
+        self.metric_.button.setCurrentText(self._config["metric"])
+        self.metric_.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.metric_)
+        
+    def set_estimator(self):
+        self._config["metric"] = self.metric_.button.currentText()
+        
+        self.estimator = neighbors.NearestCentroid(**self._config)
+
+class RadiusNeighbors(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(radius=1.0, weights="uniform", algorithm="auto",leaf_size=30,
+                                               p=2, outlier_label=None)
+        else: self._config = config
+        self.estimator = neighbors.RadiusNeighborsClassifier(**self._config)
+
+        self.radius = DoubleSpinBox(text="Range of parameter space")
+        self.radius.button.setValue(self._config["radius"])
+        self.radius.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.radius)
+
+        self.weights = ComboBox(items=["uniform","distance"], text="Weight Function")
+        self.weights.button.setCurrentText(self._config["weights"])
+        self.weights.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.weights)
+
+        self.algorithm = ComboBox(items=["auto","ball_tree","kd_tree","brute"], text="Algorithm")
+        self.algorithm.button.setCurrentText(self._config["algorithm"])
+        self.algorithm.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.algorithm)
+
+        self.leaf_size = SpinBox(text="Leaf size")
+        self.leaf_size.button.setValue(self._config["leaf_size"])
+        self.leaf_size.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.leaf_size)
+
+        self.p = DoubleSpinBox(text="Power parameter")
+        self.p.button.setValue(self._config["p"])
+        self.p.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.p)
+
+        self.outlier_label = ComboBox(items=["manual label","most_frequent","None"], text="Label for outliers")
+        self.outlier_label.button.setCurrentText(self._config["outlier_label"])
+        self.outlier_label.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.outlier_label)
+        
+    def set_estimator(self):
+        self._config["radius"] = self.radius.button.value()
+        self._config["weights"] = self.weights.button.currentText()
+        self._config["algorithm"] = self.algorithm.button.currentText()
+        self._config["leaf_size"] = self.leaf_size.button.value()
+        self._config["p"] = self.p.button.value()
+        self._config["outlier_label"] = self.outlier_label.button.currentText()
+ 
+        self.estimator = neighbors.RadiusNeighborsClassifier(**self._config)
+
+
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
@@ -655,6 +784,7 @@ class Classifier (NodeContentWidget):
         self._config = dict(estimator="Logistic Regression",config=None)
         self.estimator_list = ["Ridge Classifier","Logistic Regression","SGD Classifier",
                                "Passive Aggressive Classifier", "SVC", "NuSVC", "Linear SVC",
+                               "K Neighbors Classifier","Nearest Centroid", "Radius Neighbors Classifier",
                                ]
 
     def config(self):
@@ -677,6 +807,9 @@ class Classifier (NodeContentWidget):
         stackedlayout.addWidget(SVC())
         stackedlayout.addWidget(NuSVC())
         stackedlayout.addWidget(Linear_SVC())
+        stackedlayout.addWidget(KNeighbors())
+        stackedlayout.addWidget(NearestCentroid())
+        stackedlayout.addWidget(RadiusNeighbors())
         stackedlayout.setCurrentIndex(self.estimator_list.index(algorithm.button.text()))
         stackedlayout.currentWidget().set_config(self._config["config"])
  
