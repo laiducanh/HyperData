@@ -70,7 +70,6 @@ class PlotView (QMainWindow):
         for i in self.canvas.fig.findobj():
             if i._gid != None and "graph" in i._gid:
                 self.treeview_list['Graph'].insert(-1,i._gid.title())
-                i.set_color('red')
         #self.setCentralWidget(self.plot_visual)
         self.main_layout.addWidget(self.plot_visual)
     

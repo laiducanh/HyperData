@@ -132,16 +132,16 @@ class GraphicsView (QGraphicsView):
     def Menu(self, graph_list=list()):
         self.menu.clear()
 
-        nodeview = Action(text="Node View", parent=self.menu)
+        nodeview = Action(text="&Node View", parent=self.menu)
         nodeview.triggered.connect(self.sig_backtoScene.emit)
         self.menu.addAction(nodeview)
-        home = Action(text="Home", parent=self.menu)
+        home = Action(text="&Home", parent=self.menu)
         home.triggered.connect(self.sig_backtoHome.emit)
         self.menu.addAction(home)
 
         self.menu.addSeparator()
 
-        graph = Menu(text="Graph", parent=self.menu)
+        graph = Menu(text="&Graph", parent=self.menu)
         self.menu.addMenu(graph)
         _graph_list = [i.title() for i in graph_list]
         for text in ["Manage Graph"] + _graph_list:
@@ -149,28 +149,28 @@ class GraphicsView (QGraphicsView):
             action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
             graph.addAction(action)
         
-        tick = Menu(text="Tick", parent=self.menu)
+        tick = Menu(text="&Tick", parent=self.menu)
         self.menu.addMenu(tick)
-        for text in ["Tick Bottom", "Tick Left", "Tick Top", "Tick Right"]:
+        for text in ["Tick &Bottom", "Tick &Left", "Tick &Top", "Tick &Right"]:
             action = Action(text=text, parent=tick)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text.replace("&","")))
             tick.addAction(action)
 
-        spine = Menu(text="Spine", parent=self.menu)
+        spine = Menu(text="&Spine", parent=self.menu)
         self.menu.addMenu(spine)
-        for text in ["Spine Bottom", "Spine Left", "Spine Top", "Spine Right"]:
+        for text in ["Spine &Bottom", "Spine &Left", "Spine &Top", "Spine &Right"]:
             action = Action(text=text, parent=spine)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text.replace("&","")))
             spine.addAction(action)
         
-        figure = Menu(text="Figure", parent=self.menu)
+        figure = Menu(text="&Figure", parent=self.menu)
         self.menu.addMenu(figure)
         for text in ["Plot Size", "Grid"]:
             action = Action(text=text, parent=figure)
             action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
             figure.addAction(action)
 
-        label = Menu(text="Label", parent=self.menu)
+        label = Menu(text="&Label", parent=self.menu)
         self.menu.addMenu(label)
         for text in ["Title", "Axis Label", "Legend", "Data Annotation"]:
             action = Action(text=text, parent=label)
