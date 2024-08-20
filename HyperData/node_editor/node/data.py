@@ -484,6 +484,7 @@ class DataFilter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(axis="columns",type="items",apply=str())
     
     def config(self):
