@@ -5,10 +5,14 @@ from PyQt6.QtCore import QRectF, pyqtSignal, Qt
 import matplotlib.artist
 import matplotlib.axes
 import matplotlib.axis
+import matplotlib.backend_tools
+import matplotlib.collections
+import matplotlib.container
 from plot.canvas import Canvas
 import matplotlib
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
+from plot.utilis import get_color
 
 class WidgetItem (QGraphicsItem):
     def __init__(self, widget, parent=None):
@@ -35,9 +39,8 @@ class ToolTip (QGraphicsItem):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.edge_size = 5.0
         self.width = 180
-        self.height = 50
+        self.height = 30
 
         self.setColor()
         self.setText()
@@ -73,9 +76,7 @@ class ToolTip (QGraphicsItem):
         # content
         path_content = QPainterPath()
         path_content.setFillRule(Qt.FillRule.WindingFill)
-        path_content.addRoundedRect(0, 0, self.width, self.height, self.edge_size, self.edge_size)
-        path_content.addRect(0, 0, self.edge_size, self.edge_size)
-        path_content.addRect(self.width - self.edge_size, 0, self.edge_size, self.edge_size)
+        path_content.addRect(0, 0, self.width, self.height)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._brush_background)
         painter.drawPath(path_content.simplified())
@@ -83,7 +84,7 @@ class ToolTip (QGraphicsItem):
 
         # outline
         path_outline = QPainterPath()
-        path_outline.addRoundedRect(0, 0, self.width, self.height, self.edge_size, self.edge_size)
+        path_outline.addRect(0, 0, self.width, self.height)
         
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(self._pen_default)
@@ -128,6 +129,14 @@ class GraphicsView (QGraphicsView):
         self.zoom_slider.setStyleSheet("background-color:transparent;")
         self.zoom_item = WidgetItem(self.zoom_slider)
         self._scene.addItem(self.zoom_item)
+    
+    def find_graph_object(self) -> list:
+        fig = self.canvas.fig
+        lines = fig.findobj(match=matplotlib.lines.Line2D)
+        collections = fig.findobj(match=matplotlib.collections.Collection)
+        container = fig.findobj(match=matplotlib.patches.Rectangle)
+
+        return lines+collections+container
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         self.mouse_position = self.mapToScene(event.pos())
@@ -138,13 +147,21 @@ class GraphicsView (QGraphicsView):
         return super().mouseMoveEvent(event)
                
     def mouseMove(self, event):
-        stack = self.canvas.fig.findobj(match=matplotlib.lines.Line2D)        
-        self.tooltip.setPos(self.mouse_position.x()+30, self.mouse_position.y()+30)
+        stack = self.find_graph_object()  
+        
+        x_increment, y_increment = 30, 30
+        if self.mouse_position.x() + x_increment + self.tooltip.width < self.width():
+            self.tooltip.setX(self.mouse_position.x() + x_increment)
+        else: self.tooltip.setX(self.width() - 10 - self.tooltip.width)
+        if self.mouse_position.y() + y_increment + self.tooltip.height < self.height():
+            self.tooltip.setY(self.mouse_position.y() + y_increment)
+        else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
+        
         for obj in stack:
             if obj._gid != None and obj.contains(event)[0]:
                 if not self.tooltip.isVisible():
                     self.tooltip.setText(obj._gid.title())
-                    self.tooltip.setColor(obj._color)
+                    self.tooltip.setColor(get_color(obj))
                     self.tooltip.show()
                 break
             else: self.tooltip.hide()
