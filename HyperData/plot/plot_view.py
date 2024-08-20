@@ -59,7 +59,7 @@ class PlotView (QMainWindow):
         self.setup_visual()
         self.setup_sidebar()
         
-        ###
+        #
             
     def setup_visual (self):
         self.plot_visual = GraphicsView(self.canvas,parent=self.parent)
