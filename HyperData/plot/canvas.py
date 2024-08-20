@@ -47,6 +47,7 @@ class Canvas (FigureCanvasQTAgg):
         self.axesx2.xaxis.set_gid("top")
 
         super().__init__(self.fig)
+        self.set_cursor(matplotlib.backend_tools.Cursors.SELECT_REGION)
     
     def serialize(self):
         figure = dict()
