@@ -13,6 +13,7 @@ import matplotlib
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color
+from ui.base_widgets.menu import Menu, Action
 
 class WidgetItem (QGraphicsItem):
     def __init__(self, widget, parent=None):
@@ -92,15 +93,10 @@ class ToolTip (QGraphicsItem):
 
     
 class GraphicsView (QGraphicsView):
-    sig_sidebar = pyqtSignal(str) # to call when sidebar needs to be updated
-    sig_edit_graphtitle = pyqtSignal()
-    sig_edit_xbottom = pyqtSignal()
-    sig_edit_xtop = pyqtSignal()
-    sig_edit_yleft = pyqtSignal()
-    sig_edit_yright = pyqtSignal()
-    sig_edit_legendtitle = pyqtSignal()
-    sig_edit_legend = pyqtSignal(str) # string is the current plot being edited legend
     sig_keyPressEvent = pyqtSignal(object)
+    sig_MouseRelease = pyqtSignal(object)
+    sig_backtoScene = pyqtSignal()
+    sig_backtoHome = pyqtSignal()
     def __init__(self, canvas:Canvas,parent=None):
         super().__init__(parent)
 
@@ -120,6 +116,9 @@ class GraphicsView (QGraphicsView):
         self._scene.addItem(self.tooltip)
         self.tooltip.hide()
 
+        self.menu = Menu(parent=self)
+        self.Menu()
+
         self.canvas.mpl_connect('motion_notify_event', self.mouseMove)
         #self.canvas.mpl_connect('button_press_event', self.mouseClick)
         #self.canvas.mpl_connect('figure_leave_event', self.mouseLeave)
@@ -129,6 +128,54 @@ class GraphicsView (QGraphicsView):
         self.zoom_slider.setStyleSheet("background-color:transparent;")
         self.zoom_item = WidgetItem(self.zoom_slider)
         self._scene.addItem(self.zoom_item)
+
+    def Menu(self, graph_list=list()):
+        self.menu.clear()
+
+        nodeview = Action(text="Node View", parent=self.menu)
+        nodeview.triggered.connect(self.sig_backtoScene.emit)
+        self.menu.addAction(nodeview)
+        home = Action(text="Home", parent=self.menu)
+        home.triggered.connect(self.sig_backtoHome.emit)
+        self.menu.addAction(home)
+
+        self.menu.addSeparator()
+
+        graph = Menu(text="Graph", parent=self.menu)
+        self.menu.addMenu(graph)
+        _graph_list = [i.title() for i in graph_list]
+        for text in ["Manage Graph"] + _graph_list:
+            action = Action(text=text, parent=graph)
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            graph.addAction(action)
+        
+        tick = Menu(text="Tick", parent=self.menu)
+        self.menu.addMenu(tick)
+        for text in ["Tick Bottom", "Tick Left", "Tick Top", "Tick Right"]:
+            action = Action(text=text, parent=tick)
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            tick.addAction(action)
+
+        spine = Menu(text="Spine", parent=self.menu)
+        self.menu.addMenu(spine)
+        for text in ["Spine Bottom", "Spine Left", "Spine Top", "Spine Right"]:
+            action = Action(text=text, parent=spine)
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            spine.addAction(action)
+        
+        figure = Menu(text="Figure", parent=self.menu)
+        self.menu.addMenu(figure)
+        for text in ["Plot Size", "Grid"]:
+            action = Action(text=text, parent=figure)
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            figure.addAction(action)
+
+        label = Menu(text="Label", parent=self.menu)
+        self.menu.addMenu(label)
+        for text in ["Title", "Axis Label", "Legend", "Data Annotation"]:
+            action = Action(text=text, parent=label)
+            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            label.addAction(action)
     
     def find_graph_object(self) -> list:
         fig = self.canvas.fig
@@ -165,6 +212,27 @@ class GraphicsView (QGraphicsView):
                     self.tooltip.show()
                 break
             else: self.tooltip.hide()
+    
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self.middleMouseButtonRelease(event)
+        elif event.button() == Qt.MouseButton.LeftButton:
+            self.leftMouseButtonRelease(event)
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.rightMouseButtonRelease(event)
+        else:
+            super().mouseReleaseEvent(event)
+    
+    def middleMouseButtonRelease(self, event:QMouseEvent):
+        super().mouseReleaseEvent(event)
+    
+    def leftMouseButtonRelease(self, event:QMouseEvent):
+        super().mouseReleaseEvent(event)
+    
+    def rightMouseButtonRelease(self, event:QMouseEvent):
+        pos = self.mapToGlobal(event.pos())
+        self.menu.exec(pos)
+        super().mouseReleaseEvent(event)
                 
                 
     def paintEvent(self, a0: QPaintEvent) -> None:

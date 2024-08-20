@@ -64,6 +64,9 @@ class PlotView (QMainWindow):
     def setup_visual (self):
         self.plot_visual = GraphicsView(self.canvas,parent=self.parent)
         self.plot_visual.sig_keyPressEvent.connect(lambda s: self.keyPressEvent(s))
+        self.plot_visual.sig_MouseRelease.connect(lambda s: self.treeview_func(s))
+        self.plot_visual.sig_backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
+        self.plot_visual.sig_backtoScene.connect(self.sig_back_to_grScene.emit)
         for i in self.canvas.fig.findobj():
             if i._gid != None and "graph" in i._gid:
                 self.treeview_list['Graph'].insert(-1,i._gid.title())
@@ -99,7 +102,7 @@ class PlotView (QMainWindow):
         self.sidebar_layout.addLayout(self.stackedlayout)
 
         self.treeview = TreeWidget()
-        self.treeview.itemPressed.connect(self.treeview_func)
+        self.treeview.itemPressed.connect(lambda item: self.treeview_func(item.text(0)))
         self.treeview.setData(self.treeview_list)
         self.stackedlayout.addWidget(self.treeview)
 
@@ -147,8 +150,12 @@ class PlotView (QMainWindow):
     def add_plot (self):
         self.treeview_list["Graph"] = ["Manage graph"]
 
+        # update menu
+        self.plot_visual.Menu(self.insertplot.gidlist)
+
         for gid in self.insertplot.gidlist:
             self.treeview_list["Graph"].insert(-1,str(gid).title())
+            
         
         self.treeview.setData(self.treeview_list)
         self.update_plot()
@@ -168,8 +175,8 @@ class PlotView (QMainWindow):
                     pixmap.fill(QColor(color))
                     item.child(child).setIcon(0,QIcon(pixmap))    
 
-    def treeview_func (self, s:QTreeWidgetItem):
-        text = s.text(0).lower()
+    def treeview_func (self, text:str):
+        text = text.lower()
         if "graph " in text:
             _plot_index = int(text.split(".")[0].split()[-1])-1
             _plot = self.insertplot.plotlist[_plot_index]
@@ -207,6 +214,10 @@ class PlotView (QMainWindow):
             self.search_box.setFocus()
             self.stackedlayout.setCurrentWidget(self.treeview)
         
+        elif key.key() == Qt.Key.Key_M:
+            print('abc')
+            self.plot_visual.menu.exec()
+            
         super().keyPressEvent(key)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
