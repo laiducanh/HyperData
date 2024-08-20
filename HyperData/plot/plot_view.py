@@ -215,9 +215,9 @@ class PlotView (QMainWindow):
             self.stackedlayout.setCurrentWidget(self.treeview)
         
         elif key.key() == Qt.Key.Key_M:
-            print('abc')
-            self.plot_visual.menu.exec()
-            
+            point_to_show = self.plot_visual.scene().sceneRect().center().toPoint()
+            self.plot_visual.menu.exec(point_to_show)
+
         super().keyPressEvent(key)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
