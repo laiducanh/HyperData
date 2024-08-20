@@ -72,6 +72,7 @@ class Main(QMainWindow):
             self.to_graphics_view(node)
     
     def to_plot_view (self, node: Node):
+        self.showMaximized()
         if node.id in self.stack_scene:
             self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
         else:
