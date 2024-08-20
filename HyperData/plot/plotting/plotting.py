@@ -66,7 +66,7 @@ def set_legend(ax:Axes):
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True, **kwargs) -> List[str]:
     
     old_artist = remove_artist(ax, gid)
-
+    
     # rescale all axes while remove old artists and add new artists
     for _ax in ax.figure.axes:
         _ax.relim()
@@ -113,10 +113,12 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, update=True,
         
         #print("draw artist", artist)
         
-        for ind, obj in enumerate(artist):
-            update_props(old_artist[ind], obj, include=["label"], exclude=None)
-            if update:
-                update_props(old_artist[ind],obj,exclude="default")
+        try:
+            for ind, obj in enumerate(artist):
+                update_props(old_artist[ind], obj, include=["label"], exclude=None)
+                if update:
+                    update_props(old_artist[ind],obj,exclude="default")
+        except: pass
     
     # update legend if necessary
     set_legend(ax)
