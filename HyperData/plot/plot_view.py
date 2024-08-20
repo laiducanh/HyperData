@@ -21,6 +21,7 @@ from plot.grid.grid import Grid
 from plot.label.graph_title import GraphTitle
 from config.settings import config
 from node_editor.node_node import Node
+from plot.utilis import get_color
 
 DEBUG = False
 
@@ -162,12 +163,7 @@ class PlotView (QMainWindow):
                     color = 'white' # whenever color changes to white, there is an error!
                     for graph in self.canvas.fig.findobj():
                         if graph._gid != None and name in graph._gid:
-                            if isinstance(graph, matplotlib.lines.Line2D):
-                                color = graph.get_color()
-                            elif isinstance(graph, matplotlib.collections.Collection): 
-                                color = matplotlib.colors.to_hex(graph.get_facecolor()[0])
-                            elif isinstance(graph, matplotlib.patches.Rectangle):
-                                color = matplotlib.colors.to_hex(graph.get_facecolor())
+                            color = get_color(graph)
                             break
                     pixmap.fill(QColor(color))
                     item.child(child).setIcon(0,QIcon(pixmap))    
