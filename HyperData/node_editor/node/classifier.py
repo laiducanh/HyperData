@@ -3,32 +3,46 @@ import pandas as pd
 import numpy as np
 from typing import Union
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from sklearn import linear_model, svm, neighbors
+from sklearn import linear_model, svm, neighbors, ensemble, tree, gaussian_process
 from sklearn.base import ClassifierMixin
+from sklearn.metrics import (accuracy_score, balanced_accuracy_score,
+                             top_k_accuracy_score,average_precision_score,
+                             brier_score_loss,f1_score,log_loss,precision_score,
+                             recall_score,jaccard_score,roc_auc_score)
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox
+from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox, _TransparentPushButton, TransparentPushButton
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.menu import Menu
 from node_editor.node.train_test_split import TrainTestSplitter
 from config.settings import logger
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QScrollArea
 from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtCore import Qt, pyqtSignal
 
 class ClassifierBase (QWidget):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent)   
 
+        _layout = QVBoxLayout()
+        _layout.setContentsMargins(0,0,0,0)
+        self.setLayout(_layout)
+        self.scroll_area = QScrollArea(parent)
+        _layout.addWidget(self.scroll_area)
+        
+        self.widget = QWidget()
         self.vlayout = QVBoxLayout()
         self.vlayout.setContentsMargins(0,0,0,0)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self.vlayout)
+        self.widget.setLayout(self.vlayout)
+        self.scroll_area.setWidget(self.widget)
+        self.scroll_area.setWidgetResizable(True)
+
         self._config = dict()
         self.estimator = None # ClassifierMixin
         
     def clear_layout (self):
-        for widget in self.findChildren(QWidget):
+        for widget in self.widget.findChildren(QWidget):
             self.vlayout.removeWidget(widget)
 
 class AlgorithmMenu(Menu):
@@ -60,8 +74,7 @@ class AlgorithmMenu(Menu):
 
         ensembles = Menu("Ensembles", self)
         for i in ["Gradient Boosting Classifier","Histogram Gradient Boosting Classifier",
-                  "Random Forest Classifier","Extra Trees Classifier","Bagging Classifier",
-                  "Voting Classifier","Stacking Classifier","AdaBoost Classifier"]:
+                  "Random Forest Classifier","Extra Trees Classifier"]:
             action = QAction(i, self)
             action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
             ensembles.addAction(action)
@@ -772,20 +785,642 @@ class RadiusNeighbors(ClassifierBase):
  
         self.estimator = neighbors.RadiusNeighborsClassifier(**self._config)
 
+class GradientBoosting(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(loss="log_loss",learning_rate=0.1,
+                                               n_estimators=100,subsample=1.0,criterion="friedman_mse",
+                                               min_samples_split=2,min_samples_leaf=1,min_weight_fraction_leaf=0,
+                                               max_depth=3,min_impurity_decrease=0,init=None,max_features=None,
+                                               verbose=0,max_leaf_nodes=None,warm_start=False,validation_fraction=0.1,
+                                               n_iter_no_change=None,tol=1e-4,ccp_alpha=0)
+        else: self._config = config
+        self.estimator = ensemble.GradientBoostingClassifier(**self._config)
+
+        self.loss = ComboBox(items=["log_loss","exponential"], text="Loss Function")
+        self.loss.button.setCurrentText(self._config["loss"])
+        self.loss.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.loss)
+
+        self.learning_rate = DoubleSpinBox(step=0.5, text="Learning Rate")
+        self.learning_rate.button.setValue(self._config["learning_rate"])
+        self.learning_rate.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.learning_rate)
+
+        self.n_estimators = SpinBox(min=1, max=10000, step=100, text="Number of Boosting Stages")
+        self.n_estimators.button.setValue(self._config["n_estimators"])
+        self.n_estimators.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_estimators)
+
+        self.subsample = DoubleSpinBox(min=0.01, max=1, step=0.05, text="Fraction of samples")
+        self.subsample.button.setValue(self._config["subsample"])
+        self.subsample.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.subsample)
+
+        self.criterion = ComboBox(items=["friedman_mse","squared_error"], text="Criterion")
+        self.criterion.button.setCurrentText(self._config["criterion"])
+        self.criterion.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.criterion)
+
+        self.min_samples_split = SpinBox(min=2, max=1000, step=10, text="Minimum Number of Samples to Split")
+        self.min_samples_split.button.setValue(self._config["min_samples_split"])
+        self.min_samples_split.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_split)
+
+        self.min_samples_leaf = SpinBox(min=1, max=1000, step=10, text="Minimum Number of Samples to A Leaf")
+        self.min_samples_leaf.button.setValue(self._config["min_samples_leaf"])
+        self.min_samples_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_leaf)
+
+        self.min_weight_fraction_leaf = DoubleSpinBox(max=0.5, step=0.05, text="Minimum Weighted Fraction to A Leaf")
+        self.min_weight_fraction_leaf.button.setValue(self._config["min_weight_fraction_leaf"])
+        self.min_weight_fraction_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_weight_fraction_leaf)
+
+        self.max_depth = SpinBox(min=1, max=1000, text="Maximum Depth of Estimators")
+        self.max_depth.button.setValue(self._config["max_depth"])
+        self.max_depth.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_depth)
+
+        self.min_impurity_decrease = DoubleSpinBox(text="Impurity Decrease to Split ")
+        self.min_impurity_decrease.button.setValue(self._config["min_impurity_decrease"])
+        self.min_impurity_decrease.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_impurity_decrease)
+
+        self.max_features = ComboBox(items=["sqrt","log2","max"], text="Number of Features")
+        if self._config["max_features"] == None:
+            self.max_features.button.setCurrentText("max")
+        else: self.max_features.button.setCurrentText(self._config["max_features"])
+        self.max_features.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_features)
+
+        self.max_leaf_nodes = DoubleSpinBox(min=-1, text="Maximum Number of Leafs in A Node")
+        self.max_leaf_nodes.button.setDecimals(0)
+        if self._config["max_leaf_nodes"] == None:
+            self.max_leaf_nodes.button.setValue(-1)
+        else: self.max_leaf_nodes.button.setValue(self._config["max_leaf_nodes"])
+        self.max_leaf_nodes.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_leaf_nodes)
+
+        self.warm_start = Toggle(text="Warm Start")
+        self.warm_start.button.setChecked(self._config["warm_start"])
+        self.warm_start.button.checkedChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.warm_start)
+
+        self.validation_fraction = DoubleSpinBox(min=0.01, max=0.99, step=0.05, text="Validation Fraction")
+        self.validation_fraction.button.setValue(self._config["validation_fraction"])
+        self.validation_fraction.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.validation_fraction)
+
+        self.n_iter_no_change = SpinBox(min=-1, text="Early Stopping")
+        if self._config["n_iter_no_change"] == None:
+            self.n_iter_no_change.button.setValue(-1)
+        else: self.n_iter_no_change.button.setValue(self._config["n_iter_no_change"])
+        self.n_iter_no_change.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_iter_no_change)
+
+        self.tol = DoubleSpinBox(min=1e-5,max=1e-3,step=1e-4,text="Tolerance")
+        self.tol.button.setValue(self._config["tol"])
+        self.tol.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.tol)
+
+        self.ccp_alpha = DoubleSpinBox(text="Complexity Parameter")
+        self.ccp_alpha.button.setValue(self._config["ccp_alpha"])
+        self.ccp_alpha.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.ccp_alpha)
+        
+    def set_estimator(self):
+        self._config["loss"] = self.loss.button.currentText()
+        self._config["learning_rate"] = self.learning_rate.button.value()
+        self._config["n_estimators"] = self.n_estimators.button.value()
+        self._config["subsample"] = self.n_estimators.button.value()
+        self._config["criterion"] = self.criterion.button.currentText()
+        self._config["min_samples_split"] = self.min_samples_split.button.value()
+        self._config["min_samples_leaf"] = self.min_samples_leaf.button.value()
+        self._config["min_weight_fraction_leaf"] = self.min_weight_fraction_leaf.button.value()
+        self._config["max_depth"] = self.max_depth.button.value()
+        self._config["min_impurity_decrease"] = self.min_impurity_decrease.button.value()
+        if self.max_features.button.currentText() == "max":
+            self._config["max_features"] = None
+        else: self._config["max_features"] = self.max_features.button.currentText()
+        if self.max_leaf_nodes.button.value() < 2:
+            self._config["max_leaf_nodes"] = None
+        else: self._config["max_leaf_nodes"] = self.max_leaf_nodes.button.value()
+        self._config["warm_start"] = self.warm_start.button.isChecked()
+        self._config["validation_fraction"] = self.validation_fraction.button.value()
+        if self.n_iter_no_change.button.value() < 1:
+            self._config["n_iter_no_change"] = None
+        else: self._config["n_iter_no_change"] = self.n_iter_no_change.button.value()
+        self._config["tol"] = self.tol.button.value()
+        self._config["ccp_alpha"] = self.ccp_alpha.button.value()
+ 
+        self.estimator = ensemble.GradientBoostingClassifier(**self._config)
+
+class HistGradientBoosting(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(loss="log_loss",learning_rate=0.1,max_iter=100,
+                                               max_leaf_nodes=31,max_depth=None,
+                                               min_samples_leaf=20,l2_regularization=0,
+                                               max_features=1.0,max_bins=255,monotonic_cst=None,
+                                               interaction_cst=None,warm_start=False,early_stopping="auto",
+                                               scoring="loss",validation_fraction=0.1,n_iter_no_change=10,
+                                               tol=1e-7,verbose=0,class_weight=None)
+        else: self._config = config
+        self.estimator = ensemble.HistGradientBoostingClassifier(**self._config)
+
+        self.loss = ComboBox(items=["log_loss"], text="Loss Function")
+        self.loss.button.setCurrentText(self._config["loss"])
+        self.loss.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.loss)
+
+        self.learning_rate = DoubleSpinBox(max=1,step=0.05,text="Learning Rate")
+        self.learning_rate.button.setValue(self._config["learning_rate"])
+        self.learning_rate.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.learning_rate)
+
+        self.max_iter = SpinBox(max=10000, step=500, text="Maximum Number of Iterations")
+        self.max_iter.button.setValue(self._config["max_iter"])
+        self.max_iter.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_iter)
+
+        self.max_leaf_nodes = DoubleSpinBox(min=-1, text="Maximum nmber of Leaves")
+        self.max_leaf_nodes.button.setDecimals(0)
+        if self._config["max_leaf_nodes"] == None:
+            self.max_leaf_nodes.button.setValue(-1)
+        else: self.max_leaf_nodes.button.setValue(self._config["max_leaf_nodes"])
+        self.max_leaf_nodes.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_leaf_nodes)
+
+        self.max_depth = DoubleSpinBox(min=-1, text="Maximum Depth")
+        self.max_depth.button.setDecimals(0)
+        if self._config["max_depth"] == None:
+            self.max_depth.button.setValue(-1)
+        else: self.max_depth.button.setValue(self._config["max_depth"])
+        self.max_depth.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_depth)
+
+        self.min_samples_leaf = SpinBox(text="Minimum Number of Samples per Leaf")
+        self.min_samples_leaf.button.setValue(self._config["min_samples_leaf"])
+        self.min_samples_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_leaf)
+
+        self.l2_regularization = DoubleSpinBox(text="L2 Regularization")
+        self.l2_regularization.button.setValue(self._config["l2_regularization"])
+        self.l2_regularization.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.l2_regularization)
+
+        self.max_features = DoubleSpinBox(text="Proportion of Randomly Features")
+        self.max_features.button.setValue(self._config["max_features"])
+        self.max_features.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_features)
+
+        self.max_bins = SpinBox(max=255, text="Maximum Number of Bins")
+        self.max_bins.button.setValue(self._config["max_bins"])
+        self.max_bins.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_bins)
+
+        self.interaction_cst = ComboBox(items=["pairwise","no_interactions"],
+                                        text="Interaction Constraints")
+        self.interaction_cst.button.setCurrentText(self._config["interaction_cst"])
+        self.interaction_cst.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.interaction_cst)
+
+        self.warm_start = Toggle(text="Warm Start")
+        self.warm_start.button.setChecked(self._config["warm_start"])
+        self.warm_start.button.checkedChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.warm_start)
+
+        self.early_stopping = ComboBox(items=["auto","True","False"], text="Early Stopping")
+        if self._config["early_stopping"] == True:
+            self.early_stopping.button.setCurrentText("True")
+        elif self._config["early_stopping"] == False:
+            self.early_stopping.button.setCurrentText("False")
+        else: self.early_stopping.button.setCurrentText(self._config["early_stopping"])
+        self.early_stopping.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.early_stopping)
+
+        self.validation_fraction = DoubleSpinBox(text="Proportion for Validation Data")
+        self.validation_fraction.button.setValue(self._config["validation_fraction"])
+        self.validation_fraction.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.validation_fraction)
+
+        self.n_iter_no_change = SpinBox(text="Criterion for Early Stop")
+        self.n_iter_no_change.button.setValue(self._config["n_iter_no_change"])
+        self.n_iter_no_change.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_iter_no_change)
+
+        self.tol = DoubleSpinBox(min=1e-8,max=1e-6,step=1e-7,text="Tolerance")
+        self.tol.button.setValue(self._config["tol"])
+        self.tol.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.tol)
+
+        self.class_weight = ComboBox(items=["None","balanced"],text="Class Weight")
+        if self._config["class_weight"] == None:
+            self.class_weight.button.setCurrentText("None")
+        else: self.class_weight.button.setCurrentText(self._config["class_weight"])
+        self.class_weight.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.class_weight)
+        
+
+    def set_estimator(self):
+        self._config["loss"] = self.loss.button.currentText()
+        self._config["learning_rate"] = self.learning_rate.button.value()
+        self._config["max_iter"] = self.max_iter.button.value()
+        if self.max_leaf_nodes.button.value() < 1:
+            self._config["max_leaf_nodes"] = None
+        else: self._config["max_leaf_nodes"] = self.max_leaf_nodes.button.value()
+        self._config["min_samples_leaf"] = self.min_samples_leaf.button.value()
+        self._config["l2_regularization"] = self.l2_regularization.button.value()
+        self._config["max_features"] = self.max_features.button.value()
+        self._config["max_bins"] = self.max_bins.button.value()
+        self._config["interaction_cst"] = self.interaction_cst.button.currentText()
+        self._config["warm_start"] = self.warm_start.button.isChecked()
+        if self.early_stopping.button.currentText() == "True":
+            self._config["early_stopping"] = True
+        elif self.early_stopping.button.currentText() == "False":
+            self._config["early_stopping"] = False
+        else: self._config["early_stopping"] = self.early_stopping.button.currentText()
+        self._config["validation_fraction"] = self.validation_fraction.button.value()
+        self._config["n_iter_no_change"] = self.n_iter_no_change.button.value()
+        self._config["tol"] = self.tol.button.value()
+        if self.class_weight.button.currentText() == "None":
+            self._config["class_weight"] = None
+        else: self._config["class_weight"] = self.class_weight.button.currentText()
+        self.estimator = ensemble.HistGradientBoostingClassifier(**self._config)
+
+class RandomForest(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(n_estimators=100,criterion="gini",max_depth=None,
+                                               min_samples_split=2,min_samples_leaf=1,
+                                               min_weight_fraction_leaf=0,max_features="sqrt",
+                                               max_leaf_nodes=None,min_impurity_decrease=0,
+                                               bootstrap=True,oob_score=False,verbose=0,warm_start=False,
+                                               class_weight=None,ccp_alpha=0,max_samples=None,monotonic_cst=None)
+        else: self._config = config
+        self.estimator = ensemble.RandomForestClassifier(**self._config)
+
+        self.n_estimators = SpinBox(text="Number of Trees")
+        self.n_estimators.button.setValue(self._config["n_estimators"])
+        self.n_estimators.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_estimators)
+
+        self.criterion = ComboBox(items=["gini","entropy","log_loss"], text="Criterion")
+        self.criterion.button.setCurrentText(self._config["criterion"])
+        self.criterion.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.criterion)
+
+        self.max_depth = SpinBox(text="Maximum Depth")
+        if self._config["max_depth"] == None:
+            self.max_depth.button.setValue(-1)
+        else: self.max_depth.button.setValue(self._config["max_depth"])
+        self.max_depth.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_depth)
+
+        self.min_samples_split = DoubleSpinBox(text="Minimum Number of Samples to Split")
+        self.min_samples_split.button.setValue(self._config["min_samples_split"])
+        self.min_samples_split.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_split)
+
+        self.min_samples_leaf = DoubleSpinBox(text="Minimum Number of Samples of A Leaf")
+        self.min_samples_leaf.button.setValue(self._config["min_samples_leaf"])
+        self.min_samples_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_leaf)
+
+        self.min_weight_fraction_leaf = DoubleSpinBox(text="Minimum Weighted Fraction of A Leaf")
+        self.min_weight_fraction_leaf.button.setValue(self._config["min_weight_fraction_leaf"])
+        self.min_weight_fraction_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_weight_fraction_leaf)
+
+        self.max_features = ComboBox(items=["sqrt","log2","None"],text="Number of Features to Split")
+        self.max_features.button.setCurrentText(self._config["max_features"])
+        self.max_features.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_features)
+
+        self.max_leaf_nodes = SpinBox(text="Maximum Leafs of A Node")
+        if self._config["max_leaf_nodes"] == None:
+            self.max_leaf_nodes.button.setValue(-1)
+        else: self.max_leaf_nodes.button.setValue(self._config["max_leaf_nodes"])
+        self.max_leaf_nodes.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_leaf_nodes)
+
+        self.min_impurity_decrease = DoubleSpinBox(text="Impurity Decrease to Split")
+        self.min_impurity_decrease.button.setValue(self._config["min_impurity_decrease"])
+        self.min_impurity_decrease.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_impurity_decrease)
+
+        self.bootstrap = Toggle(text="Bootstrap")
+        self.bootstrap.button.setChecked(self._config["bootstrap"])
+        self.bootstrap.button.checkedChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.bootstrap)
+
+        self.oob_score = Toggle(text="Out-Of-Bag Score")
+        self.oob_score.button.setChecked(self._config["oob_score"])
+        self.oob_score.button.checkedChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.oob_score)
+
+        self.warm_start = Toggle(text="Warm Start")
+        self.warm_start.button.setChecked(self._config["warm_start"])
+        self.warm_start.button.checkedChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.warm_start)
+
+        self.class_weight = ComboBox(items=["balanced","balanced_subsample","None"],
+                                     text="Class Weight")
+        if self._config["class_weight"] == None:
+            self.class_weight.button.setCurrentText("None")
+        else: self.class_weight.button.setCurrentText(self._config["class_weight"])
+        self.class_weight.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.class_weight)
+
+        self.ccp_alpha = DoubleSpinBox(min=0, text="Complexity Parameter")
+        self.ccp_alpha.button.setValue(self._config["ccp_alpha"])
+        self.ccp_alpha.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.ccp_alpha)
+
+        self.max_samples = DoubleSpinBox(text="Number of Samples to Train")
+        if self._config["max_samples"] == None:
+            self.max_samples.button.setValue(-1)
+        else: self.max_samples.button.setValue(self._config["max_samples"])
+        self.max_samples.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_samples)
+
+    def set_estimator(self):
+        self._config["n_estimators"] = self.n_estimators.button.value()
+        self._config["criterion"] = self.criterion.button.currentText()
+        if self.max_depth.button.value() == -1:
+            self._config["max_depth"] = None
+        eles: self._config["max_depth"] = self.max_depth.button.value()
+        self._config["min_samples_split"] = self.min_samples_split.button.value()
+        self._config["min_samples_leaf"] = self.min_samples_leaf.button.value()
+        self._config["min_weight_fraction_leaf"] = self.min_weight_fraction_leaf.button.value()
+        self._config["max_features"] = self.max_features.button.currentText()
+        if self.max_leaf_nodes.button.value() == -1:
+            self._config["max_leaf_nodes"] = None
+        else: self._config["max_leaf_nodes"] = self.max_leaf_nodes.button.value()
+        self._config["min_impurity_decrease"] = self.min_impurity_decrease.button.value()
+        self._config["bootstrap"] = self.bootstrap.button.isChecked()
+        self._config["oob_score"] = self.oob_score.button.isChecked()
+        self._config["warm_start"] = self.warm_start.button.isChecked()
+        if self.class_weight.button.currentText() == "None":
+            self._config["class_weight"] = None
+        else: self._config["class_weight"] = self.class_weight.button.currentText()
+        self._config["ccp_alpha"] = self.ccp_alpha.button.value()
+        if self.max_samples.button.value() == -1:
+            self._config["max_samples"] = None
+        else: self._config["max_samples"] = self.max_samples.button.value()
+ 
+        self.estimator = ensemble.RandomForestClassifier(**self._config)
+
+class ExtraTrees(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(n_estimators=100,criterion="gini",max_depth=None,
+                                               min_samples_split=2,min_samples_leaf=1,min_weight_fraction_leaf=0,
+                                               max_features="sqrt",max_leaf_nodes=None,min_impurity_decrease=0,
+                                               bootstrap=False,oob_score=False,verbose=0,warm_start=False,
+                                               class_weight=None,ccp_alpha=0,max_samples=None)
+        else: self._config = config
+        self.estimator = ensemble.ExtraTreesClassifier(**self._config)
+
+        self.n_estimators = SpinBox(max=1000,step=100,text="Number of Trees")
+        self.n_estimators.button.setValue(self._config["n_estimators"])
+        self.n_estimators.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_estimators)
+
+        self.criterion = ComboBox(items=["gini","entropy","log_loss"],text="Criterion")
+        self.criterion.button.setCurrentText(self._config["criterion"])
+        self.criterion.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.criterion)
+
+        self.max_depth = DoubleSpinBox(min=-1, max=1000, step=10, text="Maximum Depth of Tree")
+        self.max_depth.button.setDecimals(0)
+        if self._config["max_depth"] == None:
+            self.max_depth.button.setValue(-1)
+        else: self.max_depth.button.setValue(self._config["max_depth"])
+        self.max_depth.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_depth)
+
+
+        
+    def set_estimator(self):
+        self._config["n_estimators"] = self.n_estimators.button.value()
+        self._config["criterion"] = self.criterion.button.currentText()
+        if self.max_depth.button.value() == -1:
+            self._config["max_depth"] = None
+        else: self._config["max_depth"] = int(self.max_depth.button.value())
+        
+        self.estimator = ensemble.ExtraTreesClassifier(**self._config)
+
+class DecisionTree(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(criterion="gini",splitter="best",max_depth=None,
+                                               min_samples_split=2,min_samples_leaf=1,
+                                               min_weight_fraction_leaf=0,max_features=None,
+                                               max_leaf_nodes=None,min_impurity_decrease=0,
+                                               class_weight=None,ccp_alpha=0,monotonic_cst=None)
+        else: self._config = config
+        self.estimator = tree.DecisionTreeClassifier(**self._config)
+
+        self.criterion = ComboBox(items=["gini","entropy","log_loss"], text="Criterion")
+        self.criterion.button.setCurrentText(self._config["criterion"])
+        self.criterion.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.criterion)
+
+        self.splitter = ComboBox(items=["best","random"],text="Splitter")
+        self.splitter.button.setCurrentText(self._config["splitter"])
+        self.splitter.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.splitter)
+
+        self.max_depth = DoubleSpinBox(min=-1, text="Maximum Depth")
+        self.max_depth.button.setDecimals(0)
+        if self._config["max_depth"] == None:
+            self.max_depth.button.setValue(-1)
+        else: self.max_depth.button.setValue(self._config["max_depth"])
+        self.max_depth.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_depth)
+
+        self.min_samples_split = SpinBox(text="Minimum samples to Split")
+        self.min_samples_split.button.setValue(self._config["min_samples_split"])
+        self.min_samples_split.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_split)
+
+        self.min_samples_leaf = SpinBox(text="Minimum samples to a Node")
+        self.min_samples_leaf.button.setValue(self._config["min_samples_leaf"])
+        self.min_samples_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_samples_leaf)
+
+        self.min_weight_fraction_leaf = DoubleSpinBox(step=0.1,max=1,
+                                                      text="Minimum weighted fraction")
+        self.min_weight_fraction_leaf.button.setValue(self._config["min_weight_fraction_leaf"])
+        self.min_weight_fraction_leaf.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_weight_fraction_leaf)
+
+        self.max_features = ComboBox(items=["sqrt","log2","max"], text="Max Features")
+        if self._config["max_features"] == None:
+            self.max_features.button.setCurrentText("max")
+        else: self.max_features.button.setCurrentText(self._config["max_features"])
+        self.max_features.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_features)
+
+        self.max_leaf_nodes = DoubleSpinBox(min=-1, text="Maximum Nodes")
+        if self._config["max_leaf_nodes"] == None:
+            self.max_leaf_nodes.button.setValue(-1)
+        else: self.max_leaf_nodes.button.setValue(self._config["max_leaf_nodes"])
+        self.max_leaf_nodes.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_leaf_nodes)
+
+        self.min_impurity_decrease = DoubleSpinBox(text="Impurity")
+        self.min_impurity_decrease.button.setValue(self._config["min_impurity_decrease"])
+        self.min_impurity_decrease.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.min_impurity_decrease)
+
+        self.class_weight = ComboBox(items=["None","balanced"], text="Class Weight")
+        if self._config["class_weight"] == None:
+            self.class_weight.button.setCurrentText("None")
+        else: self.class_weight.button.setCurrentText(self._config["class_weight"])
+        self.class_weight.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.class_weight)
+
+        self.ccp_alpha = DoubleSpinBox(text="Complexity parameter")
+        self.ccp_alpha.button.setValue(self._config["ccp_alpha"])
+        self.ccp_alpha.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.ccp_alpha)
+
+    def set_estimator(self):
+        self._config["criterion"] = self.criterion.button.currentText()
+        self._config["splitter"] = self.splitter.button.currentText()
+        if self.max_depth.button.value() == -1:
+            self._config["max_depth"] = None
+        else: self._config["max_depth"] = self.max_depth.button.value()
+        self._config["min_samples_split"] = self.min_samples_split.button.value()
+        self._config["min_samples_leaf"] = self.min_samples_leaf.button.value()
+        self._config["min_weight_fraction_leaf"] = self.min_weight_fraction_leaf.button.value()
+        if self.max_features.button.currentText() == "max":
+            self._config["max_features"] = None
+        else: self._config["max_features"] = self.max_features.button.currentText()
+        if self.max_leaf_nodes.button.value() == -1:
+            self._config["max_leaf_nodes"] = None
+        else: self._config["max_leaf_nodes"] = self.max_leaf_nodes.button.value()
+        self._config["min_impurity_decrease"] = self.min_impurity_decrease.button.value()
+        if self.class_weight.button.currentText() == "None":
+            self._config["class_weight"] = None
+        else: self._config["class_weight"] = self.class_weight.button.currentText()
+        self._config["ccp_alpha"] = self.ccp_alpha.button.value()
+
+        self.estimator = tree.DecisionTreeClassifier(**self._config)
+
+class GaussianProcess(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)        
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict(kernel=None,optimizer="fmin_l_bfgs_b",
+                                               n_restarts_optimizer=0,max_iter_predict=100,
+                                               warm_start=False,multi_class="one_vs_rest")
+        else: self._config = config
+        self.estimator = gaussian_process.GaussianProcessClassifier(**self._config)
+        
+        self.optimizer = ComboBox(items=["fmin_l_bfgs_b"],text="Optimizer")
+        self.optimizer.button.setCurrentText(self._config["optimizer"])
+        self.optimizer.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.optimizer)
+
+        self.n_restarts_optimizer =SpinBox(text="Number of restarts")
+        self.n_restarts_optimizer.button.setValue(self._config["n_restarts_optimizer"])
+        self.n_restarts_optimizer.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.n_restarts_optimizer)
+
+        self.max_iter_predict = SpinBox(max=10000, step=100, text="Maximum iterations")
+        self.max_iter_predict.button.setValue(self._config["max_iter_predict"])
+        self.max_iter_predict.button.valueChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.max_iter_predict)
+
+        self.warm_start = Toggle(text="Warm Start")
+        self.warm_start.button.setChecked(self._config["warm_start"])
+        self.warm_start.button.checkedChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.warm_start)
+
+        self.multi_class = ComboBox(items=["one_vs_rest","one_vs_one"],text="Multi-class")
+        self.multi_class.button.setCurrentText(self._config["multi_class"])
+        self.multi_class.button.currentTextChanged.connect(self.set_estimator)
+        self.vlayout.addWidget(self.multi_class)
+
+    def set_estimator(self):
+        self._config["optimizer"] = self.optimizer.button.currentText()
+        self._config["n_restarts_optimizer"] = self.n_restarts_optimizer.button.value()
+        self._config["max_iter_predict"] = self.max_iter_predict.button.value()
+        self._config["warm_start"] = self.warm_start.button.isChecked()
+        self._config["multi_class"] = self.multi_class.button.currentText()
+        self.estimator = gaussian_process.GaussianProcessClassifier(**self._config)
+
+
+
 
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
+        self.parent = parent
+        self.score = self.scoring()
+
         self.node.input_sockets[0].setTitle("Train/Test")
         self.node.output_sockets[0].setTitle("Model")
         self.node.output_sockets[1].setTitle("Data out")
+
+        self.score_btn = _TransparentPushButton()
+        self.score_btn.setText(f"Score: --")
+        self.score_btn.released.connect(self.score_dialog)
+        self.layout.insertWidget(2,self.score_btn)
         
         self._config = dict(estimator="Logistic Regression",config=None)
         self.estimator_list = ["Ridge Classifier","Logistic Regression","SGD Classifier",
                                "Passive Aggressive Classifier", "SVC", "NuSVC", "Linear SVC",
                                "K Neighbors Classifier","Nearest Centroid", "Radius Neighbors Classifier",
-                               ]
+                               "Gradient Boosting Classifier", "Histogram Gradient Boosting Classifier",
+                               "Random Forest Classifier", "Extra Trees Classifier",
+                               "Decision Tree Classifier","Gaussian Process Classifier"]
 
     def config(self):
         dialog = Dialog("Configuration", self.parent.parent)
@@ -810,6 +1445,12 @@ class Classifier (NodeContentWidget):
         stackedlayout.addWidget(KNeighbors())
         stackedlayout.addWidget(NearestCentroid())
         stackedlayout.addWidget(RadiusNeighbors())
+        stackedlayout.addWidget(GradientBoosting())
+        stackedlayout.addWidget(HistGradientBoosting())
+        stackedlayout.addWidget(RandomForest())
+        stackedlayout.addWidget(ExtraTrees())
+        stackedlayout.addWidget(DecisionTree())
+        stackedlayout.addWidget(GaussianProcess())
         stackedlayout.setCurrentIndex(self.estimator_list.index(algorithm.button.text()))
         stackedlayout.currentWidget().set_config(self._config["config"])
  
@@ -839,22 +1480,54 @@ class Classifier (NodeContentWidget):
                         Y_train, Y_test = Y.loc[train_idx], Y.loc[test_idx]
                         self.estimator.fit(X_train, Y_train)
                         Y_pred = self.estimator.predict(X).round(5)
-                        #score = mean_absolute_error(Y, Y_pred)
+                        self.score = self.scoring(Y, Y_pred)
+                        self.score_btn.setText(f"Score: {self.score}")
                     
                         self.data_to_view = pd.concat([self.data_to_view, pd.DataFrame(Y_pred, columns=[f"Fold{fold+1}_Prediction"])],axis=1)
                     
                     self.node.output_sockets[1].socket_data = None
-                    logger.info(f"{self.name} run successfully.")
+                    logger.info(f"{self.name} {self.node.id}::run successfully.")
 
             else:
-                logger.warning(f"{self.name} Did not define splitter.")
+                self.score_btn.setText(f"Score: --")
+                logger.warning(f"{self.name} {self.node.id}::Did not define splitter.")
         
         except Exception as e:
-            logger.error(f"{self.name} {repr(e)}.")
-        
-        
+            self.score_btn.setText(f"Score: --")
+            logger.error(f"{self.name} {self.node.id}::{repr(e)}.")
+    
+    def scoring(self, Y=list(), Y_pred=list()):
+        if Y == list() or Y_pred == list():
+            return {"Accuracy":"--",
+                    "Balanced accuracy":"--",
+                    "Top K accuracy":"--",
+                    "Average precision":"--",
+                    "Brier score loss":"--",
+                    "F1 score":"--"}
+        else:
+            return {"Accuracy":accuracy_score(Y, Y_pred),
+                    "Balanced accuracy":balanced_accuracy_score(Y, Y_pred),
+                    "Top K accuracy":top_k_accuracy_score(Y,Y_pred),
+                    "Average precision":average_precision_score(Y,Y_pred),
+                    "Brier score loss":brier_score_loss(Y,Y_pred),
+                    "F1 score":f1_score(Y,Y_pred)}
 
-        super().exec()
+    def score_dialog(self):
+        dialog = Dialog("Scoring", self.parent.parent)
+
+        metric_to_show = ComboBox(items=["Accuracy","Balanced accuracy","Top K accuracy",
+                                         "Average precision","Brier score loss","F1 score",
+                                         ], 
+                                  text="Metric")
+        dialog.main_layout.addWidget(metric_to_show)
+
+        for metric in self.score:
+            _btn = TransparentPushButton(text=metric)
+            _btn.button.setText(str(self.score[metric]))
+            dialog.main_layout.addWidget(_btn)
+
+        if dialog.exec():
+            print('abc')
      
     def eval (self):
         # reset input sockets
