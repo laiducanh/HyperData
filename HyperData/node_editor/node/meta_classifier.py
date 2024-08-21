@@ -35,6 +35,44 @@ class Bagging(ClassifierBase):
         
         self.estimator = ensemble.BaggingClassifier(**self._config)
 
+class Voting(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict()
+        else: self._config = config
+        self.estimator = ensemble.VotingClassifier(**self._config)
+
+        
+    def set_estimator(self):
+        
+        self.estimator = ensemble.VotingClassifier(**self._config)
+
+class Stacking(ClassifierBase):
+    def __init__(self, config=None, parent=None):
+        super().__init__(parent)
+
+        self.set_config(config)
+    
+    def set_config(self, config):
+
+        self.clear_layout()
+
+        if config == None: self._config = dict()
+        else: self._config = config
+        self.estimator = ensemble.StackingClassifier(**self._config)
+
+        
+    def set_estimator(self):
+        
+        self.estimator = ensemble.StackingClassifier(**self._config)
+
 class MetaClassifier(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
