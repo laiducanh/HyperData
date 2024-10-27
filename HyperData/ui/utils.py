@@ -14,5 +14,7 @@ def isDark() -> bool:
         return True
     elif config["theme"] == "Light":
         return False
-    else: # if theme is AUTO, theme by system
+    else: 
+        # if theme is AUTO
+        # then theme is determined by system
         return darkdetect.isDark()
