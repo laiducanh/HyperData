@@ -13,7 +13,7 @@ class Spine (QWidget):
         self.setLayout(self.layout)
         self.layout.setContentsMargins(0,0,0,0)
 
-        self.spine2d = Spine2D(canvas)
+        self.spine2d = Spine2D(canvas, parent)
         self.layout.addWidget(self.spine2d)
     
     def choose_axis_func(self, axis):
@@ -21,13 +21,13 @@ class Spine (QWidget):
         
     
 class Tick (QWidget):
-    def __init__(self,canvas:Canvas):
-        super().__init__()
+    def __init__(self, canvas:Canvas, parent=None):
+        super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.layout.setContentsMargins(0,0,0,0)
 
-        self.tick2d = Tick2D(canvas)
+        self.tick2d = Tick2D(canvas, parent)
         self.layout.addWidget(self.tick2d)
 
     def choose_axis_func(self, axis):
