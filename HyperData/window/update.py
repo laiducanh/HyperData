@@ -29,7 +29,6 @@ class UpdateDialog(Dialog):
             
             self.main_layout.addWidget(BodyLabel(f"Last check: {time.ctime()}"))
         except Exception as e:
-            if GLOBAL_DEBUG or DEBUG: pass
             logger.exception(e)
 
     def download_update(self):
@@ -37,5 +36,4 @@ class UpdateDialog(Dialog):
             if sys.platform == 'win32':
                 webbrowser.open_new_tab(self.download)
         except Exception as e:
-            if GLOBAL_DEBUG or DEBUG: pass
             logger.exception(e)
