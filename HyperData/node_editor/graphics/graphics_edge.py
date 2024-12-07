@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsSceneHoverEvent
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen, QPainter
+from node_editor.graphics.graphics_socket import GraphicsSocket
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -12,7 +13,7 @@ CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 
 class GraphicsEdge(QGraphicsPathItem):
-    def __init__(self, start_socket=None, end_socket=None, parent=None):
+    def __init__(self, start_socket:GraphicsSocket=None, end_socket:GraphicsSocket=None, parent=None):
         super().__init__(parent)
 
         self.hovered = False
