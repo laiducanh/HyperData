@@ -1,7 +1,6 @@
-from PyQt6.QtGui import QKeyEvent, QMouseEvent, QPaintEvent, QShowEvent
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QDockWidget, 
-                             QMainWindow, QGraphicsRectItem)
-from PyQt6.QtCore import pyqtSignal, Qt, QRectF
+from PyQt6.QtGui import QKeyEvent, QPaintEvent, QShowEvent
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QDockWidget, QMainWindow
+from PyQt6.QtCore import pyqtSignal, Qt
 from node_editor.base.node_graphics_view import NodeGraphicsView
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
@@ -55,9 +54,9 @@ class NodeView (QMainWindow):
                                                           "Data Locator","Data Filter", "Data Holder",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
-                                        "Machine Learning": ["Classifier","Meta-Classifier","Train/Test Splitter",
+                                        "Machine Learning": ["Classifier","Train/Test Splitter",
                                                              "Label Encoder","Ordinal Encoder","One-Hot Encoder",],
-                                        "Visualization": ["Figure"],
+                                        "Visualization": ["Figure 2D", "Figure 3D"],
                                         "Misc": ["Executor", "User Define Card", "Undefined Node"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)
         self.list_widget_layout.addWidget(self.nodesListWidget)
@@ -110,6 +109,7 @@ class NodeUserDefine (NodeView):
         self.graphicscreen_btn = _TransparentToolButton()
         self.graphicscreen_btn.setIcon("stack.png")
         self.graphicscreen_btn.pressed.connect(self.sig_back_to_grScene.emit)
+        self.graphicscreen_btn.setToolTip("Node View")
         self.static_layout.insertWidget(0, self.graphicscreen_btn)
 
         self.main_node = main_node
