@@ -122,7 +122,7 @@ class NewPlot (Frame):
         else: self.menu = Menu_type_2D(self)
         self.menu.sig.connect(self.update_layout)
         self.type.setMenu(self.menu)
-        self.type.released.connect(lambda: self.menu.exec(QCursor().pos()))
+        #self.type.released.connect(lambda: self.menu.exec(QCursor().pos()))
         layout.addWidget(self.type)
 
         self.progressbar = ProgressBar()

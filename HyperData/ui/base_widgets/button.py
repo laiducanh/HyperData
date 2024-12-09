@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QObject, Qt, pyqtSignal, QEvent, QPoint, QRectF
 from PyQt6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
-                             QSizePolicy, QGridLayout, QToolButton, QAbstractButton, QVBoxLayout)
+                             QSizePolicy, QGridLayout, QToolButton, QApplication, QVBoxLayout)
 from PyQt6.QtGui import QCursor, QPainter, QColor
 from PyQt6.QtSvg import QSvgRenderer
 from typing import Iterable
@@ -32,6 +32,26 @@ class _PrimaryPushButton (_PushButton):
 
 class _DropDownPushButton (_PushButton):
     """ PushButton with dropdown menu """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setCheckable(True)
+
+        self._menu = None
+    
+    def setMenu(self, menu: QMenu):
+        self._menu = menu
+        return super().setMenu(menu)
+    
+    def mousePressEvent(self, e):
+        if self._menu:
+            self._menu.setMinimumWidth(self.width())
+            self._menu.triggered.connect(lambda s: self.setText(s.text()))
+            self._menu.exec(self.mapToGlobal(QPoint(0,self.height())))
+            self.clearFocus()
+        
+        self.pressed.emit()
+        self.clicked.emit()
 
 class _DropDownTransparentPushButton (_DropDownPushButton):
     """ DropDownPushButton with no border and background color """
