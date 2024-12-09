@@ -11,11 +11,10 @@ from matplotlib.spines import Spine
 from typing import List
 
 class SpineBase (Frame):
-    def __init__(self, axis, canvas:Canvas):
-        super().__init__()
+    def __init__(self, axis, canvas:Canvas, parent=None):
+        super().__init__(parent)
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        layout = QVBoxLayout(self)
         #layout.setContentsMargins(0,10,0,0)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.axis = axis
@@ -97,8 +96,8 @@ class SpineBase (Frame):
         return matplotlib.colors.rgb2hex(self.obj[0].get_edgecolor())
 
 class Spine2D (QWidget):
-    def __init__(self, canvas:Canvas):
-        super().__init__()
+    def __init__(self, canvas:Canvas, parent=None):
+        super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.layout.setContentsMargins(10,0,10,15)
@@ -115,12 +114,12 @@ class Spine2D (QWidget):
         self.stackedlayout = QStackedLayout()
         self.layout.addLayout(self.stackedlayout)
 
-        self.bot = SpineBase('bottom',self.canvas)
+        self.bot = SpineBase('bottom',self.canvas, parent)
         self.stackedlayout.addWidget(self.bot)
-        self.left = SpineBase('left',self.canvas)
+        self.left = SpineBase('left',self.canvas, parent)
         self.stackedlayout.addWidget(self.left)
-        self.top = SpineBase('top',self.canvas)
+        self.top = SpineBase('top',self.canvas, parent)
         self.stackedlayout.addWidget(self.top)
-        self.right = SpineBase('right',self.canvas)
+        self.right = SpineBase('right',self.canvas, parent)
         self.stackedlayout.addWidget(self.right)
     

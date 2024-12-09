@@ -5,7 +5,7 @@ from matplotlib.text import Text
 from plot.canvas import Canvas
 
 class FontStyle (QWidget):
-    def __init__(self, obj:Text, canvas: Canvas, parent=None):
+    def __init__(self, obj:list[Text], canvas: Canvas, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()
         self.setLayout(layout)
@@ -29,27 +29,31 @@ class FontStyle (QWidget):
         layout.addWidget(weight)
     
     def set_italic (self, bool):
-        if bool: self.obj.set_fontstyle('italic')
-        else: self.obj.set_fontstyle('normal')
+        for obj in self.obj:
+            if bool: obj.set_fontstyle('italic')
+            else: obj.set_fontstyle('normal')
         self.canvas.draw()
     
     def get_italic (self):
-        if self.obj.get_fontstyle() == 'normal':
-            return False
+        if self.obj:
+            if self.obj[0].get_fontstyle() == 'normal':
+                return False
         return True
 
     def set_bold (self, bool):
-        if bool: self.obj.set_fontweight('bold')
-        else: self.obj.set_fontweight('normal')
+        for obj in self.obj:
+            if bool: obj.set_fontweight('bold')
+            else: obj.set_fontweight('normal')
         self.canvas.draw()
     
     def get_bold (self):
-        if self.obj.get_fontweight() == 'normal':
-            return False
+        if self.obj:
+            if self.obj[0].get_fontweight() == 'normal':
+                return False
         return True
 
 class FontAlignment (QWidget):
-    def __init__(self, obj: Text, canvas:Canvas, parent=None):
+    def __init__(self, obj: list[Text], canvas:Canvas, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()
         self.setLayout(layout)
@@ -59,10 +63,15 @@ class FontAlignment (QWidget):
 
         layout.addWidget(BodyLabel('Font Alignment'))
         self.btn = _ComboBox()
-        if self.obj.get_rotation() in ['y left','y right']:
+        if self.obj[0].get_rotation() in ['y left','y right']:
             self.btn.addItems(['Bottom','Center','Top'])
         else:
             self.btn.addItems(['Left','Center','Right'])
+        self.btn.currentTextChanged.connect()
+        self.btn.setCurrentText()
         layout.addWidget(self.btn)
 
-    
+    def set_alignment(self, value:str):
+        if self.obj:
+            for obj in self.obj:
+                obj.set

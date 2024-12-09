@@ -19,15 +19,17 @@ from ui.base_widgets.window import ProgressDialog
 from plot.canvas import Canvas
 from plot.grid.grid import Grid
 from plot.label.graph_title import GraphTitle
-from config.settings import config
+from plot.label.axes_label import AxesLabel2D
+from plot.label.legend import LegendLabel
+from config.settings import GLOBAL_DEBUG, logger, config
 from node_editor.node_node import Node
-from plot.utilis import get_color
+from plot.utilis import get_color, find_mpl_object
 
 DEBUG = False
 
 class PlotView (QMainWindow):
     sig_back_to_grScene = pyqtSignal()
-    def __init__(self, node:Node, canvas:Canvas, parent=None):
+    def __init__(self, node:Node, canvas:Canvas, plot3d=False, parent=None):
         super().__init__(parent)
         
         ### 
@@ -37,18 +39,18 @@ class PlotView (QMainWindow):
         self.canvas = canvas
         self.num_plot = 0
         self.current_plot = 0
+        self.plot3d = plot3d
         self.curvelist = list()
-        self.parent = parent
         self.main_layout = QHBoxLayout()
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
-        self.treeview_list = {"Graph":["Manage graph"],
+        self.treeview_data = {"Graph":["Manage graph"],
                                "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
                                "Spine":["Spine bottom","Spine left","Spine top","Spine right"],
                                "Figure":["Plot size","Grid"],
-                               "Label":["Title","Axis lebel","Legend","Data annotation"],}
+                               "Label":["Title","Axis label","Legend","Data annotation"],}
         
         self.diag = ProgressDialog("Initializing figure", None, parent)
         self.diag.progressbar._setValue(0)
@@ -59,18 +61,19 @@ class PlotView (QMainWindow):
         self.setup_visual()
         self.setup_sidebar()
         
-        #
+        ###
+        if GLOBAL_DEBUG or DEBUG: self.debug()
+
+    def debug(self):
+        self.statusBar()
             
     def setup_visual (self):
-        self.plot_visual = GraphicsView(self.canvas,parent=self.parent)
-        self.plot_visual.sig_keyPressEvent.connect(lambda s: self.keyPressEvent(s))
-        self.plot_visual.sig_MouseRelease.connect(lambda s: self.treeview_func(s))
-        self.plot_visual.sig_backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
-        self.plot_visual.sig_backtoScene.connect(self.sig_back_to_grScene.emit)
-        for i in self.canvas.fig.findobj():
-            if i._gid != None and "graph" in i._gid:
-                self.treeview_list['Graph'].insert(-1,i._gid.title())
-        #self.setCentralWidget(self.plot_visual)
+        self.plot_visual = GraphicsView(self.canvas,parent=self.parent())
+        self.plot_visual.mpl_pressed.connect(self.update_sidebar)
+        self.plot_visual.key_pressed.connect(self.keyPressEvent)
+        self.plot_visual.mouse_released.connect(self.treeview_func)
+        self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
+        self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.main_layout.addWidget(self.plot_visual)
     
     def setup_sidebar(self):
@@ -87,12 +90,14 @@ class PlotView (QMainWindow):
         self.graphicscreen_btn = _TransparentToolButton()
         self.graphicscreen_btn.setIcon("stack.png")
         self.graphicscreen_btn.pressed.connect(self.sig_back_to_grScene.emit)
+        self.graphicscreen_btn.setToolTip("Node View")
         static_layout.addWidget(self.graphicscreen_btn)
         self.treeview_btn = _TransparentToolButton()
         self.treeview_btn.setIcon("home.svg")
         self.treeview_btn.pressed.connect(lambda: self.stackedlayout.setCurrentIndex(0))
+        self.treeview_btn.setToolTip("Home")
         static_layout.addWidget(self.treeview_btn)
-        self.search_box = _SearchBox(parent=self.parent)
+        self.search_box = _SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
         
@@ -101,86 +106,68 @@ class PlotView (QMainWindow):
         self.sidebar_layout.addLayout(self.stackedlayout)
 
         self.treeview = TreeWidget()
-        self.treeview.itemPressed.connect(lambda item: self.treeview_func(item.text(0)))
-        self.treeview.setData(self.treeview_list)
+        self.treeview.itemPressed.connect(self.treeview_func)
+        self.treeview.setData(self.treeview_data)
         self.stackedlayout.addWidget(self.treeview)
-
         self.search_box.set_TreeView(self.treeview)
 
         self.dock = QDockWidget('Figure')
         self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
-        
         self.diag.progressbar._setValue(10)
 
         self.diag.setLabelText("Loading plot types")
         QApplication.processEvents()
-        self.insertplot = InsertPlot (self.canvas, self.node, self.parent)
-        self.insertplot.sig.connect(self.add_plot)
+        self.insertplot = InsertPlot (self.canvas, self.node, self.plot3d, self.parent())
+        self.insertplot.sig.connect(self.update_plotlist)
         self.stackedlayout.addWidget(self.insertplot)
         self.diag.progressbar._setValue(20)
 
         self.diag.setLabelText("Loading ticks")
         QApplication.processEvents()
-        self.tick = Tick(self.canvas)
+        self.tick = Tick(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.tick)
         self.diag.progressbar._setValue(60)
 
         self.diag.setLabelText("Loading spines")
         QApplication.processEvents()
-        self.spine = Spine(self.canvas)
+        self.spine = Spine(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.spine)
         self.diag.progressbar._setValue(70)
 
         self.diag.setLabelText("Loading grid")
         QApplication.processEvents()
-        self.grid = Grid(self.canvas,self.parent)
+        self.grid = Grid(self.canvas,self.parent())
         self.stackedlayout.addWidget(self.grid)
         self.diag.progressbar._setValue(80)
         
         self.diag.setLabelText("Loading labels")
         QApplication.processEvents()
-        self.title = GraphTitle(self.canvas)
+        self.title = GraphTitle(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.title)
+        self.axeslabel = AxesLabel2D(self.canvas, self.parent())
+        self.stackedlayout.addWidget(self.axeslabel)
+        self.legendlabel = LegendLabel(self.canvas, self.parent())
+        self.stackedlayout.addWidget(self.legendlabel)
         self.diag.progressbar._setValue(100)
         self.diag.close()
 
-    def add_plot (self):
-        self.treeview_list["Graph"] = ["Manage graph"]
-
-        # update menu
-        self.plot_visual.Menu(self.insertplot.gidlist)
-
-        for gid in self.insertplot.gidlist:
-            self.treeview_list["Graph"].insert(-1,str(gid).title())
-            
-        
-        self.treeview.setData(self.treeview_list)
-        self.update_plot()
-        
-
-    def update_plot (self):
-        pixmap = QPixmap(12,12)
-        for item in self.treeview.findItems("Graph",Qt.MatchFlag.MatchExactly):
-            for child in range(item.childCount()):
-                name = item.child(child).text(0).lower()
-                if "graph " in name:
-                    color = 'white' # whenever color changes to white, there is an error!
-                    for graph in self.canvas.fig.findobj():
-                        if graph._gid != None and name in graph._gid:
-                            color = get_color(graph)
-                            break
-                    pixmap.fill(QColor(color))
-                    item.child(child).setIcon(0,QIcon(pixmap))    
-
-    def treeview_func (self, text:str):
+    def treeview_func (self, item:QTreeWidgetItem):
+        text = item.text(0).lower()
+        self.update_sidebar(text)
+    
+    def update_sidebar(self, text:str):
         text = text.lower()
         if "graph " in text:
-            _plot_index = int(text.split(".")[0].split()[-1])-1
-            _plot = self.insertplot.plotlist[_plot_index]
-            curve = Curve(text, self.plot_visual.canvas, _plot, self.parent)
-            curve.sig.connect(self.update_plot)
+            
+            _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
+            for pt in self.insertplot.plotlist:
+                if pt.plot_index == _plot_index:
+                    _plot = pt
+                    break
+            curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
+            curve.sig.connect(self.update_plotlist)
             self.stackedlayout.addWidget(curve)
             self.stackedlayout.setCurrentWidget(curve)
         
@@ -190,8 +177,8 @@ class PlotView (QMainWindow):
         elif "add graph" in text:
             self.num_plot += 1
             self.current_plot = self.num_plot
-            self.treeview_list["Graph"].insert(-1,f"Graph {self.current_plot}")
-            self.treeview.setData(self.treeview_list)
+            self.treeview_data["Graph"].insert(-1,f"Graph {self.current_plot}")
+            self.treeview.setData(self.treeview_data)
             
         elif "tick " in text:
             self.tick.choose_axis_func(text.split()[-1].title())
@@ -206,6 +193,38 @@ class PlotView (QMainWindow):
         
         elif text == 'title':
             self.stackedlayout.setCurrentWidget(self.title)
+        
+        elif text == 'axis label':
+            self.stackedlayout.setCurrentWidget(self.axeslabel)
+        
+        elif text == 'legend':
+            self.stackedlayout.setCurrentWidget(self.legendlabel)
+    
+    def update_plotlist(self):
+        try:
+            self.treeview_data["Graph"] = ["Manage graph"]
+            for obj in find_mpl_object(self.canvas.fig):
+                if "graph " in obj.get_gid():
+                    _gid = obj.get_gid().split("/")[0].title()
+                    if _gid not in self.treeview_data["Graph"]:
+                        self.treeview_data["Graph"].insert(-1,_gid)
+            self.treeview.setData(self.treeview_data)
+
+            # update color icon for each graph
+            pixmap = QPixmap(12,12)
+            for item in self.treeview.findItems("Graph",Qt.MatchFlag.MatchExactly):
+                for child in range(item.childCount()):
+                    name = item.child(child).text(0).lower()
+                    if "graph " in name:
+                        color = 'white' # whenever color changes to white, there is an error!
+                        for graph in self.canvas.fig.findobj():
+                            if graph._gid != None and name in graph._gid:
+                                color = get_color(graph)
+                                break
+                        pixmap.fill(QColor(color))
+                        item.child(child).setIcon(0,QIcon(pixmap))  
+        except Exception as e: 
+            logger.exception(e)
         
     def keyPressEvent(self, key: QKeyEvent) -> None:
 

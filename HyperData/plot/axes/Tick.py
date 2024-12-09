@@ -6,71 +6,70 @@ from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit, _LineEdit
 from ui.base_widgets.frame import Frame
+from plot.utilis import find_mpl_object
 import matplotlib
 from matplotlib.axis import Axis
 from plot.canvas import Canvas
 
 class TickBase2D_1 (QWidget):
-    def __init__(self,axis,canvas:Canvas):
-        super().__init__()
+    def __init__(self,axis,canvas:Canvas, parent=None):
+        super().__init__(parent)
         self.axis = axis
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.axis = axis
         self.canvas = canvas
-        self.obj = self.find_object()
+        self.obj = self.find_obj()
 
-        widget = QWidget()
-        widget.layout = QVBoxLayout()
-        widget.setLayout(widget.layout)
-        widget.layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(widget)
+        mainwidget = QWidget()
+        mainwidget_layout = QVBoxLayout(mainwidget)
+        mainwidget_layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(mainwidget)
 
-        self.scroll_area = QScrollArea(parent=self)
+        self.scroll_area = QScrollArea()
         self.scroll_area.setContentsMargins(0,0,0,0)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroll_area.setWidget(widget)
+        self.scroll_area.setWidget(mainwidget)
         self.scroll_area.verticalScrollBar().setValue(1900)
         layout.addWidget(self.scroll_area)
 
-        card1 = Frame()
-        layout1 = QVBoxLayout()
-        card1.setLayout(layout1)
-        widget.layout.addWidget(card1)
+        card1 = Frame(parent)
+        layout1 = QVBoxLayout(card1)
+        mainwidget_layout.addWidget(card1)
 
-        visible = Toggle(text='tick visible')
+        visible = Toggle(text="Visible",text2=f"Toggle {axis} ticks' visibility")
         visible.button.checkedChanged.connect(self.set_visible)
         visible.button.setChecked(self.get_visible())
         layout1.addWidget(visible)
 
-        self.min = LineEdit(text='min value')
+        self.min = LineEdit(text="Min Value",text2=f"Set {axis} axis view minimum")
         self.min.button.setFixedWidth(150)
         self.min.button.textChanged.connect(self.set_min)
         self.min.button.setText(str(round(self.get_lim()[0],5)))
         layout1.addWidget(self.min)
 
-        self.max = LineEdit(text='max value')
+        self.max = LineEdit(text='Max Value',text2=f"Set {axis} axis view maximum")
         self.max.button.setFixedWidth(150)
         self.max.button.textChanged.connect(self.set_max)
         self.max.button.setText(str(round(self.get_lim()[1],5)))
         layout1.addWidget(self.max)
 
-        scale = ComboBox(items=['Linear','Log','Symlog','Logit','Asinh'],text='scale')
+        scale = ComboBox(items=['Linear','Log','Symlog','Logit','Asinh'],
+                         text='Scale',text2=f"Set {axis} axis' scale")
         scale.button.currentTextChanged.connect(self.set_scale)
         scale.button.setCurrentText(self.get_scale())
         layout1.addWidget(scale)   
 
         self.choose_tick = SegmentedWidget()
-        widget.layout.addWidget(self.choose_tick)
+        mainwidget_layout.addWidget(self.choose_tick)
 
-        card2 = Frame()
+        card2 = Frame(parent)
         layout2 = QVBoxLayout()
         card2.setLayout(layout2)
-        widget.layout.addWidget(card2)
+        mainwidget_layout.addWidget(card2)
 
         self.layout6 = QVBoxLayout()
         layout2.addLayout(self.layout6)
@@ -81,18 +80,17 @@ class TickBase2D_1 (QWidget):
         self.stackedlayout = QStackedLayout()
         self.layout6.addLayout(self.stackedlayout)
 
-        self.majortick = TickBase2D_2(self.axis, 'major',self.canvas)
+        self.majortick = TickBase2D_2(self.axis, 'major',self.canvas, parent)
         self.stackedlayout.addWidget(self.majortick)
 
-        self.minortick = TickBase2D_2(self.axis,'minor', self.canvas)
+        self.minortick = TickBase2D_2(self.axis,'minor', self.canvas, parent)
         self.stackedlayout.addWidget(self.minortick)
         
         self.choose_tick._onClick("Major")
-
-    def find_object(self) -> Axis:
-        for obj in self.canvas.fig.findobj(match=Axis):
-            if obj._gid == self.axis:
-                return obj
+    
+    def find_obj(self) -> Axis:
+        obj = find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)
+        return obj[0]
     
     def set_visible(self, value):
         self.obj.set_visible(value)
@@ -141,24 +139,23 @@ class TickBase2D_1 (QWidget):
     
     def showEvent(self, a0: QShowEvent) -> None:
         # update min, max when show
-        self.min.button.setText(str(round(self.get_lim()[0],5)))
-        self.max.button.setText(str(round(self.get_lim()[1],5)))
+        # self.min.button.setText(str(round(self.get_lim()[0],5)))
+        # self.max.button.setText(str(round(self.get_lim()[1],5)))
         return super().showEvent(a0)
 
 class TickBase2D_2 (QWidget):
-    def __init__(self,axis,type,canvas:Canvas):
-        super().__init__()
+    def __init__(self,axis,type,canvas:Canvas, parent=None):
+        super().__init__(parent)
         self.type = type
         self.axis = axis
         self.canvas = canvas
-        self.obj = self.find_object()
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.setContentsMargins(0,0,0,0)
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.obj = self.find_obj()
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(0,0,0,0)
+        self.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
 
         layout1 = QHBoxLayout()
-        self.layout.addLayout(layout1)
+        self.layout().addLayout(layout1)
         tickinterval = _ComboBox(items=['Tick Interval','Tick Values'])
         tickinterval.setCurrentText('Tick Interval')
         tickinterval.currentTextChanged.connect(self.func)
@@ -172,53 +169,54 @@ class TickBase2D_2 (QWidget):
         self.value.hide()
         layout1.addWidget(self.value)
         
-        self.tick_label = LineEdit(text='tick labels')
+        self.tick_label = LineEdit(text='Tick labels',text2=f"Set {axis} axis' {type} tick labels")
         self.tick_label.button.textChanged.connect(self.set_ticklabels)
         self.tick_label.button.setPlaceholderText(self.get_ticklabels())
-        self.layout.addWidget(self.tick_label)
+        self.layout().addWidget(self.tick_label)
 
-        tick_labelsize = DoubleSpinBox(text='tick label size',min=1,max=100,step=1)
+        tick_labelsize = DoubleSpinBox(text='Label size',text2=f"Set {axis} axis' {type} tick label size",
+                                       min=1,max=100,step=1)
         tick_labelsize.button.valueChanged.connect(self.set_labelsize)
         tick_labelsize.button.setValue(self.get_labelsize())
-        self.layout.addWidget(tick_labelsize)
+        self.layout().addWidget(tick_labelsize)
 
-        tick_direction = ComboBox(text='tick direction',items=['In','Out','InOut'])
+        tick_direction = ComboBox(text='Tick direction',text2=f"Put {type}ticks inside/outside {axis} axis, or both",
+                                  items=['In','Out','InOut'])
         tick_direction.button.currentTextChanged.connect(self.set_tickdir)
         tick_direction.button.setCurrentText(self.get_tickdir())
-        self.layout.addWidget(tick_direction)
+        self.layout().addWidget(tick_direction)
 
         tick_labelcolor = ColorDropdown(text='label color', color=self.get_labelcolor())
         tick_labelcolor.button.colorChanged.connect(self.set_labelcolor)
-        self.layout.addWidget(tick_labelcolor)
+        self.layout().addWidget(tick_labelcolor)
 
         tickcolor = ColorDropdown(text='tick color', color=self.get_tickcolor())
         tickcolor.button.colorChanged.connect(self.set_tickcolor)
-        self.layout.addWidget(tickcolor)
+        self.layout().addWidget(tickcolor)
 
         tick_rotation = DoubleSpinBox(text='tick label rotation',min=-180,max=180,step=10)
         tick_rotation.button.valueChanged.connect(self.set_labelrotation)
         tick_rotation.button.setValue(self.get_labelrotation())
-        self.layout.addWidget(tick_rotation)
+        self.layout().addWidget(tick_rotation)
 
         tick_labelpad = DoubleSpinBox(text='tick labelpad',min=0,max=50,step=0.5)
         tick_labelpad.button.valueChanged.connect(self.set_tickpadding)
         tick_labelpad.button.setValue(self.get_tickpadding())
-        self.layout.addWidget(tick_labelpad)
+        self.layout().addWidget(tick_labelpad)
 
         tick_length = DoubleSpinBox(text='tick length',min=0,max=50,step=0.5)
         tick_length.button.valueChanged.connect(self.set_ticklength)
         tick_length.button.setValue(self.get_ticklength())
-        self.layout.addWidget(tick_length)
+        self.layout().addWidget(tick_length)
 
         tick_width = DoubleSpinBox(text='tick width',min=0,max=50,step=0.5)
         tick_width.button.valueChanged.connect(self.set_tickwidth)
         tick_width.button.setValue(self.get_tickwidth())
-        self.layout.addWidget(tick_width)
-
-    def find_object(self) -> Axis:
-        for obj in self.canvas.fig.findobj(match=Axis):
-            if obj._gid == self.axis:
-                return obj
+        self.layout().addWidget(tick_width)
+    
+    def find_obj(self) -> Axis:
+        obj = find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)
+        return obj[0]
             
     def func (self,s):
         if s == 'Tick Interval':
@@ -352,15 +350,14 @@ class TickBase2D_2 (QWidget):
             except: return matplotlib.rcParams['ytick.minor.width']
 
 class Tick2D (QWidget):
-    def __init__(self,canvas:Canvas):
-        super().__init__()
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.setContentsMargins(10,0,10,15)
+    def __init__(self,canvas:Canvas, parent=None):
+        super().__init__(parent)
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(10,0,10,15)
         self.canvas = canvas
 
-        self.choose_axis = SegmentedWidget()
-        self.layout.addWidget(self.choose_axis)
+        self.choose_axis = SegmentedWidget(parent)
+        self.layout().addWidget(self.choose_axis)
 
         self.choose_axis.addButton(text='Bottom', func=lambda: self.stackedlayout.setCurrentIndex(0))
         self.choose_axis.addButton(text='Left', func=lambda: self.stackedlayout.setCurrentIndex(1))
@@ -368,15 +365,15 @@ class Tick2D (QWidget):
         self.choose_axis.addButton(text='Right', func=lambda: self.stackedlayout.setCurrentIndex(3))
 
         self.stackedlayout = QStackedLayout()
-        self.layout.addLayout(self.stackedlayout)
+        self.layout().addLayout(self.stackedlayout)
 
-        self.bot = TickBase2D_1('bottom',self.canvas)
+        self.bot = TickBase2D_1('bottom',self.canvas, parent)
         self.stackedlayout.addWidget(self.bot)
-        self.left = TickBase2D_1('left',self.canvas)
+        self.left = TickBase2D_1('left',self.canvas, parent)
         self.stackedlayout.addWidget(self.left)
-        self.top = TickBase2D_1('top',self.canvas)
+        self.top = TickBase2D_1('top',self.canvas, parent)
         self.stackedlayout.addWidget(self.top)
-        self.right = TickBase2D_1('right',self.canvas)
+        self.right = TickBase2D_1('right',self.canvas, parent)
         self.stackedlayout.addWidget(self.right)
 
     

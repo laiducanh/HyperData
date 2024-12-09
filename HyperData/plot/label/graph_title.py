@@ -5,7 +5,7 @@ from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import _TextEdit
 from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import SpinBox, Slider
+from ui.base_widgets.spinbox import Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.label.base import FontStyle
 from config.settings import font_lib
@@ -44,12 +44,12 @@ class GraphTitle (QScrollArea):
         font.button.setCurrentText(self.get_fontname())
         layout.addWidget(font)
 
-        size = SpinBox(text='font size',min=1,max=100,step=2)
+        size = DoubleSpinBox(text='font size',min=1,max=100,step=2)
         size.button.valueChanged.connect(self.set_fontsize)
         size.button.setValue(self.get_fontsize())
         layout.addWidget(size)
         
-        style = FontStyle(obj=self.obj, canvas=self.canvas)
+        style = FontStyle(obj=[self.obj], canvas=self.canvas)
         layout.addWidget(style)
 
         color = ColorDropdown(text='font color',color=self.get_color())
@@ -98,7 +98,7 @@ class GraphTitle (QScrollArea):
         self.canvas.draw()
     
     def get_fontsize(self):
-        return int(self.obj.get_fontsize())
+        return self.obj.get_fontsize()
 
     def set_color (self, color):
         self.obj.set_color(color)
