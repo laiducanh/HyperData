@@ -24,6 +24,7 @@ class Theme (Frame):
         theme = ComboBox(items=["Auto","Light","Dark"], text="Appearance", 
                          text2="Customize how app looks on your device", parent=parent)
         theme.button.currentTextChanged.connect(self.setTheme)
+        theme.button.setCurrentText(self.get_theme())
         layout.addWidget(theme)
 
         self.setTheme(config["theme"])
@@ -34,6 +35,9 @@ class Theme (Frame):
         if theme == "Auto":
             theme = darkdetect.theme()
         self._setStyleSheet(theme.lower())
+    
+    def get_theme(self) -> str:
+        return config["theme"]
         
     def _setStyleSheet (self, theme=["light","dark"]):
         string = str()
