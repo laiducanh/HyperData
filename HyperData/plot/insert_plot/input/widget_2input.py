@@ -8,7 +8,7 @@ from node_editor.node_node import Node
 
 class Widget2D_2input (QWidget):
     sig = pyqtSignal()
-    def __init__(self, node:Node,input:list=[str(),str()],parent=None):
+    def __init__(self, node:Node, input:list=[str(),str()], parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -32,7 +32,7 @@ class Widget2D_2input (QWidget):
         
         self.input1 = _CompleterLineEdit()
         self.input1.setCurrentText(self.input[0])
-        self.input1.lineedit.returnPressed.connect(self.input1_func)
+        self.input1.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_1 = _ToolButton()
         self.choose_data_1.setIcon('open.png')
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
@@ -49,7 +49,7 @@ class Widget2D_2input (QWidget):
 
         self.input2 = _CompleterLineEdit()
         self.input2.setCurrentText(self.input[1])
-        self.input2.lineedit.returnPressed.connect(self.input2_func)
+        self.input2.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_2 = _ToolButton()
         self.choose_data_2.setIcon('open.png')
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
@@ -106,7 +106,7 @@ class Widget2D_2input (QWidget):
         self.sig.emit()
 
         
-    def input1_func(self):
+    def input_func(self):
        
         _input1 = self.input1.currentText()
         _input2 = self.input2.currentText()
@@ -116,15 +116,6 @@ class Widget2D_2input (QWidget):
         if _input1 != '' and _input2 != '':
             self.sig.emit()
 
-    def input2_func(self):
-       
-        _input1 = self.input1.currentText()
-        _input2 = self.input2.currentText()
-
-        self.input = [_input1, _input2]
-        if _input1 != '' and _input2 != '':
-            self.sig.emit()
-    
     def open_data (self, which_input):
 
         self.dataview = DataSelection(self.node.input_sockets[0].socket_data)
@@ -140,9 +131,5 @@ class Widget2D_2input (QWidget):
         elif which_input == 'input 2':
             self.input2.setCurrentText(text)
 
-        self.input = [self.input1.currentText(), self.input2.currentText()]
-        
-        if self.input1.currentText() != '' and self.input2.currentText() != '':
-            self.sig.emit()
-        
+        self.input_func()
         self.dataview.close()
