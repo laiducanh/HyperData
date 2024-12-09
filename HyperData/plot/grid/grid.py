@@ -1,5 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QScrollArea
+import matplotlib.pyplot
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
@@ -7,36 +8,41 @@ from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine, Frame
 from plot.canvas import Canvas
 import matplotlib
-from config.settings import linestyle_lib
+from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
+
+DEBUG = False
 
 class PlotSize2D (Frame):
-    def __init__(self, canvas:Canvas):
-        super().__init__()
+    def __init__(self, canvas:Canvas, parent=None):
+        super().__init__(parent)
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        layout = QVBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
 
         layout.addWidget(TitleLabel('Figure Margin'))
         layout.addWidget(SeparateHLine())
 
-        top = DoubleSpinBox(text='margin top',min=0,max=1,step=0.05)
+        top = DoubleSpinBox(text='Margin top',text2="The position of the top edge",
+                            min=0,max=1,step=0.05)
         top.button.valueChanged.connect(self.set_top)
         top.button.setValue(self.get_top())
         layout.addWidget(top)
 
-        bottom = DoubleSpinBox(text='margin bottom',min=0,max=1,step=0.05)
+        bottom = DoubleSpinBox(text='Margin bottom',text2='The position of the bottom edge',
+                               min=0,max=1,step=0.05)
         bottom.button.valueChanged.connect(self.set_bottom)
         bottom.button.setValue(self.get_bottom())
         layout.addWidget(bottom)
 
-        left = DoubleSpinBox(text='margin left',min=0,max=1,step=0.05)
+        left = DoubleSpinBox(text='Margin left',text2='The position of the left edge',
+                             min=0,max=1,step=0.05)
         left.button.valueChanged.connect(self.set_left)
         left.button.setValue(self.get_left())
         layout.addWidget(left)
 
-        right = DoubleSpinBox(text='margin right',min=0,max=1,step=0.05)
+        right = DoubleSpinBox(text='Margin right',text2='The position of the right edge',
+                              min=0,max=1,step=0.05)
         right.button.valueChanged.connect(self.set_right)
         right.button.setValue(self.get_right())
         layout.addWidget(right)
@@ -75,46 +81,49 @@ class Grid2D (Frame):
     def __init__(self, canvas: Canvas, parent=None):
         super().__init__(parent)
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        layout = QVBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
 
         layout.addWidget(TitleLabel('Grid'))
         layout.addWidget(SeparateHLine())
 
-        self.visible = Toggle(text='visible')
+        self.visible = Toggle(text='Visible',text2='Whether to show the grid lines')
         layout.addWidget(self.visible)
         self.visible.button.checkedChanged.connect(self.set_grid)
         self.visible.button.setChecked(self.get_visible())
 
-        self.type = ComboBox(items=['Major','Minor','Both'],text='Type')
-        self.type.button.currentTextChanged.connect(self.set_grid)
+        self.type = ComboBox(items=['Major','Minor','Both'],
+                             text='Type',text2='The grid lines to apply the changes on')
+        self.type.button.currentTextChanged.connect(self.set_gridtype)
         self.type.button.setCurrentText(self.get_gridtype())
         layout.addWidget(self.type)
 
-        self.axis = ComboBox(text='axis',items=['X','Y','Both'])
-        self.axis.button.currentTextChanged.connect(self.set_grid)
+        self.axis = ComboBox(text='Axis',text2='The axis to apply the changes on',
+                             items=['X','Y','Both'])
+        self.axis.button.currentTextChanged.connect(self.set_gridaxis)
         self.axis.button.setCurrentText(self.get_gridaxis())
         layout.addWidget(self.axis)
 
-        self.color = ColorDropdown(text='line color',color=self.get_color())
-        self.color.button.colorChanged.connect(self.set_grid)
-        self.color.button.setColor(self.get_color())
+        self.color = ColorDropdown(text='Line color',text2='Set the color of the grid',
+                                   color=self.get_color())
+        self.color.button.colorChanged.connect(self.set_color)
         layout.addWidget(self.color)
 
-        self.linewidth = DoubleSpinBox(text='line width',min=0.1,max=10,step=0.5)
-        self.linewidth.button.valueChanged.connect(self.set_grid)
+        self.linewidth = DoubleSpinBox(text='Line width',text2='Set the width of the grid lines',
+                                       min=0.1,max=10,step=0.5)
+        self.linewidth.button.valueChanged.connect(self.set_linewidth)
         self.linewidth.button.setValue(self.get_linewidth())
         layout.addWidget(self.linewidth)
 
-        self.linestyle = ComboBox(text='line style',items=linestyle_lib.values())
-        self.linestyle.button.currentTextChanged.connect(self.set_grid)
+        self.linestyle = ComboBox(text='Line style',text2='Set the style of the grid lines',
+                                  items=linestyle_lib.values())
+        self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
         self.linestyle.button.setCurrentText(self.get_linestyle())
         layout.addWidget(self.linestyle)
 
-        self.transparency = Slider(text='grid transparency')
-        self.transparency.button.valueChanged.connect(self.set_grid)
+        self.transparency = Slider(text='Transparency', text2='Set the transparency of the grid lines')
+        self.transparency.button.valueChanged.connect(self.set_alpha)
         self.transparency.button.setValue(self.get_alpha())
         layout.addWidget(self.transparency)
 
@@ -130,11 +139,10 @@ class Grid2D (Frame):
                 color = self.color.button.color.name()
 
                 self.canvas.axes.grid(which=which, axis=axis, alpha=alpha, linewidth=linewidth,
-                                    linestyle=linestyle, color=color,
-                                    gid = f'_grid.{which}.{axis}.{alpha}.{linewidth}.{linestyle}.{color}',
-                                    )
+                                    linestyle=linestyle, color=color,gid="_grid")
             self.canvas.draw()
-        except: pass
+        except Exception as e:
+            logger.exception(e)
     
     def get_visible(self):
         for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
@@ -142,40 +150,46 @@ class Grid2D (Frame):
                 return obj.get_visible()
         return False
     
+    def set_gridtype(self, value:str):
+        matplotlib.rcParams['axes.grid.which'] = value.lower()
+        self.set_grid()
+    
     def get_gridtype (self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and obj._gid == '_grid':
-                return obj._gid.split('.')[1].title()
         return matplotlib.rcParams['axes.grid.which'].title()
     
+    def set_gridaxis(self, value:str):
+        matplotlib.rcParams['axes.grid.axis'] = value.lower()
+        self.set_grid()
+
     def get_gridaxis (self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and obj._gid == '_grid':
-                return obj._gid.split('.')[2].title()
         return matplotlib.rcParams['axes.grid.axis'].title()
 
+    def set_alpha(self, value:int)
+        matplotlib.rcParams['grid.alpha'] = value/100
+        self.set_grid()
+
     def get_alpha(self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and obj._gid == '_grid':
-                return int(obj._gid.split('.')[3]*100)
         return int(matplotlib.rcParams['grid.alpha']*100)
     
-    def get_linewidth(self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and obj._gid == '_grid':
-                return obj._gid.split('.')[4]
+    def set_linewidth(self, value:float):
+        matplotlib.rcParams['grid.linewidth'] = value
+        self.set_grid()
+    
+    def get_linewidth(self) -> str:
         return matplotlib.rcParams['grid.linewidth']
+    
+    def set_linestyle(self, value:str):
+        linestyle_lib[matplotlib.rcParams['grid.linestyle']] = value
+        self.set_grid()
 
-    def get_linestyle (self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and obj._gid == '_grid':
-                return obj._gid.split('.')[5].title()
-        return linestyle_lib[matplotlib.lines._get_dash_pattern(matplotlib.rcParams['grid.linestyle'])].lower()
+    def get_linestyle (self) -> str:
+        return linestyle_lib[matplotlib.rcParams['grid.linestyle']].lower()
 
-    def get_color(self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and obj._gid == '_grid':
-                return obj._gid.split('.')[6]
+    def set_color(self, color):
+        matplotlib.rcParams['grid.color'] = color
+        self.set_grid()
+       
+    def get_color(self) -> str:
         return matplotlib.rcParams['grid.color']
 
 
@@ -183,24 +197,24 @@ class Pane(Frame):
     def __init__(self, canvas: Canvas, parent=None):
         super().__init__(parent)
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        layout = QVBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
 
         layout.addWidget(TitleLabel('Pane'))
         layout.addWidget(SeparateHLine())
 
-        self.visible = Toggle(text='visible')
+        self.visible = Toggle(text='Visible',text2='Whether to show the color')
         layout.addWidget(self.visible)
         self.visible.button.checkedChanged.connect(self.set_visible)
         self.visible.button.setChecked(self.get_visible())
 
-        self.facecolor = ColorDropdown(text='pane color',color=self.get_color())
+        self.facecolor = ColorDropdown(text='Color',text2='Set the color of the Pane',
+                                       color=self.get_color())
         self.facecolor.button.colorChanged.connect(self.set_color)
         layout.addWidget(self.facecolor)
 
-        self.alpha = Slider(text='axes transparency')
+        self.alpha = Slider(text='Transparency',text2='Set the transparency of the Pane')
         self.alpha.button.valueChanged.connect(self.set_patch_alpha)
         self.alpha.button.setValue(self.get_patch_alpha())
         layout.addWidget(self.alpha)
@@ -229,7 +243,7 @@ class Pane(Frame):
         else: return 100
 
 class Grid (QScrollArea):
-    def __init__(self, canvas:Canvas,parent=None):
+    def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
         widget = QWidget()
@@ -243,10 +257,10 @@ class Grid (QScrollArea):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         
-        self.plotsize = PlotSize2D(canvas)
+        self.plotsize = PlotSize2D(canvas, parent)
         layout.addWidget(self.plotsize)
 
-        self.pane = Pane(canvas)
+        self.pane = Pane(canvas, parent)
         layout.addWidget(self.pane)
         
         self.grid = Grid2D(canvas,parent)
