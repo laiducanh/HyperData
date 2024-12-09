@@ -164,7 +164,7 @@ class Grid2D (Frame):
     def get_gridaxis (self):
         return matplotlib.rcParams['axes.grid.axis'].title()
 
-    def set_alpha(self, value:int)
+    def set_alpha(self, value:int):
         matplotlib.rcParams['grid.alpha'] = value/100
         self.set_grid()
 
