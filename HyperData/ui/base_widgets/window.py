@@ -1,24 +1,32 @@
 from PyQt6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
-from PyQt6.QtCore import pyqtSignal, Qt, QPropertyAnimation, pyqtProperty
-from PyQt6.QtGui import QResizeEvent, QColor, QPainter
+from PyQt6.QtCore import pyqtSignal, Qt, QPropertyAnimation, pyqtProperty, QSize, QEasingCurve
+from PyQt6.QtGui import QResizeEvent, QColor, QPainter, QRegion, QPainterPath, QBrush
 import math
 from ui.base_widgets.button import _PrimaryPushButton, _PushButton
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
+from ui.utils import isDark
 
 class Dialog (QDialog):
     def __init__(self, title:str=None, parent=None):
         super().__init__(parent)
 
-        self.setWindowFlags(Qt.WindowType.Dialog)   
-        self.setWindowTitle(title)  
+        self.setWindowFlags(Qt.WindowType.Dialog|Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        #self.setWindowTitle(title)  
         
         self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(20,30,20,10)
+        self.vlayout.addWidget(TitleLabel(title))
+        self.vlayout.addWidget(SeparateHLine())
+
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.vlayout.addLayout(self.main_layout)
 
         self.groupButton = QHBoxLayout()
         self.vlayout.addLayout(self.groupButton)
-        self.ok_btn = _PrimaryPushButton("OK")
+        self.ok_btn = _PrimaryPushButton("Save Changes")
         self.ok_btn.setMinimumWidth(200)
         self.ok_btn.clicked.connect(self.accept)
         self.groupButton.addWidget(self.ok_btn)
@@ -26,6 +34,39 @@ class Dialog (QDialog):
         self.cancel_btn.setMinimumWidth(200)
         self.cancel_btn.clicked.connect(self.reject)
         self.groupButton.addWidget(self.cancel_btn)
+    
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # Create rounded rectangle path
+        path = QPainterPath()
+        path.addRoundedRect(self.rect().toRectF(), 10, 10)
+
+        # Fill the dialog background
+        if isDark:
+            painter.fillPath(path, QBrush(QColor(32,32,32)))
+        else:
+            painter.fillPath(path, QBrush(Qt.GlobalColor.white))
+    
+    def showEvent(self, event):
+        
+
+        # # Get the current geometry of the dialog
+        # start_geometry = self.geometry()
+
+        # # Create a new geometry with a smaller size
+        # end_geometry = QRect(start_geometry.center() - QRect(0, 0, 10, 10).center(),
+        #                      start_geometry.size())
+
+        self.animation = QPropertyAnimation(self, b"windowOpacity")
+        self.animation.setDuration(100)  # Adjust duration as needed
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(1)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self.animation.start()
+        super().showEvent(event)
+
     
 class ProgressBar(QProgressBar):
     def __init__(self, parent=None):
@@ -80,7 +121,22 @@ class ProgressDialog (QProgressDialog):
         super().__init__(parent)
 
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setLabelText(text)
         self.setCancelButton(cancel_btn)
         self.progressbar = ProgressBar(self)
         self.setBar(self.progressbar)
+    
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # Create rounded rectangle path
+        path = QPainterPath()
+        path.addRoundedRect(self.rect().toRectF(), 10, 10)
+
+        # Fill the dialog background
+        if isDark:
+            painter.fillPath(path, QBrush(QColor(32,32,32)))
+        else:
+            painter.fillPath(path, QBrush(Qt.GlobalColor.white))

@@ -1,10 +1,10 @@
 _SpinBox, _DoubleSpinBox {
-    color: black;
-    background-color: white;
-    border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 6px;
-    font: 10.5pt;
-    padding: 5px 80px 5px 12px;
+    color: white;
+    background-color: rgb(43, 43, 43);
+    border: none;
+    border-radius: 8px;
+    font: 11.5pt;
+    padding: 7px 12px 7px 12px;
 
 }
 

@@ -1,9 +1,16 @@
 BodyLabel {
     color: rgba(62, 62, 62, 1);
+    font: 11.5pt;
+}
+
+InfoLabel {
+    color: rgba(62, 62, 62, 0.6);
+    font: 10pt;
 }
 
 TitleLabel {
     color: black;
+    font: 13pt;
     font-weight: bold;
 }
 

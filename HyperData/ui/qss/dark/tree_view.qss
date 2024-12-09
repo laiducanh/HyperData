@@ -2,19 +2,20 @@ TreeWidget {
     background-color: transparent;
     border: none;
     border-radius: 6px;
-    outline: 0;
+    outline: none;
     padding-right: 5px;
-    font: 10.5pt;
+    font: 11.5pt;
 }
 
 TreeWidget::item {
-    padding: 4px;
+    padding: 5px;
     margin-top: 2px;
     margin-bottom: 2px;
-    padding-left: 20px;
     color: white;
+    padding-left: 20px;
+    outline: none;
 }
 
 TreeWidget::item:hover {
-    background-color: rgba(222, 222, 222, 1);
+    background: rgb(50, 50, 50);
 }

@@ -3,7 +3,7 @@ from PyQt6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
 from PyQt6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxLayout,
                              QTreeWidget, QLineEdit)
 from ui.base_widgets.menu import Menu, LineEdit_Menu
-from ui.base_widgets.button import _TransparentPushButton, _ComboBox
+from ui.base_widgets.button import _TransparentPushButton, _ComboBox, HButton
 from ui.base_widgets.text import BodyLabel
 
 class _LineEdit (QLineEdit):
@@ -112,47 +112,26 @@ class _CompleterLineEdit (_ComboBox):
         self._addItem(self.currentText())
         return super().focusOutEvent(e)
     
-class LineEdit (QWidget):
-    def __init__(self, text=None, parent=None):
-        super().__init__(parent)
-
-        self.layout = QHBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            self.layout.addWidget(BodyLabel(text))
+class LineEdit (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
         self.button = _LineEdit(parent=parent)
-        self.layout.addWidget(self.button)   
+        self.butn_layout.addWidget(self.button)   
 
-class TextEdit (QWidget):
-    def __init__(self, text=None, parent=None):
-        super().__init__(parent)
-
-        self.layout = QHBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            self.layout.addWidget(BodyLabel(text))
+class TextEdit (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
         self.button = _TextEdit(parent=parent)
-        self.layout.addWidget(self.button) 
+        self.butn_layout.addWidget(self.button) 
 
-class CompleterLineEdit(QWidget):
-    def __init__(self, text=None, items=None, parent=None):
-        super().__init__(parent)
-
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
+class CompleterLineEdit(HButton):
+    def __init__(self, items=None, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
         self.button = _CompleterLineEdit(items=items, parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
 
 

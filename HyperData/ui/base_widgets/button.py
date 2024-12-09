@@ -1,17 +1,18 @@
-from PyQt6.QtCore import QObject, Qt, pyqtSignal
+from PyQt6.QtCore import QObject, Qt, pyqtSignal, QEvent, QPoint
 from PyQt6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
-                             QSizePolicy, QGridLayout, QToolButton)
-from PyQt6.QtGui import QCursor, QIcon, QPaintEvent
+                             QSizePolicy, QGridLayout, QToolButton, QAbstractButton, QVBoxLayout)
+from PyQt6.QtGui import QCursor, QPainter, QColor
 from typing import Iterable
-from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.text import BodyLabel, InfoLabel
+from ui.base_widgets.menu import Menu
 from ui.utils import icon
 
 class _PushButton (QPushButton):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._icon = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self._icon = None
     
     def setIcon(self, icon:str) -> None:
         self._icon = icon
@@ -27,20 +28,29 @@ class _TransparentPushButton (_PushButton):
 class _PrimaryPushButton (_PushButton):
     """ PushButton with highlight color """
 
-class _DropDownPushButton (QPushButton):
+class _DropDownButton:
+    """ Drop down button base class """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._menu = None
+
+    def setMenu(self, menu:QMenu):
+        self._menu = menu
+
+    def menu(self):
+        return self._menu
+
+class _DropDownPushButton (_DropDownButton, _PushButton):
+    """ PushButton with dropdown menu """
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self._icon = None
-        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
     
-    def setIcon(self, icon:str) -> None:
-        self._icon = icon
-        self.update()
-    
-    def update(self):
-        if self._icon: super().setIcon(icon(self._icon))
-        super().update()
+    def mouseReleaseEvent(self, e):
+        if self._menu:
+            self._menu.setMinimumWidth(self.width())
+            self._menu.exec(self.mapToGlobal(QPoint(0,self.height())))
+        return super().mouseReleaseEvent(e)
 
 class _DropDownTransparentPushButton (_DropDownPushButton):
     """ DropDownPushButton with no border and background color """
@@ -54,6 +64,13 @@ class _TogglePushButton (_PushButton):
         super().__init__(parent)
 
         self.setCheckable(True)
+        self.textOn = "Enable"
+        self.textOff = "Disable"
+
+    def paintEvent(self, a0):
+        if self.isChecked(): self.setText(self.textOn)
+        else: self.setText(self.textOff)
+        return super().paintEvent(a0)
     
 class _ToolButton (QToolButton):
     def __init__(self, parent=None):
@@ -93,12 +110,13 @@ class _ComboBox (QComboBox):
         super().__init__(parent)
 
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.view().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.view().window().setWindowFlags(Qt.WindowType.Popup | 
                                             Qt.WindowType.FramelessWindowHint |
                                             Qt.WindowType.NoDropShadowWindowHint)
         self.view().window().setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
-        if items != None: self.addItems(items)
+        if items: self.addItems(items)
 
 class _TransparentComboBox (_ComboBox):
     """ """
@@ -119,14 +137,18 @@ class _Toggle(QFrame):
         self.setFixedSize(self.width, self.height)
         self.toggle_on = False
         self.initUI()
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def initUI(self):
         
         self.button_1 = QPushButton()
         self.button_1.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.button_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.button_2 = QPushButton()
+        self.button_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.button_3 = QPushButton()
+        self.button_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.button_2.setFixedSize(self.height - 28, self.height - 28)
         self.button_3.setFixedSize(self.height - 28, self.height - 28)
@@ -153,8 +175,10 @@ class _Toggle(QFrame):
         self.setLayout(layout)
 
     def setChecked(self, check:bool):
-        self.toggle_on = check
-        self.checkChange()
+        if check != self.toggle_on:
+            self.toggle_on = check
+            self.checkChange()
+        
     
     def _toggle (self):
         self.toggle_on = not self.toggle_on
@@ -177,254 +201,205 @@ class _Toggle(QFrame):
     def isChecked(self):
         return self.toggle_on
 
+class HButton(QWidget): 
+    """" Button Widget in horizontal layout """
+    def __init__(self, text:str=None, text2:str=None, 
+                 parent:QWidget=None, flags:Qt.WindowType=Qt.WindowType.Widget):
+        super().__init__(parent, flags)
 
-class PushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+        self.text = text
+        self.text2 = text2
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self.label  = BodyLabel(text, parent)
+        self.label2 = InfoLabel(text2, parent)
+        self.label2.setWordWrap(True)
+        self.label2.hide()
+
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
-        self.button = _PushButton(parent=parent)
-        layout.addWidget(self.button)
+        self.text_layout = QVBoxLayout()
+        layout.addLayout(self.text_layout)
+        self.text_layout.addWidget(self.label)
+        self.text_layout.addWidget(self.label2)
+
+        self.butn_layout = QVBoxLayout()
+        layout.addLayout(self.butn_layout)
+
+    def setText(self, value:str):
+        self.label.setText(value)
+        self.text = value
     
-class TransparentPushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+    def setText2(self, value:str):
+        self.label2.setText(value)
+        self.text2 = value
+    
+    def enterEvent(self, event):
+        self.label2.show()
+        return super().enterEvent(event)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
+    def leaveEvent(self, a0):
+        self.label2.hide()
+        return super().leaveEvent(a0)
 
-        if text != None:
-            layout.addWidget(BodyLabel(text))
+class PushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
+
+        self.button = _PushButton(parent=parent)
+        self.butn_layout.addWidget(self.button)
+           
+class TransparentPushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
         
         self.button = _TransparentPushButton(parent=parent)
-        layout.addWidget(self.button)
-
-class PrimaryPushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
-
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
+        self.butn_layout.addWidget(self.button)
+        
+class PrimaryPushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
         
         self.button = _PrimaryPushButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class DropDownPushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class DropDownPushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _DropDownPushButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class DropDownTransparentPushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class DropDownTransparentPushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _DropDownTransparentPushButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class DropDownPrimaryPushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class DropDownPrimaryPushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _DropDownPrimaryPushButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class TogglePushButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class TogglePushButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _TogglePushButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class ToolButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class ToolButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _ToolButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class TransparentToolButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class TransparentToolButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _TransparentToolButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class PrimaryToolButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class PrimaryToolButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _PrimaryToolButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class ToggleToolButton (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
+class ToggleToolButton (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-        
         self.button = _ToggleToolButton(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
-class ComboBox (QWidget):
-    def __init__(self, items:Iterable[str]=None, text:str=None, parent=None):
-        super().__init__(parent)
-        self._layout = QHBoxLayout()
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
-        self.text = text
+class ComboBox (HButton):
+    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-        if text != None:
-            self._layout.addWidget(BodyLabel(self.text))
-        self._layout.addStretch()
         self.button = _ComboBox(items, parent=parent)
+        self.butn_layout.addWidget(self.button)
         self.button.setFixedWidth(150)
 
-        self._layout.addWidget(self.button)
-
-class TransparentComboBox (QWidget):
-    def __init__(self, items:Iterable[str]=None, text:str=None, parent=None):
-        super().__init__(parent)
-        self._layout = QHBoxLayout()
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
-        self.text = text
-
-        if text != None:
-            self._layout.addWidget(BodyLabel(self.text))
-        self._layout.addStretch()
+class TransparentComboBox (HButton):
+    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
+        
         self.button = _TransparentComboBox(items, parent=parent)
+        self.butn_layout.addWidget(self.button)
         self.button.setFixedWidth(150)
 
-        self._layout.addWidget(self.button)
+class PrimaryComboBox (HButton):
+    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
 
-class PrimaryComboBox (QWidget):
-    def __init__(self, items:Iterable[str]=None, text:str=None, parent=None):
-        super().__init__(parent)
-        self._layout = QHBoxLayout()
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
-        self.text = text
-
-        if text != None:
-            self._layout.addWidget(BodyLabel(self.text))
-        self._layout.addStretch()
         self.button = _PrimaryComboBox(items, parent=parent)
+        self.butn_layout.addWidget(self.button)
         self.button.setFixedWidth(150)
-
-        self._layout.addWidget(self.button)
     
-class Toggle (QWidget):
-    def __init__(self, text:str=None, parent=None):
-        super().__init__(parent)
-
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        if text != None:
-            layout.addWidget(BodyLabel(text))
-
-        layout.addStretch()
+class Toggle (HButton):
+    def __init__(self, text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent)
         
         self.button = _Toggle(parent=parent)
-        layout.addWidget(self.button)
+        self.butn_layout.addWidget(self.button)
 
 class SegmentedWidget (QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(0,0,0,0)
+        self._layout.setContentsMargins(0,0,0,5)
         self._layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.buttons = list()
         self.funcs = list()
     
     def addButton (self, text:str, func):
-        button = _TogglePushButton()
+        button = _TransparentPushButton()
         button.setText(text)
         button.clicked.connect(lambda: self._onClick(text))
         self.buttons.append(button.text())
         self.funcs.append(func)
         self._layout.addWidget(button)
-    
+
     def _onClick (self, button_text:str):
         self.setCurrentWidget(button_text)
         fn = self.funcs[self.buttons.index(button_text)]
         fn()
     
     def setCurrentWidget (self, button_text:str):
-        for btn in self.findChildren(_TogglePushButton):
-            btn.setChecked(False)
+        for btn in self.findChildren(_TransparentPushButton):
+            btn : _TransparentPushButton
+            btn.setStyleSheet("font-weight:normal")
             if btn.text() == button_text:
-                btn.setChecked(True)
+                self.currentWidget = btn
+                btn.setStyleSheet("font-weight:bold")
+                self.update()
+
+    def paintEvent(self, e):
+        super().paintEvent(e)
+        if not self.currentWidget:
+            return
+
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(0, 120, 215))
+
+        x = int(self.currentWidget.x())
+        y = int(self.currentWidget.y())
+        h = int(self.currentWidget.height())
+        w = int(self.currentWidget.width())
+       
+        painter.drawRoundedRect(x, y+h+2, w, 3, 1.5, 1.5)
 
         
+    
 

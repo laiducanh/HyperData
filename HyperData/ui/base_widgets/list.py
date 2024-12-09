@@ -11,6 +11,7 @@ class ListWidget (QtWidgets.QListWidget):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.verticalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
         self.horizontalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
     
     def enterEvent(self, event: QtGui.QEnterEvent) -> None:
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -59,6 +60,7 @@ class TreeWidget (QtWidgets.QTreeWidget):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.verticalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
         self.horizontalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self.setHeaderHidden(True)
 
     def setData (self, data:dict):

@@ -3,7 +3,6 @@ Menu {
     border-radius: 8px;
     background: rgb(43, 43, 43);
     padding: 4px 3px 4px 3px;
-    font: 10.5pt;
     outline: none;
 }
 
@@ -11,7 +10,7 @@ Menu::right-arrow {
     width: 10px;
     height: 10px;
     right: 10px;
-    border-image: url(ui/icons/black/ChevronRight_black.svg);
+    border-image: url(ui/icons/white/ChevronRight_white.svg);
 }
 
 Menu::separator {
@@ -24,23 +23,22 @@ Menu::separator {
 Menu::item {
     color: white;
     background: transparent;
-    font: 10.5pt;
-    padding: 5px 30px 5px 20px;
-    border-radius: 6px;
+    font: 11.5pt;
+    padding: 7px 30px 7px 20px;
+    border-radius: 8px;
     border: none;
     
 }
 
 Menu::item:hover {
     background: rgba(220, 220, 220, 0.8);
-    color: black;
+    color: white;
 }
 
 Menu::item:selected {
     border-width: 1px;
     border-color: rgb(212, 212, 212);
-    background: rgba(0, 0, 0, 25);
-    color: black;
+    background: rgba(220, 220, 220, 0.1);
 }
 
 Menu::icon {

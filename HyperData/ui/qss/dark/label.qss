@@ -1,52 +1,18 @@
 BodyLabel {
-    color: rgba(62, 62, 62, 1);
-    font: 10.5pt;
+    color: white;
+    font: 11.5pt;
+}
+
+InfoLabel {
+    color: gray;
+    font: 10pt;
 }
 
 TitleLabel {
-    color: black;
-    font: 11pt;
+    color: white;
+    font: 13pt;
     font-weight: bold;
 }
-
-_LineEdit, TextEdit, PlainTextEdit {
-    color: rgba(62, 62, 62, 1);
-    background-color: white;
-    border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 6px;
-    font: 10.5pt;
-    padding: 5px 12px 6px 12px;
-}
-
-TextEdit,
-PlainTextEdit {
-    padding: 0px 0px 0px 10px;
-}
-
-_LineEdit:hover, TextEdit:hover, PlainTextEdit:hover {
-    background-color: rgba(220, 220, 220, 0.4);
-    border: 2px solid rgba(0, 120, 215, 1);
-}
-
-_LineEdit:focus {
-    background-color: white;
-    border: 2px solid rgba(0, 120, 215, 1);
-}
-
-TextEdit:focus,
-PlainTextEdit:focus {
-    border-bottom: 1px solid --ThemeColorPrimary;
-    background-color: white;
-}
-
-_LineEdit:disabled, TextEdit:disabled,
-PlainTextEdit:disabled {
-    color: rgba(0, 0, 0, 150);
-    background-color: rgba(249, 249, 249, 0.3);
-    border: 1px solid rgba(0, 0, 0, 13);
-    border-bottom: 1px solid rgba(0, 0, 0, 13);
-}
-
 
 ToolTip {
     border-radius: 4px;
