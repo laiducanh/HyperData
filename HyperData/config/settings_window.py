@@ -21,7 +21,8 @@ class Theme (Frame):
         layout = QHBoxLayout()
         self.setLayout(layout)
 
-        theme = ComboBox(items=["Auto","Light","Dark"], parent=parent)
+        theme = ComboBox(items=["Auto","Light","Dark"], text="Appearance", 
+                         text2="Customize how app looks on your device", parent=parent)
         theme.button.currentTextChanged.connect(self.setTheme)
         layout.addWidget(theme)
 
