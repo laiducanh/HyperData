@@ -5,8 +5,8 @@ from matplotlib.figure import Figure
 from matplotlib.legend import Legend
 from matplotlib.text import Annotation, Text
 from mpl_toolkits.mplot3d.proj3d import proj_transform
-from matplotlib.backend_bases import PickEvent
-from matplotlib.widgets import TextBox
+from matplotlib.backend_bases import PickEvent, cursors
+from matplotlib.widgets import TextBox, Cursor
 import pandas as pd
 import numpy as np
 
@@ -32,6 +32,11 @@ class Canvas (FigureCanvasQTAgg):
         self.fig.set_dpi(150)
         self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
         self.annot_box = dict(boxstyle="round",pad=0.3,facecolor='orange',edgecolor='none')
+
+        self.initAxes()
+        super().__init__(self.fig)
+    
+    def initAxes (self):
         self.axes = self.fig.add_subplot()
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
@@ -45,9 +50,7 @@ class Canvas (FigureCanvasQTAgg):
         self.axes.yaxis.set_gid("left")
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
-
-        super().__init__(self.fig)
-        self.set_cursor(matplotlib.backend_tools.Cursors.SELECT_REGION)
+        
     
     def serialize(self):
         figure = dict()
@@ -74,4 +77,11 @@ class Canvas (FigureCanvasQTAgg):
 
     def deserialize(self, data, hashmap={}):
         pass
-        
+    
+class Canvas3D (Canvas):
+    def __init__(self):
+        super().__init__()
+
+    def initAxes(self):
+        self.axes = self.fig.add_subplot(projection='3d')  
+        self.axesleg = None
