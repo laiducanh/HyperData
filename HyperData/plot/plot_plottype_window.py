@@ -11,6 +11,7 @@ class Plottype_Button (_PrimaryPushButton):
     sig = pyqtSignal(str)
     def __init__(self,type,icon_size,tooltip):
         super().__init__()
+
         self.type = type
         self.setText((self.type).title())
         #self.setIconSize(QSize(icon_size,icon_size))
@@ -35,7 +36,7 @@ class SideBar (ListWidget):
         self.setCurrentRow(0)
     
 
-class Line (QWidget):
+class Line2d (QWidget):
     sig = pyqtSignal(str)
     def __init__(self):
         super().__init__()
@@ -55,32 +56,18 @@ class Line (QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","line.png"))
         #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('2D Line'))
         layout_line2d = QHBoxLayout()
         layout_line2d.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_line2d)
-        for i in ['2d line','2d step']:
+        for i in ['2d line','2d step','2d stem']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_line2d.addWidget(button)
         #layout_line2d.addStretch()
-        layout.addWidget(SeparateHLine())
-        layout.addWidget(TitleLabel('3D Line'))
-        layout_line3d = QHBoxLayout()
-        layout_line3d.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout.addLayout(layout_line3d)
-        for i in ['3d line','3d step']:
-            button = Plottype_Button(i,50,f"{i.title()}")
-            button.sig.connect(lambda type: self.sig.emit(type))
-            layout_line3d.addWidget(button)
-        #layout_line3d.addStretch()
+
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('2D Area'))
         layout_line2darea = QHBoxLayout()
@@ -91,17 +78,41 @@ class Line (QWidget):
             layout_line2darea.addWidget(button)
         layout.addLayout(layout_line2darea)
         #layout_line2darea.addStretch()
-        layout.addWidget(SeparateHLine())
-        layout.addWidget(TitleLabel('3D Area'))
-        layout_line3darea = QHBoxLayout()
-        for i in ['3d area']:
-            button = Plottype_Button(i,50,f"{i.title()}")
-            button.sig.connect(lambda type: self.sig.emit(type))
-            layout_line3darea.addWidget(button)
-        layout.addLayout(layout_line3darea)
-        layout_line3darea.addStretch()
+        
         layout.addStretch()
         
+class Line3d (QWidget):
+    sig = pyqtSignal(str)
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        layout1 = QHBoxLayout()
+        layout.addLayout(layout1)
+
+        layout2 = QVBoxLayout()
+        layout1.addLayout(layout2)
+        layout2.addWidget(TitleLabel('Line Graphs'))
+        text = BodyLabel("A line graph "
+            "can show continuous data over time on an "
+            "evenly scaled axis, so they're ideal for "
+            "showing trends in data at equal intervals.")
+        text.setWordWrap(True)
+        
+        layout2.addWidget(text)
+        layout.addWidget(SeparateHLine())
+        layout.addWidget(TitleLabel('3D Line'))
+        layout_line3d = QHBoxLayout()
+        layout_line3d.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(layout_line3d)
+        for i in ['3d line','3d step','3d stem']:
+            button = Plottype_Button(i,50,f"{i.title()}")
+            button.sig.connect(lambda type: self.sig.emit(type))
+            layout_line3d.addWidget(button)
+        #layout_line3d.addStretch()
+        
+        layout.addStretch()
 
 class Bar (QWidget):
     sig = pyqtSignal(str)
@@ -139,7 +150,7 @@ class Bar (QWidget):
         layout_column2d_2 = QHBoxLayout()
         layout_column2d_2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_column2d_2)
-        for i in ['2d 100% stacked column','marimekko']:
+        for i in ['2d 100% stacked column','marimekko','treemap']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_column2d_2.addWidget(button)
@@ -156,7 +167,7 @@ class Bar (QWidget):
         layout.addStretch()
 
 
-class Scatter (QWidget):
+class Scatter2D (QWidget):
     sig = pyqtSignal(str)
     def __init__(self):
         super().__init__()
@@ -184,7 +195,7 @@ class Scatter (QWidget):
         layout.addWidget(TitleLabel('Scatter'))
         layout_scatter3 = QHBoxLayout()
         layout.addLayout(layout_scatter3)
-        for i in ['2d scatter','3d scatter']:
+        for i in ['2d scatter']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_scatter3.addWidget(button)
@@ -193,7 +204,51 @@ class Scatter (QWidget):
         layout.addWidget(TitleLabel('Bubble'))
         layout_bubble = QHBoxLayout()
         layout.addLayout(layout_bubble)
-        for i in ['bubble']:
+        for i in ['2d bubble']:
+            button = Plottype_Button(i,50,f"{i.title()}")
+            button.sig.connect(lambda type: self.sig.emit(type))
+            layout_bubble.addWidget(button)
+        layout_bubble.addStretch()
+        layout.addStretch()
+
+class Scatter3D(QWidget):
+    sig = pyqtSignal(str)
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        layout1 = QHBoxLayout()
+        layout.addLayout(layout1)
+
+        layout2 = QVBoxLayout()
+        layout1.addLayout(layout2)
+        layout2.addWidget(TitleLabel('Scatter Graphs'))
+        text = BodyLabel("A Scatter graph uses dots to represent values for "
+        "two different numeric variables. Scatter graphs are used to observe relationships between variables.")
+        text.setWordWrap(True)
+        
+        layout2.addWidget(text)
+        fig = QLabel()
+        pixmap = QPixmap(os.path.join("UI","Plot","scatter.png"))
+        #pixmap = pixmap.scaled(400,400)
+        fig.setPixmap(pixmap)
+        fig.setFixedWidth(100)
+        layout1.addWidget(fig)
+        layout.addWidget(SeparateHLine())
+        layout.addWidget(TitleLabel('Scatter'))
+        layout_scatter3 = QHBoxLayout()
+        layout.addLayout(layout_scatter3)
+        for i in ['3d scatter']:
+            button = Plottype_Button(i,50,f"{i.title()}")
+            button.sig.connect(lambda type: self.sig.emit(type))
+            layout_scatter3.addWidget(button)
+        layout_scatter3.addStretch()
+        layout.addWidget(SeparateHLine())
+        layout.addWidget(TitleLabel('Bubble'))
+        layout_bubble = QHBoxLayout()
+        layout.addLayout(layout_bubble)
+        for i in ['3d bubble']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_bubble.addWidget(button)
@@ -239,7 +294,7 @@ class Pie (QWidget):
         layout.addWidget(TitleLabel('Others'))
         layout_otherpie = QHBoxLayout()
         layout.addLayout(layout_otherpie)
-        for i in ['doughnut','treemap']:
+        for i in ['doughnut']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_otherpie.addWidget(button)
@@ -274,7 +329,7 @@ class Statistics (QWidget):
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('Histogram'))
         layout_hist = QHBoxLayout()
-        for i in ['histogram','stacked histogram']:
+        for i in ['histogram','stacked histogram','hist2d']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_hist.addWidget(button)
@@ -284,7 +339,7 @@ class Statistics (QWidget):
         layout.addWidget(TitleLabel('Box and Whisker'))
         layout_box = QHBoxLayout()
         layout.addLayout(layout_box)
-        for i in ['boxplot','violinplot']:
+        for i in ['boxplot','violinplot','eventplot']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_box.addWidget(button)
@@ -341,7 +396,7 @@ class Surface (QWidget):
 
 class Plottype_Window (QMainWindow):
     sig = pyqtSignal(str)
-    def __init__(self, parent=None):
+    def __init__(self, plot3d:bool, parent=None):
         super().__init__(parent)
         #self.setStyleSheet('QWidget { background:#BDC3C7;}')
         #self.setWindowOpacity(0.97)
@@ -362,7 +417,8 @@ class Plottype_Window (QMainWindow):
         self.stackedlayout = QStackedLayout()
         layout.addLayout(self.stackedlayout)
 
-        line = Line()
+        if plot3d: line = Line3d()
+        else: line = Line2d()
         line.sig.connect(lambda: self.close())
         line.sig.connect(lambda type: self.sig.emit(type))
         
@@ -374,7 +430,8 @@ class Plottype_Window (QMainWindow):
         
         self.stackedlayout.addWidget(bar)
         
-        scatter = Scatter()
+        if plot3d: scatter = Scatter3D()
+        else: scatter = Scatter2D()
         scatter.sig.connect(lambda: self.close())
         scatter.sig.connect(lambda type: self.sig.emit(type))
         
