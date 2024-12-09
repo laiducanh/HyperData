@@ -175,7 +175,7 @@ class NewPlot (Frame):
             self.widget = widget_1input.WidgetPie(self.node, _input, self.parent())
         elif plot_type in self.plot_3input:
             self.widget = widget_3input.Widget2D_3input(self.node, _input, self.parent())
-        elif self.plot_type in self.plot3d:
+        elif self.plot_type in self.plot_3dtype:
             self.widget = widget_3input.Widget3D(self.node, _input, self.parent())
         elif self.plot_type in self.plot_4input:
             self.widget = widget_4input.Widget3D_4input(self.node, _input, self.parent())
