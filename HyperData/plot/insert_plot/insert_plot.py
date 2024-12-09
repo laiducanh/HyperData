@@ -6,7 +6,7 @@ from matplotlib.artist import Artist
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type_2D, Menu_type_3D
 from plot.insert_plot.input import widget_2input, widget_1input, widget_3input, widget_4input
-from ui.base_widgets.button import _TransparentPushButton, DropDownPrimaryPushButton
+from ui.base_widgets.button import _TransparentPushButton, _DropDownPrimaryPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.window import ProgressBar
 from ui.base_widgets.frame import Frame
@@ -114,15 +114,15 @@ class NewPlot (Frame):
         self.text = TitleLabel("Graph %d"%self.plot_index)
         layout.addWidget(self.text)
         layout.addStretch()
-        self.type = DropDownPrimaryPushButton()
-        self.type.button.setText(self.plot_type)
+        self.type = _DropDownPrimaryPushButton()
+        self.type.setText(self.plot_type)
         
         
         if plot3d: self.menu = Menu_type_3D(self)
         else: self.menu = Menu_type_2D(self)
         self.menu.sig.connect(self.update_layout)
-        self.type.button.setMenu(self.menu)
-        self.type.button.released.connect(lambda: self.menu.exec(QCursor().pos()))
+        self.type.setMenu(self.menu)
+        self.type.released.connect(lambda: self.menu.exec(QCursor().pos()))
         layout.addWidget(self.type)
 
         self.progressbar = ProgressBar()
@@ -152,7 +152,7 @@ class NewPlot (Frame):
     def update_layout (self, plot_type):
 
         self.plot_type = plot_type
-        self.type.button.setText(plot_type.title())
+        self.type.setText(plot_type.title())
 
         
         _input = [str(), str(), str(), str()]
@@ -175,7 +175,7 @@ class NewPlot (Frame):
             self.widget = widget_1input.WidgetPie(self.node, _input, self.parent())
         elif plot_type in self.plot_3input:
             self.widget = widget_3input.Widget2D_3input(self.node, _input, self.parent())
-        elif self.plot_type in self.plot_3d:
+        elif self.plot_type in self.plot3d:
             self.widget = widget_3input.Widget3D(self.node, _input, self.parent())
         elif self.plot_type in self.plot_4input:
             self.widget = widget_4input.Widget3D_4input(self.node, _input, self.parent())
@@ -254,11 +254,10 @@ class InsertPlot (QWidget):
         self.layout.addLayout(plottype)
         plottype.sig.connect(self.add_plot)
         
-        self.scroll_area = QScrollArea(self)
+        self.scroll_area = QScrollArea(parent)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        widget = QWidget() 
-        # widget.setObjectName('InsertTab')
-        # widget.setStyleSheet("QWidget#InsertTab {border: none}")
+
+        widget = QWidget(parent) 
         self.vlayout = QVBoxLayout()
         self.vlayout.setContentsMargins(0,0,0,0)
         self.layout.addWidget(self.scroll_area)
