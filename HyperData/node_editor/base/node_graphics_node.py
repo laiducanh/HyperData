@@ -1,9 +1,8 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsProxyWidget, QGraphicsSceneMouseEvent, QWidget
 from PyQt6.QtGui import QPainter, QColor, QBrush, QPen
 from PyQt6.QtCore import Qt
 from ui.base_widgets.menu import Menu
-from node_editor.graphics.graphics_node import GraphicsNode
-from node_editor.graphics.graphics_socket import GraphicsSocket
+from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
+from node_editor.base.node_graphics_socket import NodeGraphicsSocket
 from ui.utils import isDark
 
 SINGLE_IN = 1
@@ -16,107 +15,18 @@ CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 DEBUG = False
 
-class NodeGraphicsSocket (GraphicsSocket):
-    def __init__(self, node:'NodeGraphicsNode', index=0, socket_type=SINGLE_IN, data=None, parent=None):
-        super().__init__(socket_type, parent)
-
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        self.setAcceptHoverEvents(True)
-
-        self.node = node # node that socket is attached to so that we can get socket position from 'NodeGraphicsNode' class
-        self.index = index
-        self.edges = [] # assigns a list of edges connected to (self) socket, init with an empty list, has type of list[NodeGraphicsEdge]
-        self.socket_data = data
-
-        self.setTitle()
-        
-    def setTitle (self, title=None):
-        if title == None:
-            if self.socket_type == SINGLE_IN:
-                self.title = 'Single Input'
-            elif self.socket_type == MULTI_IN:
-                self.title = 'Multiple Inputs'
-            elif self.socket_type == SINGLE_OUT:
-                self.title = 'Single Output'
-            elif self.socket_type == MULTI_OUT:
-                self.title = 'Multiple Outputs'
-            elif self.socket_type in [PIPELINE_IN, PIPELINE_OUT]:
-                self.title = "Pipeline"
-            elif self.socket_type in [CONNECTOR_IN, CONNECTOR_OUT]:
-                self.title = "Connector"
-        else:
-            self.title = title
-        
-        self._text.setPlainText(self.title)
-        self._text.setPos(16,-13)
-
-    def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
-        self._text.show()
-        if self.node.content: self.node.content.hide()
-        self.hovered = True
-        self.update()
-    
-    def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
-        self._text.hide()
-        if self.node.content: self.node.content.show()
-        self.hovered = False
-        self.update()
-
-    def getSocketPosition(self):
-        """ This method use getSocketPosition method in NodeGraphicsNode to calculate the position of socket for drawing edges """
-        """ return a list contains x, y """
-        pos = self.node.getSocketPosition(self.index, self.socket_type)
-        return pos
-    
-    def addEdge(self, edge):   
-        self.edges.append(edge)
-        if DEBUG: print('Add edge', edge, 'from node', edge.start_socket.node, 'to node', edge.end_socket.node)
-        if DEBUG: print(self.edges)
-        if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
-          
-    def removeEdge(self, edge):
-        if edge in self.edges: 
-            self.edges.remove(edge)
-            if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
-
-        else: print("Socket::removeEdge", "wanna remove edge", edge, "from self.edges but it's not in the list!")
-
-    def removeAllEdges(self):
-        for edge in self.edges:
-            self.edges.remove(edge)
-            if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
-        if DEBUG: print("Socket::removeAllEdges", "the edge list is", self.edges)
-
-    def hasEdge(self) -> bool:
-        """ return True if there is at least one edge attached to the socket """
-        return self.edges is not []    
-    
-    def serialize(self):
-        return {"id":self.id,
-                "index":self.index,
-                "socket_type":self.socket_type}
-
-    def deserialize(self, data, hashmap={}):
-        self.id = data['id']
-        hashmap[data['id']] = self
-        return True
-
-
 
 class NodeGraphicsNode (GraphicsNode):
     def __init__(self, title:str, inputs=[], outputs=[], parent=None):
         super().__init__(title, parent)
 
-        #self.content = None
+        
         self.content_change = False
-        self.content = None
         self.menu = Menu()
 
         # create socket for inputs and outputs
-        self.input_sockets = [] # keeps track input sockets by a list
-        self.input_sockets: list[NodeGraphicsSocket]
-        self.output_sockets = [] # keeps track output sockets by a list
-        self.output_sockets: list[NodeGraphicsSocket]
+        self.input_sockets: list[NodeGraphicsSocket] = list() # keeps track input sockets by a list
+        self.output_sockets:list[NodeGraphicsSocket] = list() # keeps track output sockets by a list
 
         for index, item in enumerate(inputs):
             self.addSocket(index=index,socket_type=item)
@@ -143,7 +53,7 @@ class NodeGraphicsNode (GraphicsNode):
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         
-        if self.content != None:
+        if self.content:
             if self.width != self.content.width() + 6*self.edge_size:
                 self.width = self.content.width() + 6*self.edge_size
                 self.content_change = True
@@ -160,15 +70,8 @@ class NodeGraphicsNode (GraphicsNode):
             self.updateConnectedEdges()
        
         return super().paint(painter, QStyleOptionGraphicsItem, widget)
-        
-    def set_Content(self, content:QWidget):
-        self.content = content
-        self.grContent = QGraphicsProxyWidget(self)
-        self.content.setGeometry(int(self.edge_size)+10, int(self.title_height + self.edge_size),
-                                 int(self.width - 2*self.edge_size-20), int(self.height - 2*self.edge_size-self.title_height))
-        self.grContent.setWidget(content)
-        self.height = max(self.height, self.title_height + self.content.height() + 2*self._padding)
-
+    
+    
     def getSocketPosition(self, index, socket_type):
         """ 
         This method is used to compute socket position, temporarily set socket position always on top 
@@ -196,16 +99,16 @@ class NodeGraphicsNode (GraphicsNode):
         if socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.append(socket)
         else: self.output_sockets.append(socket)
     
-    def removeSocket (self, index=None, socket_type=None, socket=None):
+    def removeSocket (self, index=None, socket_type=None, socket:NodeGraphicsSocket=None):
         if index and socket_type:
             index += 1
-            for socket in self.childItems():
-                if isinstance(socket, NodeGraphicsSocket):
-                    if index == socket.index and socket_type == socket.socket_type:
-                        socket.removeAllEdges()
+            for _socket in self.childItems():
+                if isinstance(_socket, NodeGraphicsSocket):
+                    if index == _socket.index and socket_type == _socket.socket_type:
+                        _socket.removeAllEdges()
                         self.scene().removeItem(socket)
-                        if socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.remove(socket)
-                        else: self.output_sockets.remove(socket)
+                        if socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.remove(_socket)
+                        else: self.output_sockets.remove(_socket)
         if socket: 
             socket.removeAllEdges()
             self.scene().removeItem(socket)

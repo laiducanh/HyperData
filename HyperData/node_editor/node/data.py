@@ -50,7 +50,7 @@ class DataReader (NodeContentWidget):
         dialog.main_layout.addWidget(nrows)
         nrows.button.setValue(self._config["nrows"])
         self.delimiter = ComboBox(items=["Tab","Semicolon","Comma","Space"],
-                             text="Delimiter")
+                             text="Delimiter",text2="abc")
         self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
         self.delimiter.button.setCurrentText(list(self._delimiterDict.keys())
                                         [list(self._delimiterDict.values()).index(self._config["delimiter"])])
@@ -66,11 +66,11 @@ class DataReader (NodeContentWidget):
         self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
         dialog.main_layout.addWidget(self.skip_blank_lines)
         self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
-        self.encoding = ComboBox(items=encode,text="Encoding")
+        self.encoding = ComboBox(items=encode,text="Encoding",text2="abc")
         dialog.main_layout.addWidget(self.encoding)
         self.encoding.button.setCurrentText(self._config["encoding"])
         self.encoding.button.currentTextChanged.connect(self.update_preview)
-        self.sheet_name = ComboBox(text="Sheet name")
+        self.sheet_name = ComboBox(text="Sheet name",text2="abc")
         dialog.main_layout.addWidget(self.sheet_name)
         self.sheet_name.button.currentTextChanged.connect(self.update_preview)
         if self.filetype == "excel":

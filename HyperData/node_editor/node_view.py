@@ -6,7 +6,7 @@ from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
 from node_editor.base.node_graphics_node import NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdge
-from node_editor.graphics.graphics_socket import GraphicsSocket
+from node_editor.graphics.graphics_item import GraphicsSocket
 from ui.base_widgets.list import Draggable_TreeWidget
 from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.button import _TransparentToolButton

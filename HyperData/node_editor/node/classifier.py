@@ -1,22 +1,31 @@
-from node_editor.base.node_graphics_content import NodeContentWidget, NodeComment
+from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
 from typing import Union
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import linear_model, svm, neighbors, ensemble, tree, gaussian_process
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.base import ClassifierMixin
-from sklearn.metrics import (accuracy_score, balanced_accuracy_score,
-                             top_k_accuracy_score,average_precision_score,
+from sklearn.metrics import (accuracy_score, balanced_accuracy_score,confusion_matrix,
+                             top_k_accuracy_score,average_precision_score,roc_curve,auc,
+                             precision_recall_curve,
                              brier_score_loss,f1_score,log_loss,precision_score,
                              recall_score,jaccard_score,roc_auc_score)
+from sklearn.utils.multiclass import unique_labels
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox, _TransparentPushButton, TransparentPushButton
+from ui.base_widgets.button import (DropDownPrimaryPushButton, Toggle, ComboBox, _TransparentPushButton, 
+                                    TransparentPushButton, SegmentedWidget, _PrimaryPushButton)
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.menu import Menu
+from plot.canvas import Canvas
 from node_editor.node.train_test_split import TrainTestSplitter
+from node_editor.node.report import ConfusionMatrix, ROC
 from config.settings import logger
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QScrollArea
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QScrollArea, QHBoxLayout,
+                             QApplication)
 from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtCore import Qt, pyqtSignal
 
@@ -87,7 +96,255 @@ class AlgorithmMenu(Menu):
             others.addAction(action)
         self.addMenu(others)
 
+def scoring(Y=list(), Y_pred=list()):
+    """ Y and Y_pred are nested lists """
 
+    if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
+        return {"Accuracy":"--",
+                "Balanced accuracy":"--",
+                "Top K accuracy":"--",
+                "Average precision":"--",
+                "Brier score loss":"--",
+                "F1 score":"--"}
+    else:
+        accuracy = np.array([])
+        for ind, val in enumerate(Y):
+            accuracy = np.append(accuracy, accuracy_score(Y[ind], Y_pred[ind]))
+
+        return {"Accuracy":accuracy.mean(),
+                }
+
+class Report(Dialog):
+    def __init__(self, Y, Y_pred, Y_pred_proba, parent=None):
+        """ Y, Y_pred, and Y_pred_proba are nested lists """
+        super().__init__(title="Scoring",parent=parent)
+
+        self.score_function = "Accuracy"
+
+        self.segment_widget = SegmentedWidget()
+        self.main_layout.addWidget(self.segment_widget)
+
+        self.segment_widget.addButton(text='Metrics', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.segment_widget.addButton(text='Confusion Matrix', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment_widget.addButton(text='ROC Curve', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment_widget.addButton(text='PR Curve', func=lambda: self.stackedlayout.setCurrentIndex(3))
+
+        self.stackedlayout = QStackedLayout()
+        self.main_layout.addLayout(self.stackedlayout)
+
+        metrics = self.metrics(Y, Y_pred)
+        self.stackedlayout.addWidget(metrics)
+
+        confusion_mat = ConfusionMatrix(Y, Y_pred)
+        self.stackedlayout.addWidget(confusion_mat)
+
+        roc = ROC(Y, Y_pred_proba)
+        self.stackedlayout.addWidget(roc)
+
+        # pr = self.precision_recall(Y, Y_pred)
+        # self.stackedlayout.addWidget(pr)
+
+        self.stackedlayout.setCurrentIndex(0)
+        self.segment_widget.setCurrentWidget("Metrics")
+    
+    def change_metric(self, metric:str):
+        self.score_function = metric
+
+    def metrics(self, Y, Y_pred) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        widget.setLayout(layout)
+
+        metric_to_show = ComboBox(items=["Accuracy","Balanced accuracy","Top K accuracy",
+                                         "Average precision","Brier score loss","F1 score",
+                                         ], 
+                                  text="Metric")
+        metric_to_show.button.currentTextChanged.connect(lambda metric: self.change_metric(metric))
+        layout.addWidget(metric_to_show)
+
+        score = scoring(Y, Y_pred)
+        for metric in score:
+            _btn = TransparentPushButton(text=metric)
+            _btn.button.setText(str(score[metric]))
+            layout.addWidget(_btn)
+
+
+        return widget
+
+    def confustion_mat(self, Y, Y_pred) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        widget.setLayout(layout)
+
+        fold = 0
+
+        _fold = ComboBox(items=[f"Fold {i+1}" for i in range(len(Y))],
+                        text="Fold")
+        _fold.button.setCurrentText(f"Fold {fold+1}")
+        layout.addWidget(_fold)
+
+        # Compute confusion matrix
+        if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
+            cm = np.array([[1,0],[0,1]])
+        else: 
+            cm = confusion_matrix(Y[fold], Y_pred[fold])
+        
+        canvas = Canvas()
+        canvas.fig.set_edgecolor("black")
+        canvas.fig.set_linewidth(2)
+        for _ax in canvas.fig.axes: _ax.remove()
+        ax = canvas.fig.add_subplot()
+        im = ax.imshow(cm, cmap="Greens", aspect='auto')
+        ax.figure.colorbar(im, ax=ax)
+
+        # show appropriate ticks
+        ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           title="Confusion matrix",
+           ylabel='True label',
+           xlabel='Predicted label')
+        # Rotate the tick labels and set their alignment.
+        ax.set_xticklabels(ax.get_xticks(), 
+                           rotation=45, 
+                           ha="right", 
+                           rotation_mode="anchor")
+        
+        # Loop over data dimensions and create text annotations.
+        fmt = 'd'
+        thresh = cm.max() / 2.
+        for i in range(cm.shape[0]):
+            for j in range(cm.shape[1]):
+                ax.text(j, i, format(cm[i, j], fmt),
+                        ha="center", va="center",
+                        color="white" if cm[i, j] > thresh else "black")
+        canvas.fig.set_tight_layout("rect")
+        canvas.draw()
+        layout.addWidget(canvas)
+
+        btn_layout = QHBoxLayout()
+        layout.addLayout(btn_layout)
+
+        btn_layout.addWidget(BodyLabel("Confusion Matrix"))
+        btn_layout.addWidget(BodyLabel(str(cm)))
+        
+        copy_btn = _PrimaryPushButton()
+        copy_btn.setText("Copy to clipboard")
+        copy_btn.released.connect(lambda: self.clipboard.setText(str(cm)))
+        btn_layout.addWidget(copy_btn)
+
+        return widget
+        
+    def roc(self, Y, Y_pred_proba) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        widget.setLayout(layout)
+
+        # calculate ROC metrics
+        if len(Y) == 0 or len(Y_pred_proba) == 0: # check if Y or Y_pred is an empty list
+            fpr, tpr = [0,0,1], [0,1,1]
+            roc_auc = 1
+        else:
+            fpr, tpr, _ = roc_curve(Y, Y_pred_proba) 
+            roc_auc = auc(fpr, tpr)
+
+        canvas = Canvas()
+        for _ax in canvas.fig.axes: _ax.remove()
+        ax = canvas.fig.add_subplot()
+        canvas.fig.set_edgecolor("black")
+        canvas.fig.set_linewidth(2)
+        ax.plot(fpr, tpr, marker='o', 
+                label=f"ROC curve (area = {roc_auc:.2f})")
+        ax.plot([0,1],[0,1],"k--",label="Random")
+        ax.set_xlim([-0.05, 1.05])
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlabel('False Positive Rate')
+        ax.set_ylabel('True Positive Rate')
+        ax.set_title('ROC Curve')
+        ax.legend()
+
+        canvas.fig.set_tight_layout("rect")
+        canvas.draw()
+        layout.addWidget(canvas)
+
+        btn_layout1 = QHBoxLayout()
+        layout.addLayout(btn_layout1)
+
+        btn_layout1.addWidget(BodyLabel("False Positive Rate (X Axis)"))
+        btn_layout1.addWidget(BodyLabel(str(fpr)))
+        
+        copy_btn1 = _PrimaryPushButton()
+        copy_btn1.setText("Copy to clipboard")
+        copy_btn1.released.connect(lambda: self.clipboard.setText(str(fpr)))
+        btn_layout1.addWidget(copy_btn1)
+
+        btn_layout2 = QHBoxLayout()
+        layout.addLayout(btn_layout2)
+
+        btn_layout2.addWidget(BodyLabel("True Positive Rate (Y Axis)"))
+        btn_layout2.addWidget(BodyLabel(str(tpr)))
+        
+        copy_btn2 = _PrimaryPushButton()
+        copy_btn2.setText("Copy to clipboard")
+        copy_btn2.released.connect(lambda: self.clipboard.setText(str(tpr)))
+        btn_layout2.addWidget(copy_btn2)
+
+
+        return widget
+
+    def precision_recall(self, Y, Y_pred) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        widget.setLayout(layout)
+
+        # Calculate precision and recall
+        if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
+            precision, recall = [0,0,1], [0,1,1]
+            pr_auc = 1
+        else:
+            precision, recall, _ = precision_recall_curve(Y, Y_pred)
+            pr_auc = auc(recall, precision)
+
+        canvas = Canvas()
+        for _ax in canvas.fig.axes: _ax.remove()
+        ax = canvas.fig.add_subplot()
+        ax.plot(recall, precision, label=f"Precision-Recall curve (area = {pr_auc:.2f})")
+        ax.set(xlabel="Recall",ylabel="Precision",
+               title="Precision-Recall Curve")
+        ax.legend()
+
+        canvas.fig.set_tight_layout("rect")
+        canvas.draw()
+        layout.addWidget(canvas)
+
+        btn_layout1 = QHBoxLayout()
+        layout.addLayout(btn_layout1)
+
+        btn_layout1.addWidget(BodyLabel("Recall (X Axis)"))
+        btn_layout1.addWidget(BodyLabel(str(recall)))
+        
+        copy_btn1 = _PrimaryPushButton()
+        copy_btn1.setText("Copy to clipboard")
+        copy_btn1.released.connect(lambda: self.clipboard.setText(str(recall)))
+        btn_layout1.addWidget(copy_btn1)
+
+        btn_layout2 = QHBoxLayout()
+        layout.addLayout(btn_layout2)
+
+        btn_layout2.addWidget(BodyLabel("Precision (Y Axis)"))
+        btn_layout2.addWidget(BodyLabel(str(precision)))
+        
+        copy_btn2 = _PrimaryPushButton()
+        copy_btn2.setText("Copy to clipboard")
+        copy_btn2.released.connect(lambda: self.clipboard.setText(str(precision)))
+        btn_layout2.addWidget(copy_btn2)
+
+        return widget
+    
 class RidgeClassifier(ClassifierBase):
     def __init__(self, config=None, parent=None):
         super().__init__(parent)
@@ -1403,7 +1660,8 @@ class Classifier (NodeContentWidget):
         super().__init__(node, parent)
 
         self.parent = parent
-        self.score = self.scoring()
+        self.X, self.Y = list(), list()
+        self.Y_test_score, self.Y_pred_score, self.Y_pred_proba_score = list(), list(), list()
 
         self.node.input_sockets[0].setTitle("Train/Test")
         self.node.output_sockets[0].setTitle("Model")
@@ -1413,6 +1671,7 @@ class Classifier (NodeContentWidget):
         self.score_btn.setText(f"Score: --")
         self.score_btn.released.connect(self.score_dialog)
         self.layout.insertWidget(2,self.score_btn)
+        self.score_function = "Accuracy"
         
         self._config = dict(estimator="Logistic Regression",config=None)
         self.estimator_list = ["Ridge Classifier","Logistic Regression","SGD Classifier",
@@ -1421,13 +1680,14 @@ class Classifier (NodeContentWidget):
                                "Gradient Boosting Classifier", "Histogram Gradient Boosting Classifier",
                                "Random Forest Classifier", "Extra Trees Classifier",
                                "Decision Tree Classifier","Gaussian Process Classifier"]
+        self.estimator = linear_model.LogisticRegression()
 
     def config(self):
         dialog = Dialog("Configuration", self.parent.parent)
         menu = AlgorithmMenu()
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: stackedlayout.setCurrentIndex(self.estimator_list.index(string)))
-        algorithm = DropDownPushButton(text="Algorithm")
+        algorithm = DropDownPrimaryPushButton(text="Algorithm")
         algorithm.button.setText(self._config["estimator"].title())
         algorithm.button.setMenu(menu)
         algorithm.button.released.connect(lambda: menu.exec(QCursor().pos()))
@@ -1456,7 +1716,7 @@ class Classifier (NodeContentWidget):
  
         if dialog.exec():
             self.estimator = stackedlayout.currentWidget().estimator
-            self.estimator: ClassifierMixin
+            self.estimator: linear_model.LogisticRegression
             self._config["estimator"] = algorithm.button.text()
             self._config["config"] = stackedlayout.currentWidget()._config
             self.exec()
@@ -1466,68 +1726,68 @@ class Classifier (NodeContentWidget):
         self.eval()
         self.node.output_sockets[0].socket_data = self.estimator
 
-        try:
-            if len(self.node.input_sockets[0].edges) == 1:
-                if isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter):
-                    cv = self.node.input_sockets[0].socket_data[0]
-                    X = self.node.input_sockets[0].socket_data[1]
-                    Y = self.node.input_sockets[0].socket_data[2]
-                        
-                    self.data_to_view = pd.concat([X,Y],axis=1)
+        # try:
+        if len(self.node.input_sockets[0].edges) == 1:
+            if isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter):
+                cv = self.node.input_sockets[0].socket_data[0]
+                self.X = self.node.input_sockets[0].socket_data[1]
+                self.Y = self.node.input_sockets[0].socket_data[2]
+                
+                self.data_to_view = self.node.input_sockets[0].socket_data[1].copy()
+                n_classes = self.Y.shape[1]   
+                n_samples = self.Y.shape[0]
+                self.data_to_view[f"Label Encoder"] = str()
+                for i in range(n_samples):
+                    for j in range(n_classes):
+                        self.data_to_view.iloc[i,-1] += str(self.Y.iloc[i,j])
 
-                    for fold, (train_idx, test_idx) in enumerate(cv):
-                        X_train, X_test = X.loc[train_idx], X.loc[test_idx]
-                        Y_train, Y_test = Y.loc[train_idx], Y.loc[test_idx]
-                        self.estimator.fit(X_train, Y_train)
-                        Y_pred = self.estimator.predict(X).round(5)
-                        self.score = self.scoring(Y, Y_pred)
-                        self.score_btn.setText(f"Score: {self.score}")
-                    
-                        self.data_to_view = pd.concat([self.data_to_view, pd.DataFrame(Y_pred, columns=[f"Fold{fold+1}_Prediction"])],axis=1)
-                    
-                    self.node.output_sockets[1].socket_data = None
-                    logger.info(f"{self.name} {self.node.id}::run successfully.")
+                # convert self.X and self.Y into numpy arrays!
+                self.X = self.X.to_numpy()
+                self.Y = self.Y.to_numpy()
+                
+                for fold, (train_idx, test_idx) in enumerate(cv):
 
-            else:
-                self.score_btn.setText(f"Score: --")
-                logger.warning(f"{self.name} {self.node.id}::Did not define splitter.")
-        
-        except Exception as e:
-            self.score_btn.setText(f"Score: --")
-            logger.error(f"{self.name} {self.node.id}::{repr(e)}.")
-    
-    def scoring(self, Y=list(), Y_pred=list()):
-        if Y == list() or Y_pred == list():
-            return {"Accuracy":"--",
-                    "Balanced accuracy":"--",
-                    "Top K accuracy":"--",
-                    "Average precision":"--",
-                    "Brier score loss":"--",
-                    "F1 score":"--"}
+                    X_train, X_test = self.X[train_idx], self.X[test_idx]
+                    Y_train, Y_test = self.Y[train_idx], self.Y[test_idx]
+                    
+                    model = OneVsRestClassifier(self.estimator)
+                    model.fit(X_train, Y_train)
+                    Y_pred = model.predict(X_test)
+                    Y_pred_all = model.predict(self.X)
+                    Y_pred_proba = model.predict_proba(X_test)
+
+                    self.Y_test_score.append(Y_test)
+                    self.Y_pred_score.append(Y_pred)
+                    self.Y_pred_proba_score.append(Y_pred_proba)
+
+                    n_classes = self.Y.shape[1]   
+                    n_samples = self.Y.shape[0]
+                    self.data_to_view[f"Fold{fold+1}_Prediction"] = str()
+                    for i in range(n_samples):
+                        for j in range(n_classes):
+                            self.data_to_view.iloc[i,-1] += str(Y_pred_all[i,j])
+                                
+                score = scoring(self.Y_test_score, self.Y_pred_score)
+                self.score_btn.setText(f"Score: {score[self.score_function]:.2f}")
+                
+                self.node.output_sockets[1].socket_data = None
+                logger.info(f"{self.name} {self.node.id}::run successfully.")
+
         else:
-            return {"Accuracy":accuracy_score(Y, Y_pred),
-                    "Balanced accuracy":balanced_accuracy_score(Y, Y_pred),
-                    "Top K accuracy":top_k_accuracy_score(Y,Y_pred),
-                    "Average precision":average_precision_score(Y,Y_pred),
-                    "Brier score loss":brier_score_loss(Y,Y_pred),
-                    "F1 score":f1_score(Y,Y_pred)}
-
+            self.score_btn.setText(f"Score: --")
+            logger.warning(f"{self.name} {self.node.id}::Did not define splitter.")
+        
+        # except Exception as e:
+        #     self.score_btn.setText(f"Score: --")
+        #     logger.error(f"{self.name} {self.node.id}::{repr(e)}.")
+    
     def score_dialog(self):
-        dialog = Dialog("Scoring", self.parent.parent)
-
-        metric_to_show = ComboBox(items=["Accuracy","Balanced accuracy","Top K accuracy",
-                                         "Average precision","Brier score loss","F1 score",
-                                         ], 
-                                  text="Metric")
-        dialog.main_layout.addWidget(metric_to_show)
-
-        for metric in self.score:
-            _btn = TransparentPushButton(text=metric)
-            _btn.button.setText(str(self.score[metric]))
-            dialog.main_layout.addWidget(_btn)
-
+        # dialog = Dialog("Scoring", self.parent.parent)
+        dialog = Report(self.Y_test_score, self.Y_pred_score, self.Y_pred_proba_score)
+        
         if dialog.exec():
-            print('abc')
+            self.score_function = dialog.score_function
+        pass
      
     def eval (self):
         # reset input sockets

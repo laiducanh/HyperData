@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
-from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtGui import QPen, QBrush, QColor, QPainter
 from ui.utils import isDark
 
 SINGLE_IN = 1
@@ -13,7 +13,7 @@ CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 DEBUG = False
 
-class GraphicsSocket (QGraphicsItem):
+class SocketItem (QGraphicsItem):
     def __init__(self, socket_type, parent=None):
         super().__init__(parent)
 
@@ -46,6 +46,7 @@ class GraphicsSocket (QGraphicsItem):
         self._brush = QBrush(self._color_background)    
         self._text = QGraphicsTextItem(self)   
         self._text.hide()     
+        self.setTitle()
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         # painting circle
@@ -71,4 +72,43 @@ class GraphicsSocket (QGraphicsItem):
             2 * (self.radius + self.outline_width),
         )
 
+    def setTitle(self, title = None):
+        if not title:
+            if self.socket_type == SINGLE_IN:
+                self.title = 'Single Input'
+            elif self.socket_type == MULTI_IN:
+                self.title = 'Multiple Inputs'
+            elif self.socket_type == SINGLE_OUT:
+                self.title = 'Single Output'
+            elif self.socket_type == MULTI_OUT:
+                self.title = 'Multiple Outputs'
+            elif self.socket_type in [PIPELINE_IN, PIPELINE_OUT]:
+                self.title = "Pipeline"
+            elif self.socket_type in [CONNECTOR_IN, CONNECTOR_OUT]:
+                self.title = "Connector"
+        else:
+            self.title = title
+        
+        self._text.setPlainText(self.title)
+        self._text.setPos(16,-13)
 
+    def getSocketPosition(self):
+        pass
+
+    def addEdge(self, edge):
+        pass
+
+    def removeEdge(self, edge):
+        pass
+
+    def removeAllEdges(self):
+        pass
+
+    def hasEdge(self):
+        pass
+
+    def serialize(self):
+        pass
+
+    def deserialize(self, data, hashmap={}):
+        pass

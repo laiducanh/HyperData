@@ -1,4 +1,4 @@
-from node_editor.base.node_graphics_content import NodeContentWidget, NodeComment
+from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
 from typing import Union
@@ -399,7 +399,14 @@ class TrainTestSplitter (NodeContentWidget):
             if isinstance(self.node.input_sockets[0].socket_data, pd.DataFrame) and isinstance(self.node.input_sockets[1].socket_data, pd.DataFrame):
                 X = self.node.input_sockets[0].socket_data
                 Y = self.node.input_sockets[1].socket_data
-                self.data_to_view = pd.concat([X,Y],axis=1)
+
+                self.data_to_view = X.copy()
+                self.data_to_view["Label Encoder"] = str()
+                n_classes = Y.shape[1]   
+                n_samples = Y.shape[0]
+                for i in range(n_samples):
+                    for j in range(n_classes):
+                        self.data_to_view.iloc[i,-1] += str(Y.iloc[i,j])
 
                 for fold, (train_idx, test_idx) in enumerate(self.splitter.split(X, Y)):
 

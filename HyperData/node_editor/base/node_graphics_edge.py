@@ -1,8 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsSceneHoverEvent
-from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui import QPainterPath, QColor, QPen, QPainter
-from node_editor.base.node_graphics_node import NodeGraphicsSocket
-from node_editor.graphics.graphics_edge import GraphicsEdge
+from PyQt6.QtCore import QPointF
+from PyQt6.QtGui import QPainterPath
+from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
 import math
 
 EDGE_TYPE_DIRECT = 1
@@ -19,15 +17,17 @@ CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsEdge(GraphicsEdge):
-    def __init__(self, start_socket:NodeGraphicsSocket=None, 
-                 end_socket:NodeGraphicsSocket=None, parent=None):
+    def __init__(self, 
+                 start_socket:GraphicsSocket=None, 
+                 end_socket:GraphicsSocket=None, 
+                 parent=None):
         super().__init__(start_socket, end_socket, parent)
 
         self.start_socket = start_socket
         self.end_socket = end_socket
 
-        if self.start_socket != None: self.start_socket.addEdge(self)
-        if self.end_socket != None: self.end_socket.addEdge(self)
+        if self.start_socket: self.start_socket.addEdge(self)
+        if self.end_socket: self.end_socket.addEdge(self)
     
 
     def setSource(self, x, y):

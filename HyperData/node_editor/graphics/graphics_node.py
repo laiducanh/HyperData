@@ -1,15 +1,15 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget, QGraphicsPathItem
-from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption, QAction
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget
+from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
 from ui.utils import isDark
 
 DEBUG = False
 
-class GraphicsNode (QGraphicsItem):
+class NodeItem(QGraphicsItem):
     def __init__(self, title:str, parent=None):
         super().__init__(parent)
 
-        self._title_font = QFont("Monospace", 10, 700)
+        self._title_font = QFont("Arial", 13, 700)
         self.title = title
         self.edge_size = 5.0
         self.title_height = 24.0
@@ -19,6 +19,7 @@ class GraphicsNode (QGraphicsItem):
         self.height = 50
         self.hovered = False
         self.id = id(self)
+        self.content = None
 
         self.setColor()
 
@@ -121,8 +122,32 @@ class GraphicsNode (QGraphicsItem):
         else:
             painter.setPen(self._pen_default if not self.isSelected() else self._pen_selected)
             painter.drawPath(path_outline.simplified())
+    
+    def set_Content(self, content:QWidget):
+        self.content = content
+        self.grContent = QGraphicsProxyWidget(self)
+        self.content.setGeometry(int(self.edge_size)+10, int(self.title_height + self.edge_size),
+                                 int(self.width - 2*self.edge_size-20), int(self.height - 2*self.edge_size-self.title_height))
+        self.grContent.setWidget(content)
+        self.height = max(self.height, self.title_height + self.content.height() + 2*self._padding)
 
-        
+    def updateConnectedEdges(self):
+        pass
+
+    def getSocketPosition(self, index, socket_type):
+        pass
+
+    def addSocket(self, index, socket_type):
+        pass
+
+    def removeSocket(self, index, socket_type, socket):
+        pass
+
+    def serialize(self):
+        pass
+
+    def deserialize(self, data, hashmap={}):
+        pass
 
 
 

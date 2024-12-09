@@ -1,4 +1,4 @@
-from node_editor.base.node_graphics_content import NodeContentWidget, NodeComment
+from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
@@ -20,21 +20,39 @@ class LabelEncoder (NodeContentWidget):
         pass
 
     def func(self):
+
+        encoder = sk_LabelEncoder() # LabelBinarizer
+        transform = encoder.fit_transform(self.node.input_sockets[0].socket_data)
+        columns=self.node.input_sockets[0].socket_data.columns
+        self.node.output_sockets[0].socket_data = pd.DataFrame(data=transform, 
+                                                               columns=encoder.classes_)
         
-        try:
-            encoder = sk_LabelEncoder() # LabelBinarizer
-            transform = encoder.fit_transform(self.node.input_sockets[0].socket_data)
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy()
-            columns = self.node.input_sockets[0].socket_data.columns
-            for ind, val in enumerate(transform):
-                self.node.output_sockets[0].socket_data.loc[[ind], columns] = pd.Series([val], index=[ind])
+        # self.node.output_sockets[0].socket_data = pd.DataFrame(columns=columns, dtype=object)
+        
+        # for ind, val in enumerate(transform):
+        #     self.node.output_sockets[0].socket_data.loc[ind, "variety"] = str(val)
+        
+        # try:
+        #     encoder = sk_LabelEncoder() # LabelBinarizer
+        #     transform = encoder.fit_transform(self.node.input_sockets[0].socket_data)
+        #     self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy()
+        #     columns = self.node.input_sockets[0].socket_data.columns
+        #     self.node.output_sockets[0].socket_data[columns].astype(object)
+        #     for ind, val in enumerate(transform):
+        #         self.node.output_sockets[0].socket_data.loc[ind, columns] = val
             
-            logger.info(f"{self.name} {self.node.id}::run successfully.")
-        except Exception as e:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
-            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
+        #     logger.info(f"{self.name} {self.node.id}::run successfully.")
+        # except Exception as e:
+        #     self.node.output_sockets[0].socket_data = pd.DataFrame()
+        #     logger.error(f"{self.name} {self.node.id}::{repr(e)}, return an empty DataFrame.")
         
-        self.data_to_view = self.node.output_sockets[0].socket_data        
+        self.data_to_view = pd.DataFrame(columns=columns)    
+        n_classes = self.node.output_sockets[0].socket_data.shape[1]   
+        n_samples = self.node.output_sockets[0].socket_data.shape[0]
+        for i in range(n_samples):
+            self.data_to_view.loc[i] = str()
+            for j in range(n_classes):
+                self.data_to_view.loc[i] += str(self.node.output_sockets[0].socket_data.iloc[i,j])
     
     def eval (self):
         if self.node.input_sockets[0].edges == []:
