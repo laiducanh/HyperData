@@ -44,7 +44,6 @@ class Theme (Frame):
         self.app.setStyleSheet(string)
         for widget in self.app.allWidgets():
             if widget.isVisible():
-                print(widget)
                 try: widget.update()
                 except: pass
 
