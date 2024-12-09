@@ -43,8 +43,10 @@ class Theme (Frame):
                 string += f.read()
         self.app.setStyleSheet(string)
         for widget in self.app.allWidgets():
-            try: widget.update()
-            except: pass
+            if widget.isVisible():
+                print(widget)
+                try: widget.update()
+                except: pass
 
 class DockWidget_Position (Frame):
     def __init__(self, parent=None):
