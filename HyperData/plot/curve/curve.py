@@ -5,29 +5,44 @@ from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import TextEdit
 from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.window import ProgressBar
-from plot.curve.base_plottype.line import Line, Step, Area
-from plot.curve.base_plottype.scatter import Scatter
-from plot.curve.base_plottype.column import Column, ClusteredColumn, Marimekko
+from plot.curve.base_plottype.line import Line, Step, Stem, Stem3d, Area, StackedArea, StackedArea100
+from plot.curve.base_plottype.scatter import Scatter, Scatter3D
+from plot.curve.base_plottype.column import Column, Column3D, ClusteredColumn, Marimekko, Treemap
+from plot.curve.base_plottype.pie import Pie, Doughnut
+from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
+from plot.utilis import find_mpl_object
+from config.settings import GLOBAL_DEBUG, logger
+from plot.plotting.plotting import set_legend, get_legend
 from matplotlib.artist import Artist
+from matplotlib import legend
 from typing import List
+
+DEBUG = True
 
 class Curve (QWidget):
     sig = pyqtSignal() # fire signal when plot updated
-    def __init__(self, gid:str, canvas:Canvas, plot: NewPlot, parent=None):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
+        
+        self.setParent(parent)
+        self.gid = gid
+        self.canvas = canvas
+        self.plot = plot
+        self.obj = self.find_object()
+
+        self.progressbar = ProgressBar()
+
+        self.initUI()
+
+        self.progressbar.setValue(100)
+    
+    def initUI(self):
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         #layout.setContentsMargins(0,0,0,0)
-        self.parent = parent
-        self.gid = gid
-        self.canvas = canvas
-        self.obj = self.find_object()
-        self.plot = plot
-
-        self.progressbar = ProgressBar()
 
         layout.addWidget(TitleLabel(str(self.gid).title()))
         layout.addWidget(self.progressbar)
@@ -38,7 +53,7 @@ class Curve (QWidget):
         self.layout2.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.scroll_widget.setLayout(self.layout2)
         
-        self.scroll_area = QScrollArea(parent)
+        self.scroll_area = QScrollArea(self.parent())
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.verticalScrollBar().setValue(1900)
@@ -60,26 +75,26 @@ class Curve (QWidget):
         self.legend.button.textChanged.connect(lambda: self.progressbar.setValue(0))
         self.initialize_layout()
 
-        self.progressbar.setValue(100)
-
     def find_object (self) -> List[Artist]:
-        obj_list = list()
-        for obj in self.canvas.fig.findobj(match=Artist):
-            if obj._gid != None and obj._gid == self.gid:
-                obj_list.append(obj)
-        return obj_list
+        return find_mpl_object(self.canvas.fig,
+                                   match=[Artist],
+                                   gid=self.gid)
+            
         
     def set_label (self):
-        self.progressbar.setValue(0)
-        self.progressbar._setValue(0)
-        _label = self.legend.button.toPlainText()
-        if _label == "":
-            _label = "_"
-        for obj in self.obj:
-            obj.set_label(_label)
-        self.set_legend()
-        self.canvas.draw()
-        self.progressbar.setValue(100)
+        try:
+            self.progressbar.setValue(0)
+            self.progressbar._setValue(0)
+            _label = self.legend.button.toPlainText()
+            if _label == "":
+                _label = "_"
+            for obj in self.obj:
+                obj.set_label(_label)
+            set_legend(self.canvas)
+            self.canvas.draw()
+            self.progressbar.setValue(100)
+        except Exception as e:
+            logger.exception(e)
 
     def get_label (self):
         # skip label if starts with "_"
@@ -87,55 +102,60 @@ class Curve (QWidget):
             if obj.get_label().startswith("_"):
                 return None
             return obj.get_label()
-    
-    def set_legend(self):
-        _artist = list()
-        _gid = list()
-        _label = list()
-        for obj in self.canvas.fig.findobj(match=Artist):
-            if obj._gid != None and "graph" in obj._gid and obj._gid not in _gid:
-                _gid.append(obj._gid)
-                _artist.append(obj)
-                _label.append(obj._label)
-        for ind, val in enumerate(_label):
-            if val.startswith("_"):
-                _label.pop(ind)
-                _artist.pop(ind)
-        if self.get_legend(): self.get_legend().remove()
-        if _artist != []:
-            self.canvas.axesleg.legend(handles=_artist,draggable=True)
-    
-    def get_legend(self):
-        return self.canvas.axesleg.get_legend()
-
 
     def update_plot (self):
-        self.progressbar.setValue(0)
-        self.progressbar._setValue(0)
-        if self.get_legend(): self.set_legend()
-        self.canvas.draw()
-        self.sig.emit()
-        self.progressbar.setValue(100)
+        try:
+            self.progressbar.setValue(0)
+            self.progressbar._setValue(0)
+            if get_legend(self.canvas): set_legend(self.canvas)
+            self.canvas.draw()
+            self.sig.emit()
+            self.progressbar.setValue(100)
+        except Exception as e:
+            logger.exception(e)
 
     def initialize_layout(self):
-        plot_type = self.obj[0].plot_type
-        if plot_type in ["2d line"]:
-            widget = Line(self.gid, self.canvas, self.plot, self.parent)
-        elif plot_type in ["2d step"]:
-            widget = Step(self.gid, self.canvas, self.plot, self.parent)
-        elif plot_type in ["2d area"]:
-            widget = Area(self.gid, self.canvas, self.plot, self.parent)
-        elif plot_type == "2d scatter":
-            widget = Scatter(self.gid, self.canvas, self.plot, self.parent)
-        elif plot_type in ["2d column","2d stacked column", "2d 100% stacked column"]:
-            widget = Column(self.gid, self.canvas, self.plot, self.parent)
-        elif plot_type in ["2d clustered column"]:
-            widget = ClusteredColumn(self.gid, self.canvas, self.plot, self.parent)
-        elif plot_type in ["marimekko"]:
-            widget = Marimekko(self.gid, self.canvas, self.plot, self.parent)
+        try:
+            plot_type = self.obj[0].plot_type
+            args = [self.gid.split("/")[0], self.canvas, self.plot, self.parent()]
 
-        widget.sig.connect(self.update_plot)
-        self.layout2.addWidget(widget)
+            match plot_type:
+                case "2d line":                widget = Line(*args)
+                case "2d step":                widget = Step(*args)
+                case "2d stem":                widget = Stem(*args)
+                case "2d area":                widget = Area(*args)
+                case "fill between":           widget = Area(*args)
+                case "2d stacked area":        widget = StackedArea(*args)
+                case "2d 100% stacked area":   widget = StackedArea100(*args)
+                case "2d scatter":             widget = Scatter(*args)
+                case "2d bubble":              widget = Scatter(*args)
+                case "2d column":              widget = Column(*args)
+                case "2d stacked column":      widget = Column(*args)
+                case "2d 100% stacked column": widget = Column(*args)
+                case "2d clustered column":    widget = ClusteredColumn(*args)
+                case "marimekko":              widget = Marimekko(*args)
+                case "treemap":                widget = Treemap(*args)
+                case "pie":                    widget = Pie(*args)
+                case "doughnut":               widget = Doughnut(*args)
+                case "histogram":              widget = Histogram(*args)
+                case "stacked histogram":      widget = Histogram(*args)
+                case "boxplot":                widget = Boxplot(*args)
+                case "violinplot":             widget = Violinplot(*args)
+                case "eventplot":              widget = Eventplot(*args)
+                case "hist2d":                 widget = Hist2d(*args)
+
+                case "3d line":                widget = Line(*args)
+                case "3d step":                widget = Step(*args)
+                case "3d stem":                widget = Stem3d(*args)
+                case "3d column":              widget = Column3D(*args)
+                case "3d scatter":             widget = Scatter3D(*args)
+                case "3d bubble":              widget = Scatter3D(*args)
+
+            widget.sig.connect(self.update_plot)
+            self.layout2.addWidget(widget)
+
+        except Exception as e:
+            logger.exception(e) 
     
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
