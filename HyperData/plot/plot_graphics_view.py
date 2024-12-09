@@ -1,18 +1,23 @@
 from PyQt6.QtWidgets import (QGraphicsView, QGraphicsScene, QStyleOptionGraphicsItem, QGraphicsTextItem,
                              QWidget, QGraphicsItem, QGraphicsProxyWidget)
-from PyQt6.QtGui import QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, QBrush, QTextOption
+from PyQt6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, 
+                         QBrush, QTextOption, QCursor)
 from PyQt6.QtCore import QRectF, pyqtSignal, Qt
-import matplotlib.artist
 import matplotlib.axes
 import matplotlib.axis
 import matplotlib.backend_tools
 import matplotlib.collections
 import matplotlib.container
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle, Wedge, PathPatch
+from matplotlib.collections import Collection
+from matplotlib.widgets import Cursor
+from matplotlib.artist import Artist
 from plot.canvas import Canvas
 import matplotlib
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
-from plot.utilis import get_color
+from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
 
 class WidgetItem (QGraphicsItem):
@@ -93,10 +98,11 @@ class ToolTip (QGraphicsItem):
 
     
 class GraphicsView (QGraphicsView):
-    sig_keyPressEvent = pyqtSignal(object)
-    sig_MouseRelease = pyqtSignal(object)
-    sig_backtoScene = pyqtSignal()
-    sig_backtoHome = pyqtSignal()
+    key_pressed = pyqtSignal(object)
+    mouse_released = pyqtSignal(object)
+    backtoScene = pyqtSignal()
+    backtoHome = pyqtSignal()
+    mpl_pressed = pyqtSignal(str)
     def __init__(self, canvas:Canvas,parent=None):
         super().__init__(parent)
 
@@ -120,7 +126,7 @@ class GraphicsView (QGraphicsView):
         self.Menu()
 
         self.canvas.mpl_connect('motion_notify_event', self.mouseMove)
-        #self.canvas.mpl_connect('button_press_event', self.mouseClick)
+        self.canvas.mpl_connect('button_press_event', self.mouseClick)
         #self.canvas.mpl_connect('figure_leave_event', self.mouseLeave)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
@@ -133,10 +139,10 @@ class GraphicsView (QGraphicsView):
         self.menu.clear()
 
         nodeview = Action(text="&Node View", parent=self.menu)
-        nodeview.triggered.connect(self.sig_backtoScene.emit)
+        nodeview.triggered.connect(self.backtoScene.emit)
         self.menu.addAction(nodeview)
         home = Action(text="&Home", parent=self.menu)
-        home.triggered.connect(self.sig_backtoHome.emit)
+        home.triggered.connect(self.backtoHome.emit)
         self.menu.addAction(home)
 
         self.menu.addSeparator()
@@ -146,44 +152,36 @@ class GraphicsView (QGraphicsView):
         _graph_list = [i.title() for i in graph_list]
         for text in ["Manage Graph"] + _graph_list:
             action = Action(text=text, parent=graph)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text))
             graph.addAction(action)
         
         tick = Menu(text="&Tick", parent=self.menu)
         self.menu.addMenu(tick)
         for text in ["Tick &Bottom", "Tick &Left", "Tick &Top", "Tick &Right"]:
             action = Action(text=text, parent=tick)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text.replace("&","")))
+            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text.replace("&","")))
             tick.addAction(action)
 
         spine = Menu(text="&Spine", parent=self.menu)
         self.menu.addMenu(spine)
         for text in ["Spine &Bottom", "Spine &Left", "Spine &Top", "Spine &Right"]:
             action = Action(text=text, parent=spine)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text.replace("&","")))
+            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text.replace("&","")))
             spine.addAction(action)
         
         figure = Menu(text="&Figure", parent=self.menu)
         self.menu.addMenu(figure)
         for text in ["Plot Size", "Grid"]:
             action = Action(text=text, parent=figure)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text))
             figure.addAction(action)
 
         label = Menu(text="&Label", parent=self.menu)
         self.menu.addMenu(label)
         for text in ["Title", "Axis Label", "Legend", "Data Annotation"]:
             action = Action(text=text, parent=label)
-            action.triggered.connect(lambda checked, text=text: self.sig_MouseRelease.emit(text))
+            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text))
             label.addAction(action)
-    
-    def find_graph_object(self) -> list:
-        fig = self.canvas.fig
-        lines = fig.findobj(match=matplotlib.lines.Line2D)
-        collections = fig.findobj(match=matplotlib.collections.Collection)
-        container = fig.findobj(match=matplotlib.patches.Rectangle)
-
-        return lines+collections+container
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         self.mouse_position = self.mapToScene(event.pos())
@@ -194,7 +192,8 @@ class GraphicsView (QGraphicsView):
         return super().mouseMoveEvent(event)
                
     def mouseMove(self, event):
-        stack = self.find_graph_object()  
+        stack = find_mpl_object(figure=self.canvas.fig,
+                                match=[Line2D,Collection,Rectangle,Wedge,PathPatch])
         
         x_increment, y_increment = 30, 30
         if self.mouse_position.x() + x_increment + self.tooltip.width < self.width():
@@ -203,15 +202,27 @@ class GraphicsView (QGraphicsView):
         if self.mouse_position.y() + y_increment + self.tooltip.height < self.height():
             self.tooltip.setY(self.mouse_position.y() + y_increment)
         else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
+
+        #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
         
         for obj in stack:
-            if obj._gid != None and obj.contains(event)[0]:
+            if obj.contains(event)[0]:
                 if not self.tooltip.isVisible():
-                    self.tooltip.setText(obj._gid.title())
+                    self.tooltip.setText(obj.get_gid().title())
                     self.tooltip.setColor(get_color(obj))
+                    # self.canvas.set_cursor(matplotlib.backend_tools.cursors.POINTER)
                     self.tooltip.show()
                 break
             else: self.tooltip.hide()
+    
+    def mouseClick(self, event):
+        stack = find_mpl_object(figure=self.canvas.fig,
+                                match=[Artist])
+        if event.button == 1:
+            for obj in stack:
+                if obj.contains(event)[0]:
+                    self.mpl_pressed.emit(obj.get_gid())
+                    break # emit when one and only one object is selected
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -230,8 +241,9 @@ class GraphicsView (QGraphicsView):
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonRelease(self, event:QMouseEvent):
+        self.tooltip.hide()
         pos = self.mapToGlobal(event.pos())
-        self.menu.exec(pos)
+        self.menu.exec(pos)       
         super().mouseReleaseEvent(event)
                 
                 
@@ -251,7 +263,7 @@ class GraphicsView (QGraphicsView):
         
       
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        self.sig_keyPressEvent.emit(event)
+        self.key_pressed.emit(event)
         return super().keyPressEvent(event)
     
     
