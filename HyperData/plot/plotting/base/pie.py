@@ -2,55 +2,67 @@ from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.patches import Wedge, Rectangle
 from typing import List
-import squarify, matplotlib, numpy
 
-def pie (X, ax: Axes, gid) -> List[Wedge]:
+def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
+         radius=1, counterclock=True, rotatelabels=True, normalize=True) -> List[Wedge]:
 
-    artist = ax.pie(X)
+    if explode != None and len(explode) != len(X):
+        explode = None
+    
+    if labels != None and len(labels) != len(X):
+        labels = None
+    
+    if not normalize and sum(X) > 1:
+        X = [float(i)/sum(X) for i in X]
 
-    # artist has type of [[wedges],[text],[autotexts]] -> take the first elements to return a list of wedges
-    artist = artist[0]
+    artist = ax.pie(X, explode=explode, labels=labels, startangle=startangle,
+                    radius=radius, counterclock=counterclock, rotatelabels=rotatelabels,
+                    normalize=normalize, frame=True)
 
-    for ind, obj in enumerate(artist):
+    # artist has type of [[wedges],[text],[autotexts]]
+    for ind, obj in enumerate(artist[0]):
+        obj.explode = explode
+        obj.labels = labels
+        obj.startangle = startangle
+        obj.radius = radius
+        obj.counterclock = counterclock
+        obj.rotatelabels = rotatelabels
+        obj.normalize = normalize
+
+        if len(artist) > 1:
+            obj.set_gid(f"{gid}.{ind+1}")
+        else:
+            obj.set_gid(gid)
+    
+    for ind, obj in enumerate(artist[1]):
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")
         else:
             obj.set_gid(gid)
 
-    return artist
+    return artist[0]
 
-def doughnut (X, ax:Axes, gid, width=0.3) -> List[Wedge]:
+def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=0,
+              radius=1, counterclock=True, rotatelabels=True, normalize=True) -> List[Wedge]:
 
-    artist = ax.pie(X, wedgeprops=dict(width=width))
+    artist = ax.pie(X, wedgeprops=dict(width=width), explode=explode, labels=labels, startangle=startangle,
+                    radius=radius, counterclock=counterclock, rotatelabels=rotatelabels, normalize=normalize)
 
     artist = artist[0]
 
     for ind, obj in enumerate(artist):
+        obj.width = width
+        obj.explode = explode
+        obj.labels = labels
+        obj.startangle = startangle
+        obj.radius = radius
+        obj.counterclock = counterclock
+        obj.rotatelabels = rotatelabels
+        obj.normalize = normalize
+
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")
         else:
             obj.set_gid(gid)
 
-    return artist
-
-def treemap (X, ax:Axes, gid) -> List[Rectangle]:
-
-    X.sort(reverse=True)
-    values = squarify.normalize_sizes(X,1,1)
-    rects = squarify.squarify(values,0,0,1,1)
-
-    colors = matplotlib.colormaps["tab10"](numpy.linspace(0,1,len(X)))
-
-    artist = list()
-    for _ind_face, _rect in enumerate(rects):
-
-        rect = Rectangle((_rect['x'],_rect['y']),_rect['dx'],_rect['dy'],
-                            color=colors[_ind_face],gid=f"{gid}.{_ind_face+1}"
-                                        )
-        ax.add_artist(rect)
-        artist.append(rect)
-    
-    ax.set_xlim(0,1)
-    ax.set_ylim(0,1)
-    
     return artist
