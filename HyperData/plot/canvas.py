@@ -41,7 +41,7 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
         self.axespie = self.fig.add_subplot()
-        self.axesleg = self.fig.add_subplot(gid="legend")
+        self.axesleg = self.fig.add_subplot()
 
         self.axespie.set_axis_off()
         self.axesleg.set_axis_off()

@@ -83,6 +83,7 @@ def set_legend(canvas: Canvas, *args, **kwargs):
                                             *args, *kwargs)
             _legend.set_bbox_to_anchor(old_bbox, canvas.axesleg.transAxes)
             _legend.set_draggable(True)
+            _legend.set_gid("legend")
             
             if old_title: 
                 _legend.set_title(old_title.get_text())
