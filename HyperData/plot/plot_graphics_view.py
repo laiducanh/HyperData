@@ -15,6 +15,7 @@ from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
 from plot.canvas import Canvas
 import matplotlib
+from matplotlib.backend_bases import MouseEvent
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
@@ -125,8 +126,8 @@ class GraphicsView (QGraphicsView):
         self.menu = Menu(parent=self)
         self.Menu()
 
-        self.canvas.mpl_connect('motion_notify_event', self.mouseMove)
-        self.canvas.mpl_connect('button_press_event', self.mouseClick)
+        self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
+        self.canvas.mpl_connect('button_press_event', self.mpl_mouseClick)
         #self.canvas.mpl_connect('figure_leave_event', self.mouseLeave)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
@@ -190,8 +191,25 @@ class GraphicsView (QGraphicsView):
         else: self.zoom_item.setOpacity(0.4)
 
         return super().mouseMoveEvent(event)
-               
-    def mouseMove(self, event):
+    
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self.middleMouseButtonPress(event)
+        elif event.button() == Qt.MouseButton.LeftButton:
+            self.leftMouseButtonPress(event)
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.rightMouseButtonPress(event)
+    
+    def middleMouseButtonPress(self, event):
+        super().mousePressEvent(event)
+    
+    def leftMouseButtonPress(self, event):
+        super().mousePressEvent(event)
+
+    def rightMouseButtonPress(self, event):
+        super().mousePressEvent(event)
+    
+    def mpl_mouseMove(self, event:MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Line2D,Collection,Rectangle,Wedge,PathPatch])
         
@@ -214,8 +232,8 @@ class GraphicsView (QGraphicsView):
                     self.tooltip.show()
                 break
             else: self.tooltip.hide()
-    
-    def mouseClick(self, event):
+
+    def mpl_mouseClick(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Artist])
         if event.button == 1:
