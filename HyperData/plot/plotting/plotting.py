@@ -12,8 +12,9 @@ from matplotlib.artist import Artist
 from matplotlib.lines import Line2D
 from matplotlib.collections import Collection
 from matplotlib.patches import Rectangle, Wedge, PathPatch
-from matplotlib.legend import Legend
+from matplotlib.legend import Legend, DraggableLegend
 from matplotlib.font_manager import FontProperties
+from matplotlib.backend_bases import MouseEvent
 from typing import List, Union, Literal
 
 DEBUG = True
@@ -46,6 +47,18 @@ def update_props (from_obj: Artist, to_obj: Artist,
 def get_legend(canvas: Canvas) -> Legend:
     return canvas.axesleg.get_legend()
 
+def on_release(event:MouseEvent, canvas:Canvas):
+    if get_legend(canvas).contains(event)[0]:
+        bbox = canvas.axesleg.transAxes.inverted().transform([event.x-offset_x, event.y-offset_y])
+        get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
+
+def on_press(event:MouseEvent, canvas:Canvas):
+    # global variables used for on_release() as well
+    global offset_x, offset_y
+    _x, _y, _w, _h = get_legend(canvas).get_bbox_to_anchor().bounds
+    offset_x = event.x - _x
+    offset_y = event.y - _y
+
 def set_legend(canvas: Canvas, *args, **kwargs):
     try:
         _handles = canvas.axes.get_legend_handles_labels()[0]   + \
@@ -57,16 +70,28 @@ def set_legend(canvas: Canvas, *args, **kwargs):
                 canvas.axesy2.get_legend_handles_labels()[1] + \
                 canvas.axespie.get_legend_handles_labels()[1]
         old_title = None
+        old_bbox = [0.995, 0.995]
 
         if get_legend(canvas): 
             old_title = get_legend(canvas).get_title()
+            _bbox = get_legend(canvas).get_bbox_to_anchor()
+            old_bbox = canvas.axesleg.transAxes.inverted().transform(_bbox)[0]
             get_legend(canvas).remove()
+
         if _handles != []:
-            _legend = canvas.axesleg.legend(_handles, _labels, draggable=True, *args, *kwargs)
+            _legend = canvas.axesleg.legend(_handles, _labels, loc="upper right",
+                                            *args, *kwargs)
+            _legend.set_bbox_to_anchor(old_bbox, canvas.axesleg.transAxes)
+            _legend.set_draggable(True,use_blit=True)
+            
             if old_title: 
                 _legend.set_title(old_title.get_text())
                 _legend.get_title().update_from(old_title)
             canvas.draw()
+
+            canvas.mpl_connect('button_press_event', lambda e: on_press(e, canvas))
+            canvas.mpl_connect('button_release_event', lambda e: on_release(e, canvas))
+
     except Exception as e:
         logger.exception(e)
 
