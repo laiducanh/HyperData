@@ -47,12 +47,12 @@ def update_props (from_obj: Artist, to_obj: Artist,
 def get_legend(canvas: Canvas) -> Legend:
     return canvas.axesleg.get_legend()
 
-def on_release(event:MouseEvent, canvas:Canvas):
+def legend_onRelease(event:MouseEvent, canvas:Canvas):
     if get_legend(canvas).contains(event)[0]:
         bbox = canvas.axesleg.transAxes.inverted().transform([event.x-offset_x, event.y-offset_y])
         get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
 
-def on_press(event:MouseEvent, canvas:Canvas):
+def legend_onPress(event:MouseEvent, canvas:Canvas):
     # global variables used for on_release() as well
     global offset_x, offset_y
     _x, _y, _w, _h = get_legend(canvas).get_bbox_to_anchor().bounds
@@ -79,18 +79,18 @@ def set_legend(canvas: Canvas, *args, **kwargs):
             get_legend(canvas).remove()
 
         if _handles != []:
-            _legend = canvas.axesleg.legend(_handles, _labels, loc="upper right",
+            _legend = canvas.axesleg.legend(_handles, _labels, 
                                             *args, *kwargs)
             _legend.set_bbox_to_anchor(old_bbox, canvas.axesleg.transAxes)
-            _legend.set_draggable(True,use_blit=True)
+            _legend.set_draggable(True)
             
             if old_title: 
                 _legend.set_title(old_title.get_text())
                 _legend.get_title().update_from(old_title)
             canvas.draw()
 
-            canvas.mpl_connect('button_press_event', lambda e: on_press(e, canvas))
-            canvas.mpl_connect('button_release_event', lambda e: on_release(e, canvas))
+            canvas.mpl_connect('button_press_event', lambda e: legend_onPress(e, canvas))
+            canvas.mpl_connect('button_release_event', lambda e: legend_onRelease(e, canvas))
 
     except Exception as e:
         logger.exception(e)
