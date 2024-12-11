@@ -10,7 +10,7 @@ from matplotlib.widgets import TextBox, Cursor
 import pandas as pd
 import numpy as np
 
-matplotlib.use("Qt5Agg")
+matplotlib.use("QtAgg")
 #matplotlib.style.use('bmh')
 #matplotlib.pyplot.rcParams['text.usetex'] = True
 #plt.rcParams['mathtext.fontset'] = 'cm'
