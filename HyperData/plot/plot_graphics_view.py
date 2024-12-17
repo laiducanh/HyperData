@@ -127,7 +127,7 @@ class GraphicsView (QGraphicsView):
         self.Menu()
 
         self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
-        self.canvas.mpl_connect('button_release_event', self.mpl_mouseRelease)
+        self.canvas.mpl_connect('button_press_event', self.mpl_mouseRelease)
         #self.canvas.mpl_connect('figure_leave_event', self.mouseLeave)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
@@ -236,7 +236,7 @@ class GraphicsView (QGraphicsView):
     def mpl_mouseRelease(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Artist])
-        if event.button == 1:
+        if event.button == 1 and event.dblclick:
             for obj in stack:
                 if obj.contains(event)[0]:
                     self.mpl_pressed.emit(obj.get_gid())
