@@ -14,7 +14,7 @@ from matplotlib.collections import Collection
 from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
 from plot.canvas import Canvas
-import matplotlib
+import matplotlib, math
 from matplotlib.backend_bases import MouseEvent
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
@@ -225,20 +225,52 @@ class GraphicsView (QGraphicsView):
 
         # refresh canvas before showing any changes
         self.canvas.draw()
+        self.tooltip.hide()
+
+        dist = list()
+        xp, yp, zp = None, None, None
+        xs, ys = 0, 0
 
         for obj in reversed(stack): # the object on top will be picked
             _alpha = obj.get_alpha() if obj.get_alpha() else 1
             if obj.contains(event)[0]:
-                if not self.tooltip.isVisible():
-                    self.tooltip.setText(obj.get_gid().title())
-                    self.tooltip.setColor(get_color(obj))
-                    # self.canvas.set_cursor(matplotlib.backend_tools.cursors.POINTER)
-                    self.tooltip.show()
                 obj.set_alpha(_alpha*0.6)
                 self.canvas.draw()
                 obj.set_alpha(_alpha)
+                cursor = obj.axes.transData.inverted().transform([event.x, event.y])
+                
+                if isinstance(obj, Line2D):
+                    for x, y in zip(obj.get_xdata(), obj.get_ydata()):
+                        dist.append(math.sqrt(abs(cursor[0]**2 + cursor[1]**2 - x**2 - y**2)))
+                    minpos = dist.index(min(dist))
+                    xp = obj.get_xdata()[minpos]
+                    yp = obj.get_ydata()[minpos]
+                    xs, ys = xp, yp
+                elif isinstance(obj, Rectangle):
+                    xp, yp = obj.Xdata, obj.Ydata
+                    xs, ys = obj.Xshow, obj.Yshow
+                
+                # determine the information from the picked artist
+                s = f"{obj.get_gid().title()}\n"
+                if xp: s += f"{str(xp)}"
+                if yp: s += f", {str(yp)}"
+                if zp: s += f", {str(zp)}"
+
+                # determine where to put tooltip on canvas
+                xs, ys = obj.axes.transData.transform([xs, ys])
+                xs -= self.tooltip.width/2
+                ys = self.height() - ys - self.tooltip.height - 20
+                if ys < self.tooltip.height: 
+                    ys = self.height() - ys + 20
+                #print(xs, ys, self.mouse_position.x(), self.mouse_position.y(), self.height())
+
+                self.tooltip.setText(s)
+                self.tooltip.setColor(get_color(obj))
+                self.tooltip.setPos(xs, ys)
+                # self.canvas.set_cursor(matplotlib.backend_tools.cursors.POINTER)
+                self.tooltip.show()
                 break
-            else: self.tooltip.hide()
+            
 
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
