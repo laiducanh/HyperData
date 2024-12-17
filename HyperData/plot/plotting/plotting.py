@@ -19,6 +19,9 @@ from typing import List, Union, Literal
 
 DEBUG = True
 
+bbox = [0.995, 0.995]
+offset_x, offset_y = 0, 0
+
 def remove_artist (ax:Axes, gid:str) -> List[Artist]:
     artist_removed = list()
     for artist in find_mpl_object(figure=ax.figure,match=[Artist],gid=gid):
@@ -48,43 +51,46 @@ def get_legend(canvas: Canvas) -> Legend:
     return canvas.axesleg.get_legend()
 
 def legend_onRelease(event:MouseEvent, canvas:Canvas):
+    global bbox
     if get_legend(canvas).contains(event)[0]:
         bbox = canvas.axesleg.transAxes.inverted().transform([event.x-offset_x, event.y-offset_y])
-        get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
+        #get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes) # never use this!
 
 def legend_onPress(event:MouseEvent, canvas:Canvas):
     # global variables used for on_release() as well
-    global offset_x, offset_y
-    _x, _y, _w, _h = get_legend(canvas).get_bbox_to_anchor().bounds
+    global offset_x, offset_y, bbox
+    _x, _y = canvas.axesleg.transAxes.transform(bbox)
     offset_x = event.x - _x
     offset_y = event.y - _y
 
 def set_legend(canvas: Canvas, *args, **kwargs):
     try:
-        _handles = canvas.axes.get_legend_handles_labels()[0]   + \
+        _handles: list[Artist] = canvas.axes.get_legend_handles_labels()[0]   + \
                 canvas.axesx2.get_legend_handles_labels()[0] + \
                 canvas.axesy2.get_legend_handles_labels()[0] + \
                 canvas.axespie.get_legend_handles_labels()[0]
-        _labels = canvas.axes.get_legend_handles_labels()[1]   + \
+        _labels: list[str] = canvas.axes.get_legend_handles_labels()[1]   + \
                 canvas.axesx2.get_legend_handles_labels()[1] + \
                 canvas.axesy2.get_legend_handles_labels()[1] + \
                 canvas.axespie.get_legend_handles_labels()[1]
         old_title = None
-        old_bbox = [0.995, 0.995]
 
         if get_legend(canvas): 
             old_title = get_legend(canvas).get_title()
-            _bbox = get_legend(canvas).get_bbox_to_anchor()
-            old_bbox = canvas.axesleg.transAxes.inverted().transform(_bbox)[0]
             get_legend(canvas).remove()
 
         if _handles != []:
             _legend = canvas.axesleg.legend(_handles, _labels, 
                                             *args, *kwargs)
-            _legend.set_bbox_to_anchor(old_bbox, canvas.axesleg.transAxes)
+            _legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
             _legend.set_draggable(True)
             _legend.set_gid("legend")
-            
+
+            for _handle, _leghandle, _legtext \
+            in zip(_handles, _legend.legendHandles, _legend.get_texts()):
+                _leghandle.set_gid(_handle.get_gid())
+                _legtext.set_gid(_handle.get_gid())                
+                
             if old_title: 
                 _legend.set_title(old_title.get_text())
                 _legend.get_title().update_from(old_title)
