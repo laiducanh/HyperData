@@ -222,9 +222,16 @@ class GraphicsView (QGraphicsView):
         else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
 
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
+
+        # refresh canvas before showing any changes
+        self.canvas.draw()
         
         for obj in stack:
+            _alpha = obj.get_alpha() if obj.get_alpha() else 1
             if obj.contains(event)[0]:
+                obj.set_alpha(_alpha-0.5 if _alpha > 0.5 else 0.2)
+                self.canvas.draw()
+                obj.set_alpha(_alpha)
                 if not self.tooltip.isVisible():
                     self.tooltip.setText(obj.get_gid().title())
                     self.tooltip.setColor(get_color(obj))
