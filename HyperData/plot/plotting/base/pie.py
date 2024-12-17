@@ -4,7 +4,7 @@ from matplotlib.patches import Wedge, Rectangle
 from typing import List
 
 def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
-         radius=1, counterclock=True, rotatelabels=True, normalize=True) -> List[Wedge]:
+         radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> List[Wedge]:
 
     if explode != None and len(explode) != len(X):
         explode = None
@@ -17,7 +17,7 @@ def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
 
     artist = ax.pie(X, explode=explode, labels=labels, startangle=startangle,
                     radius=radius, counterclock=counterclock, rotatelabels=rotatelabels,
-                    normalize=normalize, frame=True)
+                    normalize=normalize, frame=True, *args, **kwargs)
 
     # artist has type of [[wedges],[text],[autotexts]]
     for ind, obj in enumerate(artist[0]):
@@ -43,10 +43,10 @@ def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
     return artist[0]
 
 def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=0,
-              radius=1, counterclock=True, rotatelabels=True, normalize=True) -> List[Wedge]:
+              radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> List[Wedge]:
 
     artist = ax.pie(X, wedgeprops=dict(width=width), explode=explode, labels=labels, startangle=startangle,
-                    radius=radius, counterclock=counterclock, rotatelabels=rotatelabels, normalize=normalize)
+                    radius=radius, counterclock=counterclock, rotatelabels=rotatelabels, normalize=normalize, *args, **kwargs)
 
     artist = artist[0]
 

@@ -225,18 +225,18 @@ class GraphicsView (QGraphicsView):
 
         # refresh canvas before showing any changes
         self.canvas.draw()
-        
-        for obj in stack:
+
+        for obj in reversed(stack): # the object on top will be picked
             _alpha = obj.get_alpha() if obj.get_alpha() else 1
             if obj.contains(event)[0]:
-                obj.set_alpha(_alpha-0.5 if _alpha > 0.5 else 0.2)
-                self.canvas.draw()
-                obj.set_alpha(_alpha)
                 if not self.tooltip.isVisible():
                     self.tooltip.setText(obj.get_gid().title())
                     self.tooltip.setColor(get_color(obj))
                     # self.canvas.set_cursor(matplotlib.backend_tools.cursors.POINTER)
                     self.tooltip.show()
+                obj.set_alpha(_alpha*0.6)
+                self.canvas.draw()
+                obj.set_alpha(_alpha)
                 break
             else: self.tooltip.hide()
 

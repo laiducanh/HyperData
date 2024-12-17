@@ -17,7 +17,7 @@ marker_lib = lines.Line2D.markers
 matplotlib.rcParams['font.family'] = 'DejaVu Sans'
 
 color_lib = matplotlib.rcParams["axes.prop_cycle"].by_key()["color"]
-
+color_cycle = itertools.cycle(color_lib)
 # linestyle_lib = dict()
 # for ls in ["solid","dashed","dotted","dashdot"]:
 #     linestyle_lib[matplotlib.lines._get_dash_pattern(ls)] = ls

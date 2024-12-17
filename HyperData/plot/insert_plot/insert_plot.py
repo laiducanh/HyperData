@@ -14,7 +14,7 @@ from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import rescale_plot, plotting
 from node_editor.node_node import Node
-from config.settings import GLOBAL_DEBUG, logger
+from config.settings import GLOBAL_DEBUG, logger, color_cycle
 from typing import List
 
 DEBUG = False
@@ -224,7 +224,7 @@ class NewPlot (Frame):
         if len(input) >= 4:
             T = split_input(input[3], self.node.input_sockets[0].socket_data)
         try:
-            self.artist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.plot_index}", 
+            self.artist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.plot_index}", color=next(color_cycle),
                                    plot_type=self.plot_type, **kwargs)
             for art in self.artist:
                 art.plot_type = self.plot_type

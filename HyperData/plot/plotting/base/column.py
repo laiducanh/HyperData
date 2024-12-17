@@ -10,17 +10,17 @@ import numpy as np
 import squarify, matplotlib
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", 
-              width=0.8, bottom=0, align="center") -> List[Rectangle]:
+              width=0.8, bottom=0, align="center", *args, **kwargs) -> List[Rectangle]:
     
     if orientation == "vertical":
-        artist = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align)
+        artist = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
     elif orientation == "horizontal":
-        artist = ax.barh(X, Y, gid=gid, height=width, left=bottom, align=align)
+        artist = ax.barh(X, Y, gid=gid, height=width, left=bottom, align=align, *args, **kwargs)
 
     # set edge_color
     for art in artist:
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
-    
+        
     for art in artist:
         art.orientation = orientation
         art.bottom = bottom
@@ -30,7 +30,7 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical",
     return artist
 
 def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
-              orientation="z", zsort="average", shade=True) -> List[Poly3DCollection]:
+              orientation="z", zsort="average", shade=True, *args, **kwargs) -> List[Poly3DCollection]:
 
     match orientation:
         case "x":   x, y, z, dx, dy, dz = bottom, X, Y, Z, Dx, Dy
@@ -38,7 +38,7 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
         case "z":   x, y, z, dx, dy, dz = X, Y, bottom, Dx, Dy, Z
    
     artist = ax.bar3d(x, y, z, dx, dy, dz, gid=gid,
-                      zsort=zsort, shade=shade, color=color)
+                      zsort=zsort, shade=shade, color=color, *args, **kwargs)
     print(artist)
     artist.Dx = Dx
     artist.Dy = Dy
@@ -51,7 +51,7 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
     return [artist]
 
 def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                       width=0.8, bottom=0, align="center", distance=1) -> List[Rectangle]:
+                       width=0.8, bottom=0, align="center", distance=1, *args, **kwargs) -> List[Rectangle]:
 
     multiplier = 0
     artist = list()
@@ -63,10 +63,10 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         
         if orientation == "vertical":
             bars = ax.bar([a+offset for a in X], values, gid = f"{gid}.{index+1}",
-                          width=width, bottom=bottom, align=align)
+                          width=width, bottom=bottom, align=align, *args, **kwargs)
         elif orientation == "horizontal":
             bars = ax.barh([a+offset for a in X], values, gid = f"{gid}.{index+1}",
-                           height=width, left=bottom, align=align)
+                           height=width, left=bottom, align=align, *args, **kwargs)
 
         artist += bars.patches
     
@@ -84,7 +84,7 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
     return artist
 
 def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                     width=0.8, bottom=0, align="center") -> List[Rectangle]:
+                     width=0.8, bottom=0, align="center", *args, **kwargs) -> List[Rectangle]:
 
     df = (pd.DataFrame(Y)).transpose()
     artist = list()
@@ -94,10 +94,10 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
 
         if orientation == "vertical":
             bars = ax.bar(X, values, gid=f"{gid}.{index+1}", 
-                          bottom=bottom, width=width, align=align)
+                          bottom=bottom, width=width, align=align, *args, **kwargs)
         elif orientation == "horizontal":
             bars = ax.barh(X, values,gid=f"{gid}.{index+1}", 
-                           left=bottom, height=width, align=align)
+                           left=bottom, height=width, align=align, *args, **kwargs)
         
         bottom += values
 
@@ -115,7 +115,7 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
     return artist
 
 def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
-                        width=0.8, bottom=0, align="center") -> List[Rectangle]:
+                        width=0.8, bottom=0, align="center", *args, **kwargs) -> List[Rectangle]:
 
     df = pd.DataFrame(Y)
     df = (df.divide(df.sum())).transpose()
@@ -125,10 +125,10 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
     for index, values in df.items():   
         if orientation == "vertical":
             bars = ax.bar(X, values, gid=f"{gid}.{index+1}", 
-                          bottom=bottom, width=width, align=align)
+                          bottom=bottom, width=width, align=align, *args, **kwargs)
         elif orientation == "horizontal":
             bars = ax.barh(X, values,gid=f"{gid}.{index+1}", 
-                           left=bottom, height=width, align=align)
+                           left=bottom, height=width, align=align, *args, **kwargs)
         
         bottom += values
 
@@ -146,7 +146,7 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
    
     return artist
 
-def marimekko (X, ax:Axes, gid, orientation="vertical") -> List[Rectangle]:
+def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> List[Rectangle]:
 
     df = pd.DataFrame(X)
     df = (df.divide(df.sum())).transpose()
@@ -159,9 +159,9 @@ def marimekko (X, ax:Axes, gid, orientation="vertical") -> List[Rectangle]:
 
     for index, values in df.items():
         if orientation == "vertical":
-            bars = ax.bar(pos,values,width=width,bottom=bottom,gid=f"{gid}.{index+1}")
+            bars = ax.bar(pos,values,width=width,bottom=bottom,gid=f"{gid}.{index+1}", *args, **kwargs)
         elif orientation == "horizontal":
-            bars = ax.barh(pos,values,height=width,left=bottom,gid=f"{gid}.{index+1}")
+            bars = ax.barh(pos,values,height=width,left=bottom,gid=f"{gid}.{index+1}", *args, **kwargs)
 
         bottom += values
 
@@ -177,7 +177,7 @@ def marimekko (X, ax:Axes, gid, orientation="vertical") -> List[Rectangle]:
 
     return artist
 
-def treemap (X, ax:Axes, gid, pad=0, cmap="tab10", alpha=1) -> List[Rectangle]:
+def treemap (X, ax:Axes, gid, pad=0, cmap="tab10", alpha=1, *args, **kwargs) -> List[Rectangle]:
     
     # descending sort
     X = -np.sort(-X)
