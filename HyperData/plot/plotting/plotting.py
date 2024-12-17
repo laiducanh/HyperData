@@ -183,5 +183,5 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, **kwargs) ->
     set_legend(ax.figure.canvas)
 
     ax.figure.canvas.draw()
-    print("plotting")
+    if DEBUG or GLOBAL_DEBUG: print("plotting")
     return artist
