@@ -38,11 +38,11 @@ def update_props (from_obj: Artist, to_obj: Artist,
         to_obj_props = to_obj.properties()
         from_obj_props = from_obj.properties()
 
-        #to_obj.update_from(from_obj)
+        to_obj.update_from(from_obj)
 
         # for step plots
-        # if isinstance(to_obj, Line2D):
-        #     to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
+        if isinstance(to_obj, Line2D):
+            to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
         
     except Exception as e:
         logger.exception(e)
