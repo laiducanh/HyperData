@@ -6,35 +6,35 @@ from typing import List
 import matplotlib
 import numpy as np
 
-def scatter2d (X, Y, ax:Axes, gid, sizes=1) -> List[PathCollection]:
+def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathCollection]:
     
-    artist = ax.scatter(X, Y, gid=gid, s=matplotlib.rcParams["lines.markersize"]**2*sizes)
+    artist = ax.scatter(X, Y, gid=gid, s=matplotlib.rcParams["lines.markersize"]**2*sizes, *args, **kwargs)
 
     artist.sizes = sizes
     
     return [artist]
 
-def scatter3d(X, Y, Z, ax:Axes3D, gid, sizes=1, depthshade=True) -> List[PathCollection]:
+def scatter3d(X, Y, Z, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs) -> List[PathCollection]:
     
     artist = ax.scatter(X, Y, Z, gid=gid, depthshade=depthshade,
-                        s=matplotlib.rcParams["lines.markersize"]**2*sizes)
+                        s=matplotlib.rcParams["lines.markersize"]**2*sizes, *args, **kwargs)
 
     artist.sizes = sizes
     artist.depthshade = depthshade
 
     return [artist]
 
-def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1) -> List[PathCollection]:
+def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathCollection]:
 
-    artist = ax.scatter(X, Y, s=Z*sizes, gid=gid)
+    artist = ax.scatter(X, Y, s=Z*sizes, gid=gid, *args, **kwargs)
 
     artist.sizes = sizes
 
     return [artist]
 
-def bubble3d (X, Y, Z, T, ax:Axes3D, gid, sizes=1, depthshade=True) -> List[PathCollection]:
+def bubble3d (X, Y, Z, T, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs) -> List[PathCollection]:
 
-    artist = ax.scatter(X, Y, Z, s=T*sizes, gid=gid, depthshade=depthshade)
+    artist = ax.scatter(X, Y, Z, s=T*sizes, gid=gid, depthshade=depthshade, *args, **kwargs)
 
     artist.sizes = sizes
     artist.depthshade = depthshade

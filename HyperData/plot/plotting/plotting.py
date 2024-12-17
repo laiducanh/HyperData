@@ -19,6 +19,9 @@ from typing import List, Union, Literal
 
 DEBUG = True
 
+bbox = [0.995, 0.995]
+offset_x, offset_y = 0, 0
+
 def remove_artist (ax:Axes, gid:str) -> List[Artist]:
     artist_removed = list()
     for artist in find_mpl_object(figure=ax.figure,match=[Artist],gid=gid):
@@ -31,7 +34,7 @@ def update_props (from_obj: Artist, to_obj: Artist,
                   include=list(), exclude:Literal["default",None]="default") -> None:  
     try:      
         #print("update props")
-        print(to_obj, from_obj)
+        #print(to_obj, from_obj)
         to_obj_props = to_obj.properties()
         from_obj_props = from_obj.properties()
 
@@ -48,43 +51,46 @@ def get_legend(canvas: Canvas) -> Legend:
     return canvas.axesleg.get_legend()
 
 def legend_onRelease(event:MouseEvent, canvas:Canvas):
+    global bbox
     if get_legend(canvas).contains(event)[0]:
         bbox = canvas.axesleg.transAxes.inverted().transform([event.x-offset_x, event.y-offset_y])
-        get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
+        #get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes) # never use this!
 
 def legend_onPress(event:MouseEvent, canvas:Canvas):
     # global variables used for on_release() as well
-    global offset_x, offset_y
-    _x, _y, _w, _h = get_legend(canvas).get_bbox_to_anchor().bounds
+    global offset_x, offset_y, bbox
+    _x, _y = canvas.axesleg.transAxes.transform(bbox)
     offset_x = event.x - _x
     offset_y = event.y - _y
 
 def set_legend(canvas: Canvas, *args, **kwargs):
     try:
-        _handles = canvas.axes.get_legend_handles_labels()[0]   + \
+        _handles: list[Artist] = canvas.axes.get_legend_handles_labels()[0]   + \
                 canvas.axesx2.get_legend_handles_labels()[0] + \
                 canvas.axesy2.get_legend_handles_labels()[0] + \
                 canvas.axespie.get_legend_handles_labels()[0]
-        _labels = canvas.axes.get_legend_handles_labels()[1]   + \
+        _labels: list[str] = canvas.axes.get_legend_handles_labels()[1]   + \
                 canvas.axesx2.get_legend_handles_labels()[1] + \
                 canvas.axesy2.get_legend_handles_labels()[1] + \
                 canvas.axespie.get_legend_handles_labels()[1]
         old_title = None
-        old_bbox = [0.995, 0.995]
 
         if get_legend(canvas): 
             old_title = get_legend(canvas).get_title()
-            _bbox = get_legend(canvas).get_bbox_to_anchor()
-            old_bbox = canvas.axesleg.transAxes.inverted().transform(_bbox)[0]
             get_legend(canvas).remove()
 
         if _handles != []:
             _legend = canvas.axesleg.legend(_handles, _labels, 
                                             *args, *kwargs)
-            _legend.set_bbox_to_anchor(old_bbox, canvas.axesleg.transAxes)
+            _legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
             _legend.set_draggable(True)
             _legend.set_gid("legend")
-            
+
+            for _handle, _leghandle, _legtext \
+            in zip(_handles, _legend.legendHandles, _legend.get_texts()):
+                _leghandle.set_gid(_handle.get_gid())
+                _legtext.set_gid(_handle.get_gid())                
+                
             if old_title: 
                 _legend.set_title(old_title.get_text())
                 _legend.get_title().update_from(old_title)
@@ -127,7 +133,7 @@ def rescale_plot(figure:Figure) -> None:
         _ax.relim()
         _ax.autoscale()    
 
-def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, **kwargs) -> List[Artist]:
+def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> List[Artist]:
     
     # get old artist that will be replaced
     # but its properties will apply to the new ones
@@ -141,36 +147,36 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, **kwargs) ->
     rescale_plot(ax.figure)
     
     match plot_type:
-        case "2d line":                 artist = line2d(X, Y, ax, gid, **kwargs)
-        case "2d step":                 artist = step2d(X, Y, ax, gid, **kwargs)
-        case "2d stem":                 artist = stem2d(X, Y, ax, gid, **kwargs)
-        case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, **kwargs)
-        case "fill between":            artist = fill_between(X, Y, Z, ax, gid, **kwargs)
-        case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, **kwargs)
-        case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, **kwargs)
-        case "2d column":               artist = column2d(X, Y, ax, gid, **kwargs)
-        case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, **kwargs)
-        case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, **kwargs)
-        case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, **kwargs)
-        case "marimekko":               artist = marimekko(X, ax, gid, **kwargs)
-        case "treemap":                 artist = treemap(X, ax, gid, **kwargs)
-        case "2d scatter":              artist = scatter2d(X, Y, ax, gid, **kwargs)
-        case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, **kwargs)
-        case "pie":                     artist = pie(X, ax, gid, **kwargs)
-        case "doughnut":                artist = doughnut(X, ax, gid, **kwargs)
-        case "histogram":               artist = histogram(X, ax, gid, **kwargs)
-        case "stacked histogram":       artist = stacked_histogram(X, ax, gid, **kwargs)
-        case "boxplot":                 artist = boxplot(X, ax, gid, **kwargs)
-        case "violinplot":              artist = violinplot(X, ax, gid, **kwargs)
-        case "eventplot":               artist = eventplot(X, ax, gid, **kwargs)
-        case "hist2d":                  artist = hist2d(X, Y, ax, gid, **kwargs)
+        case "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
+        case "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
+        case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
+        case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
+        case "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
+        case "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
+        case "treemap":                 artist = treemap(X, ax, gid, *args, **kwargs)
+        case "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
+        case "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
+        case "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
+        case "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
+        case "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)
+        case "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
+        case "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
+        case "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
 
-        case "3d line":                 artist = line3d(X, Y, Z, ax, gid, **kwargs)
-        case "3d step":                 artist = step3d(X, Y, Z, ax, gid, **kwargs)
-        case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, **kwargs)
-        case "3d column":               artist = column3d(X, Y, Z, ax, gid, **kwargs)
-        case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, **kwargs)
-        case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, **kwargs)
+        case "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
     
     # some plot types cannot update props from old artists
     if plot_type not in ["treemap"]:
@@ -183,5 +189,5 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, **kwargs) ->
     set_legend(ax.figure.canvas)
 
     ax.figure.canvas.draw()
-    print("plotting")
+    if DEBUG or GLOBAL_DEBUG: print("plotting")
     return artist
