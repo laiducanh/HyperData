@@ -9,10 +9,11 @@ import matplotlib.backend_tools
 import matplotlib.collections
 import matplotlib.container
 from matplotlib.lines import Line2D
-from matplotlib.patches import Rectangle, Wedge, PathPatch
+from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.collections import Collection
 from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
+from matplotlib.text import Text
 from plot.canvas import Canvas
 import matplotlib, math
 from matplotlib.backend_bases import MouseEvent
@@ -20,6 +21,9 @@ from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
+from config.settings import GLOBAL_DEBUG
+
+DEBUG = True
 
 class WidgetItem (QGraphicsItem):
     def __init__(self, widget, parent=None):
@@ -42,7 +46,7 @@ class WidgetItem (QGraphicsItem):
             self.height
         ).normalized()     
     
-class ToolTip (QGraphicsItem):
+class _ToolTip (QGraphicsItem):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -97,7 +101,6 @@ class ToolTip (QGraphicsItem):
         painter.setPen(self._pen_default)
         painter.drawPath(path_outline.simplified())
 
-    
 class GraphicsView (QGraphicsView):
     key_pressed = pyqtSignal(object)
     mouse_released = pyqtSignal(object)
@@ -119,15 +122,16 @@ class GraphicsView (QGraphicsView):
         self.plotview = WidgetItem(canvas)
         self._scene.addItem(self.plotview) 
     
-        self.tooltip = ToolTip()
-        self._scene.addItem(self.tooltip)
-        self.tooltip.hide()
-
+        # self.tooltip = ToolTip()
+        # self._scene.addItem(self.tooltip)
+        # self.tooltip.hide()
+        
         self.menu = Menu(parent=self)
         self.Menu()
 
         self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
         self.canvas.mpl_connect('button_press_event', self.mpl_mousePress)
+        self.canvas.mpl_connect('draw_event', self.save_mpl_bg)
         #self.canvas.mpl_connect('figure_leave_event', self.mouseLeave)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
@@ -209,37 +213,36 @@ class GraphicsView (QGraphicsView):
     def rightMouseButtonPress(self, event):
         super().mousePressEvent(event)
     
+    def save_mpl_bg(self, event):
+        if DEBUG or GLOBAL_DEBUG: print("save mpl background for blit")
+        self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
+    
     def mpl_mouseMove(self, event:MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Line2D,Collection,Rectangle,Wedge,PathPatch])
         
-        x_increment, y_increment = 30, 30
-        if self.mouse_position.x() + x_increment + self.tooltip.width < self.width():
-            self.tooltip.setX(self.mouse_position.x() + x_increment)
-        else: self.tooltip.setX(self.width() - 10 - self.tooltip.width)
-        if self.mouse_position.y() + y_increment + self.tooltip.height < self.height():
-            self.tooltip.setY(self.mouse_position.y() + y_increment)
-        else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
+        # x_increment, y_increment = 30, 30
+        # if self.mouse_position.x() + x_increment + self.tooltip.width < self.width():
+        #     self.tooltip.setX(self.mouse_position.x() + x_increment)
+        # else: self.tooltip.setX(self.width() - 10 - self.tooltip.width)
+        # if self.mouse_position.y() + y_increment + self.tooltip.height < self.height():
+        #     self.tooltip.setY(self.mouse_position.y() + y_increment)
+        # else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
 
+        bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
+        self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
+        self.canvas.restore_region(self.mpl_background)
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
 
-        # refresh canvas before showing any changes
-        self.canvas.draw()
-        self.tooltip.hide()
 
         dist = list()
         xp, yp, zp = None, None, None
         xs, ys = 0, 0
 
         for obj in reversed(stack): # the object on top will be picked
-            _alpha = obj.get_alpha() if obj.get_alpha() else 1
             if obj.contains(event)[0]:
-                obj.set_alpha(_alpha*0.6)
-                self.canvas.draw()
-                obj.set_alpha(_alpha)
-                cursor = obj.axes.transData.inverted().transform([event.x, event.y])
-                
                 if isinstance(obj, Line2D):
+                    cursor = obj.axes.transData.inverted().transform([event.x, event.y])
                     for x, y in zip(obj.get_xdata(), obj.get_ydata()):
                         dist.append(math.sqrt(abs(cursor[0]**2 + cursor[1]**2 - x**2 - y**2)))
                     minpos = dist.index(min(dist))
@@ -255,22 +258,28 @@ class GraphicsView (QGraphicsView):
                 if xp: s += f"{str(xp)}"
                 if yp: s += f", {str(yp)}"
                 if zp: s += f", {str(zp)}"
-
+                self.tooltip.set_text(s)
+                
                 # determine where to put tooltip on canvas
                 xs, ys = obj.axes.transData.transform([xs, ys])
-                xs -= self.tooltip.width/2
-                ys = self.height() - ys - self.tooltip.height - 20
-                if ys < self.tooltip.height: 
-                    ys = self.height() - ys + 20
-                #print(xs, ys, self.mouse_position.x(), self.mouse_position.y(), self.height())
-
-                self.tooltip.setText(s)
-                self.tooltip.setColor(get_color(obj))
-                self.tooltip.setPos(xs, ys)
-                # self.canvas.set_cursor(matplotlib.backend_tools.cursors.POINTER)
-                self.tooltip.show()
+                xs, ys = self.canvas.figure.transFigure.inverted().transform((xs, ys))
+                # xs += self.tooltip.get_window_extent()*0.2
+                # ys -= self.tooltip.get_height()*1.2
+                # if xs < 0 : xs = 0.02
+                # if ys < 0 : ys = 0.02
+                # if xs + self.tooltip.get_width() > 1: xs = 1 - self.tooltip.get_width() - 0.02
+                # if ys + self.tooltip.get_height() > 1: ys = 1 - self.tooltip.get_height() - 0.02
+                #self.canvas.figure.add_artist(self.tooltip)
+                self.tooltip.set_x(xs)
+                self.tooltip.set_y(ys)
+                self.canvas.figure.draw_artist(self.tooltip)
+                    
                 break
-            
+
+        self.tooltip.remove() # make sure the annotation will be removed
+        self.canvas.blit(self.canvas.fig.bbox)
+        self.canvas.flush_events()
+        
 
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
