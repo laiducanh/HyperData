@@ -2,6 +2,8 @@ from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.patches import Wedge, Rectangle
 from typing import List
+import math
+import numpy as np
 
 def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
          radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> List[Wedge]:
@@ -28,6 +30,11 @@ def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
         obj.counterclock = counterclock
         obj.rotatelabels = rotatelabels
         obj.normalize = normalize
+        obj.Xdata = X[ind]
+        obj.Ydata = None
+        thetam = np.pi * (obj.theta2 + obj.theta1)/360
+        obj.Xshow = obj.center[0] + obj.r * math.cos(thetam)
+        obj.Yshow = obj.center[1] + obj.r * math.sin(thetam)
 
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")
@@ -59,6 +66,11 @@ def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=
         obj.counterclock = counterclock
         obj.rotatelabels = rotatelabels
         obj.normalize = normalize
+        obj.Xdata = X[ind]
+        obj.Ydata = None
+        thetam = np.pi * (obj.theta2 + obj.theta1)/360
+        obj.Xshow = obj.center[0] + obj.r * math.cos(thetam)
+        obj.Yshow = obj.center[1] + obj.r * math.sin(thetam)
 
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")

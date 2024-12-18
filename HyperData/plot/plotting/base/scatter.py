@@ -11,6 +11,10 @@ def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathCollect
     artist = ax.scatter(X, Y, gid=gid, s=matplotlib.rcParams["lines.markersize"]**2*sizes, *args, **kwargs)
 
     artist.sizes = sizes
+    artist.Xdata = X
+    artist.Ydata = Y
+    artist.Xshow = artist.Xdata
+    artist.Yshow = artist.Ydata
     
     return [artist]
 
@@ -29,6 +33,10 @@ def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathColle
     artist = ax.scatter(X, Y, s=Z*sizes, gid=gid, *args, **kwargs)
 
     artist.sizes = sizes
+    artist.Xdata = X
+    artist.Ydata = Y
+    artist.Xshow = artist.Xdata
+    artist.Yshow = artist.Ydata
 
     return [artist]
 

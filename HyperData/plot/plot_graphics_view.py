@@ -241,7 +241,7 @@ class GraphicsView (QGraphicsView):
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
 
 
-        dist = list()
+        
         xp, yp, zp = None, None, None
         xs, ys = 0, 0
 
@@ -251,15 +251,15 @@ class GraphicsView (QGraphicsView):
                 _lw = obj.get_linewidth()
                 _alp = obj.get_alpha() if obj.get_alpha() else 1
                 # decorate the artist when it is hovered
-                obj.set(linewidth=5, alpha=_alp*0.5)
+                obj.set(linewidth=_lw+4, alpha=_alp*0.5)
                 obj.axes.draw_artist(obj)
 
                 if isinstance(obj, Line2D):
-                    # get current position of the cursor
-                    cursor = obj.axes.transData.inverted().transform([event.x, event.y])
                     # determine the closest data point to the cursor
+                    dist = list()
                     for x, y in zip(obj.get_xdata(), obj.get_ydata()):
-                        dist.append(math.sqrt(abs(cursor[0]**2 + cursor[1]**2 - x**2 - y**2)))
+                        x, y = obj.axes.transData.transform((x, y))
+                        dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
                     minpos = dist.index(min(dist))
                     xp = obj.get_xdata()[minpos]
                     yp = obj.get_ydata()[minpos]
@@ -273,6 +273,33 @@ class GraphicsView (QGraphicsView):
                     obj.set(edgecolor = get_color(obj))
                     obj.axes.draw_artist(obj)
                     obj.set(edgecolor = _ec)
+                
+                elif isinstance(obj, Collection):              
+                    # determine the closest data point to the cursor
+                    dist = list()
+                    for x, y in zip(obj.Xshow, obj.Yshow):
+                        x, y = obj.axes.transData.transform((x, y))
+                        dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
+                    minpos = dist.index(min(dist))
+                    xs = obj.Xshow[minpos]
+                    ys = obj.Yshow[minpos]
+                    xp = obj.Xdata[minpos]
+                    yp = obj.Ydata[minpos]
+                    # decorate edgecolor of collection with facecolor (probablly)
+                    _ec = obj.get_edgecolor()
+                    obj.set(edgecolor = get_color(obj))
+                    obj.axes.draw_artist(obj)
+                    obj.set(edgecolor = _ec)
+                
+                elif isinstance(obj, Wedge):
+                    # tooltip will be placed at cursor
+                    xp, yp = obj.Xdata, obj.Ydata
+                    xs, ys = obj.Xshow, obj.Yshow
+                    # decorate wedge by shifting a bit
+                    _r = obj.r
+                    obj.set_radius(_r*1.1)
+                    obj.axes.draw_artist(obj)
+                    obj.set_radius(_r)
 
                 # determine the information from the picked artist
                 s = f"{obj.get_gid().title()}\n"

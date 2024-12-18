@@ -224,7 +224,7 @@ class NewPlot (Frame):
         if len(input) >= 4:
             T = split_input(input[3], self.node.input_sockets[0].socket_data)
         try:
-            self.artist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.plot_index}", color=next(color_cycle),
+            self.artist = plotting(X, Y, Z, T, ax=ax, gid=f"graph {self.plot_index}", 
                                    plot_type=self.plot_type, **kwargs)
             for art in self.artist:
                 art.plot_type = self.plot_type

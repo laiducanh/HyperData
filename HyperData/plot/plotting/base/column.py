@@ -16,11 +16,11 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical",
         artist = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
     elif orientation == "horizontal":
         artist = ax.barh(X, Y, gid=gid, height=width, left=bottom, align=align, *args, **kwargs)
-
+  
     # set edge_color
     for art in artist:
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
-    ind = 0
+    
     for ind, art in enumerate(artist):
         art.orientation = orientation
         art.bottom = bottom
@@ -28,7 +28,7 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.width = width
         art.Xdata = X[ind]
         art.Ydata = Y[ind]
-        art.Xshow = X[ind]
+        art.Xshow = art.get_center()[0]
         art.Yshow = Y[ind]
 
     return artist
@@ -84,10 +84,10 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.align = align
         art.width = width
         art.distance = distance
-        art.Xdata = X[ind]
-        art.Ydata = Y[ind]
-        art.Xshow = X[ind]
-        art.Yshow = Y[ind]
+        art.Xdata = np.asarray(X*len(Y))[ind]
+        art.Ydata = np.asarray(Y).flatten()[ind]
+        art.Xshow = art.get_center()[0]
+        art.Yshow = np.asarray(Y).flatten()[ind]
 
     return artist
 
@@ -120,10 +120,10 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.bottom = _bottom
         art.align = align
         art.width = width
-        art.Xdata = X[ind]
-        art.Ydata = Y[ind]
-        art.Xshow = X[ind]
-        art.Yshow = Y[ind]
+        art.Xdata = np.asarray(X*len(Y))[ind]
+        art.Ydata = np.asarray(Y).flatten()[ind]
+        art.Xshow = art.get_center()[0]
+        art.Yshow = art.get_center()[1]
 
     return artist
 
@@ -156,15 +156,15 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
         art.bottom = _bottom
         art.align = align
         art.width = width
-        art.Xdata = X[ind]
-        art.Ydata = Y[ind]
-        art.Xshow = X[ind]
-        art.Yshow = Y[ind]
+        art.Xdata = np.asarray(X*len(Y))[ind]
+        art.Ydata = np.asarray(Y).flatten()[ind]
+        art.Xshow = art.get_center()[0]
+        art.Yshow = art.get_center()[1]
    
     return artist
 
 def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> List[Rectangle]:
-
+    
     df = pd.DataFrame(X)
     df = (df.divide(df.sum())).transpose()
     max_x = [sum(a) for a in np.array(X).transpose()]
@@ -173,7 +173,7 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> List
     artist = list()
 
     pos = [sum(width[:n])+width[n]/2 for n,_ in enumerate(width)] 
-
+    
     for index, values in df.items():
         if orientation == "vertical":
             bars = ax.bar(pos,values,width=width,bottom=bottom,gid=f"{gid}.{index+1}", *args, **kwargs)
@@ -187,10 +187,10 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> List
     for ind, art in enumerate(artist):
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
         art.orientation = orientation
-        art.Xdata = pos[ind]
-        art.Ydata = values[ind]
-        art.Xshow = pos[ind]
-        art.Yshow = values[ind]
+        art.Xdata = np.asarray(X).flatten()[ind]
+        art.Ydata = None
+        art.Xshow = art.get_center()[0]
+        art.Yshow = art.get_center()[1]
 
     ax.set_xlim(pos[0]-width[0]/2,pos[-1]+width[-1]/2)
     ax.set_ylim(0,1)
@@ -233,8 +233,8 @@ def treemap (X, ax:Axes, gid, pad=0, cmap="tab10", alpha=1, *args, **kwargs) -> 
         rect.cmap = cmap
         rect.Xdata = X[ind]
         rect.Ydata = None
-        rect.Xshow = _rect['x']+_rect['dx']/2
-        rect.Yshow = _rect['y']+_rect['dy']/2
+        rect.Xshow = rect.get_center()[0]
+        rect.Yshow = rect.get_center()[1]
 
         ax.add_artist(rect)
         artist.append(rect)

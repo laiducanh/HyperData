@@ -59,10 +59,10 @@ class Column (QWidget):
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
         self._layout.addWidget(self.bottom)
 
-        self.align = ComboBox(items=["center","edge"],text="Alignment")
-        self.align.button.setCurrentText(self.get_alignment())
-        self.align.button.currentTextChanged.connect(self.set_alignment)
-        self._layout.addWidget(self.align)
+        # self.align = ComboBox(items=["center","edge"],text="Alignment")
+        # self.align.button.setCurrentText(self.get_alignment())
+        # self.align.button.currentTextChanged.connect(self.set_alignment)
+        # self._layout.addWidget(self.align)
 
         self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
         self.barwidth.button.setValue(self.get_barwidth())
