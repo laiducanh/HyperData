@@ -16,18 +16,21 @@ class GraphTitle (QScrollArea):
 
         widget = Frame()
         widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(10,0,10,15)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        widget.setLayout(layout)
+        self.vlayout = QVBoxLayout()
+        self.vlayout.setContentsMargins(10,0,10,15)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        widget.setLayout(self.vlayout)
         self.setWidget(widget)
         self.setWidgetResizable(True)
         self.verticalScrollBar().setValue(1900)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.canvas = canvas
+        self.first_show = True
+    
+    def initUI(self):
         
-        layout.addWidget(TitleLabel("Graph Title"))
-        layout.addWidget(SeparateHLine())
+        self.vlayout.addWidget(TitleLabel("Graph Title"))
+        self.vlayout.addWidget(SeparateHLine())
 
         self.title = _TextEdit()
         self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
@@ -35,34 +38,34 @@ class GraphTitle (QScrollArea):
         self.title.textChanged.connect(self.set_title)
         self.title.setText(self.get_title())
         self.title.setFixedHeight(100)
-        layout.addWidget(self.title)
+        self.vlayout.addWidget(self.title)
 
-        layout.addSpacing(10)
+        self.vlayout.addSpacing(10)
         
         font = ComboBox(items=font_lib,text='Font')
         font.button.currentTextChanged.connect(self.set_fontname)
         font.button.setCurrentText(self.get_fontname())
-        layout.addWidget(font)
+        self.vlayout.addWidget(font)
 
         size = DoubleSpinBox(text='font size',min=1,max=100,step=2)
         size.button.valueChanged.connect(self.set_fontsize)
         size.button.setValue(self.get_fontsize())
-        layout.addWidget(size)
+        self.vlayout.addWidget(size)
         
         style = FontStyle(obj=[self.obj], canvas=self.canvas)
-        layout.addWidget(style)
+        self.vlayout.addWidget(style)
 
         color = ColorDropdown(text='font color',color=self.get_color())
         color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(color)
+        self.vlayout.addWidget(color)
 
         self.backgroundcolor = ColorDropdown(text='background color',color=self.get_backgroundcolor())
         self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        layout.addWidget(self.backgroundcolor)
+        self.vlayout.addWidget(self.backgroundcolor)
 
         edgecolor = ColorDropdown(text='edge color',color=self.get_edgecolor())
         edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(edgecolor)
+        self.vlayout.addWidget(edgecolor)
 
         # #align = FontAlignment(type='graph')
         # #align.sig.connect(lambda: self.sig.emit())
@@ -75,7 +78,7 @@ class GraphTitle (QScrollArea):
         alpha = Slider(text='transparency')
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
+        self.vlayout.addWidget(alpha)
 
         # #self.layout.addStretch()
 
@@ -140,3 +143,9 @@ class GraphTitle (QScrollArea):
         if self.obj.get_alpha() != None:
             return int(self.obj.get_alpha()*100)
         return 100
+
+    def showEvent(self, a0):
+        if self.first_show:
+            self.initUI()
+            self.first_show = False
+        return super().showEvent(a0)

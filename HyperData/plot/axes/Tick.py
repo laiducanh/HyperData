@@ -1,11 +1,12 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QShowEvent
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QScrollArea
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QScrollArea, QApplication
 from ui.base_widgets.button import ComboBox, Toggle, _ComboBox, SegmentedWidget
 from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit, _LineEdit
 from ui.base_widgets.frame import Frame
+from ui.base_widgets.window import ProgressDialog
 from plot.utilis import find_mpl_object
 import matplotlib
 from matplotlib.axis import Axis
@@ -15,18 +16,29 @@ class TickBase2D_1 (QWidget):
     def __init__(self,axis,canvas:Canvas, parent=None):
         super().__init__(parent)
         self.axis = axis
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.axis = axis
         self.canvas = canvas
         self.obj = self.find_obj()
+        self.first_show = True
+
+        
+        
+    
+    def initUI(self):
+        self.diag = ProgressDialog("Waiting", None, self.parent())
+        self.diag.progressbar._setValue(0)
+        self.diag.show()
+        QApplication.processEvents()
+        
 
         mainwidget = QWidget()
         mainwidget_layout = QVBoxLayout(mainwidget)
         mainwidget_layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(mainwidget)
+        self.vlayout.addWidget(mainwidget)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setContentsMargins(0,0,0,0)
@@ -34,39 +46,50 @@ class TickBase2D_1 (QWidget):
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setWidget(mainwidget)
         self.scroll_area.verticalScrollBar().setValue(1900)
-        layout.addWidget(self.scroll_area)
+        self.vlayout.addWidget(self.scroll_area)
 
-        card1 = Frame(parent)
+        card1 = Frame(self.parent())
         layout1 = QVBoxLayout(card1)
         mainwidget_layout.addWidget(card1)
 
-        visible = Toggle(text="Visible",text2=f"Toggle {axis} ticks' visibility")
+        visible = Toggle(text="Visible",text2=f"Toggle {self.axis} ticks' visibility")
         visible.button.checkedChanged.connect(self.set_visible)
         visible.button.setChecked(self.get_visible())
         layout1.addWidget(visible)
+        
+        self.diag.progressbar._setValue(10)
+        QApplication.processEvents()
 
-        self.min = LineEdit(text="Min Value",text2=f"Set {axis} axis view minimum")
+        self.min = LineEdit(text="Min Value",text2=f"Set {self.axis} axis view minimum")
         self.min.button.setFixedWidth(150)
         self.min.button.textChanged.connect(self.set_min)
         self.min.button.setText(str(round(self.get_lim()[0],5)))
         layout1.addWidget(self.min)
+        
+        self.diag.progressbar._setValue(20)
+        QApplication.processEvents()
 
-        self.max = LineEdit(text='Max Value',text2=f"Set {axis} axis view maximum")
+        self.max = LineEdit(text='Max Value',text2=f"Set {self.axis} axis view maximum")
         self.max.button.setFixedWidth(150)
         self.max.button.textChanged.connect(self.set_max)
         self.max.button.setText(str(round(self.get_lim()[1],5)))
         layout1.addWidget(self.max)
+        self.diag.progressbar._setValue(30)
+        QApplication.processEvents()
 
         scale = ComboBox(items=['Linear','Log','Symlog','Logit','Asinh'],
-                         text='Scale',text2=f"Set {axis} axis' scale")
+                         text='Scale',text2=f"Set {self.axis} axis' scale")
         scale.button.currentTextChanged.connect(self.set_scale)
         scale.button.setCurrentText(self.get_scale())
-        layout1.addWidget(scale)   
+        layout1.addWidget(scale) 
+        
+        self.diag.progressbar._setValue(40)
+        QApplication.processEvents()  
 
         self.choose_tick = SegmentedWidget()
         mainwidget_layout.addWidget(self.choose_tick)
 
-        card2 = Frame(parent)
+        card2 = Frame(self.parent())
         layout2 = QVBoxLayout()
         card2.setLayout(layout2)
         mainwidget_layout.addWidget(card2)
@@ -80,13 +103,19 @@ class TickBase2D_1 (QWidget):
         self.stackedlayout = QStackedLayout()
         self.layout6.addLayout(self.stackedlayout)
 
-        self.majortick = TickBase2D_2(self.axis, 'major',self.canvas, parent)
+        self.majortick = TickBase2D_2(self.axis, 'major',self.canvas, self.parent())
         self.stackedlayout.addWidget(self.majortick)
+        self.diag.progressbar._setValue(70)
+        QApplication.processEvents()
 
-        self.minortick = TickBase2D_2(self.axis,'minor', self.canvas, parent)
+        self.minortick = TickBase2D_2(self.axis,'minor', self.canvas, self.parent())
         self.stackedlayout.addWidget(self.minortick)
+        self.diag.progressbar._setValue(100)
+        QApplication.processEvents()
         
         self.choose_tick._onClick("Major")
+
+        self.diag.close()
     
     def find_obj(self) -> Axis:
         obj = find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)
@@ -141,6 +170,9 @@ class TickBase2D_1 (QWidget):
         # update min, max when show
         # self.min.button.setText(str(round(self.get_lim()[0],5)))
         # self.max.button.setText(str(round(self.get_lim()[1],5)))
+        if self.first_show: 
+            self.initUI()
+            self.first_show = False
         return super().showEvent(a0)
 
 class TickBase2D_2 (QWidget):
@@ -153,6 +185,9 @@ class TickBase2D_2 (QWidget):
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0,0,0,0)
         self.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.first_show = True
+    
+    def initUI(self):
 
         layout1 = QHBoxLayout()
         self.layout().addLayout(layout1)
@@ -169,18 +204,18 @@ class TickBase2D_2 (QWidget):
         self.value.hide()
         layout1.addWidget(self.value)
         
-        self.tick_label = LineEdit(text='Tick labels',text2=f"Set {axis} axis' {type} tick labels")
+        self.tick_label = LineEdit(text='Tick labels',text2=f"Set {self.axis} axis' {self.type} tick labels")
         self.tick_label.button.textChanged.connect(self.set_ticklabels)
         self.tick_label.button.setPlaceholderText(self.get_ticklabels())
         self.layout().addWidget(self.tick_label)
 
-        tick_labelsize = DoubleSpinBox(text='Label size',text2=f"Set {axis} axis' {type} tick label size",
+        tick_labelsize = DoubleSpinBox(text='Label size',text2=f"Set {self.axis} axis' {self.type} tick label size",
                                        min=1,max=100,step=1)
         tick_labelsize.button.valueChanged.connect(self.set_labelsize)
         tick_labelsize.button.setValue(self.get_labelsize())
         self.layout().addWidget(tick_labelsize)
 
-        tick_direction = ComboBox(text='Tick direction',text2=f"Put {type}ticks inside/outside {axis} axis, or both",
+        tick_direction = ComboBox(text='Tick direction',text2=f"Put {self.type}ticks inside/outside {self.axis} axis, or both",
                                   items=['In','Out','InOut'])
         tick_direction.button.currentTextChanged.connect(self.set_tickdir)
         tick_direction.button.setCurrentText(self.get_tickdir())
@@ -348,6 +383,12 @@ class TickBase2D_2 (QWidget):
         else: 
             try: return self.obj.get_minor_ticks()[0]._width
             except: return matplotlib.rcParams['ytick.minor.width']
+    
+    def showEvent(self, a0):
+        if self.first_show: 
+            self.initUI()
+            self.first_show = False
+        return super().showEvent(a0)
 
 class Tick2D (QWidget):
     def __init__(self,canvas:Canvas, parent=None):
@@ -366,7 +407,7 @@ class Tick2D (QWidget):
 
         self.stackedlayout = QStackedLayout()
         self.layout().addLayout(self.stackedlayout)
-
+        
         self.bot = TickBase2D_1('bottom',self.canvas, parent)
         self.stackedlayout.addWidget(self.bot)
         self.left = TickBase2D_1('left',self.canvas, parent)
@@ -375,5 +416,3 @@ class Tick2D (QWidget):
         self.stackedlayout.addWidget(self.top)
         self.right = TickBase2D_1('right',self.canvas, parent)
         self.stackedlayout.addWidget(self.right)
-
-    

@@ -1,11 +1,12 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QScrollArea
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QApplication
 import matplotlib.pyplot
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine, Frame
+from ui.base_widgets.window import ProgressDialog
 from plot.canvas import Canvas
 import matplotlib
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
@@ -247,26 +248,48 @@ class Grid (QScrollArea):
         super().__init__(parent)
 
         widget = QWidget()
-        layout = QVBoxLayout()
+        self.vlayout = QVBoxLayout()
         #layout.setContentsMargins(10,0,10,15)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        widget.setLayout(layout)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        widget.setLayout(self.vlayout)
         self.setWidget(widget)
         self.setWidgetResizable(True)
         self.verticalScrollBar().setValue(1900)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
+        self.first_show = True
+        self.canvas = canvas
         
-        self.plotsize = PlotSize2D(canvas, parent)
-        layout.addWidget(self.plotsize)
-
-        self.pane = Pane(canvas, parent)
-        layout.addWidget(self.pane)
-        
-        self.grid = Grid2D(canvas,parent)
-        layout.addWidget(self.grid)
  
+    def showEvent(self, a0):
+        if self.first_show:
+            self.diag = ProgressDialog("Waiting", None, self.parent())
+            self.diag.progressbar._setValue(0)
+            self.diag.show()
+            QApplication.processEvents()
 
+            self.plotsize = PlotSize2D(self.canvas, self.parent())
+            self.vlayout.addWidget(self.plotsize)
+
+            self.diag.progressbar._setValue(20)
+            QApplication.processEvents()
+
+            self.pane = Pane(self.canvas, self.parent())
+            self.vlayout.addWidget(self.pane)
+
+            self.diag.progressbar._setValue(60)
+            QApplication.processEvents()
+            
+            self.grid = Grid2D(self.canvas,self.parent())
+            self.vlayout.addWidget(self.grid)
+
+            self.diag.progressbar._setValue(100)
+            QApplication.processEvents()
+
+            self.diag.close()
+
+            self.first_show = False
+
+        return super().showEvent(a0)
 
 
 

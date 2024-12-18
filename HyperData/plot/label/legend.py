@@ -36,7 +36,11 @@ class LegendBase(QScrollArea):
 
         self.canvas = canvas
         self.find_legend()
+        self.first_show = True
     
+    def initUI(self):
+        pass
+
     def find_legend(self):
         self.legend = get_legend(self.canvas)
         if self.legend:
@@ -46,12 +50,16 @@ class LegendBase(QScrollArea):
     def showEvent(self, a0):
         self.find_legend()
         self.update()
+        if self.first_show:
+            self.initUI()
+            self.first_show = False
         return super().showEvent(a0)
 
 class LegendEntries (LegendBase):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(canvas, parent)
 
+    def initUI(self):
         font = ComboBox(items=font_lib,text='Font')
         font.button.currentTextChanged.connect(self.set_fontname)
         font.button.setCurrentText(self.get_fontname())
@@ -174,6 +182,7 @@ class LegendTitle (LegendBase):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(canvas, parent)
 
+    def initUI(self):
         self.title = _TextEdit()
         self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         self.title.setPlaceholderText("Enter the Legend's Title")
@@ -308,6 +317,8 @@ class LegendTitle (LegendBase):
 class LegendFrame (LegendBase):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(canvas, parent)
+    
+    def initUI(self):
     
         frameon = Toggle(text='Visible')
         frameon.button.checkedChanged.connect(self.set_frameon)

@@ -14,37 +14,40 @@ class SpineBase (Frame):
     def __init__(self, axis, canvas:Canvas, parent=None):
         super().__init__(parent)
 
-        layout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
         #layout.setContentsMargins(0,10,0,0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.axis = axis
         self.canvas = canvas
         self.obj = self.find_object()
+        self.first_show = True
+    
+    def initUI(self):
 
         visible = Toggle(text='spine visible')
         visible.button.checkedChanged.connect(self.set_visible)
         visible.button.setChecked(self.get_visible())
-        layout.addWidget(visible)
+        self.vlayout.addWidget(visible)
 
         color = ColorDropdown(text='color')
         color.button.colorChanged.connect(self.set_color)
         color.button.setColor(self.get_color())
-        layout.addWidget(color)
+        self.vlayout.addWidget(color)
 
         alpha = Slider(min=0,max=100,step=1,text='transparent')
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
+        self.vlayout.addWidget(alpha)
 
         linestyle = ComboBox(text='line style',items=linestyle_lib.values())
         linestyle.button.currentTextChanged.connect(self.set_linestyle)
         linestyle.button.setCurrentText(self.get_linestyle())
-        layout.addWidget(linestyle)
+        self.vlayout.addWidget(linestyle)
 
         linewidth = DoubleSpinBox(text='line width',min=0,max=20,step=0.5)
         linewidth.button.valueChanged.connect(self.set_linewidth)
         linewidth.button.setValue(self.get_linewidth())
-        layout.addWidget(linewidth)
+        self.vlayout.addWidget(linewidth)
     
     def find_object (self) -> List[Spine]:
         list_obj = list()
@@ -94,6 +97,12 @@ class SpineBase (Frame):
     
     def get_color(self):
         return matplotlib.colors.rgb2hex(self.obj[0].get_edgecolor())
+
+    def showEvent(self, a0):
+        if self.first_show:
+            self.initUI()
+            self.first_show = False
+        return super().showEvent(a0)
 
 class Spine2D (QWidget):
     def __init__(self, canvas:Canvas, parent=None):
