@@ -9,7 +9,7 @@ import matplotlib.backend_tools
 import matplotlib.collections
 import matplotlib.container
 from matplotlib.lines import Line2D
-from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
+from matplotlib.patches import Rectangle, Wedge, PathPatch
 from matplotlib.collections import Collection
 from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
@@ -132,7 +132,8 @@ class GraphicsView (QGraphicsView):
         self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
         self.canvas.mpl_connect('button_press_event', self.mpl_mousePress)
         self.canvas.mpl_connect('draw_event', self.save_mpl_bg)
-        #self.canvas.mpl_connect('figure_leave_event', self.mouseLeave)
+        self.canvas.mpl_connect('figure_enter_event', self.mpl_enterFigure)
+        self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
         self.zoom_slider.setValue(100)
@@ -213,9 +214,14 @@ class GraphicsView (QGraphicsView):
     def rightMouseButtonPress(self, event):
         super().mousePressEvent(event)
     
-    def save_mpl_bg(self, event):
-        if DEBUG or GLOBAL_DEBUG: print("save mpl background for blit")
+    def save_mpl_bg(self, event=None):
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
+    
+    def mpl_enterFigure(self, event:MouseEvent):
+        self.save_mpl_bg(event)
+    
+    def mpl_leaveFigure(self, event:MouseEvent):
+        self.save_mpl_bg(event)
     
     def mpl_mouseMove(self, event:MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
@@ -241,18 +247,33 @@ class GraphicsView (QGraphicsView):
 
         for obj in reversed(stack): # the object on top will be picked
             if obj.contains(event)[0]:
+                # save the original properties of the picked artist
+                _lw = obj.get_linewidth()
+                _alp = obj.get_alpha() if obj.get_alpha() else 1
+                # decorate the artist when it is hovered
+                obj.set(linewidth=5, alpha=_alp*0.5)
+                obj.axes.draw_artist(obj)
+
                 if isinstance(obj, Line2D):
+                    # get current position of the cursor
                     cursor = obj.axes.transData.inverted().transform([event.x, event.y])
+                    # determine the closest data point to the cursor
                     for x, y in zip(obj.get_xdata(), obj.get_ydata()):
                         dist.append(math.sqrt(abs(cursor[0]**2 + cursor[1]**2 - x**2 - y**2)))
                     minpos = dist.index(min(dist))
                     xp = obj.get_xdata()[minpos]
                     yp = obj.get_ydata()[minpos]
                     xs, ys = xp, yp
+                    
                 elif isinstance(obj, Rectangle):
                     xp, yp = obj.Xdata, obj.Ydata
                     xs, ys = obj.Xshow, obj.Yshow
-                
+                    # decorate edgecolor of rectangle with facecolor (probablly)
+                    _ec = obj.get_edgecolor()
+                    obj.set(edgecolor = get_color(obj))
+                    obj.axes.draw_artist(obj)
+                    obj.set(edgecolor = _ec)
+
                 # determine the information from the picked artist
                 s = f"{obj.get_gid().title()}\n"
                 if xp: s += f"{str(xp)}"
@@ -273,7 +294,10 @@ class GraphicsView (QGraphicsView):
                 self.tooltip.set_x(xs)
                 self.tooltip.set_y(ys)
                 self.canvas.figure.draw_artist(self.tooltip)
-                    
+
+                # update the artist to the original properties
+                obj.set(linewidth=_lw, alpha=_alp)
+
                 break
 
         self.tooltip.remove() # make sure the annotation will be removed
