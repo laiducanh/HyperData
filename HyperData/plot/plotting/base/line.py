@@ -115,27 +115,34 @@ def stem3d (X, Y, Z, ax:Axes, gid, orientation="z",bottom=0, *args, **kwargs) ->
     
     return artist
 
-def fill_between (X, Y, Z, ax:Axes, gid, step=None, *args, **kwargs) -> List[PolyCollection]:
+def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *args, **kwargs) -> List[PolyCollection]:
 
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     _Z = np.asarray(Z)
 
-    artist = ax.fill_between(_X, _Y, _Z, step=step, gid=gid, *args, **kwargs)
+    if orientation == "vertical":
+        artist = ax.fill_between(_X, _Y, _Z, step=step, gid=gid, *args, **kwargs)
+    elif orientation == "horizontal":
+        artist = ax.fill_betweenx(_X, _Y, _Z, step=step, gid=gid, *args, **kwargs)
+        # swap X and Y
+        _X = np.asarray(Y).copy()
+        _Y = np.asarray(X).copy()
 
     if Z: 
         # for fill_between plot
         artist.Xdata = np.repeat(_X, 2)
         artist.Ydata = np.concatenate((_Y, _Z))
-        artist.Xshow = artist.Xdata
-        artist.Yshow = artist.Ydata
+        artist.Xshow = artist.Xdata.copy()
+        artist.Yshow = artist.Ydata.copy()
     else: 
         # for 2d area plot
-        artist.Xdata = _X
-        artist.Ydata = _Y
-        artist.Xshow = artist.Xdata 
-        artist.Yshow = artist.Ydata
+        artist.Xdata = np.asarray(X).copy()
+        artist.Ydata = np.asarray(Y).copy()
+        artist.Xshow = _X.copy()
+        artist.Yshow = _Y.copy()
     
+    artist.orientation = orientation
     if step == None:
         artist.step = 'none' 
     else: artist.step = step
@@ -152,10 +159,11 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
 
     for ind, art in enumerate(artist):
         art.baseline = baseline
-        art.Xdata = _X
-        art.Ydata = stack[ind, :]
-        art.Xshow = art.Xdata
-        art.Yshow = art.Ydata
+        art.Xdata = _X.copy()
+        art.Ydata = stack[ind, :].copy()
+        art.Xshow = art.Xdata.copy()
+        art.Yshow = art.Ydata.copy()
+    
         if step: art.step = step
         else: art.step = 'none'  
 
@@ -176,10 +184,10 @@ def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> List[PolyCollection]
     artist = ax.stackplot(_X, _Y, *args, **kwargs)
 
     for ind, art in enumerate(artist):
-        art.Xdata = _X
-        art.Ydata = np.asarray(Y)[ind, :]
-        art.Xshow = _X
-        art.Yshow = stack[ind, :]
+        art.Xdata = _X.copy()
+        art.Ydata = np.asarray(Y)[ind, :].copy()
+        art.Xshow = _X.copy()
+        art.Yshow = stack[ind, :].copy()
         if len(artist) > 1:
             art.set_gid(f"{gid}.{ind+1}")
         else:
