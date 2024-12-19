@@ -96,7 +96,7 @@ class ConfusionMatrix (QWidget):
                         ha="center", va="center",
                         color="white" if cm[i, j] > thresh else "black")
         self.canvas.fig.set_tight_layout("rect")
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
 
 class ROC(QWidget):
@@ -204,5 +204,5 @@ class ROC(QWidget):
         self.ax.legend()
 
         self.canvas.fig.set_tight_layout("rect")
-        self.canvas.draw()
+        self.canvas.draw_idle()
 

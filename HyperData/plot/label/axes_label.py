@@ -80,35 +80,35 @@ class AxesLabelBase (QScrollArea):
 
     def set_label(self):
         self.text: Text = self.ax.set_label_text(label=self.title.toPlainText())
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_title(self) -> str:
         return self.ax.get_label_text()
     
     def set_fontname (self, font:str):
         self.text.set_fontfamily(font)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_fontname(self):
         return self.text.get_fontname()
     
     def set_fontsize(self, value):
         self.text.set_fontsize(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_fontsize(self):
         return self.text.get_fontsize()
     
     def set_color (self, color):
         self.text.set_color(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_color (self):
         return self.text.get_color()
 
     def set_backgroundcolor (self, color):
         self.text.set_backgroundcolor(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_backgroundcolor(self):
         if self.text.get_bbox_patch() != None:
@@ -118,7 +118,7 @@ class AxesLabelBase (QScrollArea):
     def set_edgecolor (self, color):
         self.text.set_bbox({"edgecolor":color,
                            "facecolor":self.backgroundcolor.button.color.name()})
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_edgecolor(self):
         if self.text.get_bbox_patch() != None:
@@ -127,7 +127,7 @@ class AxesLabelBase (QScrollArea):
     
     def set_alpha (self, value):
         self.text.set_alpha(value/100)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_alpha (self):
         if self.text.get_alpha() != None:

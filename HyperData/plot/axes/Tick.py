@@ -123,7 +123,7 @@ class TickBase2D_1 (QWidget):
     
     def set_visible(self, value):
         self.obj.set_visible(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_visible(self):
         return self.obj.get_visible()
@@ -137,7 +137,7 @@ class TickBase2D_1 (QWidget):
                 self.obj.axes.set_ylim(bottom=float(value))
         except Exception as e: print(e)
         
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def set_max (self, value):
         value = None if value == "" else value
@@ -148,7 +148,7 @@ class TickBase2D_1 (QWidget):
                 self.obj.axes.set_ylim(top=float(value))
         except Exception as e: print(e)
 
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def get_lim(self):
         
@@ -159,7 +159,7 @@ class TickBase2D_1 (QWidget):
         try:
             if self.axis in ['bottom','top']: self.obj.axes.set_xscale(value)
             else: self.obj.axes.set_yscale(value)
-            self.canvas.draw()
+            self.canvas.draw_idle()
         except:pass
     
     def get_scale (self):
@@ -266,7 +266,7 @@ class TickBase2D_2 (QWidget):
         try:
             if self.type == 'major': self.obj.set_major_locator(matplotlib.ticker.MultipleLocator(float(value)))
             else: self.obj.set_minor_locator(matplotlib.ticker.MultipleLocator(float(value)))
-            self.canvas.draw()
+            self.canvas.draw_idle()
         except:pass
     
     def set_tickvalues (self, value:str):
@@ -274,7 +274,7 @@ class TickBase2D_2 (QWidget):
             value = [float(i) for i in value.split(',')]
             if self.type == 'major': self.obj.axes.set_xticks(value)
             else: self.obj.axes.set_xticks(value,minor=True)
-            self.canvas.draw()
+            self.canvas.draw_idle()
         except:pass
     
     def set_ticklabels (self, value:str):
@@ -282,7 +282,7 @@ class TickBase2D_2 (QWidget):
             value = value.split(',')
             if self.type == 'major': self.obj.axes.set_xticklabels(value)
             else: self.obj.axes.set_xticklabels(value,minor=True)
-            self.canvas.draw()
+            self.canvas.draw_idle()
         except:pass
     
     def get_ticklabels(self):
@@ -299,7 +299,7 @@ class TickBase2D_2 (QWidget):
     def set_labelsize (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,labelsize=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_labelsize (self):
         if self.type == 'major': return self.obj.get_majorticklabels()[0].get_fontsize()
@@ -310,7 +310,7 @@ class TickBase2D_2 (QWidget):
     def set_tickdir (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,direction=value.lower())
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def get_tickdir (self):
         if self.type == 'major': return self.obj.get_major_ticks()[0].get_tickdir().title()
@@ -321,7 +321,7 @@ class TickBase2D_2 (QWidget):
     def set_labelcolor(self, color):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,labelcolor=color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_labelcolor(self):
         if self.type == 'major': return self.obj.get_majorticklabels()[0].get_color()
@@ -332,7 +332,7 @@ class TickBase2D_2 (QWidget):
     def set_tickcolor(self, color):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,color=color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_tickcolor(self):
         if self.type == 'major': return self.obj.get_majorticklines()[0].get_color()
@@ -343,7 +343,7 @@ class TickBase2D_2 (QWidget):
     def set_labelrotation (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,labelrotation=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_labelrotation (self):
         if self.type == 'major': return self.obj.get_majorticklabels()[0].get_rotation()
@@ -354,7 +354,7 @@ class TickBase2D_2 (QWidget):
     def set_tickpadding (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,pad=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_tickpadding (self):
         if self.type == 'major': return self.obj.get_major_ticks()[0].get_tick_padding()
@@ -365,7 +365,7 @@ class TickBase2D_2 (QWidget):
     def set_ticklength (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,length=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_ticklength (self):
         if self.type == 'major': return self.obj.get_major_ticks()[0]._size
@@ -376,7 +376,7 @@ class TickBase2D_2 (QWidget):
     def set_tickwidth (self,value):
         axis = 'x' if self.axis in ['bottom','top'] else 'y'
         self.obj.axes.tick_params(which=self.type,axis=axis,width=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_tickwidth (self):
         if self.type == 'major': return self.obj.get_major_ticks()[0]._width

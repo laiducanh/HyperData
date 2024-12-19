@@ -280,12 +280,12 @@ class ExploreView (QWidget):
             describe = pd.DataFrame()
             self.canvas.axes.cla()
             self.canvas.axes.set_axis_off()
-            self.canvas.draw()
+            self.canvas.draw_idle()
         else:
             self.canvas.axes.cla()
             self.canvas.axes.set_axis_on()
             missingno.matrix(df=data,fontsize=6,ax=self.canvas.axes)
-            self.canvas.draw()
+            self.canvas.draw_idle()
             describe = data.describe()
         
         self.model = TableModel(describe, self.parent)

@@ -113,7 +113,7 @@ class Curve (QWidget):
             self.progressbar.setValue(0)
             self.progressbar._setValue(0)
             if get_legend(self.canvas): set_legend(self.canvas)
-            self.canvas.draw()
+            self.canvas.draw_idle()
             self.sig.emit()
             self.progressbar.setValue(100)
         except Exception as e:

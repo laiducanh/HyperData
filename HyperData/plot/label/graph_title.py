@@ -84,35 +84,35 @@ class GraphTitle (QScrollArea):
 
     def set_title (self):
         self.obj = self.canvas.axes.set_title(label=self.title.toPlainText())   
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_title(self):
         return self.canvas.axes.get_title()
 
     def set_fontname (self, font:str):
         self.obj.set_fontname(font.lower())
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_fontname(self):
         return self.obj.get_fontname().title()
 
     def set_fontsize(self, value):
         self.obj.set_fontsize(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_fontsize(self):
         return self.obj.get_fontsize()
 
     def set_color (self, color):
         self.obj.set_color(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_color (self):
         return self.obj.get_color()
 
     def set_backgroundcolor (self, color):
         self.obj.set_backgroundcolor(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_backgroundcolor(self):
         if self.obj.get_bbox_patch() != None:
@@ -122,7 +122,7 @@ class GraphTitle (QScrollArea):
     def set_edgecolor (self, color):
         self.obj.set_bbox({"edgecolor":color,
                            "facecolor":self.backgroundcolor.button.color.name()})
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_edgecolor(self):
         if self.obj.get_bbox_patch() != None:
@@ -137,7 +137,7 @@ class GraphTitle (QScrollArea):
 
     def set_alpha (self, value):
         self.obj.set_alpha(value/100)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_alpha (self):
         if self.obj.get_alpha() != None:

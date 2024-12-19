@@ -167,7 +167,7 @@ class NewPlot (Frame):
             for obj in self.artist:
                 obj.remove()
             rescale_plot(self.canvas.axes.figure)
-            self.canvas.draw()
+            self.canvas.draw_idle()
             self.sig_delete.emit(self)
             self.deleteLater()
             return None

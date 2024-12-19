@@ -51,28 +51,28 @@ class PlotSize2D (Frame):
     
     def set_top(self,value):
         self.canvas.fig.subplots_adjust(top=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_top(self):
         return self.canvas.fig.subplotpars.top
     
     def set_bottom(self,value):
         self.canvas.fig.subplots_adjust(bottom=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_bottom(self):
         return self.canvas.fig.subplotpars.bottom
     
     def set_left(self,value):
         self.canvas.fig.subplots_adjust(left=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_left(self):
         return self.canvas.fig.subplotpars.left
     
     def set_right(self,value):
         self.canvas.fig.subplots_adjust(right=value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_right(self):
         return self.canvas.fig.subplotpars.right
@@ -141,7 +141,7 @@ class Grid2D (Frame):
 
                 self.canvas.axes.grid(which=which, axis=axis, alpha=alpha, linewidth=linewidth,
                                     linestyle=linestyle, color=color,gid="_grid")
-            self.canvas.draw()
+            self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)
     
@@ -222,14 +222,14 @@ class Pane(Frame):
     
     def set_visible(self,value):
         self.canvas.axes.patch.set_visible(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_visible(self):
         return self.canvas.axes.patch.get_visible()
     
     def set_color(self, color):
         self.canvas.axes.patch.set_color(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_color(self):
         try: return self.canvas.axes.patch.get_color()
@@ -237,7 +237,7 @@ class Pane(Frame):
 
     def set_patch_alpha (self, value):
         self.canvas.axes.patch.set_alpha(value/100)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_patch_alpha (self):
         if self.canvas.axes.patch.get_alpha() != None: return int(self.canvas.axes.patch.get_alpha()*100)

@@ -204,6 +204,6 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     # update legend if necessary
     set_legend(ax.figure.canvas)
 
-    ax.figure.canvas.draw()
+    ax.figure.canvas.draw_idle()
     if DEBUG or GLOBAL_DEBUG: print("plotting")
     return artist

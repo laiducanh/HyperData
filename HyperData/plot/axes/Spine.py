@@ -59,7 +59,7 @@ class SpineBase (Frame):
     def set_visible (self, value:bool):
         for obj in self.obj:
             obj.set_visible(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_visible (self):
         return self.obj[0].get_visible()    
@@ -67,7 +67,7 @@ class SpineBase (Frame):
     def set_alpha (self, value):
         for obj in self.obj:
             obj.set_alpha(float(value/100))
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_alpha(self):
         if self.obj[0].get_alpha() == None:
@@ -77,7 +77,7 @@ class SpineBase (Frame):
     def set_linestyle(self, value):
         for obj in self.obj:
             obj.set_linestyle(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_linestyle(self):
         return self.obj[0].get_linestyle()
@@ -85,7 +85,7 @@ class SpineBase (Frame):
     def set_linewidth(self, value):
         for obj in self.obj:
             obj.set_linewidth(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_linewidth (self):
         return self.obj[0].get_linewidth()
@@ -93,7 +93,7 @@ class SpineBase (Frame):
     def set_color(self, color):
         for obj in self.obj:
             obj.set_color(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_color(self):
         return matplotlib.colors.rgb2hex(self.obj[0].get_edgecolor())

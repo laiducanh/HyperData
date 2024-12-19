@@ -32,7 +32,7 @@ class FontStyle (QWidget):
         for obj in self.obj:
             if bool: obj.set_fontstyle('italic')
             else: obj.set_fontstyle('normal')
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_italic (self):
         if self.obj:
@@ -44,7 +44,7 @@ class FontStyle (QWidget):
         for obj in self.obj:
             if bool: obj.set_fontweight('bold')
             else: obj.set_fontweight('normal')
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_bold (self):
         if self.obj:

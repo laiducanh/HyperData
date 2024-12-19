@@ -233,7 +233,7 @@ class LegendTitle (LegendBase):
                 self.legend.set_title(self.title.toPlainText())
             except Exception as e:
                 logger.exception(e)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_title(self):
         if self.legend: return self.text.get_text()
@@ -241,7 +241,7 @@ class LegendTitle (LegendBase):
     def set_fontname (self, font:str):
         if self.legend:
             self.text.set_fontname(font.lower())
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_fontname(self):
         if self.legend: return self.text.get_fontname()
@@ -249,7 +249,7 @@ class LegendTitle (LegendBase):
 
     def set_fontsize(self, value):
         if self.legend: self.text.set_fontsize(value)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_fontsize(self):
         if self.legend: return self.text.get_fontsize()
@@ -257,7 +257,7 @@ class LegendTitle (LegendBase):
 
     def set_color (self, color):
         if self.legend: self.text.set_color(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_color (self):
         if self.legend: return self.text.get_color()
@@ -265,7 +265,7 @@ class LegendTitle (LegendBase):
 
     def set_backgroundcolor (self, color):
         if self.legend: self.text.set_backgroundcolor(color)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_backgroundcolor(self):
         if self.legend: 
@@ -277,7 +277,7 @@ class LegendTitle (LegendBase):
         if self.legend:
             self.text.set_bbox({"edgecolor":color,
                                 "facecolor":self.backgroundcolor.button.color.name()})
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_edgecolor(self):
         if self.legend:
@@ -291,7 +291,7 @@ class LegendTitle (LegendBase):
                 self.legend.set_alignment(value)
             except Exception as e:
                 logger.exception(e)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_alignment(self) -> str:
         if self.legend: return self.legend.get_alignment()
@@ -306,7 +306,7 @@ class LegendTitle (LegendBase):
     def set_alpha (self, value):
         if self.legend:
             self.text.set_alpha(value/100)
-        self.canvas.draw()
+        self.canvas.draw_idle()
     
     def get_alpha (self):
         if self.legend:
