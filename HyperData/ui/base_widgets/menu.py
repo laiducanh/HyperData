@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QKeySequence, QCursor
-from ui.utils import icon
+from PyQt6.QtGui import QAction, QKeySequence, QCursor, QIcon
+from ui.utils import icon as Icon
 
 class Menu (QMenu):
     def __init__(self, text:str=None, parent=None):
@@ -14,12 +14,14 @@ class Menu (QMenu):
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self._icon = None
     
-    def setIcon(self, icon: str) -> None:
-        self._icon = icon
-        self.update()
+    def setIcon(self, icon: QIcon|str) -> None:
+        if isinstance(icon, QIcon):
+            self._icon = icon
+        else: self._icon = Icon(icon)
+        super().setIcon(self._icon)
 
     def update(self):
-        if self._icon: super().setIcon(icon(self._icon))
+        if self._icon: super().setIcon(self._icon)
         for action in self.actions():
             if isinstance(action, Action): action.update()
         super().update()
@@ -34,14 +36,16 @@ class Action (QAction):
     def __init__(self, icon=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setIcon(icon)
+        if icon: self.setIcon(icon)
 
-    def setIcon(self, icon: str) -> None:
-        self._icon = icon
-        self.update()
+    def setIcon(self, icon: QIcon|str) -> None:
+        if isinstance(icon, QIcon):
+            self._icon = icon
+        else: self._icon = Icon(icon)
+        super().setIcon(self._icon)
 
     def update(self):
-        if self._icon: super().setIcon(icon(self._icon))
+        if self._icon: super().setIcon(self._icon)
 
 class LineEdit_Menu (Menu):
     def __init__(self, text: str = None, parent=None):

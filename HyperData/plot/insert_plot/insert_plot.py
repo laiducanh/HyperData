@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal, QSize, Qt, QPropertyAnimation
 from PyQt6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QScrollArea, QWidget)
 from PyQt6.QtGui import QCursor
-import os
+import os, time
 from matplotlib.artist import Artist
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type_2D, Menu_type_3D
@@ -13,6 +13,7 @@ from ui.base_widgets.frame import Frame
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import rescale_plot, plotting
+from plot.insert_plot.menu import load_MenuIcon
 from node_editor.node_node import Node
 from config.settings import GLOBAL_DEBUG, logger, color_cycle
 from typing import List
@@ -97,6 +98,7 @@ class NewPlot (Frame):
                         "3d scatter"]
         self.plot_4input = ["3d bubble"]
 
+
         effect = QGraphicsOpacityEffect(self)
         effect.setOpacity(0.5)
         ani = QPropertyAnimation(effect, b'opacity', self)
@@ -134,6 +136,7 @@ class NewPlot (Frame):
         self.initUI()
 
     def initUI(self):
+        
         _input = [str(), str(), str(), str()]
         if self.plot_type in self.plot_1input:
             self.widget = widget_1input.WidgetPie(self.node, _input, self.parent())
@@ -148,6 +151,7 @@ class NewPlot (Frame):
 
         self.widget.sig.connect(self.plotting)
         self.layout_input.addWidget(self.widget)
+        
 
     def update_layout (self, plot_type):
 
@@ -249,6 +253,7 @@ class InsertPlot (QWidget):
         self.plotlist: List[NewPlot]
         self.node = node
         self.plot3d = plot3d
+        load_MenuIcon()
 
         plottype = Grid_Plottype(plot3d, parent)
         self.layout.addLayout(plottype)
