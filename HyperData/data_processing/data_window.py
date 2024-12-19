@@ -7,8 +7,9 @@ from collections import Counter
 import pandas as pd
 import numpy as np
 from config.settings import list_name
-from ui.base_widgets.button import _DropDownPrimaryPushButton, _PrimaryPushButton, _ComboBox
+from ui.base_widgets.button import _DropDownPrimaryPushButton, _PrimaryPushButton, ComboBox
 from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.menu import Menu, Action
 #from ui.base_widgets.icons import Icon
 from plot.canvas import Canvas
 import seaborn as sns
@@ -272,15 +273,23 @@ class ExploreView (QWidget):
         self.plot_selection = QHBoxLayout(self.plot_widget)
         self.vlayout.addWidget(self.plot_widget)
         self.btn1 = _DropDownPrimaryPushButton()
+        menu = Menu(parent=self)
+        menu_univar = Menu("Univariate analysis", self)
+        for i in ["histogram"]:
+            action = Action(text=i.title(), parent=self)
+            action.triggered.connect(lambda checked, type=i: self.btn1.setText(type.lower()))
+            menu_univar.addAction(action)
+        menu.addMenu(menu_univar)
+        self.btn1.setMenu(menu)
         self.btn1.pressed.connect(self.update_plot)
         self.plot_selection.addWidget(self.btn1)
-        self.varx = _ComboBox()
-        self.varx.hide()
-        self.varx.currentTextChanged.connect(self.update_plot)
+        self.varx = ComboBox(text="X")
+        self.varx.button.hide()
+        self.varx.button.currentTextChanged.connect(self.update_plot)
         self.plot_selection.addWidget(self.varx)
-        self.vary = _ComboBox()
-        self.vary.hide()
-        self.vary.currentTextChanged.connect(self.update_plot)
+        self.vary = ComboBox(text="Y")
+        self.vary.button.hide()
+        self.vary.button.currentTextChanged.connect(self.update_plot)
         self.canvas = Canvas()
         self.canvas.fig.subplots_adjust(left=0.12,right=0.9,top=0.8,bottom=0.1)
         for _ax in self.canvas.fig.axes: _ax.set_axis_off()
@@ -298,12 +307,12 @@ class ExploreView (QWidget):
         self.model = TableModel(describe, self.parent)
         self.view.setModel(self.model)
 
-        self.varx.addItems(self.data.columns)
-        self.vary.addItems(self.data.columns)
+        self.varx.button.addItems(self.data.columns)
+        self.vary.button.addItems(self.data.columns)
         self.update_plot()
     
     def update_plot(self):
-        plottype = self.btn1.currentText().lower()
+        plottype = self.btn1.text().lower()
 
         if self.data.empty:
             self.canvas.axes.cla()
@@ -311,8 +320,8 @@ class ExploreView (QWidget):
         else:
             self.canvas.axes.cla()
             self.canvas.axes.set_axis_on()
-            varx = self.data[self.varx.currentText()]
-            vary = self.data[self.vary.currentText()]
+            varx = self.data[self.varx.button.currentText()]
+            vary = self.data[self.vary.button.currentText()]
             match plottype:
                 case "nans": missingno.matrix(df=self.data,fontsize=6,ax=self.canvas.axes)
                 case 'histogram': self.canvas.axes.hist(varx)
