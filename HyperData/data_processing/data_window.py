@@ -7,10 +7,11 @@ from collections import Counter
 import pandas as pd
 import numpy as np
 from config.settings import list_name
-from ui.base_widgets.button import _PushButton, _PrimaryPushButton
+from ui.base_widgets.button import _DropDownPrimaryPushButton, _PrimaryPushButton, _ComboBox
 from ui.base_widgets.text import BodyLabel
 #from ui.base_widgets.icons import Icon
 from plot.canvas import Canvas
+import seaborn as sns
 
 class TableModel(QAbstractTableModel):
     def __init__(self, data, parent=None):
@@ -264,32 +265,98 @@ class ExploreView (QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.vlayout = QVBoxLayout(self)
         self.view = QTableView(parent)
-        self.layout.addWidget(self.view)
+        self.vlayout.addWidget(self.view)
+        self.plot_widget = QWidget()
+        self.plot_selection = QHBoxLayout(self.plot_widget)
+        self.vlayout.addWidget(self.plot_widget)
+        self.btn1 = _DropDownPrimaryPushButton()
+        self.btn1.pressed.connect(self.update_plot)
+        self.plot_selection.addWidget(self.btn1)
+        self.varx = _ComboBox()
+        self.varx.hide()
+        self.varx.currentTextChanged.connect(self.update_plot)
+        self.plot_selection.addWidget(self.varx)
+        self.vary = _ComboBox()
+        self.vary.hide()
+        self.vary.currentTextChanged.connect(self.update_plot)
         self.canvas = Canvas()
         self.canvas.fig.subplots_adjust(left=0.12,right=0.9,top=0.8,bottom=0.1)
         for _ax in self.canvas.fig.axes: _ax.set_axis_off()
-        self.layout.addWidget(self.canvas)
+        self.vlayout.addWidget(self.canvas)
         self.update_data(data)
+        self.data = data
 
     def update_data (self, data:pd.DataFrame):
-        
+        self.data = data
         if data.empty:
             describe = pd.DataFrame()
-            self.canvas.axes.cla()
-            self.canvas.axes.set_axis_off()
-            self.canvas.draw_idle()
         else:
-            self.canvas.axes.cla()
-            self.canvas.axes.set_axis_on()
-            missingno.matrix(df=data,fontsize=6,ax=self.canvas.axes)
-            self.canvas.draw_idle()
             describe = data.describe()
         
         self.model = TableModel(describe, self.parent)
         self.view.setModel(self.model)
+
+        self.varx.addItems(self.data.columns)
+        self.vary.addItems(self.data.columns)
+        self.update_plot()
+    
+    def update_plot(self):
+        plottype = self.btn1.currentText().lower()
+
+        if self.data.empty:
+            self.canvas.axes.cla()
+            self.canvas.axes.set_axis_off()
+        else:
+            self.canvas.axes.cla()
+            self.canvas.axes.set_axis_on()
+            varx = self.data[self.varx.currentText()]
+            vary = self.data[self.vary.currentText()]
+            match plottype:
+                case "nans": missingno.matrix(df=self.data,fontsize=6,ax=self.canvas.axes)
+                case 'histogram': self.canvas.axes.hist(varx)
+                # case "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
+                # case "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
+                # case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
+                # case "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
+                # case "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
+                # case "treemap":                 artist = treemap(X, ax, gid, *args, **kwargs)
+                # case "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
+                # case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
+                # case "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
+                # case "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
+                # case "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
+                # case "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)
+                # case "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
+                # case "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
+                # case "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
+
+                # case "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
+                # case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
+            
+            if plottype in ["histogram"]:
+                self.varx.show()
+            elif plottype in []:
+                self.varx.show()
+                self.vary.show()
+                
+
+        self.canvas.draw_idle()
+        
+
         
 class DataView (QMainWindow):
     def __init__(self, data, parent=None):
