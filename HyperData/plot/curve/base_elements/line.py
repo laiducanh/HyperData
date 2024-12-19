@@ -105,10 +105,10 @@ class Line(QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
-
+    
     def update_linestyle(self):
         try:
             if self.obj[0].is_dashed():
@@ -300,8 +300,8 @@ class Marker(QWidget):
             self.markeredgecolor.button.setColor(self.get_markeredgecolor())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
     
     def set_marker (self, marker):
@@ -418,7 +418,7 @@ class Line2D (QWidget):
         self.marker.update_props()
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.update_props(*args, **kwargs)
 
 class LineCollection(QWidget):
@@ -478,8 +478,8 @@ class LineCollection(QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
     
     def set_linestyle(self, value:str):

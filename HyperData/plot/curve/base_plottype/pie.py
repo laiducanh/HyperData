@@ -117,7 +117,7 @@ class Pie (QWidget):
         self.column.update_props()
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.props)
         self.update_props(*args, **kwargs)
 

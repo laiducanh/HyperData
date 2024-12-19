@@ -74,8 +74,8 @@ class Rectangle (QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
 
     def set_edgestyle(self, value:str):

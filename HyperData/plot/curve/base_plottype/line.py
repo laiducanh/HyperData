@@ -48,7 +48,7 @@ class Line (QWidget):
                                gid=self.gid)
 
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.props)
         self.update_props(*args, **kwargs)
     
@@ -235,7 +235,7 @@ class Area (QWidget):
                                gid=self.gid)
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.prop)
         self.update_props(*args, **kwargs)  
     

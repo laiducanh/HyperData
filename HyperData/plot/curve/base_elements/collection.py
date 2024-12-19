@@ -81,8 +81,8 @@ class SingleColorCollection (QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
 
     def set_edgewidth (self, value):
@@ -255,8 +255,8 @@ class CmapCollection (QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
     
     def set_cmap_on (self, checked):
@@ -458,8 +458,8 @@ class QuadMesh(QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
     
     def set_edgewidth (self, value):
@@ -589,8 +589,8 @@ class Poly3DCollection (QWidget):
             self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
-        self.canvas.draw()
+        # self.sig.emit()
+        self.canvas.draw_idle()
         self.update_props(*args, **kwargs)
 
     def set_zsort(self, value:str):

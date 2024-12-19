@@ -129,7 +129,7 @@ class Histogram (QWidget):
         self.column.update_props()
     
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.prop)
         self.update_props(*args, **kwargs)
     
@@ -386,7 +386,7 @@ class Boxplot (QWidget):
                                match=[lines.Line2D, patches.PathPatch])
 
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.prop)
         self.update_props(*args, **kwargs)
 
@@ -688,7 +688,7 @@ class Violinplot (QWidget):
                                gid=self.gid)
 
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.prop)
         self.update_props(*args, **kwargs)
 
@@ -859,7 +859,7 @@ class Eventplot(QWidget):
         self.eventcollection.update_props()
 
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.prop)
         self.update_props(*args, **kwargs)
 
@@ -965,7 +965,7 @@ class Hist2d (QWidget):
         self.quadmesh.update_props()
 
     def update_plot(self, *args, **kwargs):
-        self.sig.emit()
+        # self.sig.emit()
         self.plot.plotting(**self.prop)
         self.update_props(*args, **kwargs)
     
