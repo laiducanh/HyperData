@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal, QSize, Qt, QPropertyAnimation
 from PyQt6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QScrollArea, QWidget)
 from PyQt6.QtGui import QCursor
-import os, time
+import os
 from matplotlib.artist import Artist
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type_2D, Menu_type_3D
@@ -98,7 +98,6 @@ class NewPlot (Frame):
                         "3d scatter"]
         self.plot_4input = ["3d bubble"]
 
-        print(time.time())
         effect = QGraphicsOpacityEffect(self)
         effect.setOpacity(0.5)
         ani = QPropertyAnimation(effect, b'opacity', self)
@@ -134,7 +133,6 @@ class NewPlot (Frame):
         mainlayout.addLayout(self.layout_input) 
 
         self.initUI()
-        print(time.time())
 
     def initUI(self):
         
