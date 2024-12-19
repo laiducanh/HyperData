@@ -123,6 +123,16 @@ encode = ['ascii',
  'utf_8',
  'utf_8_sig']
 
+class MPL_background:
+    def __init__(self):
+        self.background = None
+    
+    def update(self, bbox):
+        self.background = bbox
+        print('update nacgkodun')
+
+mpl_background = MPL_background()
+
 ### Initialize setting and logging profiles
 dataPath = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
 dataPathDir = QDir(dataPath)

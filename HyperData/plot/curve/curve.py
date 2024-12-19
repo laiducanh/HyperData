@@ -72,7 +72,10 @@ class Curve (QWidget):
         self.legend.setFixedHeight(100)
         self.layout2.addWidget(self.legend)
         self.legend.button.textChanged.connect(lambda: self.timer.start(300))
-        self.legend.button.textChanged.connect(lambda: self.progressbar.setValue(0))
+        #self.legend.button.textChanged.connect(self.set_label)
+        # self.legend.button.textChanged.connect(lambda: self.timer.start(1000))
+        # self.legend.button.textChanged.connect(self.canvas.draw)
+        
         self.initialize_layout()
 
     def find_object (self) -> List[Artist]:
@@ -91,8 +94,10 @@ class Curve (QWidget):
             for obj in self.obj:
                 obj.set_label(_label)
             set_legend(self.canvas)
-            self.canvas.draw()
+            self.canvas.draw_idle()
             self.progressbar.setValue(100)
+            
+            
         except Exception as e:
             logger.exception(e)
 

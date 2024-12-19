@@ -21,7 +21,7 @@ from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
-from config.settings import GLOBAL_DEBUG
+from config.settings import GLOBAL_DEBUG, mpl_background
 
 DEBUG = True
 
@@ -133,7 +133,7 @@ class GraphicsView (QGraphicsView):
         self.canvas.mpl_connect('button_press_event', self.mpl_mousePress)
         self.canvas.mpl_connect('draw_event', self.save_mpl_bg)
         self.canvas.mpl_connect('figure_enter_event', self.mpl_enterFigure)
-        self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
+        # self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
         self.zoom_slider.setValue(100)
@@ -215,8 +215,9 @@ class GraphicsView (QGraphicsView):
         super().mousePressEvent(event)
     
     def save_mpl_bg(self, event=None):
-        self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
-    
+        #self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
+        mpl_background.update(self.canvas.copy_from_bbox(self.canvas.fig.bbox))
+        
     def mpl_enterFigure(self, event:MouseEvent):
         self.save_mpl_bg(event)
     
@@ -237,7 +238,7 @@ class GraphicsView (QGraphicsView):
 
         bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
         self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
-        self.canvas.restore_region(self.mpl_background)
+        self.canvas.restore_region(mpl_background.background)
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
 
 
@@ -253,6 +254,7 @@ class GraphicsView (QGraphicsView):
                 # decorate the artist when it is hovered
                 obj.set(linewidth=_lw+4, alpha=_alp*0.5)
                 obj.axes.draw_artist(obj)
+                
 
                 if isinstance(obj, Line2D):
                     # determine the closest data point to the cursor
@@ -311,6 +313,7 @@ class GraphicsView (QGraphicsView):
                 # determine where to put tooltip on canvas
                 xs, ys = obj.axes.transData.transform([xs, ys])
                 xs, ys = self.canvas.figure.transFigure.inverted().transform((xs, ys))
+                
                 # xs += self.tooltip.get_window_extent()*0.2
                 # ys -= self.tooltip.get_height()*1.2
                 # if xs < 0 : xs = 0.02
@@ -329,7 +332,7 @@ class GraphicsView (QGraphicsView):
 
         self.tooltip.remove() # make sure the annotation will be removed
         self.canvas.blit(self.canvas.fig.bbox)
-        self.canvas.flush_events()
+        #self.canvas.flush_events()
         
 
     def mpl_mousePress(self, event: MouseEvent):
@@ -358,7 +361,6 @@ class GraphicsView (QGraphicsView):
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonRelease(self, event:QMouseEvent):
-        self.tooltip.hide()
         pos = self.mapToGlobal(event.pos())
         self.menu.exec(pos)       
         super().mouseReleaseEvent(event)

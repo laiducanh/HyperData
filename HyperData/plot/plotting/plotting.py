@@ -3,7 +3,7 @@ from plot.plotting.base.column import *
 from plot.plotting.base.scatter import *
 from plot.plotting.base.pie import *
 from plot.plotting.base.stats import *
-from config.settings import GLOBAL_DEBUG, logger
+from config.settings import GLOBAL_DEBUG, logger, mpl_background
 from plot.utilis import find_mpl_object
 from plot.canvas import Canvas
 from matplotlib.axes import Axes
@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.artist import Artist
 from matplotlib.lines import Line2D
 from matplotlib.collections import Collection
-from matplotlib.patches import Rectangle, Wedge, PathPatch
+from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.legend import Legend, DraggableLegend
 from matplotlib.font_manager import FontProperties
 from matplotlib.backend_bases import MouseEvent
@@ -19,8 +19,7 @@ from typing import List, Union, Literal
 
 DEBUG = True
 
-bbox = [0.995, 0.995]
-offset_x, offset_y = 0, 0
+bbox = None
 
 def remove_artist (ax:Axes, gid:str) -> List[Artist]:
     artist_removed = list()
@@ -52,18 +51,55 @@ def get_legend(canvas: Canvas) -> Legend:
 
 def legend_onRelease(event:MouseEvent, canvas:Canvas):
     global bbox
-    if get_legend(canvas).contains(event)[0]:
-        bbox = canvas.axesleg.transAxes.inverted().transform([event.x-offset_x, event.y-offset_y])
-        #get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes) # never use this!
+    # if get_legend(canvas).contains(event)[0]:
+    #     bbox = canvas.axesleg.transAxes.inverted().transform([event.x-offset_x, event.y-offset_y])
+    #     #get_legend(canvas).set_bbox_to_anchor(bbox, canvas.axesleg.transAxes) # never use this!
+    global legend_picked, _legend
+    
+    legend_picked = False
 
 def legend_onPress(event:MouseEvent, canvas:Canvas):
-    # global variables used for on_release() as well
-    global offset_x, offset_y, bbox
-    _x, _y = canvas.axesleg.transAxes.transform(bbox)
-    offset_x = event.x - _x
-    offset_y = event.y - _y
+    # global variables used for legend_onMove() as well
+    global offset_x, offset_y
+    # _x, _y = canvas.axesleg.transAxes.transform(bbox)
+    # offset_x = event.x - _x
+    # offset_y = event.y - _y
+    global legend_picked
+    #update_legend_bg(canvas)
+    if _legend.contains(event)[0]:
+        legend_picked = True
+        #bg = canvas.copy_from_bbox(canvas.fig.bbox)
+        print(legend_picked)
 
+def legend_onMove(event:MouseEvent, canvas:Canvas):
+    global legend_picked, _legend, bbox, _box
+    #bg = canvas.copy_from_bbox(canvas.fig.bbox)
+    
+    if legend_picked:
+        bbox = canvas.axesleg.transAxes.inverted().transform((event.x, event.y))
+        _bbox = canvas.figure.transFigure.inverted().transform([event.x, event.y])
+        _box = FancyBboxPatch((0,0),0.3,0.3,facecolor=_legend.legendPatch.get_facecolor(),
+                              boxstyle=("round,pad=0,rounding_size=0.2"))
+        canvas.figure.add_artist(_box)
+        #canvas.restore_region(mpl_background.background)
+        #bg = canvas.copy_from_bbox(canvas.fig.bbox)
+        #_legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
+        #_legend.set_loc('center')
+        # _legend.set_title(str(np.random.rand()))
+        _box.set_x(_bbox[0])
+        _box.set_y(_bbox[1])
+        # canvas.axesleg.add_artist(_legend)
+        #canvas.axesleg.draw_artist(_legend)
+        canvas.figure.draw_artist(_box)
+        
+        print(event.x, event.y, bbox)
+        canvas.blit(canvas.figure.bbox)
+        #canvas.flush_events()
+        _box.remove()
+    
 def set_legend(canvas: Canvas, *args, **kwargs):
+    import time
+    print(time.time())
     try:
         _handles: list[Artist] = canvas.axes.get_legend_handles_labels()[0]   + \
                 canvas.axesx2.get_legend_handles_labels()[0] + \
@@ -74,34 +110,48 @@ def set_legend(canvas: Canvas, *args, **kwargs):
                 canvas.axesy2.get_legend_handles_labels()[1] + \
                 canvas.axespie.get_legend_handles_labels()[1]
         old_title = None
+        global legend_picked, bbox
+        legend_picked = False
+        
+        # if not get_legend(canvas): 
+        #     mpl_background.update(canvas.copy_from_bbox(canvas.fig.bbox))
 
-        if get_legend(canvas): 
-            old_title = get_legend(canvas).get_title()
-            get_legend(canvas).remove()
+        # if get_legend(canvas): 
+        #     old_title = get_legend(canvas).get_title()
+        #     get_legend(canvas).remove()
 
         if _handles != []:
+            global _legend
             _legend = canvas.axesleg.legend(_handles, _labels, 
                                             *args, *kwargs)
+            #if bbox: _legend.set_loc('center')
             _legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
-            _legend.set_draggable(True)
+            
+            #_legend.set_draggable(True)
             _legend.set_gid("legend")
 
             for _handle, _leghandle, _legtext \
             in zip(_handles, _legend.legendHandles, _legend.get_texts()):
                 _leghandle.set_gid(_handle.get_gid())
                 _legtext.set_gid(_handle.get_gid())                
-                
-            if old_title: 
-                _legend.set_title(old_title.get_text())
-                _legend.get_title().update_from(old_title)
-            canvas.draw()
 
+            # if old_title: 
+            #     _legend.set_title(old_title.get_text())
+            #     _legend.get_title().update_from(old_title)
+            #canvas.draw()
+            # canvas.restore_region(mpl_background.background)
+            # canvas.axesleg.draw_artist(_legend)
+            # canvas.blit(canvas.fig.bbox)
+            
             canvas.mpl_connect('button_press_event', lambda e: legend_onPress(e, canvas))
             canvas.mpl_connect('button_release_event', lambda e: legend_onRelease(e, canvas))
-
+            # canvas.mpl_connect('draw_event', lambda e: update_legend_bg(canvas))
+            #canvas.mpl_connect('figure_enter_event', lambda e: update_legend_bg(e, canvas))
+            #canvas.mpl_connect('figure_leave_event', lambda e: update_legend_bg(e, canvas))
+            canvas.mpl_connect('motion_notify_event', lambda e: legend_onMove(e, canvas))
     except Exception as e:
         logger.exception(e)
-
+    print(time.time())
 def _set_legend(ax:Axes):
     _artist = list()
     _gid = list()
