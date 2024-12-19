@@ -88,7 +88,7 @@ class ContentItem(QWidget):
         self.menu.addAction(action)
         self.menu.addSeparator()
         action = QAction("Delete Card",self.menu)
-        action.triggered.connect(lambda: self.parent().deleteSelected())
+        action.triggered.connect(lambda: self.parent.deleteSelected())
         self.menu.addAction(action)
 
     def config(self):
