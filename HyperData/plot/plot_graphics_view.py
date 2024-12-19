@@ -21,7 +21,8 @@ from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
-from config.settings import GLOBAL_DEBUG, mpl_background
+from config.settings import GLOBAL_DEBUG
+from plot.plotting.plotting import legend_onMove, legend_onPress, legend_onRelease
 
 DEBUG = True
 
@@ -131,9 +132,10 @@ class GraphicsView (QGraphicsView):
 
         self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
         self.canvas.mpl_connect('button_press_event', self.mpl_mousePress)
+        self.canvas.mpl_connect('button_release_event', self.mpl_mouseRelease)
         self.canvas.mpl_connect('draw_event', self.save_mpl_bg)
         self.canvas.mpl_connect('figure_enter_event', self.mpl_enterFigure)
-        # self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
+        self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
 
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
         self.zoom_slider.setValue(100)
@@ -215,8 +217,7 @@ class GraphicsView (QGraphicsView):
         super().mousePressEvent(event)
     
     def save_mpl_bg(self, event=None):
-        #self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
-        mpl_background.update(self.canvas.copy_from_bbox(self.canvas.fig.bbox))
+        self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
         
     def mpl_enterFigure(self, event:MouseEvent):
         self.save_mpl_bg(event)
@@ -236,101 +237,106 @@ class GraphicsView (QGraphicsView):
         #     self.tooltip.setY(self.mouse_position.y() + y_increment)
         # else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
 
-        bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
-        self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
-        self.canvas.restore_region(mpl_background.background)
+        self.canvas.restore_region(self.mpl_background)
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
 
+        self.legend_picked = legend_onMove(event, self.canvas)
 
+        if not self.legend_picked:
         
-        xp, yp, zp = None, None, None
-        xs, ys = 0, 0
+            xp, yp, zp = None, None, None
+            xs, ys = 0, 0
 
-        for obj in reversed(stack): # the object on top will be picked
-            if obj.contains(event)[0]:
-                # save the original properties of the picked artist
-                _lw = obj.get_linewidth()
-                _alp = obj.get_alpha() if obj.get_alpha() else 1
-                # decorate the artist when it is hovered
-                obj.set(linewidth=_lw+4, alpha=_alp*0.5)
-                obj.axes.draw_artist(obj)
-                
+            bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
+            self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
 
-                if isinstance(obj, Line2D):
-                    # determine the closest data point to the cursor
-                    dist = list()
-                    for x, y in zip(obj.get_xdata(), obj.get_ydata()):
-                        x, y = obj.axes.transData.transform((x, y))
-                        dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
-                    minpos = dist.index(min(dist))
-                    xp = obj.get_xdata()[minpos]
-                    yp = obj.get_ydata()[minpos]
-                    xs, ys = xp, yp
+            for obj in reversed(stack): # the object on top will be picked
+                if obj.contains(event)[0]:
+                    # save the original properties of the picked artist
+                    _lw = obj.get_linewidth()
+                    _alp = obj.get_alpha() if obj.get_alpha() else 1
+                    # decorate the artist when it is hovered
+                    obj.set(linewidth=_lw+4, alpha=_alp*0.5)
+                    obj.axes.draw_artist(obj)
                     
-                elif isinstance(obj, Rectangle):
-                    xp, yp = obj.Xdata, obj.Ydata
-                    xs, ys = obj.Xshow, obj.Yshow
-                    # decorate edgecolor of rectangle with facecolor (probablly)
-                    _ec = obj.get_edgecolor()
-                    obj.set(edgecolor = get_color(obj))
-                    obj.axes.draw_artist(obj)
-                    obj.set(edgecolor = _ec)
-                
-                elif isinstance(obj, Collection):              
-                    # determine the closest data point to the cursor
-                    dist = list()
-                    for x, y in zip(obj.Xshow, obj.Yshow):
-                        x, y = obj.axes.transData.transform((x, y))
-                        dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
-                    minpos = dist.index(min(dist))
-                    xs = obj.Xshow[minpos]
-                    ys = obj.Yshow[minpos]
-                    xp = obj.Xdata[minpos]
-                    yp = obj.Ydata[minpos]
-                    # decorate edgecolor of collection with facecolor (probablly)
-                    _ec = obj.get_edgecolor()
-                    obj.set(edgecolor = get_color(obj))
-                    obj.axes.draw_artist(obj)
-                    obj.set(edgecolor = _ec)
-                
-                elif isinstance(obj, Wedge):
-                    # tooltip will be placed at cursor
-                    xp, yp = obj.Xdata, obj.Ydata
-                    xs, ys = obj.Xshow, obj.Yshow
-                    # decorate wedge by shifting a bit
-                    _r = obj.r
-                    obj.set_radius(_r*1.1)
-                    obj.axes.draw_artist(obj)
-                    obj.set_radius(_r)
 
-                # determine the information from the picked artist
-                s = f"{obj.get_gid().title()}\n"
-                if xp: s += f"{str(xp)}"
-                if yp: s += f", {str(yp)}"
-                if zp: s += f", {str(zp)}"
-                self.tooltip.set_text(s)
-                
-                # determine where to put tooltip on canvas
-                xs, ys = obj.axes.transData.transform([xs, ys])
-                xs, ys = self.canvas.figure.transFigure.inverted().transform((xs, ys))
-                
-                # xs += self.tooltip.get_window_extent()*0.2
-                # ys -= self.tooltip.get_height()*1.2
-                # if xs < 0 : xs = 0.02
-                # if ys < 0 : ys = 0.02
-                # if xs + self.tooltip.get_width() > 1: xs = 1 - self.tooltip.get_width() - 0.02
-                # if ys + self.tooltip.get_height() > 1: ys = 1 - self.tooltip.get_height() - 0.02
-                #self.canvas.figure.add_artist(self.tooltip)
-                self.tooltip.set_x(xs)
-                self.tooltip.set_y(ys)
-                self.canvas.figure.draw_artist(self.tooltip)
+                    if isinstance(obj, Line2D):
+                        # determine the closest data point to the cursor
+                        dist = list()
+                        for x, y in zip(obj.get_xdata(), obj.get_ydata()):
+                            x, y = obj.axes.transData.transform((x, y))
+                            dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
+                        minpos = dist.index(min(dist))
+                        xp = obj.get_xdata()[minpos]
+                        yp = obj.get_ydata()[minpos]
+                        xs, ys = xp, yp
+                        
+                    elif isinstance(obj, Rectangle):
+                        xp, yp = obj.Xdata, obj.Ydata
+                        xs, ys = obj.Xshow, obj.Yshow
+                        # decorate edgecolor of rectangle with facecolor (probablly)
+                        _ec = obj.get_edgecolor()
+                        obj.set(edgecolor = get_color(obj))
+                        obj.axes.draw_artist(obj)
+                        obj.set(edgecolor = _ec)
+                    
+                    elif isinstance(obj, Collection):              
+                        # determine the closest data point to the cursor
+                        dist = list()
+                        for x, y in zip(obj.Xshow, obj.Yshow):
+                            x, y = obj.axes.transData.transform((x, y))
+                            dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
+                        minpos = dist.index(min(dist))
+                        xs = obj.Xshow[minpos]
+                        ys = obj.Yshow[minpos]
+                        xp = obj.Xdata[minpos]
+                        yp = obj.Ydata[minpos]
+                        # decorate edgecolor of collection with facecolor (probablly)
+                        _ec = obj.get_edgecolor()
+                        obj.set(edgecolor = get_color(obj))
+                        obj.axes.draw_artist(obj)
+                        obj.set(edgecolor = _ec)
+                    
+                    elif isinstance(obj, Wedge):
+                        # tooltip will be placed at cursor
+                        xp, yp = obj.Xdata, obj.Ydata
+                        xs, ys = obj.Xshow, obj.Yshow
+                        # decorate wedge by shifting a bit
+                        _r = obj.r
+                        obj.set_radius(_r*1.1)
+                        obj.axes.draw_artist(obj)
+                        obj.set_radius(_r)
 
-                # update the artist to the original properties
-                obj.set(linewidth=_lw, alpha=_alp)
+                    # determine the information from the picked artist
+                    s = f"{obj.get_gid().title()}\n"
+                    if xp: s += f"{str(xp)}"
+                    if yp: s += f", {str(yp)}"
+                    if zp: s += f", {str(zp)}"
+                    self.tooltip.set_text(s)
+                    
+                    # determine where to put tooltip on canvas
+                    xs, ys = obj.axes.transData.transform([xs, ys])
+                    xs, ys = self.canvas.figure.transFigure.inverted().transform((xs, ys))
+                    
+                    # xs += self.tooltip.get_window_extent()*0.2
+                    # ys -= self.tooltip.get_height()*1.2
+                    # if xs < 0 : xs = 0.02
+                    # if ys < 0 : ys = 0.02
+                    # if xs + self.tooltip.get_width() > 1: xs = 1 - self.tooltip.get_width() - 0.02
+                    # if ys + self.tooltip.get_height() > 1: ys = 1 - self.tooltip.get_height() - 0.02
+                    #self.canvas.figure.add_artist(self.tooltip)
+                    self.tooltip.set_x(xs)
+                    self.tooltip.set_y(ys)
+                    self.canvas.figure.draw_artist(self.tooltip)
 
-                break
+                    # update the artist to the original properties
+                    obj.set(linewidth=_lw, alpha=_alp)
 
-        self.tooltip.remove() # make sure the annotation will be removed
+                    # make sure the annotation will be removed
+                    self.tooltip.remove() 
+
+                    break
+
         self.canvas.blit(self.canvas.fig.bbox)
         #self.canvas.flush_events()
         
@@ -338,11 +344,19 @@ class GraphicsView (QGraphicsView):
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Artist])
-        if event.button == 1 and event.dblclick:
-            for obj in stack:
-                if obj.contains(event)[0]:
-                    self.mpl_pressed.emit(obj.get_gid())
-                    break # emit when one and only one object is selected
+        
+        self.legend_picked = legend_onPress(event, self.canvas)
+
+        if not self.legend_picked:
+            if event.button == 1 and event.dblclick:
+                for obj in stack:
+                    if obj.contains(event)[0]:
+                        self.mpl_pressed.emit(obj.get_gid())
+                        break # emit when one and only one object is selected
+    
+    def mpl_mouseRelease(self, event: MouseEvent):
+        self.save_mpl_bg(event)
+        self.legend_picked = legend_onRelease(event, self.canvas)
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
