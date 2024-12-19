@@ -1,12 +1,12 @@
 from PyQt6.QtCore import QObject, Qt, pyqtSignal, QEvent, QPoint, QRectF
 from PyQt6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
-                             QSizePolicy, QGridLayout, QToolButton, QApplication, QVBoxLayout)
-from PyQt6.QtGui import QCursor, QPainter, QColor
+                             QSizePolicy, QGridLayout, QToolButton, QFileIconProvider, QVBoxLayout)
+from PyQt6.QtGui import QCursor, QPainter, QColor, QIcon
 from PyQt6.QtSvg import QSvgRenderer
 from typing import Iterable
 from ui.base_widgets.text import BodyLabel, InfoLabel
 from ui.base_widgets.menu import Menu
-from ui.utils import icon
+from ui.utils import icon as Icon
 import os
 
 class _PushButton (QPushButton):
@@ -16,12 +16,14 @@ class _PushButton (QPushButton):
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self._icon = None
     
-    def setIcon(self, icon:str) -> None:
-        self._icon = icon
-        self.update()
+    def setIcon(self, icon:QIcon|str) -> None:
+        if isinstance(icon, QIcon):
+            self._icon = icon
+        else: self._icon = Icon(icon)
+        super().setIcon(self._icon)
     
     def update(self):
-        if self._icon: super().setIcon(icon(self._icon))
+        if self._icon: super().setIcon(self._icon)
         super().update()
 
 class _TransparentPushButton (_PushButton):
@@ -85,12 +87,14 @@ class _ToolButton (QToolButton):
         self.setProperty("hasMenu",True)
         return super().setMenu(menu)
 
-    def setIcon(self, icon:str) -> None:
-        self._icon = icon
-        self.update()
+    def setIcon(self, icon:QIcon|str) -> None:
+        if isinstance(icon, QIcon):
+            self._icon = icon
+        else: self._icon = Icon(icon)
+        super().setIcon(self._icon)
     
     def update(self):
-        if self._icon: super().setIcon(icon(self._icon))
+        if self._icon: super().setIcon(self._icon)
         super().update()
 
 class _TransparentToolButton (_ToolButton):

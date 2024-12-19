@@ -19,32 +19,34 @@ class Widget3D_4input (QWidget):
         self.node = node
         self.axes = "3d"
 
+        from plot.insert_plot.utilis import icon_open
+
         self.input1 = _CompleterLineEdit()
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_1 = _ToolButton()
-        self.choose_data_1.setIcon('open.png')
+        self.choose_data_1.setIcon(icon_open)
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
 
         self.input2 = _CompleterLineEdit()
         self.input2.setCurrentText(self.input[1])
         self.input2.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_2 = _ToolButton()
-        self.choose_data_2.setIcon('open.png')
+        self.choose_data_2.setIcon(icon_open)
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
 
         self.input3 = _CompleterLineEdit()
         self.input3.setCurrentText(self.input[2])
         self.input3.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_3 = _ToolButton()
-        self.choose_data_3.setIcon('open.png')
+        self.choose_data_3.setIcon(icon_open)
         self.choose_data_3.clicked.connect(lambda: self.open_data('input 3'))
 
         self.input4 = _CompleterLineEdit()
         self.input4.setCurrentText(self.input[3])
         self.input4.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_4 = _ToolButton()
-        self.choose_data_4.setIcon('open.png')
+        self.choose_data_4.setIcon(icon_open)
         self.choose_data_4.clicked.connect(lambda: self.open_data('input 4'))
 
         

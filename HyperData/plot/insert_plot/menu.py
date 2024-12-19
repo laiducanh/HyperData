@@ -1,25 +1,14 @@
 from PyQt6.QtCore import pyqtSignal
 from ui.base_widgets.menu import Menu, Action
-from ui.utils import icon
-import time
 
-def load_MenuIcon():
-    """ this function will preload icons used for Menu to avoid delays """
-    global icon_line, icon_bar, icon_scatter, icon_pie, icon_statistics, icon_surface, icon_function, icon_none
-    icon_line = icon("line.png")
-    icon_bar = icon("bar.png")
-    icon_scatter = icon("scatter.png")
-    icon_pie = icon("pie.png")
-    icon_statistics = icon("statistics.png")
-    icon_surface = icon("surface.png")
-    icon_function = icon("function.png")
-    icon_none = icon("delete.png")
 
 class Menu_type_2D (Menu):
     sig = pyqtSignal(str)
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        print(time.time())
+
+        from plot.insert_plot.utilis import (icon_line, icon_bar, icon_scatter, icon_pie, 
+                                            icon_statistics,icon_surface, icon_none, icon_function)
 
         line = Menu("Line", self)
         line.setIcon(icon_line)
@@ -99,11 +88,14 @@ class Menu_type_2D (Menu):
         self.addMenu(surface)
         #self.addMenu(func)
         self.addAction(none)
-        print(time.time())
+
 class Menu_type_3D (Menu):
     sig = pyqtSignal(str)
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+
+        from plot.insert_plot.utilis import (icon_line, icon_bar, icon_scatter, icon_pie, 
+                                            icon_statistics,icon_surface, icon_none, icon_function)
 
         line = Menu("Line", self)
         line.setIcon(icon_line)

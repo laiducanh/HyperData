@@ -13,7 +13,7 @@ from ui.base_widgets.frame import Frame
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import rescale_plot, plotting
-from plot.insert_plot.menu import load_MenuIcon
+from plot.insert_plot.utilis import load_MenuIcon, load_InputIcon
 from node_editor.node_node import Node
 from config.settings import GLOBAL_DEBUG, logger, color_cycle
 from typing import List
@@ -98,7 +98,7 @@ class NewPlot (Frame):
                         "3d scatter"]
         self.plot_4input = ["3d bubble"]
 
-
+        print(time.time())
         effect = QGraphicsOpacityEffect(self)
         effect.setOpacity(0.5)
         ani = QPropertyAnimation(effect, b'opacity', self)
@@ -134,6 +134,7 @@ class NewPlot (Frame):
         mainlayout.addLayout(self.layout_input) 
 
         self.initUI()
+        print(time.time())
 
     def initUI(self):
         
@@ -254,6 +255,7 @@ class InsertPlot (QWidget):
         self.node = node
         self.plot3d = plot3d
         load_MenuIcon()
+        load_InputIcon()
 
         plottype = Grid_Plottype(plot3d, parent)
         self.layout.addLayout(plottype)

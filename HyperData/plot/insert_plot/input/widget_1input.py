@@ -18,13 +18,15 @@ class WidgetPie (QWidget):
         self.node = node
         self.axes = "pie"
 
+        from plot.insert_plot.utilis import icon_open
+
         self.input1 = _CompleterLineEdit()
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input_func)
         layout.addWidget(self.input1)
 
         self.choose_data = _ToolButton()
-        self.choose_data.setIcon('open.png')
+        self.choose_data.setIcon(icon_open)
         self.choose_data.clicked.connect(self.open_data)
         layout.addWidget(self.choose_data)
 
