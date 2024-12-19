@@ -216,6 +216,102 @@ class GraphicsView (QGraphicsView):
     def rightMouseButtonPress(self, event):
         super().mousePressEvent(event)
     
+    def tooltip_onShow(self, event: MouseEvent):
+        stack = find_mpl_object(figure=self.canvas.fig,
+                                match=[Line2D,Collection,Rectangle,Wedge,PathPatch])
+        xp, yp, zp = None, None, None
+        xs, ys = 0, 0
+
+        bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
+        self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
+
+        for obj in reversed(stack): # the object on top will be picked
+            if obj.contains(event)[0]:
+                # save the original properties of the picked artist
+                _lw = obj.get_linewidth()
+                _alp = obj.get_alpha() if obj.get_alpha() else 1
+                # decorate the artist when it is hovered
+                obj.set(linewidth=_lw+4, alpha=_alp*0.5)
+                obj.axes.draw_artist(obj)
+                
+
+                if isinstance(obj, Line2D):
+                    # determine the closest data point to the cursor
+                    dist = list()
+                    for x, y in zip(obj.get_xdata(), obj.get_ydata()):
+                        x, y = obj.axes.transData.transform((x, y))
+                        dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
+                    minpos = dist.index(min(dist))
+                    xp = obj.get_xdata()[minpos]
+                    yp = obj.get_ydata()[minpos]
+                    xs, ys = xp, yp
+                    
+                elif isinstance(obj, Rectangle):
+                    xp, yp = obj.Xdata, obj.Ydata
+                    xs, ys = obj.Xshow, obj.Yshow
+                    # decorate edgecolor of rectangle with facecolor (probablly)
+                    _ec = obj.get_edgecolor()
+                    obj.set(edgecolor = get_color(obj))
+                    obj.axes.draw_artist(obj)
+                    obj.set(edgecolor = _ec)
+                
+                elif isinstance(obj, Collection):              
+                    # determine the closest data point to the cursor
+                    dist = list()
+                    for x, y in zip(obj.Xshow, obj.Yshow):
+                        x, y = obj.axes.transData.transform((x, y))
+                        dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
+                    minpos = dist.index(min(dist))
+                    xs = obj.Xshow[minpos]
+                    ys = obj.Yshow[minpos]
+                    xp = obj.Xdata[minpos]
+                    yp = obj.Ydata[minpos]
+                    # decorate edgecolor of collection with facecolor (probablly)
+                    _ec = obj.get_edgecolor()
+                    obj.set(edgecolor = get_color(obj))
+                    obj.axes.draw_artist(obj)
+                    obj.set(edgecolor = _ec)
+                
+                elif isinstance(obj, Wedge):
+                    # tooltip will be placed at cursor
+                    xp, yp = obj.Xdata, obj.Ydata
+                    xs, ys = obj.Xshow, obj.Yshow
+                    # decorate wedge by shifting a bit
+                    _r = obj.r
+                    obj.set_radius(_r*1.1)
+                    obj.axes.draw_artist(obj)
+                    obj.set_radius(_r)
+
+                # determine the information from the picked artist
+                s = f"{obj.get_gid().title()}\n"
+                if xp: s += f"{str(xp)}"
+                if yp: s += f", {str(yp)}"
+                if zp: s += f", {str(zp)}"
+                self.tooltip.set_text(s)
+                
+                # determine where to put tooltip on canvas
+                xs, ys = obj.axes.transData.transform([xs, ys])
+                xs, ys = self.canvas.figure.transFigure.inverted().transform((xs, ys))
+                
+                # xs += self.tooltip.get_window_extent()*0.2
+                # ys -= self.tooltip.get_height()*1.2
+                # if xs < 0 : xs = 0.02
+                # if ys < 0 : ys = 0.02
+                # if xs + self.tooltip.get_width() > 1: xs = 1 - self.tooltip.get_width() - 0.02
+                # if ys + self.tooltip.get_height() > 1: ys = 1 - self.tooltip.get_height() - 0.02
+                #self.canvas.figure.add_artist(self.tooltip)
+                self.tooltip.set_x(xs)
+                self.tooltip.set_y(ys)
+                self.canvas.figure.draw_artist(self.tooltip)
+
+                # update the artist to the original properties
+                obj.set(linewidth=_lw, alpha=_alp)
+
+                # make sure the annotation will be removed
+                self.tooltip.remove() 
+
+                break
+    
     def save_mpl_bg(self, event=None):
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
         
@@ -226,16 +322,6 @@ class GraphicsView (QGraphicsView):
         self.save_mpl_bg(event)
     
     def mpl_mouseMove(self, event:MouseEvent):
-        stack = find_mpl_object(figure=self.canvas.fig,
-                                match=[Line2D,Collection,Rectangle,Wedge,PathPatch])
-        
-        # x_increment, y_increment = 30, 30
-        # if self.mouse_position.x() + x_increment + self.tooltip.width < self.width():
-        #     self.tooltip.setX(self.mouse_position.x() + x_increment)
-        # else: self.tooltip.setX(self.width() - 10 - self.tooltip.width)
-        # if self.mouse_position.y() + y_increment + self.tooltip.height < self.height():
-        #     self.tooltip.setY(self.mouse_position.y() + y_increment)
-        # else: self.tooltip.setY(self.height() - 10 - self.tooltip.height)
 
         self.canvas.restore_region(self.mpl_background)
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
@@ -243,104 +329,11 @@ class GraphicsView (QGraphicsView):
         self.legend_picked = legend_onMove(event, self.canvas)
 
         if not self.legend_picked:
-        
-            xp, yp, zp = None, None, None
-            xs, ys = 0, 0
-
-            bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
-            self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
-
-            for obj in reversed(stack): # the object on top will be picked
-                if obj.contains(event)[0]:
-                    # save the original properties of the picked artist
-                    _lw = obj.get_linewidth()
-                    _alp = obj.get_alpha() if obj.get_alpha() else 1
-                    # decorate the artist when it is hovered
-                    obj.set(linewidth=_lw+4, alpha=_alp*0.5)
-                    obj.axes.draw_artist(obj)
-                    
-
-                    if isinstance(obj, Line2D):
-                        # determine the closest data point to the cursor
-                        dist = list()
-                        for x, y in zip(obj.get_xdata(), obj.get_ydata()):
-                            x, y = obj.axes.transData.transform((x, y))
-                            dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
-                        minpos = dist.index(min(dist))
-                        xp = obj.get_xdata()[minpos]
-                        yp = obj.get_ydata()[minpos]
-                        xs, ys = xp, yp
-                        
-                    elif isinstance(obj, Rectangle):
-                        xp, yp = obj.Xdata, obj.Ydata
-                        xs, ys = obj.Xshow, obj.Yshow
-                        # decorate edgecolor of rectangle with facecolor (probablly)
-                        _ec = obj.get_edgecolor()
-                        obj.set(edgecolor = get_color(obj))
-                        obj.axes.draw_artist(obj)
-                        obj.set(edgecolor = _ec)
-                    
-                    elif isinstance(obj, Collection):              
-                        # determine the closest data point to the cursor
-                        dist = list()
-                        for x, y in zip(obj.Xshow, obj.Yshow):
-                            x, y = obj.axes.transData.transform((x, y))
-                            dist.append(math.sqrt(abs(event.x**2 + event.y**2 - x**2 - y**2)))
-                        minpos = dist.index(min(dist))
-                        xs = obj.Xshow[minpos]
-                        ys = obj.Yshow[minpos]
-                        xp = obj.Xdata[minpos]
-                        yp = obj.Ydata[minpos]
-                        # decorate edgecolor of collection with facecolor (probablly)
-                        _ec = obj.get_edgecolor()
-                        obj.set(edgecolor = get_color(obj))
-                        obj.axes.draw_artist(obj)
-                        obj.set(edgecolor = _ec)
-                    
-                    elif isinstance(obj, Wedge):
-                        # tooltip will be placed at cursor
-                        xp, yp = obj.Xdata, obj.Ydata
-                        xs, ys = obj.Xshow, obj.Yshow
-                        # decorate wedge by shifting a bit
-                        _r = obj.r
-                        obj.set_radius(_r*1.1)
-                        obj.axes.draw_artist(obj)
-                        obj.set_radius(_r)
-
-                    # determine the information from the picked artist
-                    s = f"{obj.get_gid().title()}\n"
-                    if xp: s += f"{str(xp)}"
-                    if yp: s += f", {str(yp)}"
-                    if zp: s += f", {str(zp)}"
-                    self.tooltip.set_text(s)
-                    
-                    # determine where to put tooltip on canvas
-                    xs, ys = obj.axes.transData.transform([xs, ys])
-                    xs, ys = self.canvas.figure.transFigure.inverted().transform((xs, ys))
-                    
-                    # xs += self.tooltip.get_window_extent()*0.2
-                    # ys -= self.tooltip.get_height()*1.2
-                    # if xs < 0 : xs = 0.02
-                    # if ys < 0 : ys = 0.02
-                    # if xs + self.tooltip.get_width() > 1: xs = 1 - self.tooltip.get_width() - 0.02
-                    # if ys + self.tooltip.get_height() > 1: ys = 1 - self.tooltip.get_height() - 0.02
-                    #self.canvas.figure.add_artist(self.tooltip)
-                    self.tooltip.set_x(xs)
-                    self.tooltip.set_y(ys)
-                    self.canvas.figure.draw_artist(self.tooltip)
-
-                    # update the artist to the original properties
-                    obj.set(linewidth=_lw, alpha=_alp)
-
-                    # make sure the annotation will be removed
-                    self.tooltip.remove() 
-
-                    break
-
+            self.tooltip_onShow(event)
+            
         self.canvas.blit(self.canvas.fig.bbox)
         #self.canvas.flush_events()
         
-
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Artist])
