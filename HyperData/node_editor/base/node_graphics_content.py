@@ -12,8 +12,7 @@ class NodeContentWidget(ContentItem):
         
         self.node = node
         self.parent = parent
-        self.threadpool = parent.threadpool
-        self.threadpool: QThreadPool
+        self.threadpool: QThreadPool = parent.threadpool
         self.num_signal_pipeline = 0
 
     def config(self):
@@ -23,9 +22,9 @@ class NodeContentWidget(ContentItem):
         """ use for threadpool run """
         self.progress.setValue(0)
         self.progress._setValue(0)
-        worker = Worker(self.func, *args, **kwargs)
-        worker.signals.finished.connect(self.exec_done)
-        self.threadpool.start(worker)
+        self.worker = Worker(self.func, *args, **kwargs)
+        self.worker.signals.finished.connect(self.exec_done)
+        self.threadpool.start(self.worker)
         self.timerStart()
         self.progress.setValue(30)
     

@@ -12,7 +12,7 @@ from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode
 from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView
-
+from PySide6.QtCore import QFileSystemWatcher, QFile
 
 DEBUG = True
     
@@ -23,10 +23,13 @@ class DataReader (NodeContentWidget):
         self.node.output_sockets[0].socket_data = pd.DataFrame()
         self.parent = parent
         self._config = dict(nrows=100000,delimiter=",",header=0,
-                            skip_blank_lines=True,encoding="utf_8")
+                            skip_blank_lines=True,encoding="utf_8",
+                            auto_update=True)
         self.selectedFiles = None
         self.filetype = "csv"
         self.isReadable = True
+        self.watcher = QFileSystemWatcher()
+        self.watcher.fileChanged.connect(self.update_data)
     
     def check_filetype (self, file):
         functionList = [pd.read_csv, pd.read_excel]
@@ -46,6 +49,9 @@ class DataReader (NodeContentWidget):
         # Note that this configuration works for csv file
         
         dialog = Dialog("Configuration", self.parent.parent)
+        auto_update = Toggle(text="Auto update")
+        dialog.main_layout.addWidget(auto_update)
+        auto_update.button.setChecked(self._config["auto_update"])
         nrows = SpinBox(max=100000, text="Number of rows")
         dialog.main_layout.addWidget(nrows)
         nrows.button.setValue(self._config["nrows"])
@@ -89,6 +95,7 @@ class DataReader (NodeContentWidget):
             self._config["header"] = "infer" if self.header.button.isChecked() else None
             self._config["encoding"] = self.encoding.button.currentText()
             self._config["sheet_name"] = self.sheet_name.button.currentText()
+            self._config["auto_update"] = auto_update.button.isChecked()
             super().exec(self.selectedFiles)
     
     def update_preview (self):
@@ -113,7 +120,15 @@ class DataReader (NodeContentWidget):
                                      sheet_name=sheet_name)
         self.model = TableModel(data, self.parent)
         self.preview.setModel(self.model)
-            
+
+    def update_data(self):
+        # update the path in case some text editors replace the file with a new one
+        # so the watcher will stop watching the old file
+        self.watcher.addPath(self.selectedFiles)
+        if self._config["auto_update"]:
+            super().exec(self.selectedFiles)
+            self.worker.signals.finished.connect(lambda: self.view.update_data(self.data_to_view))
+        
     def exec (self):    
         
         import_dlg = QFileDialog()
@@ -125,6 +140,7 @@ class DataReader (NodeContentWidget):
 
         if import_dlg.exec():
             self.selectedFiles = import_dlg.selectedFiles()[0]
+            self.watcher.addPath(self.selectedFiles)
             logger.info(f"{self.name} {self.node.id}::Select {self.selectedFiles}.")
             self.label.setText(f'Shape: (--, --)') # reset Shape label
             super().exec(self.selectedFiles)
@@ -148,7 +164,6 @@ class DataReader (NodeContentWidget):
             logger.warning(f"{self.name} {self.node.id}::Cannot read data file, return an empty DataFrame.")
         
         self.node.output_sockets[0].socket_data = data
-    
         self.data_to_view = data
     
     def eval(self):

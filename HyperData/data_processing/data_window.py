@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QA
 from PySide6.QtGui import QIcon, QGuiApplication
 from PySide6.QtCore import QModelIndex, QSize, Signal, Qt, QAbstractTableModel, QMetaType
 import os, missingno, squarify
-from collections import Counter
+from time import gmtime, strftime
 import pandas as pd
 import numpy as np
 from config.settings import list_name, GLOBAL_DEBUG, logger
@@ -13,7 +13,6 @@ from ui.base_widgets.menu import Menu, Action
 #from ui.base_widgets.icons import Icon
 from plot.canvas import ExplorerCanvas
 import seaborn as sns
-from matplotlib.ticker import MaxNLocator
 
 DEBUG = False
 
@@ -113,18 +112,6 @@ class TableView (QWidget):
 
         self.setWindowTitle("Data")
         self.data = data
-        self.parent = parent
-
-        self.view = QTableView(parent)
-        self.update_data(data)
-        
-        self.layout = QVBoxLayout()
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.setLayout(self.layout)
-        #self.view.setStyleSheet("QWidget {background:white}")
-
-        self.layout.addWidget(self.view)
-        #view.setVerticalScrollBar(widget)
         
         self.clipboard = QApplication.clipboard()
         self.selected_values = list()
@@ -132,9 +119,20 @@ class TableView (QWidget):
         self.initUI()
     
     def initUI (self):
+
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        #self.view.setStyleSheet("QWidget {background:white}")
+
+        self.time_update = BodyLabel()
+        
+        self.view = QTableView(self.parent())
+        self.update_data(self.data)
+        self.vlayout.addWidget(self.view)
+        #view.setVerticalScrollBar(widget)
         
         layout1 = QHBoxLayout()
-        self.layout.addLayout(layout1)
+        self.vlayout.addLayout(layout1)
         text = BodyLabel('Data types:')
         text.setFixedWidth(100)
         layout1.addWidget(text)
@@ -150,7 +148,7 @@ class TableView (QWidget):
 
         layout4 = QHBoxLayout()
         #layout4.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.layout.addLayout(layout4)
+        self.vlayout.addLayout(layout4)
         text = BodyLabel('Data points:')
         text.setFixedWidth(100)
         layout4.addWidget(text)
@@ -171,6 +169,9 @@ class TableView (QWidget):
         layout4.addWidget(text)
         self.unique = BodyLabel()
         layout4.addWidget(self.unique)
+
+        self.vlayout.addWidget(self.time_update)
+
 
     def on_selection (self):
 
@@ -261,9 +262,11 @@ class TableView (QWidget):
     
     def update_data (self, data):
         self.data = data
-        self.model = TableModel(data, self.parent)
+        self.model = TableModel(data, self.parent())
         self.view.setModel(self.model)
         self.view.selectionModel().selectionChanged.connect(self.on_selection)
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        self.time_update.setText(f"Updated: {time}")
             
 class ExploreView (QWidget):
     def __init__(self, data, parent=None):
