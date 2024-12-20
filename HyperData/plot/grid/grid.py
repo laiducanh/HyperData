@@ -1,5 +1,5 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QApplication
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QApplication
 import matplotlib.pyplot
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import Slider, DoubleSpinBox

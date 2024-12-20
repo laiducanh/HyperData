@@ -160,35 +160,35 @@ class GraphicsView (QGraphicsView):
         _graph_list = [i.title() for i in graph_list]
         for text in ["Manage Graph"] + _graph_list:
             action = Action(text=text, parent=graph)
-            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text))
+            action.triggered.connect(lambda text=text,checked=True: self.mouse_released.emit(text))
             graph.addAction(action)
         
         tick = Menu(text="&Tick", parent=self.menu)
         self.menu.addMenu(tick)
         for text in ["Tick &Bottom", "Tick &Left", "Tick &Top", "Tick &Right"]:
             action = Action(text=text, parent=tick)
-            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text.replace("&","")))
+            action.triggered.connect(lambda text=text,checked=True: self.mouse_released.emit(text.replace("&","")))
             tick.addAction(action)
 
         spine = Menu(text="&Spine", parent=self.menu)
         self.menu.addMenu(spine)
         for text in ["Spine &Bottom", "Spine &Left", "Spine &Top", "Spine &Right"]:
             action = Action(text=text, parent=spine)
-            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text.replace("&","")))
+            action.triggered.connect(lambda text=text,checked=True: self.mouse_released.emit(text.replace("&","")))
             spine.addAction(action)
         
         figure = Menu(text="&Figure", parent=self.menu)
         self.menu.addMenu(figure)
         for text in ["Plot Size", "Grid"]:
             action = Action(text=text, parent=figure)
-            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text))
+            action.triggered.connect(lambda text=text,checked=True: self.mouse_released.emit(text))
             figure.addAction(action)
 
         label = Menu(text="&Label", parent=self.menu)
         self.menu.addMenu(label)
         for text in ["Title", "Axis Label", "Legend", "Data Annotation"]:
             action = Action(text=text, parent=label)
-            action.triggered.connect(lambda checked, text=text: self.mouse_released.emit(text))
+            action.triggered.connect(lambda text=text,checked=True: self.mouse_released.emit(text))
             label.addAction(action)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:

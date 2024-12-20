@@ -19,7 +19,7 @@ class ContentItem(QWidget):
     def __init__(self, parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__(parent)
 
-        self.view = DataView(pandas.DataFrame())
+        self.view = DataView(pandas.DataFrame(),parent)
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()
@@ -127,7 +127,7 @@ class ContentItem(QWidget):
 
     def viewData (self):
         self.view.update_data(self.data_to_view)
-        self.view.showMaximized()
+        self.view.show()
         
     def serialize(self):
         return dict()

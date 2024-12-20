@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QLabel
-from PyQt6.QtCore import pyqtSignal, Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QLabel
+from PySide6.QtCore import Qt
 from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import SpinBox, Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown

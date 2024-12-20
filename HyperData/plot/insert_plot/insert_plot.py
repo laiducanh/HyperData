@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, QSize, Qt, QPropertyAnimation
-from PyQt6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QScrollArea, QWidget)
-from PyQt6.QtGui import QCursor
+from PySide6.QtCore import Signal, QSize, Qt, QPropertyAnimation
+from PySide6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QScrollArea, QWidget)
+from PySide6.QtGui import QCursor
 import os
 from matplotlib.artist import Artist
 from plot.plot_plottype_window import Plottype_Window
@@ -35,7 +35,7 @@ ICON_PATH_3D = {'3d line':os.path.join("Plot","line.svg"),
 class Grid_Plottype (QHBoxLayout):
     """ Grid plot type display on top of Insert tab """
 
-    sig = pyqtSignal(str) # emit when a button in grid was triggered and a new plot was created
+    sig = Signal(str) # emit when a button in grid was triggered and a new plot was created
                             # str is the plot type chosen from the grid
 
     def __init__(self, plot3d=False, parent=None):
@@ -48,7 +48,7 @@ class Grid_Plottype (QHBoxLayout):
                 self.button.setIconSize(QSize(40,40))
                 self.button.setFixedSize(QSize(50,50))
                 self.button.setToolTip(self.basic_plot.title())
-                self.button.clicked.connect(lambda checked, s=self.basic_plot: self.sig.emit(s))
+                self.button.clicked.connect(lambda s=self.basic_plot: self.sig.emit(s))
                 self.addWidget(self.button)
         else:
             for self.basic_plot in ['2d line','2d area','2d column','2d scatter','pie']:
@@ -57,7 +57,7 @@ class Grid_Plottype (QHBoxLayout):
                 self.button.setIconSize(QSize(40,40))
                 self.button.setFixedSize(QSize(50,50))
                 self.button.setToolTip(self.basic_plot.title())
-                self.button.clicked.connect(lambda checked, s=self.basic_plot: self.sig.emit(s))
+                self.button.clicked.connect(lambda s=self.basic_plot: self.sig.emit(s))
                 self.addWidget(self.button)
         ###
 
@@ -77,8 +77,8 @@ class Grid_Plottype (QHBoxLayout):
 class NewPlot (Frame):
     """ This Widget will be created when creating a new plot to display input fields for the new plot """
 
-    sig = pyqtSignal()
-    sig_delete = pyqtSignal(object)
+    sig = Signal()
+    sig_delete = Signal(object)
 
     def __init__(self, plot_index, plot_type, canvas: Canvas, node:Node, plot3d=False, parent=None):
         super().__init__(parent)
@@ -238,7 +238,7 @@ class NewPlot (Frame):
         self.progressbar.setValue(100)
 
 class InsertPlot (QWidget):
-    sig = pyqtSignal() # emit when new plot was created, also when a plot needs to be updated
+    sig = Signal() # emit when new plot was created, also when a plot needs to be updated
 
     def __init__(self, canvas:Canvas, node, plot3d=False, parent=None):
         super().__init__(parent)

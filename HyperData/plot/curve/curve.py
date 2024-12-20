@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QTimer
-from PyQt6.QtWidgets import QVBoxLayout,  QScrollArea, QWidget, QSizePolicy
-from PyQt6.QtGui import QPaintEvent
+from PySide6.QtCore import Signal, Qt, QTimer
+from PySide6.QtWidgets import QVBoxLayout,  QScrollArea, QWidget, QSizePolicy
+from PySide6.QtGui import QPaintEvent
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import TextEdit
 from ui.base_widgets.frame import SeparateHLine, Frame
@@ -22,7 +22,7 @@ from typing import List
 DEBUG = True
 
 class Curve (QWidget):
-    sig = pyqtSignal() # fire signal when plot updated
+    sig = Signal() # fire signal when plot updated
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
         

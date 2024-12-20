@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.button import Toggle
 from matplotlib.collections import PathCollection
@@ -13,7 +13,7 @@ from config.settings import GLOBAL_DEBUG, logger
 DEBUG = False
 
 class Scatter(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         

@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
@@ -19,7 +19,7 @@ from typing import List, Literal
 DEBUG = False
 
 class Histogram (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -231,7 +231,7 @@ class Histogram (QWidget):
         return super().paintEvent(a0)
     
 class Boxplot (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -551,7 +551,7 @@ class Boxplot (QWidget):
         return super().paintEvent(a0)
 
 class Violinplot (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -794,7 +794,7 @@ class Violinplot (QWidget):
         return super().paintEvent(a0)
     
 class Eventplot(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -908,7 +908,7 @@ class Eventplot(QWidget):
         return super().paintEvent(a0)
     
 class Hist2d (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         

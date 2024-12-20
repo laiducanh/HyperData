@@ -13,6 +13,7 @@ from ui.base_widgets.menu import Menu, Action
 #from ui.base_widgets.icons import Icon
 from plot.canvas import ExplorerCanvas
 import seaborn as sns
+from matplotlib.ticker import MaxNLocator
 
 DEBUG = False
 
@@ -36,7 +37,7 @@ class TableModel(QAbstractTableModel):
         if role==Qt.ItemDataRole.DisplayRole:
             return str(self._data.iloc[index.row(), index.column()])
         elif role==Qt.ItemDataRole.BackgroundRole:
-            return QMetaType(QGuiApplication.palette().base())
+            return QGuiApplication.palette().base()
             
         return 
     
@@ -279,8 +280,7 @@ class ExploreView (QWidget):
         self.update_data(data)
     
     def initUI(self):
-        self.vlayout = QVBoxLayout()
-        self.setLayout(self.vlayout)
+        self.vlayout = QVBoxLayout(self)
         self.view = QTableView(self.parent())
         self.vlayout.addWidget(self.view)
         self.plot_widget = QWidget()
@@ -309,29 +309,29 @@ class ExploreView (QWidget):
         menu_univar = Menu("Univariate analysis", self)
         for i in self.univar_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
-            action.triggered.connect(lambda checked: self.update_selection())
+            action.triggered.connect(lambda s=i,checked=True: self.btn.setText(s))
+            action.triggered.connect(self.update_selection)
             menu_univar.addAction(action)
         menu.addMenu(menu_univar)
         menu_bivar = Menu("Bivariate analysis", self)
         for i in self.bivar_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
-            action.triggered.connect(lambda checked: self.update_selection())
+            action.triggered.connect(lambda s=i,checked=True: self.btn.setText(s))
+            action.triggered.connect(self.update_selection)
             menu_bivar.addAction(action)
         menu.addMenu(menu_bivar)
         menu_multivar = Menu("Multivariate analysis", self)
         for i in self.multivar_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
-            action.triggered.connect(lambda checked: self.update_selection())
+            action.triggered.connect(lambda s=i,checked=True: self.btn.setText(s))
+            action.triggered.connect(self.update_selection)
             menu_multivar.addAction(action)
         menu.addMenu(menu_multivar)
         menu_nan = Menu("Missing values", self)
         for i in self.nan_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
-            action.triggered.connect(lambda checked: self.update_selection())
+            action.triggered.connect(lambda s=i,checked=True: self.btn.setText(s))
+            action.triggered.connect(self.update_selection)
             menu_nan.addAction(action)
         menu.addMenu(menu_nan)
         return menu
@@ -382,7 +382,7 @@ class ExploreView (QWidget):
             elif plottype in self.multivar_plot + self.nan_plot:
                 self.varx.setVisible(False)
                 self.vary.setVisible(False)
-
+            
             #self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -409,6 +409,7 @@ class ExploreView (QWidget):
             else:
                 self.canvas.fig.clear()
                 ax = self.canvas.fig.add_subplot()
+                #ax.xaxis.set_major_locator(MaxNLocator(3))
 
                 label_varx = self.varx.button.currentText()
                 label_vary = self.vary.button.currentText()
@@ -437,21 +438,29 @@ class ExploreView (QWidget):
                         ax.imshow(self.data_inUse, aspect='auto')
                         ax.set_xticks(range(len(self.data_inUse.columns)), labels=self.data_inUse.columns)
 
+            
+                xticks = []
+                for ind, label in enumerate(ax.get_xticklabels()):
+                    # keep the maximum number of xticks = 10
+                    if ind % np.ceil(len(ax.get_xticklabels())/5):
+                        xticks.append("")
+                    else: xticks.append(label)
+                ax.set_xticks(ax.get_xticks(), xticks)
+
             self.canvas.draw_idle() 
             
         except Exception as e:
             logger.exception(e)
         
-class DataView (QMainWindow):
+class DataView (QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
         
         self.setWindowTitle("Data")
-        layout = QHBoxLayout()
-        self.central_widget = QWidget()
-        self.central_widget.setLayout(layout)
-        self.setCentralWidget(self.central_widget)
+        layout = QHBoxLayout(self)
         self.setWindowIcon(QIcon(os.path.join("data-window.png")))
+        screen = QGuiApplication.primaryScreen().geometry().getRect()
+        self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
         
         self.tableview = TableView(data, parent)
         layout.addWidget(self.tableview)
@@ -463,17 +472,16 @@ class DataView (QMainWindow):
         self.tableview.update_data(data)
         self.explore.update_data(data)
 
-class DataSelection (QMainWindow):
+class DataSelection (QWidget):
     sig = Signal(str)
     def __init__(self, data, parent=None):
         super().__init__(parent)
         
         self.setWindowTitle("Data")
-        layout = QVBoxLayout()
-        self.central_widget = QWidget()
-        self.central_widget.setLayout(layout)
-        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout(self)
         self.setWindowIcon(QIcon(os.path.join("UI","Icons","data-window.png")))
+        screen = QGuiApplication.primaryScreen().geometry().getRect()
+        self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
         
         self.tableview = TableView(data, parent)
         layout.addWidget(self.tableview)

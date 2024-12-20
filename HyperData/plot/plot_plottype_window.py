@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget, QLabel, QMainWindow
-from PyQt6.QtCore import pyqtSignal, QSize, Qt
-from PyQt6.QtGui import QIcon, QPixmap
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget, QLabel, QMainWindow
+from PySide6.QtCore import Signal, QSize, Qt
+from PySide6.QtGui import QIcon, QPixmap
 import os
 from ui.base_widgets.button import _PrimaryPushButton
 from ui.base_widgets.text import TitleLabel, BodyLabel
@@ -8,7 +8,7 @@ from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.list import ListWidget
 
 class Plottype_Button (_PrimaryPushButton):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self,type,icon_size,tooltip):
         super().__init__()
 
@@ -25,7 +25,7 @@ class Plottype_Button (_PrimaryPushButton):
 
 
 class SideBar (ListWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -37,7 +37,7 @@ class SideBar (ListWidget):
     
 
 class Line2d (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -82,7 +82,7 @@ class Line2d (QWidget):
         layout.addStretch()
         
 class Line3d (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -115,7 +115,7 @@ class Line3d (QWidget):
         layout.addStretch()
 
 class Bar (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -168,7 +168,7 @@ class Bar (QWidget):
 
 
 class Scatter2D (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -212,7 +212,7 @@ class Scatter2D (QWidget):
         layout.addStretch()
 
 class Scatter3D(QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -256,7 +256,7 @@ class Scatter3D(QWidget):
         layout.addStretch()
 
 class Pie (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -303,7 +303,7 @@ class Pie (QWidget):
 
 
 class Statistics (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -349,7 +349,7 @@ class Statistics (QWidget):
 
 
 class Surface (QWidget):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
@@ -395,7 +395,7 @@ class Surface (QWidget):
         layout.addStretch()
 
 class Plottype_Window (QMainWindow):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self, plot3d:bool, parent=None):
         super().__init__(parent)
         #self.setStyleSheet('QWidget { background:#BDC3C7;}')

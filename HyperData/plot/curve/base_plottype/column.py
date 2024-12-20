@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
@@ -22,7 +22,7 @@ import numpy as np
 DEBUG = False
 
 class Column (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -143,7 +143,7 @@ class Column (QWidget):
         return super().paintEvent(a0)
     
 class Column3D (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -334,7 +334,7 @@ class ClusteredColumn(Column):
 
 
 class Marimekko (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
@@ -396,7 +396,7 @@ class Marimekko (QWidget):
         return super().paintEvent(a0)
 
 class Treemap(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
 

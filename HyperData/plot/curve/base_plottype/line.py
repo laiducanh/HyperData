@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
 from plot.curve.base_elements.line import Line2D, LineCollection, Marker
 from plot.curve.base_elements.line import Line as LineBase
 from ui.base_widgets.frame import SeparateHLine
@@ -18,7 +18,7 @@ from config.settings import GLOBAL_DEBUG, logger
 DEBUG = False
 
 class Line (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
         
@@ -190,7 +190,7 @@ class Stem3d (Stem):
         self.orientation.button.blockSignals(False)
 
 class Area (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas: Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
         self.gid = gid

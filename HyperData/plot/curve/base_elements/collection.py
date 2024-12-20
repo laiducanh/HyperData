@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
@@ -20,7 +20,7 @@ from typing import List
 DEBUG = False
 
 class SingleColorCollection (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(parent)
 
@@ -166,7 +166,7 @@ class SingleColorCollection (QWidget):
         return super().paintEvent(a0)
 
 class CmapCollection (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
         super().__init__(parent)
 
@@ -386,7 +386,7 @@ class CmapCollection (QWidget):
         return super().paintEvent(a0)
     
 class QuadMesh(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
         super().__init__(parent)
 
@@ -550,7 +550,7 @@ class QuadMesh(QWidget):
         return super().paintEvent(a0)
     
 class Poly3DCollection (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
         super().__init__(parent)
 

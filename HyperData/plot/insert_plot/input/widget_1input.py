@@ -1,12 +1,12 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtWidgets import QWidget, QHBoxLayout
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import QWidget, QHBoxLayout
 from data_processing.data_window import DataSelection
 from ui.base_widgets.line_edit import LineEdit, _CompleterLineEdit
 from ui.base_widgets.button import _ToolButton
 from node_editor.node_node import Node
 
 class WidgetPie (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, node:Node,input:list=[str()],parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()

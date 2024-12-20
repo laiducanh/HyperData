@@ -1,5 +1,5 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QScrollArea, QSizePolicy, QWidget, QStackedLayout
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QVBoxLayout, QScrollArea, QSizePolicy, QWidget, QStackedLayout
 from plot.canvas import Canvas
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import _TextEdit

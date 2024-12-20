@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from plot.axes.spine import Spine2D
 from plot.axes.tick import Tick2D
 from plot.canvas import Canvas

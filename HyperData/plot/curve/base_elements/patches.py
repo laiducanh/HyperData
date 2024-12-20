@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
@@ -14,7 +14,7 @@ from typing import List
 DEBUG = False
 
 class Rectangle (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(parent)
 
@@ -142,7 +142,7 @@ class Rectangle (QWidget):
     
 class Wedge(Rectangle):
     """ same as Rectangle, but overwrite set and get functions """
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 

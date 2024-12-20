@@ -1,6 +1,6 @@
-from PyQt6.QtGui import QShowEvent, QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
-from PyQt6.QtCore import pyqtSignal
+from PySide6.QtGui import QShowEvent, QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider, SpinBox
 from ui.base_widgets.color import ColorDropdown
@@ -14,7 +14,7 @@ from matplotlib import lines, collections, colors
 DEBUG = False
 
 class Line(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(parent)
         
@@ -228,7 +228,7 @@ class Line(QWidget):
         return super().paintEvent(a0)
 
 class Marker(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(parent)
         
@@ -389,7 +389,7 @@ class Marker(QWidget):
         return super().paintEvent(a0)
 
 class Line2D (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(parent)
         
@@ -422,7 +422,7 @@ class Line2D (QWidget):
         self.update_props(*args, **kwargs)
 
 class LineCollection(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(parent)
         

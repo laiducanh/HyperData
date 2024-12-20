@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QHBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QWidget
 from ui.base_widgets.button import _ComboBox, _ToggleToolButton
 from ui.base_widgets.text import BodyLabel
 from matplotlib.text import Text

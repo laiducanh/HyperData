@@ -1,5 +1,5 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from ui.base_widgets.button import _ToolButton
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.line_edit import _LineEdit, _CompleterLineEdit
@@ -7,7 +7,7 @@ from data_processing.data_window import DataSelection
 from node_editor.node_node import Node
 
 class Widget2D_2input (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, node:Node, input:list=[str(),str()], parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()

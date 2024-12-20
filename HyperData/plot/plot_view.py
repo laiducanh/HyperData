@@ -1,11 +1,11 @@
 ### Import libraries from Python
 import matplotlib
 
-### Import libraries from PyQt6
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget,
+### Import libraries from PySide6
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget,
                              QStackedLayout, QTreeWidgetItem, QApplication)
-from PyQt6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
+from PySide6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
 
 ### Import self classes
 from plot.insert_plot.insert_plot import InsertPlot
@@ -28,7 +28,7 @@ from plot.utilis import get_color, find_mpl_object
 DEBUG = False
 
 class PlotView (QMainWindow):
-    sig_back_to_grScene = pyqtSignal()
+    sig_back_to_grScene = Signal()
     def __init__(self, node:Node, canvas:Canvas, plot3d=False, parent=None):
         super().__init__(parent)
         

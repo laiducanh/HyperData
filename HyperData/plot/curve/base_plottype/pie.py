@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QPaintEvent
-from PyQt6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QPaintEvent
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
@@ -17,7 +17,7 @@ from typing import List
 DEBUG = False
 
 class Pie (QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         self.gid = gid
@@ -204,7 +204,7 @@ class Pie (QWidget):
         return super().paintEvent(a0)
 
 class Doughnut(Pie):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, gid, canvas, plot = None, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
