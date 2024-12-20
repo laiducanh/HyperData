@@ -63,9 +63,9 @@ class DataReader (NodeContentWidget):
         dialog.main_layout.addWidget(self.delimiter)
         self.delimiter.button.currentTextChanged.connect(self.update_preview)
         self.header = Toggle(text="Header")
-        if self._config["header"] == 0:
-            self.header.button.setChecked(True)
-        else: self.header.button.setChecked(False)
+        if self._config["header"]:
+            self.header.button.setChecked(False)
+        else: self.header.button.setChecked(True)
         dialog.main_layout.addWidget(self.header)
         self.header.button.checkedChanged.connect(self.update_preview)
         self.skip_blank_lines = Toggle(text="Skip blank lines")
@@ -92,7 +92,7 @@ class DataReader (NodeContentWidget):
         if dialog.exec(): 
             self._config["nrows"] = nrows.button.value()
             self._config["delimiter"] = self._delimiterDict[self.delimiter.button.currentText()]
-            self._config["header"] = "infer" if self.header.button.isChecked() else None
+            self._config["header"] = 0 if self.header.button.isChecked() else None
             self._config["encoding"] = self.encoding.button.currentText()
             self._config["sheet_name"] = self.sheet_name.button.currentText()
             self._config["auto_update"] = auto_update.button.isChecked()
@@ -128,7 +128,7 @@ class DataReader (NodeContentWidget):
         if self._config["auto_update"]:
             super().exec(self.selectedFiles)
             self.worker.signals.finished.connect(lambda: self.view.update_data(self.data_to_view))
-        
+
     def exec (self):    
         
         import_dlg = QFileDialog()
