@@ -87,6 +87,11 @@ class _ToolButton (QToolButton):
         self.setProperty("hasMenu",True)
         return super().setMenu(menu)
 
+    def mousePressEvent(self, a0):
+        self.clearFocus()
+        self.pressed.emit()
+        self.clicked.emit()
+
     def setIcon(self, icon:QIcon|str) -> None:
         if isinstance(icon, QIcon):
             self._icon = icon
