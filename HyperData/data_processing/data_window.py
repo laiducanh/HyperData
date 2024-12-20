@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication, QLabel, QAbstractItemView,
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication, QLabel, QAbstractItemView,
                              QCompleter, QPushButton, QMainWindow, QScrollBar)
-from PyQt6.QtGui import QIcon, QGuiApplication
-from PyQt6.QtCore import QModelIndex, QSize, pyqtSignal, Qt, QAbstractTableModel, QVariant
+from PySide6.QtGui import QIcon, QGuiApplication
+from PySide6.QtCore import QModelIndex, QSize, Signal, Qt, QAbstractTableModel, QMetaType
 import os, missingno, squarify
 from collections import Counter
 import pandas as pd
@@ -36,7 +36,7 @@ class TableModel(QAbstractTableModel):
         if role==Qt.ItemDataRole.DisplayRole:
             return str(self._data.iloc[index.row(), index.column()])
         elif role==Qt.ItemDataRole.BackgroundRole:
-            return QVariant(QGuiApplication.palette().base())
+            return QMetaType(QGuiApplication.palette().base())
             
         return 
     
@@ -279,7 +279,8 @@ class ExploreView (QWidget):
         self.update_data(data)
     
     def initUI(self):
-        self.vlayout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout()
+        self.setLayout(self.vlayout)
         self.view = QTableView(self.parent())
         self.vlayout.addWidget(self.view)
         self.plot_widget = QWidget()
@@ -463,7 +464,7 @@ class DataView (QMainWindow):
         self.explore.update_data(data)
 
 class DataSelection (QMainWindow):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self, data, parent=None):
         super().__init__(parent)
         

@@ -1,12 +1,12 @@
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtCore import pyqtSignal, QThreadPool
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Signal, QThreadPool
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.graphics.graphics_content import ContentItem
 from config.threadpool import Worker
 from config.settings import logger
 
 class NodeContentWidget(ContentItem):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__()
         

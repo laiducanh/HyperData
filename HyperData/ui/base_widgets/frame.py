@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QFrame
-from PyQt6.QtGui import QPainter, QColor, QPainterPath
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QFrame
+from PySide6.QtGui import QPainter, QColor, QPainterPath
+from PySide6.QtCore import Qt
 from ui.utils import isDark
 
 class SeparateHLine(QWidget):

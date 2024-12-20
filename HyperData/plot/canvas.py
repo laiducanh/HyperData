@@ -1,5 +1,5 @@
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from PyQt6.QtCore import pyqtSignal
+from PySide6.QtCore import Signal
 import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.legend import Legend
@@ -17,15 +17,13 @@ matplotlib.use("QtAgg")
 #plt.rcParams['mathtext.default'] = 'regular'
 
 #matplotlib.rcParams['figure.figsize'] = [20,20]
-def findobj (x):
-    return True if x.get_gid() != None else False
 
 class Canvas (FigureCanvasQTAgg):
-    sig_text = pyqtSignal(object)
-    sig_removeText = pyqtSignal()
-    sig_pickedArtist = pyqtSignal(object)
-    sig_openMenu = pyqtSignal(object)
-    sig_hover = pyqtSignal() # to use in future
+    sig_text = Signal(object)
+    sig_removeText = Signal()
+    sig_pickedArtist = Signal(object)
+    sig_openMenu = Signal(object)
+    sig_hover = Signal() # to use in future
     def __init__(self):
         
         self.fig = Figure()

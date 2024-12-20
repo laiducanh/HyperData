@@ -1,5 +1,5 @@
-from PyQt6.QtGui import QPainter, QColor, QBrush, QPen
-from PyQt6.QtCore import Qt
+from PySide6.QtGui import QPainter, QColor, QBrush, QPen
+from PySide6.QtCore import Qt
 from ui.base_widgets.menu import Menu
 from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
 from node_editor.base.node_graphics_socket import NodeGraphicsSocket

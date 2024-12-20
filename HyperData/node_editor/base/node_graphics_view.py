@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsView
-from PyQt6.QtCore import Qt, QEvent, QPoint, QTimeLine, pyqtSignal
-from PyQt6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
+from PySide6.QtWidgets import QGraphicsView
+from PySide6.QtCore import Qt, QEvent, QPoint, QTimeLine, Signal
+from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode, NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene

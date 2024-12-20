@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
-from PyQt6.QtCore import pyqtSignal, Qt, QPropertyAnimation, pyqtProperty, QSize, QEasingCurve
-from PyQt6.QtGui import QResizeEvent, QColor, QPainter, QRegion, QPainterPath, QBrush
+from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
+from PySide6.QtCore import Signal, Qt, QPropertyAnimation, Property, QSize, QEasingCurve
+from PySide6.QtGui import QResizeEvent, QColor, QPainter, QRegion, QPainterPath, QBrush
 import math
 from ui.base_widgets.button import _PrimaryPushButton, _PushButton
 from ui.base_widgets.text import TitleLabel
@@ -114,7 +114,7 @@ class ProgressBar(QProgressBar):
         r = self.height() / 2
         painter.drawRoundedRect(0, 0, w, self.height(), r, r)
 
-    val = pyqtProperty(int, _value, _setValue)
+    val = Property(int, _value, _setValue)
         
 class ProgressDialog (QProgressDialog):
     def __init__(self, text=None, cancel_btn=None, parent=None):

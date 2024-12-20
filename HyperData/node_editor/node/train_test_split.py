@@ -9,8 +9,8 @@ from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
+from PySide6.QtCore import Qt
 
 class SplitterBase(QWidget):
     def __init__(self, parent=None):

@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem
-from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui import QPen, QBrush, QColor, QPainter
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtGui import QPen, QBrush, QColor, QPainter
 from ui.utils import isDark
 
 SINGLE_IN = 1

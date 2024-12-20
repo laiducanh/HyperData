@@ -1,6 +1,6 @@
-from PyQt6.QtGui import QKeyEvent, QPaintEvent, QShowEvent
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QDockWidget, QMainWindow
-from PyQt6.QtCore import pyqtSignal, Qt
+from PySide6.QtGui import QKeyEvent, QPaintEvent, QShowEvent
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QDockWidget, QMainWindow
+from PySide6.QtCore import Signal, Qt
 from node_editor.base.node_graphics_view import NodeGraphicsView
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
@@ -22,7 +22,7 @@ CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 
 class NodeView (QMainWindow):
-    sig = pyqtSignal(object)
+    sig = Signal(object)
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -102,7 +102,7 @@ class NodeView (QMainWindow):
 
 
 class NodeUserDefine (NodeView):
-    sig_back_to_grScene = pyqtSignal()
+    sig_back_to_grScene = Signal()
     def __init__(self, main_node:Node=None, parent=None):
         super().__init__(parent)
 

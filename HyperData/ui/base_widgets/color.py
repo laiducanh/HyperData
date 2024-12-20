@@ -1,9 +1,9 @@
 import os
-from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, 
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, 
                              QGridLayout)
-from PyQt6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
-from PyQt6.QtCore import QEvent, pyqtSignal, Qt, QRectF, QSize
-from PyQt6.QtSvg import QSvgRenderer
+from PySide6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
+from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize
+from PySide6.QtSvg import QSvgRenderer
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton
 from ui.base_widgets.menu import Menu
@@ -69,7 +69,7 @@ class _PaletteButton(_PushButton):
 
 class _PaletteBase(QWidget):
 
-    selected = pyqtSignal(object)
+    selected = Signal(object)
 
     def _emit_color(self, color):
         self.selected.emit(color)
@@ -100,7 +100,7 @@ class PaletteVertical(_PaletteLinearBase):
     layoutvh = QVBoxLayout
 
 class PaletteGrid(_PaletteBase):
-    sig_openDialog = pyqtSignal()
+    sig_openDialog = Signal()
     def __init__(self, colors, n_columns, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -161,7 +161,7 @@ class PaletteMenu (Menu):
         layout.addWidget(self._palette)
 
 class ColorPickerButton (_PushButton):
-    colorChanged = pyqtSignal(str)
+    colorChanged = Signal(str)
     def __init__(self, color: QColor, parent=None):
         super().__init__(parent=parent)
         self.setFixedSize(96, 32)

@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneDragDropEvent
-from PyQt6.QtGui import QColor, QKeyEvent, QPen
-from PyQt6.QtCore import pyqtSignal, Qt
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneDragDropEvent
+from PySide6.QtGui import QColor, QKeyEvent, QPen
+from PySide6.QtCore import Signal, Qt
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.node_node import Node
@@ -15,8 +15,8 @@ PIPELINE_IN = 5
 PIPELINE_OUT = 6
 
 class NodeGraphicsScene(QGraphicsScene):
-    sig = pyqtSignal(object)
-    sig_keyPressEvent = pyqtSignal(object)
+    sig = Signal(object)
+    sig_keyPressEvent = Signal(object)
     def __init__(self, parent=None):
         super().__init__(parent)
 

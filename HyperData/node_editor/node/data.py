@@ -11,7 +11,7 @@ from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode
-from PyQt6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView
+from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView
 
 
 DEBUG = True

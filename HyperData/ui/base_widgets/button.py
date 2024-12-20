@@ -1,8 +1,8 @@
-from PyQt6.QtCore import QObject, Qt, pyqtSignal, QEvent, QPoint, QRectF
-from PyQt6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
+from PySide6.QtCore import QObject, Qt, Signal, QEvent, QPoint, QRectF
+from PySide6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
                              QSizePolicy, QGridLayout, QToolButton, QFileIconProvider, QVBoxLayout)
-from PyQt6.QtGui import QCursor, QPainter, QColor, QIcon
-from PyQt6.QtSvg import QSvgRenderer
+from PySide6.QtGui import QCursor, QPainter, QColor, QIcon
+from PySide6.QtSvg import QSvgRenderer
 from typing import Iterable
 from ui.base_widgets.text import BodyLabel, InfoLabel
 from ui.base_widgets.menu import Menu
@@ -136,7 +136,7 @@ class _PrimaryComboBox (_ComboBox):
 
 class _Toggle(QFrame):
 
-    checkedChanged = pyqtSignal(bool)
+    checkedChanged = Signal(bool)
 
     def __init__(self, width = 60, height = 40, parent=None):
         super().__init__(parent)

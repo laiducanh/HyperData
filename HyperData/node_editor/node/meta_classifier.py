@@ -6,8 +6,8 @@ from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
-from PyQt6.QtGui import QAction, QCursor
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
+from PySide6.QtGui import QAction, QCursor
 from sklearn import ensemble, tree
 
 

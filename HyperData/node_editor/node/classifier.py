@@ -24,10 +24,10 @@ from plot.canvas import Canvas
 from node_editor.node.train_test_split import TrainTestSplitter
 from node_editor.node.report import ConfusionMatrix, ROC
 from config.settings import logger
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QScrollArea, QHBoxLayout,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QScrollArea, QHBoxLayout,
                              QApplication)
-from PyQt6.QtGui import QAction, QCursor
-from PyQt6.QtCore import Qt, pyqtSignal
+from PySide6.QtGui import QAction, QCursor
+from PySide6.QtCore import Qt, Signal
 
 class ClassifierBase (QWidget):
     def __init__(self, parent=None):
@@ -55,7 +55,7 @@ class ClassifierBase (QWidget):
             self.vlayout.removeWidget(widget)
 
 class AlgorithmMenu(Menu):
-    sig = pyqtSignal(str)
+    sig = Signal(str)
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -1428,7 +1428,7 @@ class RandomForest(ClassifierBase):
         self._config["criterion"] = self.criterion.button.currentText()
         if self.max_depth.button.value() == -1:
             self._config["max_depth"] = None
-        eles: self._config["max_depth"] = self.max_depth.button.value()
+        else: self._config["max_depth"] = self.max_depth.button.value()
         self._config["min_samples_split"] = self.min_samples_split.button.value()
         self._config["min_samples_leaf"] = self.min_samples_leaf.button.value()
         self._config["min_weight_fraction_leaf"] = self.min_weight_fraction_leaf.button.value()

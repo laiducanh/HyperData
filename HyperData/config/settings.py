@@ -1,5 +1,5 @@
 import string, itertools, matplotlib, os, logging, json
-from PyQt6.QtCore import QStandardPaths, QDir
+from PySide6.QtCore import QStandardPaths, QDir
 
 GLOBAL_DEBUG = False
 

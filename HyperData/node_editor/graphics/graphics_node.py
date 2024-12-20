@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget
-from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
 from ui.utils import isDark
 
 DEBUG = False

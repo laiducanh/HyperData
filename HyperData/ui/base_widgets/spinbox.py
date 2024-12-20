@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QHBoxLayout, QWidget, QSpinBox, QDoubleSpinBox, QSlider
-from PyQt6.QtGui import QCursor
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QHBoxLayout, QWidget, QSpinBox, QDoubleSpinBox, QSlider
+from PySide6.QtGui import QCursor
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.button import HButton
 

@@ -1,6 +1,6 @@
-from PyQt6.QtCore import pyqtSignal, Qt, QStringListModel, QSize
-from PyQt6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
-from PyQt6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxLayout,
+from PySide6.QtCore import Signal, Qt, QStringListModel, QSize
+from PySide6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
+from PySide6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxLayout,
                              QTreeWidget, QLineEdit)
 from ui.base_widgets.menu import Menu, LineEdit_Menu
 from ui.base_widgets.button import _TransparentPushButton, _ComboBox, HButton
@@ -172,7 +172,7 @@ class Completer (QCompleter):
 
 
 class TextEditBase (_TextEdit):
-    sig_focusOut = pyqtSignal()
+    sig_focusOut = Signal()
     def __init__(self, text=None, font=QFont('Arial',13), parent=None):
         super().__init__(parent=parent)
 

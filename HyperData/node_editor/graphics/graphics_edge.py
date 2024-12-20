@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsSceneHoverEvent
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QPen, QPainter
+from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsSceneHoverEvent
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QPen, QPainter
 
 SINGLE_IN = 1
 MULTI_IN = 2

@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QMenuBar, QMainWindow
-from PyQt6.QtGui import QAction
+from PySide6.QtWidgets import QMenuBar, QMainWindow
+from PySide6.QtGui import QAction
 from config.settings_window import SettingsWindow
 from window.update import UpdateDialog
 

@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from plot.canvas import Canvas, Canvas3D
 import pandas as pd
-from PyQt6.QtGui import QAction
+from PySide6.QtGui import QAction
 
 class Figure2D (NodeContentWidget):
     def __init__(self, node,parent=None):

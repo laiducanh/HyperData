@@ -6,8 +6,8 @@ from ui.base_widgets.line_edit import LineEdit, Completer, TextEdit
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.utils import icon
-from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
-from PyQt6.QtCore import Qt, QSize, pyqtSignal
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, QSize, Signal
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -21,7 +21,7 @@ class Executor (NodeContentWidget):
         super().__init__(node, parent)
     
 class UserDefine (NodeContentWidget):
-    sig_redraw = pyqtSignal()
+    sig_redraw = Signal()
     def __init__(self, node=None, parent=None):
         super().__init__(node, parent)
 

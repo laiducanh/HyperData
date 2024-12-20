@@ -1,5 +1,5 @@
-from PyQt6.QtCore import QPointF
-from PyQt6.QtGui import QPainterPath
+from PySide6.QtCore import QPointF
+from PySide6.QtGui import QPainterPath
 from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
 import math
 

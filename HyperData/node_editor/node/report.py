@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QApplication)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QApplication)
 from ui.base_widgets.button import ComboBox, _PrimaryPushButton
 from ui.base_widgets.text import BodyLabel
 from plot.canvas import Canvas

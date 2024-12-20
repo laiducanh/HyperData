@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent
 from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
 
 SINGLE_IN = 1

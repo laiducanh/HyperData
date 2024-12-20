@@ -1,8 +1,8 @@
-from PyQt6.QtWidgets import (QGraphicsView, QGraphicsScene, QStyleOptionGraphicsItem, QGraphicsTextItem,
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QStyleOptionGraphicsItem, QGraphicsTextItem,
                              QWidget, QGraphicsItem, QGraphicsProxyWidget)
-from PyQt6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, 
+from PySide6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, 
                          QBrush, QTextOption, QCursor)
-from PyQt6.QtCore import QRectF, pyqtSignal, Qt
+from PySide6.QtCore import QRectF, Signal, Qt
 import matplotlib.axes
 import matplotlib.axis
 import matplotlib.backend_tools
@@ -103,11 +103,11 @@ class _ToolTip (QGraphicsItem):
         painter.drawPath(path_outline.simplified())
 
 class GraphicsView (QGraphicsView):
-    key_pressed = pyqtSignal(object)
-    mouse_released = pyqtSignal(object)
-    backtoScene = pyqtSignal()
-    backtoHome = pyqtSignal()
-    mpl_pressed = pyqtSignal(str)
+    key_pressed = Signal(object)
+    mouse_released = Signal(object)
+    backtoScene = Signal()
+    backtoHome = Signal()
+    mpl_pressed = Signal(str)
     def __init__(self, canvas:Canvas,parent=None):
         super().__init__(parent)
 

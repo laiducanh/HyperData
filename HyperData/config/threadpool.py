@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal, QObject, QRunnable, pyqtSlot
+from PySide6.QtCore import Signal, QObject, QRunnable, Slot
 import traceback, sys
 
 class WorkerSignals(QObject):
@@ -20,10 +20,10 @@ class WorkerSignals(QObject):
         int indicating % progress
 
     '''
-    finished = pyqtSignal()
-    error = pyqtSignal(tuple)
-    result = pyqtSignal(object)
-    progress = pyqtSignal(int)
+    finished = Signal()
+    error = Signal(tuple)
+    result = Signal(object)
+    progress = Signal(int)
 
 
 class Worker(QRunnable):
@@ -51,7 +51,7 @@ class Worker(QRunnable):
 
         # Add the callback to our kwargs
 
-    @pyqtSlot()
+    @Slot()
     def run(self):
         '''
         Initialise the runner function with passed args, kwargs.

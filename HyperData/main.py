@@ -1,8 +1,8 @@
 import sys, os, json, logging
 
-from PyQt6.QtCore import QThreadPool, Qt
-from PyQt6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
-from PyQt6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
+from PySide6.QtCore import QThreadPool, Qt
+from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
+from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
 
 from plot.plot_view import PlotView
 from node_editor.node_view import NodeView, NodeUserDefine

@@ -8,9 +8,9 @@ from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.line_edit import LineEdit, CompleterLineEdit
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from config.settings import logger
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
-from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
+from PySide6.QtGui import QAction
+from PySide6.QtCore import Qt
 
 class NAEliminator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

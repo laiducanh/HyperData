@@ -1,6 +1,6 @@
-from PyQt6.QtGui import QKeyEvent, QAction
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout, QApplication
-from PyQt6.QtCore import QSize, Qt
+from PySide6.QtGui import QKeyEvent, QAction
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout, QApplication
+from PySide6.QtCore import QSize, Qt
 
 from ui.base_widgets.button import _ComboBox, ComboBox
 from ui.base_widgets.color import ColorPickerButton

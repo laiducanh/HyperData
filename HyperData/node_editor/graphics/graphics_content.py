@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
-from PyQt6.QtCore import pyqtSignal, Qt, QTimer
-from PyQt6.QtGui import QAction
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PySide6.QtCore import Signal, Qt, QTimer
+from PySide6.QtGui import QAction
 import pandas
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
@@ -15,7 +15,7 @@ class NodeComment (_TextEdit):
         self.setPlaceholderText("Comment")
 
 class ContentItem(QWidget):
-    sig = pyqtSignal()
+    sig = Signal()
     def __init__(self, parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__(parent)
 

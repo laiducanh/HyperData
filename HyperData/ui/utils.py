@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QIcon
+from PySide6.QtGui import QIcon
 from config.settings import config
 
 import os, darkdetect

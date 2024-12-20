@@ -1,4 +1,4 @@
-from PyQt6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtWidgets, QtGui
 
 
 class ListWidget (QtWidgets.QListWidget):
@@ -50,7 +50,7 @@ class Draggable_ListWidget(ListWidget):
 
 
 class TreeWidget (QtWidgets.QTreeWidget):
-    sig_doubleClick = QtCore.pyqtSignal(str)
+    sig_doubleClick = QtCore.Signal(str)
     def __init__(self, parent=None):
         super().__init__(parent)
     
