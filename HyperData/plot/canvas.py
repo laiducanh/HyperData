@@ -31,7 +31,6 @@ class Canvas (FigureCanvasQTAgg):
         self.fig = Figure()
         self.fig.set_dpi(150)
         self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
-        self.annot_box = dict(boxstyle="round",pad=0.3,facecolor='orange',edgecolor='none')
 
         self.initAxes()
         super().__init__(self.fig)
@@ -77,7 +76,16 @@ class Canvas (FigureCanvasQTAgg):
 
     def deserialize(self, data, hashmap={}):
         pass
-    
+
+class ExplorerCanvas(FigureCanvasQTAgg):
+    def __init__(self):
+        
+        self.fig = Figure()
+        self.fig.set_dpi(150)
+        self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
+
+        super().__init__(self.fig)
+        
 class Canvas3D (Canvas):
     def __init__(self):
         super().__init__()

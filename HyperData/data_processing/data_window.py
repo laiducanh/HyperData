@@ -2,17 +2,19 @@ from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApp
                              QCompleter, QPushButton, QMainWindow, QScrollBar)
 from PyQt6.QtGui import QIcon, QGuiApplication
 from PyQt6.QtCore import QModelIndex, QSize, pyqtSignal, Qt, QAbstractTableModel, QVariant
-import os, missingno
+import os, missingno, squarify
 from collections import Counter
 import pandas as pd
 import numpy as np
-from config.settings import list_name
-from ui.base_widgets.button import _DropDownPrimaryPushButton, _PrimaryPushButton, ComboBox
+from config.settings import list_name, GLOBAL_DEBUG, logger
+from ui.base_widgets.button import _DropDownPushButton, _PrimaryPushButton, ComboBox
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.menu import Menu, Action
 #from ui.base_widgets.icons import Icon
-from plot.canvas import Canvas
+from plot.canvas import ExplorerCanvas
 import seaborn as sns
+
+DEBUG = False
 
 class TableModel(QAbstractTableModel):
     def __init__(self, data, parent=None):
@@ -265,37 +267,124 @@ class TableView (QWidget):
 class ExploreView (QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
-        self.parent = parent
+
+        self.univar_plot = ["histogram","pie","treemap"]
+        self.bivar_plot = ["line","scatter","bar",
+                           "violin","swarm","boxplot"]
+        self.multivar_plot = ["heatmap"]
+        self.nan_plot = ["NaNs matrix","NaNs bar"]
+        
+        self.initUI()
+        self.initMenu()
+        self.update_data(data)
+    
+    def initUI(self):
         self.vlayout = QVBoxLayout(self)
-        self.view = QTableView(parent)
+        self.view = QTableView(self.parent())
         self.vlayout.addWidget(self.view)
         self.plot_widget = QWidget()
         self.plot_selection = QHBoxLayout(self.plot_widget)
+        self.plot_selection.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.vlayout.addWidget(self.plot_widget)
-        self.btn1 = _DropDownPrimaryPushButton()
-        menu = Menu(parent=self)
-        menu_univar = Menu("Univariate analysis", self)
-        for i in ["histogram"]:
-            action = Action(text=i.title(), parent=self)
-            action.triggered.connect(lambda checked, type=i: self.btn1.setText(type.lower()))
-            menu_univar.addAction(action)
-        menu.addMenu(menu_univar)
-        self.btn1.setMenu(menu)
-        self.btn1.pressed.connect(self.update_plot)
-        self.plot_selection.addWidget(self.btn1)
+        self.btn = _DropDownPushButton(self)
+        self.btn.setFixedWidth(150)
+        self.plot_selection.addWidget(self.btn)
+        menu = self.initMenu()
+        self.btn.setMenu(menu)
+        self.btn.setText("NaNs matrix")
         self.varx = ComboBox(text="X")
-        self.varx.button.hide()
-        self.varx.button.currentTextChanged.connect(self.update_plot)
         self.plot_selection.addWidget(self.varx)
         self.vary = ComboBox(text="Y")
-        self.vary.button.hide()
-        self.vary.button.currentTextChanged.connect(self.update_plot)
-        self.canvas = Canvas()
-        self.canvas.fig.subplots_adjust(left=0.12,right=0.9,top=0.8,bottom=0.1)
-        for _ax in self.canvas.fig.axes: _ax.set_axis_off()
+        self.plot_selection.addWidget(self.vary)
+        self.plot_btn = _PrimaryPushButton(self)
+        self.plot_btn.setText("Apply")
+        self.plot_btn.pressed.connect(self.update_plot)
+        self.vlayout.addWidget(self.plot_btn)
+        self.canvas = ExplorerCanvas()
         self.vlayout.addWidget(self.canvas)
-        self.update_data(data)
-        self.data = data
+    
+    def initMenu(self):
+        menu = Menu(parent=self)
+        menu_univar = Menu("Univariate analysis", self)
+        for i in self.univar_plot:
+            action = Action(text=i, parent=self)
+            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
+            action.triggered.connect(lambda checked: self.update_selection())
+            menu_univar.addAction(action)
+        menu.addMenu(menu_univar)
+        menu_bivar = Menu("Bivariate analysis", self)
+        for i in self.bivar_plot:
+            action = Action(text=i, parent=self)
+            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
+            action.triggered.connect(lambda checked: self.update_selection())
+            menu_bivar.addAction(action)
+        menu.addMenu(menu_bivar)
+        menu_multivar = Menu("Multivariate analysis", self)
+        for i in self.multivar_plot:
+            action = Action(text=i, parent=self)
+            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
+            action.triggered.connect(lambda checked: self.update_selection())
+            menu_multivar.addAction(action)
+        menu.addMenu(menu_multivar)
+        menu_nan = Menu("Missing values", self)
+        for i in self.nan_plot:
+            action = Action(text=i, parent=self)
+            action.triggered.connect(lambda checked, type=i: self.btn.setText(type))
+            action.triggered.connect(lambda checked: self.update_selection())
+            menu_nan.addAction(action)
+        menu.addMenu(menu_nan)
+        return menu
+
+    def update_selection(self):
+        try:
+            # update x and y variables for plot
+            # self.varx.button.disconnect()
+            # self.vary.button.disconnect()
+            self.varx.button.clear()
+            self.vary.button.clear()
+
+            plottype = self.btn.text()
+            if plottype in ["violin","boxplot","heatmap","histogram"]:
+                self.data_inUse = self.data.copy().select_dtypes(np.number)
+                self.data_inUseX = self.data.copy().select_dtypes(np.number)
+                self.data_inUseY = self.data.copy().select_dtypes(np.number)
+            elif plottype in ["swarm","pie"]:
+                self.data_inUse = self.data.copy()
+                self.data_inUseX = self.data.copy().select_dtypes(np.object_)
+                self.data_inUseY = self.data.copy().select_dtypes(np.number)
+            elif plottype in ["line","scatter","bar"]:
+                self.data_inUse = self.data.copy()
+                self.data_inUseX = self.data.copy()
+                self.data_inUseY = self.data.copy().select_dtypes(np.number)
+            else:
+                self.data_inUse = self.data.copy()
+                self.data_inUseX = self.data.copy()
+                self.data_inUseY = self.data.copy()
+
+            if plottype in ["pie","treemap","line"]:
+                for x in self.data_inUseX.columns:
+                    if self.data_inUseX[x].value_counts().size > 10:
+                        self.data_inUseX = self.data_inUseX.drop(labels=[x],axis=1)
+
+            self.varx.button.addItems(self.data_inUseX.columns)
+            self.vary.button.addItems(self.data_inUseY.columns)
+            
+            # self.varx.button.currentTextChanged.connect(self.update_plot)
+            # self.vary.button.currentTextChanged.connect(self.update_plot)
+
+            if plottype in self.univar_plot:
+                self.varx.setVisible(True)
+                self.vary.setVisible(False)
+            elif plottype in self.bivar_plot:
+                self.varx.setVisible(True)
+                self.vary.setVisible(True)
+            elif plottype in self.multivar_plot + self.nan_plot:
+                self.varx.setVisible(False)
+                self.vary.setVisible(False)
+
+            #self.update_plot()
+        except Exception as e:
+            logger.exception(e)
 
     def update_data (self, data:pd.DataFrame):
         self.data = data
@@ -304,68 +393,53 @@ class ExploreView (QWidget):
         else:
             describe = data.describe()
         
-        self.model = TableModel(describe, self.parent)
+        self.model = TableModel(describe, self.parent())
         self.view.setModel(self.model)
 
-        self.varx.button.addItems(self.data.columns)
-        self.vary.button.addItems(self.data.columns)
+        self.update_selection()
         self.update_plot()
     
     def update_plot(self):
-        plottype = self.btn1.text().lower()
-
-        if self.data.empty:
-            self.canvas.axes.cla()
-            self.canvas.axes.set_axis_off()
-        else:
-            self.canvas.axes.cla()
-            self.canvas.axes.set_axis_on()
-            varx = self.data[self.varx.button.currentText()]
-            vary = self.data[self.vary.button.currentText()]
-            match plottype:
-                case "nans": missingno.matrix(df=self.data,fontsize=6,ax=self.canvas.axes)
-                case 'histogram': self.canvas.axes.hist(varx)
-                # case "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
-                # case "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
-                # case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
-                # case "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
-                # case "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
-                # case "treemap":                 artist = treemap(X, ax, gid, *args, **kwargs)
-                # case "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
-                # case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
-                # case "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
-                # case "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
-                # case "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
-                # case "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)
-                # case "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
-                # case "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
-                # case "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
-
-                # case "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
-                # case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
+        try:
+            plottype = self.btn.text()
             
-            if plottype in ["histogram"]:
-                self.varx.show()
-            elif plottype in []:
-                self.varx.show()
-                self.vary.show()
+            if self.data.empty:
+                self.canvas.fig.clear()
+            else:
+                self.canvas.fig.clear()
+                ax = self.canvas.fig.add_subplot()
+
+                label_varx = self.varx.button.currentText()
+                label_vary = self.vary.button.currentText()
+                varx = self.data_inUseX[label_varx]
+                vary = self.data_inUseY[label_vary]
                 
+                match plottype:
+                    case "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
+                    case "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
+                    case "histogram": ax.hist(varx)
+                    case "pie": ax.pie(x=varx.value_counts(),labels=varx.unique())
+                    case "treemap": squarify.plot(sizes=varx.value_counts(), label=varx.unique(),
+                                                ax=ax)
+                    case "line": ax.plot(varx, vary)
+                    case "scatter": ax.scatter(varx, vary)
+                    case "bar": ax.bar(varx, vary)
+                    case "boxplot": 
+                        ax.boxplot([varx, vary],labels=[label_varx, label_vary])
+                    case "violin": 
+                        ax.violinplot([varx, vary])
+                        ax.set_xticks([1,2],[label_varx, label_vary])
+                    case "swarm":
+                        sns.swarmplot(data=self.data_inUse, x=label_varx, y=label_vary,
+                                    ax=ax)
+                    case "heatmap": 
+                        ax.imshow(self.data_inUse, aspect='auto')
+                        ax.set_xticks(range(len(self.data_inUse.columns)), labels=self.data_inUse.columns)
 
-        self.canvas.draw_idle()
-        
-
+            self.canvas.draw_idle() 
+            
+        except Exception as e:
+            logger.exception(e)
         
 class DataView (QMainWindow):
     def __init__(self, data, parent=None):
