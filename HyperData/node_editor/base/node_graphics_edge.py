@@ -58,8 +58,8 @@ class NodeGraphicsEdge(GraphicsEdge):
         self.update()
     
     def remove(self):
-        if self.start_socket != None: self.start_socket.removeEdge(self)
-        if self.end_socket != None: self.end_socket.removeEdge(self)
+        if self.start_socket: self.start_socket.removeEdge(self)
+        if self.end_socket: self.end_socket.removeEdge(self)
 
     def serialize(self):
         return {"id":self.id,

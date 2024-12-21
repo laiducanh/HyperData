@@ -39,7 +39,7 @@ class NodeContentWidget(ContentItem):
         pass
     
     def exec_done(self):
-        
+        """ this function will be called when threadpool finishes running"""
         self.timer.stop()
         self.label.setText(f"Shape: {self.data_to_view.shape}")    
         
