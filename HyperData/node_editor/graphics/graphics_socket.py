@@ -47,7 +47,7 @@ class SocketItem (QGraphicsItem):
         self._brush = QBrush(self._color_background)    
         self._text = QGraphicsTextItem(self)   
         self._text.hide()     
-        self.setTitle()
+        self.setSocketLabel()
         self.socket_data = pd.DataFrame()
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
@@ -74,7 +74,7 @@ class SocketItem (QGraphicsItem):
             2 * (self.radius + self.outline_width),
         )
 
-    def setTitle(self, title = None):
+    def setSocketLabel(self, title = None):
         if not title:
             if self.socket_type == SINGLE_IN:
                 self.title = 'Single Input'

@@ -9,7 +9,6 @@ from ui.base_widgets.line_edit import LineEdit, CompleterLineEdit
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from config.settings import logger
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
-from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt
 
 class NAEliminator (NodeContentWidget):
@@ -17,31 +16,17 @@ class NAEliminator (NodeContentWidget):
         super().__init__(node, parent)
 
         self.node.input_sockets[0].socket_data = pd.DataFrame()
-        self._config = dict(axis='index',thresh='any',ignore_index=False)
-    
-    def initMenu(self):
-        action = QAction("Execute card",self.menu)
-        action.triggered.connect(self.exec)
-        self.menu.addAction(action)
-        action = QAction("View output",self.menu)
-        action.triggered.connect(self.viewData)
-        self.menu.addAction(action)
-        action = QAction("Configuration",self.menu)
-        action.triggered.connect(self.config)
-        self.menu.addAction(action)
-        self.menu.addSeparator()
-        action = QAction("Show Comment",self.menu)
-        action.triggered.connect(self.comment.show)
-        self.menu.addAction(action)
-        action = QAction("Hide Comment",self.menu)
-        action.triggered.connect(self.comment.hide)
-        self.menu.addAction(action)
+        self._config = dict(
+            axis='index',
+            thresh='any',
+            ignore_index=False
+        )
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
 
         axis = ComboBox(items=["index","columns"], text="drop")
-        axis.button.setCurrentText(self._config["axis"].title())
+        axis.button.setCurrentText(self._config["axis"])
         dialog.main_layout.addWidget(axis)
 
         thresh = CompleterLineEdit(text='thresh', items=["any","all"])
@@ -53,7 +38,7 @@ class NAEliminator (NodeContentWidget):
         dialog.main_layout.addWidget(ignore_index)
 
         if dialog.exec():
-            self._config["axis"] = axis.button.currentText().lower()
+            self._config["axis"] = axis.button.currentText()
             self._config["thresh"] = thresh.button.currentText()
             self._config["ignore_index"] = ignore_index.button.isChecked()
             self.exec()
@@ -74,33 +59,45 @@ class NAEliminator (NodeContentWidget):
                 self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.dropna(axis=self._config["axis"],
                                                           how="any",
                                                           ignore_index=self._config["ignore_index"])
-                
-            logger.info(f"{self.name} {self.node.id}::run successfully.")
+            # write log
+            logger.info(f"{self.name} {self.node.id}: eliminated NaNs successfully.")
         except Exception as e: 
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return the original DataFrame.")
+            # write log
+            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.exception(e)
         
         self.data_to_view = self.node.output_sockets[0].socket_data
         
                 
     def eval(self):
-        if self.node.input_sockets[0].edges == []:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-        else:
+        if self.node.input_sockets[0].hasEdge():
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        else:
+            self.node.input_sockets[0].socket_data = pd.DataFrame()
 
 class NAImputer (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
         self.node.input_sockets[0].socket_data = pd.DataFrame()
-        self._config = dict(imputer='univariate', m_strategy='mean', m_fill_value=None,
-                            estimator=None, max_iter=10, tol=1e-3, u_strategy='mean', u_fill_value=None,
-                            imputation_order='ascending', skip_complete=False,
-                            n_neighbors=5, weights='uniform', )
+        self._config = dict(
+            imputer='univariate', 
+            m_strategy='mean', 
+            m_fill_value=None,
+            estimator=None, 
+            max_iter=10, 
+            tol=1e-3, 
+            u_strategy='mean', 
+            u_fill_value=None,
+            imputation_order='ascending', 
+            skip_complete=False,
+            n_neighbors=5,
+            weights='uniform',
+        )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
         imputer = ComboBox(items=["univariate","multivariate","KNN"], text='imputer')
         imputer.button.setCurrentText(self._config['imputer'].title())
         imputer.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(imputer.button.currentIndex()))
@@ -192,52 +189,58 @@ class NAImputer (NodeContentWidget):
     def func(self):
         imputer = None
         try:
-            if self._config['imputer'] == 'univariate':
-                if self._config['u_strategy'] == 'next valid observation':
-                    self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
-                elif self._config['u_strategy'] == 'last valid observation':
-                    self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.fillna(method='bfill')
-                else:
-                    imputer = SimpleImputer(strategy=self._config['u_strategy'],
-                                        fill_value=self._config['u_fill_value'])
-            elif self._config['imputer'] == 'multivariate':
-                imputer = IterativeImputer(max_iter=self._config['max_iter'],
-                                        tol=self._config["tol"],
-                                        initial_strategy=self._config["m_strategy"],
-                                        fill_value=self._config["m_fill_value"],
-                                        imputation_order=self._config['imputation_order'],
-                                        skip_complete=self._config["skip complete"])
-            elif self._config["imputer"] == "knn":
-                imputer = KNNImputer(n_neighbors=self._config['n_neighbors'],
-                                    weights=self._config["weights"])
-            if imputer != None:
+            match self._config["imputer"]:
+                case 'univariate':
+                    if self._config['u_strategy'] == 'next valid observation':
+                        self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
+                    elif self._config['u_strategy'] == 'last valid observation':
+                        self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.fillna(method='bfill')
+                    else:
+                        imputer = SimpleImputer(strategy=self._config['u_strategy'],
+                                            fill_value=self._config['u_fill_value'])
+                case 'multivariate':
+                    imputer = IterativeImputer(max_iter=self._config['max_iter'],
+                                            tol=self._config["tol"],
+                                            initial_strategy=self._config["m_strategy"],
+                                            fill_value=self._config["m_fill_value"],
+                                            imputation_order=self._config['imputation_order'],
+                                            skip_complete=self._config["skip complete"])
+                case "knn":
+                    imputer = KNNImputer(n_neighbors=self._config['n_neighbors'],
+                                        weights=self._config["weights"])
+            if imputer:
                 columns = self.node.input_sockets[0].socket_data.columns
                 self.node.output_sockets[0].socket_data = imputer.fit_transform(self.node.input_sockets[0].socket_data)
                 self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)            
-            
-            logger.info(f"{self.name} {self.node.id}::run successfully.")
+            # write log
+            logger.info(f"{self.name} {self.node.id}: imputed NaNs successfully.")
 
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return the original DataFrame.")
+            # write log
+            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.exception(e)
         
         self.data_to_view = self.node.output_sockets[0].socket_data        
 
     def eval(self):
-        if self.node.input_sockets[0].edges == []:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-        else:
+        if self.node.input_sockets[0].hasEdge():
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        else:
+            self.node.input_sockets[0].socket_data = pd.DataFrame()            
 
 class DropDuplicate (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
         self.node.input_sockets[0].socket_data = pd.DataFrame()
-        self._config = dict(keep='first',ignore_index=False)
+        self._config = dict(
+            keep='first',
+            ignore_index=False
+        )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
 
         keep = ComboBox(items=["first","last","none"], text='keep')
         keep.button.setCurrentText(self._config["keep"])
@@ -260,15 +263,18 @@ class DropDuplicate (NodeContentWidget):
         try:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.drop_duplicates(keep=keep,
                                                                                                              ignore_index=self._config["ignore_index"])
-            logger.info(f"{self.name} {self.node.id}::run successfully.")
+            # write log
+            logger.info(f"{self.name} {self.node.id}: dropped duplicated values successfully.")
         except Exception as e:
             self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            logger.error(f"{self.name} {self.node.id}::{repr(e)}, return the original DataFrame.")
+            # write log
+            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.exception(e)
         
         self.data_to_view = self.node.output_sockets[0].socket_data
 
     def eval(self):
-        if self.node.input_sockets[0].edges == []:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-        else:
+        if self.node.input_sockets[0].hasEdge():
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        else:
+            self.node.input_sockets[0].socket_data = pd.DataFrame()

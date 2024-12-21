@@ -11,7 +11,7 @@ from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode
-from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView, QHBoxLayout, QApplication
+from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView, QHBoxLayout, QApplication, QMainWindow
 from PySide6.QtCore import QFileSystemWatcher
 
 DEBUG = True
@@ -34,7 +34,6 @@ class DataReader (NodeContentWidget):
         self.isReadable = True
         self.watcher = QFileSystemWatcher()
         self.watcher.fileChanged.connect(self.update_data)
-        print(parent)
     
     def check_filetype (self, file):
         functionList = [pd.read_csv, pd.read_excel]
@@ -53,7 +52,7 @@ class DataReader (NodeContentWidget):
     def config(self):
         # Note that this configuration works for csv file
         
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
         auto_update = Toggle(text="Auto update")
         dialog.main_layout.addWidget(auto_update)
         auto_update.button.setChecked(self._config["auto_update"])
@@ -242,7 +241,7 @@ class DataConcator (NodeContentWidget):
             )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent().parent)
+        dialog = Dialog("Configuration", self.parent)
         axis = ComboBox(items=["index","columns"], text='Axis')
         axis.button.setCurrentText(self._config['axis'])
         dialog.main_layout.addWidget(axis)
@@ -299,7 +298,7 @@ class DataCombiner (NodeContentWidget):
             )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
         function = ComboBox(items=["take smaller","minimum"],text="Function")
         dialog.main_layout.addWidget(function)
         function.button.setCurrentText(self._config["func"])
@@ -386,7 +385,7 @@ class DataCompare (NodeContentWidget):
             )
     
     def config(self):
-        dialog = Dialog(title="configuration", parent=self.parent().parent)
+        dialog = Dialog(title="configuration", parent=self.parent)
         align_axis = ComboBox(items=["index","columns"],text="Axis")
         dialog.main_layout.addWidget(align_axis)
         align_axis.button.setCurrentText(self._config["align_axis"])
@@ -459,7 +458,7 @@ class DataLocator (NodeContentWidget):
                 )
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent().parent)
+        dialog = Dialog("Configuration", self.parent)
 
         type = ComboBox(items=["columns","rows"], text="type")
         type.button.setCurrentText(self._config["type"])
@@ -564,7 +563,7 @@ class DataFilter (NodeContentWidget):
             )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent().parent())
+        dialog = Dialog("Configuration", self.parent)
 
         def func1():
             try:
@@ -636,7 +635,7 @@ class DataFilter (NodeContentWidget):
         self.data_to_view = self.node.output_sockets[0].socket_data
     
     def eval(self):
-        if self.node.input_sockets[0].hasEdge:
+        if self.node.input_sockets[0].hasEdge():
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
         else:
             self.node.input_sockets[0].socket_data = pd.DataFrame()
@@ -654,7 +653,7 @@ class DataSorter (NodeContentWidget):
         
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent().parent)
+        dialog = Dialog("Configuration", self.parent)
 
         self.widget_index = 0
         

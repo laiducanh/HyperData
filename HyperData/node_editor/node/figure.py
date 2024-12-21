@@ -1,8 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from plot.canvas import Canvas, Canvas3D
 import pandas as pd
-from PySide6.QtGui import QAction
-
+from ui.base_widgets.menu import Action
 class Figure2D (NodeContentWidget):
     def __init__(self, node,parent=None):
         super().__init__(node,parent)
@@ -11,17 +10,17 @@ class Figure2D (NodeContentWidget):
         self.node.input_sockets[0].socket_data = pd.DataFrame()
     
     def initMenu(self):
-        action = QAction("Open Figurre",self.menu)
+        action = Action("Open Figurre",self.menu)
         action.triggered.connect(self.exec)
         self.menu.addAction(action)
-        action = QAction("View Data",self.menu)
+        action = Action("View Data",self.menu)
         action.triggered.connect(self.viewData)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Show Comment",self.menu)
+        action = Action("Show Comment",self.menu)
         action.triggered.connect(self.comment.show)
         self.menu.addAction(action)
-        action = QAction("Hide Comment",self.menu)
+        action = Action("Hide Comment",self.menu)
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
     
@@ -51,17 +50,17 @@ class Figure3D (NodeContentWidget):
         self.node.input_sockets[0].socket_data = pd.DataFrame()
     
     def initMenu(self):
-        action = QAction("Open Figurre",self.menu)
+        action = Action("Open Figurre",self.menu)
         action.triggered.connect(self.exec)
         self.menu.addAction(action)
-        action = QAction("View Data",self.menu)
+        action = Action("View Data",self.menu)
         action.triggered.connect(self.viewData)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Show Comment",self.menu)
+        action = Action("Show Comment",self.menu)
         action.triggered.connect(self.comment.show)
         self.menu.addAction(action)
-        action = QAction("Hide Comment",self.menu)
+        action = Action("Hide Comment",self.menu)
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
     

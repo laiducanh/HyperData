@@ -68,6 +68,9 @@ class Node(NodeGraphicsNode):
             case "Label Encoder":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = LabelEncoder(self,parent)
+            case "Label Binarizer":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = LabelBinarizer(self,parent)
             case "Ordinal Encoder":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = OrdinalEncoder(self,parent)

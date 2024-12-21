@@ -55,7 +55,7 @@ class NodeView (QMainWindow):
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
                                         "Machine Learning": ["Classifier","Train/Test Splitter",
-                                                             "Label Encoder","Ordinal Encoder","One-Hot Encoder",],
+                                                             "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
                                         "Visualization": ["Figure 2D", "Figure 3D"],
                                         "Misc": ["Executor", "User Define Card", "Undefined Node"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)

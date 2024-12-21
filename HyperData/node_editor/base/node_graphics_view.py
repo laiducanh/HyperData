@@ -24,7 +24,6 @@ class NodeGraphicsView(QGraphicsView):
     def __init__(self, grScene:NodeGraphicsScene, parent=None):
         super().__init__(parent)
         self.grScene = grScene
-        self.parent = parent
         self.initUI()
 
         self.setScene(self.grScene)
@@ -37,8 +36,6 @@ class NodeGraphicsView(QGraphicsView):
         self._pan_start_y = 0
         self._numScheduledScalings = 0
         self.lastMousePos = QPoint()
-        self.threadpool = self.parent.threadpool
-
 
 
     def initUI(self):

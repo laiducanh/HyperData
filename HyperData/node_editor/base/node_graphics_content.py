@@ -12,7 +12,7 @@ class NodeContentWidget(ContentItem):
         
         self.node = node
         self.parent = parent
-        self.threadpool: QThreadPool = parent.threadpool
+        self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
 
     def config(self):
