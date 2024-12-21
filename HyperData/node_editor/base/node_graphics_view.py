@@ -371,7 +371,6 @@ class NodeGraphicsView(QGraphicsView):
         for item in self.grScene.selectedItems():
             if isinstance(item, NodeGraphicsEdge):
                 self.grScene.removeEdge(item)
-                item.remove()
             elif isinstance(item, NodeGraphicsNode):
                 self.grScene.removeNode(item)
                 
@@ -380,7 +379,6 @@ class NodeGraphicsView(QGraphicsView):
             if isinstance(item, NodeGraphicsEdge):
                 if item.start_socket not in self.grScene.items() or item.end_socket not in self.grScene.items():
                     self.grScene.removeEdge(item)
-                    item.remove()
     
     def paintEvent(self, event: QPaintEvent) -> None:
         self.grScene.setBackgroundColor()
