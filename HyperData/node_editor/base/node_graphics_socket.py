@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent
 from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
+import pandas as pd
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -12,7 +13,7 @@ CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsSocket (GraphicsSocket):
-    def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data=None, parent=None):
+    def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data:pd.DataFrame=None, parent=None):
         super().__init__(node, socket_type, parent)
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)

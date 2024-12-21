@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QBrush, QColor, QPainter
 from ui.utils import isDark
+import pandas as pd
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -47,6 +48,7 @@ class SocketItem (QGraphicsItem):
         self._text = QGraphicsTextItem(self)   
         self._text.hide()     
         self.setTitle()
+        self.socket_data = pd.DataFrame()
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         # painting circle
@@ -106,6 +108,9 @@ class SocketItem (QGraphicsItem):
 
     def hasEdge(self):
         pass
+
+    def getData(self):
+        return self.socket_data
 
     def serialize(self):
         pass

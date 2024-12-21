@@ -16,6 +16,7 @@ class Dialog (QDialog):
         #self.setWindowTitle(title)  
         
         self.vlayout = QVBoxLayout(self)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.vlayout.setContentsMargins(20,30,20,10)
         self.vlayout.addWidget(TitleLabel(title))
         self.vlayout.addWidget(SeparateHLine())
@@ -42,7 +43,7 @@ class Dialog (QDialog):
         # Create rounded rectangle path
         path = QPainterPath()
         path.addRoundedRect(self.rect().toRectF(), 10, 10)
-
+       
         # Fill the dialog background
         if isDark:
             painter.fillPath(path, QBrush(QColor(32,32,32)))

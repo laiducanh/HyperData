@@ -4,15 +4,15 @@ import numpy as np
 import platform
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.button import ComboBox, Toggle, _ComboBox, _TransparentToolButton, _TransparentPushButton
 from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.line_edit import CompleterLineEdit, Completer, TextEdit
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode
-from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView
-from PySide6.QtCore import QFileSystemWatcher, QFile
+from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView, QHBoxLayout, QApplication
+from PySide6.QtCore import QFileSystemWatcher, Signal
 
 DEBUG = True
     
@@ -63,9 +63,7 @@ class DataReader (NodeContentWidget):
         dialog.main_layout.addWidget(self.delimiter)
         self.delimiter.button.currentTextChanged.connect(self.update_preview)
         self.header = Toggle(text="Header")
-        if self._config["header"]:
-            self.header.button.setChecked(False)
-        else: self.header.button.setChecked(True)
+        self.header.button.setChecked(not self._config["header"])
         dialog.main_layout.addWidget(self.header)
         self.header.button.checkedChanged.connect(self.update_preview)
         self.skip_blank_lines = Toggle(text="Skip blank lines")
@@ -128,7 +126,7 @@ class DataReader (NodeContentWidget):
         if self._config["auto_update"]:
             super().exec(self.selectedFiles)
             self.worker.signals.finished.connect(lambda: self.view.update_data(self.data_to_view))
-
+            
     def exec (self):    
         
         import_dlg = QFileDialog()
@@ -577,4 +575,84 @@ class DataFilter (NodeContentWidget):
             self.node.input_sockets[0].socket_data = pd.DataFrame()
         else:
             self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+
+class DataSorter (NodeContentWidget):
+    def __init__(self, node, parent=None):
+        super().__init__(node, parent)
+
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self._config = dict(by=[""],ascending=[True])
         
+    
+    def config(self):
+        dialog = Dialog("Configuration", self.parent.parent)
+
+        self.widget_index = 0
+        
+        class ShorterWidget(QWidget):
+            def __init__(self, data:pd.DataFrame, by:str, order:bool, parent=None):
+                super().__init__(parent)
+                self.hlayout = QHBoxLayout(self)
+                self.hlayout.setContentsMargins(0,0,0,0)
+
+                self.col = _ComboBox(parent=dialog)
+                self.col.setObjectName("by")
+                if not data.empty: self.col.addItems(data.columns)
+                self.col.setCurrentText(by)
+                self.hlayout.addWidget(self.col)
+
+                self.ascending = _ComboBox(["ascending","descending"],dialog)
+                self.ascending.setObjectName("ascending")
+                if order: self.ascending.setCurrentText("ascending")
+                else: self.ascending.setCurrentText("descending")
+                self.hlayout.addWidget(self.ascending)
+
+                delete = _TransparentToolButton(dialog)
+                delete.setIcon("delete.png")
+                delete.pressed.connect(self.onDelete)
+                self.hlayout.addWidget(delete)
+            
+            def onDelete(self):
+                dialog.main_layout.removeWidget(self)
+                self.deleteLater()
+                QApplication.processEvents()
+                dialog.adjustSize()
+        
+        def add(by="", order=True):
+            widget = ShorterWidget(self.node.input_sockets[0].socket_data, by, order)
+            dialog.main_layout.insertWidget(self.widget_index, widget)
+            self.widget_index += 1
+
+        for by, order in zip(self._config.get("by"), self._config.get("ascending")):
+            add(by, order)
+
+        add_btn = _TransparentPushButton(self)
+        add_btn.setIcon("add.png")
+        add_btn.pressed.connect(add)
+        dialog.main_layout.addWidget(add_btn)
+
+        if dialog.exec():
+            # reset self._config
+            self._config = dict(by=[],ascending=[])
+            for btn in dialog.findChildren(_ComboBox):
+                btn : _ComboBox
+                if btn.objectName() == "by":
+                    self._config["by"].append(btn.currentText())
+                if btn.objectName() == "ascending":
+                    self._config["ascending"].append(True if btn.currentText()=="ascending" else False)
+            self.exec()
+
+    def func(self):
+        try:
+            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.sort_values(**self._config)
+        except Exception as e: 
+            logger.exception(e)
+            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+        
+        self.data_to_view = self.node.output_sockets[0].socket_data
+
+    def eval(self):
+        print("anc", self.node.input_sockets[0].hasEdge())
+        if self.node.input_sockets[0].hasEdge():
+            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        else: self.node.input_sockets[0].socket_data = pd.DataFrame()

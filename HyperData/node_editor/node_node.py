@@ -53,6 +53,9 @@ class Node(NodeGraphicsNode):
             case "Data Filter":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = DataFilter(self,parent)
+            case "Data Sorter":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = DataSorter(self,parent)
             case 'Nan Eliminator':
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = NAEliminator(self,parent)
