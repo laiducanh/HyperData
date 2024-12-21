@@ -50,10 +50,8 @@ class NodeGraphicsSocket (GraphicsSocket):
           
     def removeEdge(self, edge:GraphicsEdge):
         if edge in self.edges: 
-            if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
             self.edges.remove(edge)
-            
-
+            if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
         else: print("Socket::removeEdge", "wanna remove edge", edge, "from self.edges but it's not in the list!")
 
     def removeAllEdges(self):
