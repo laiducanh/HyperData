@@ -45,7 +45,7 @@ class Dialog (QDialog):
         path.addRoundedRect(self.rect().toRectF(), 10, 10)
        
         # Fill the dialog background
-        if isDark:
+        if isDark():
             painter.fillPath(path, QBrush(QColor(32,32,32)))
         else:
             painter.fillPath(path, QBrush(Qt.GlobalColor.white))
