@@ -16,12 +16,14 @@ class SplitterBase(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.vlayout = QVBoxLayout()
-        self.vlayout.setContentsMargins(0,0,0,0)
-        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self.vlayout)
         self._config = dict()
         self.splitter = None # Union[model_selection.BaseCrossValidator, model_selection.BaseShuffleSplit]
+        self.initUI()
+    
+    def initUI(self):
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         
     def clear_layout (self):
         for widget in self.findChildren(QWidget):
@@ -37,7 +39,7 @@ class GroupKFold (SplitterBase):
 
         self.clear_layout()
 
-        if config == None: self._config = dict(n_splits=5)
+        if not config: self._config = dict(n_splits=5)
         else: self._config = config
         self.splitter = model_selection.GroupKFold(**self._config)
     
@@ -344,17 +346,17 @@ class TrainTestSplitter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].setTitle("Feature (X)")
-        self.node.input_sockets[1].setTitle("Label (Y)")
-        self.node.output_sockets[0].setTitle("Train/Test")
-        self.node.output_sockets[1].setTitle("Data")
+        self.node.input_sockets[0].setSocketLabel("Feature (X)")
+        self.node.input_sockets[1].setSocketLabel("Label (Y)")
+        self.node.output_sockets[0].setSocketLabel("Train/Test")
+        self.node.output_sockets[1].setSocketLabel("Data")
         self.data_to_view = pd.DataFrame()
         self.exec()
         self._config = dict(splitter="K Fold",config=None)
 
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
         splitter = ComboBox(items=["group k fold","group shuffle split","k fold",
                                    "leave one group out", "leave p group out",
@@ -363,6 +365,7 @@ class TrainTestSplitter (NodeContentWidget):
                                    "stratified k fold","stratified shuffle split",
                                    "stratified group k fold"], text="splitter")
         splitter.button.setCurrentText(self._config["splitter"])
+        splitter.button.setMinimumWidth(200)
         splitter.button.currentTextChanged.connect(lambda: stackedlayout.setCurrentIndex(splitter.button.currentIndex()))
         dialog.main_layout.addWidget(splitter)
         dialog.main_layout.addWidget(SeparateHLine())
