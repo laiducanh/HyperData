@@ -77,10 +77,6 @@ def scoring(Y=list(), Y_pred=list()):
             "median absolute error": "--",
             "maximum residual error": "--",
             "explained variance": "--",
-            "mean tweedie deviance": "--",
-            "mean poisson deviance": "--",
-            "mean gamma deviance": "--",
-            "mean pinball loss": "--",
         }
     
     else:
@@ -92,10 +88,6 @@ def scoring(Y=list(), Y_pred=list()):
         median_absolute_error = np.array([])
         max_error = np.array([])
         explained_variance_score = np.array([])
-        mean_tweedie_deviance = np.array([])
-        mean_poisson_deviance = np.array([])
-        mean_gamma_deviance = np.array([])
-        mean_pinball_loss = np.array([])
         
         for idx in range(len(Y)): # idx is fold index in cross validation.
             r2 = np.append(
@@ -130,22 +122,6 @@ def scoring(Y=list(), Y_pred=list()):
                 explained_variance_score,
                 metrics.explained_variance_score(Y[idx], Y_pred[idx])
             )
-            mean_tweedie_deviance = np.append(
-                mean_tweedie_deviance,
-                metrics.mean_tweedie_deviance(Y[idx], Y_pred[idx])
-            )
-            mean_poisson_deviance = np.append(
-                mean_poisson_deviance,
-                metrics.mean_poisson_deviance(Y[idx], Y_pred[idx])
-            )
-            mean_gamma_deviance = np.append(
-                mean_gamma_deviance,
-                metrics.mean_gamma_deviance(Y[idx], Y_pred[idx])
-            )
-            mean_pinball_loss = np.append(
-                mean_pinball_loss,
-                metrics.mean_pinball_loss(Y[idx], Y_pred[idx])
-            )
             
 
         return {
@@ -157,13 +133,10 @@ def scoring(Y=list(), Y_pred=list()):
             "median absolute error": median_absolute_error.mean(),
             "maximum residual error": max_error.mean(),
             "explained variance": explained_variance_score.mean(),
-            "mean tweedie deviance": mean_tweedie_deviance.mean(),
-            "mean poisson deviance": mean_poisson_deviance.mean(),
-            "mean gamma deviance": mean_gamma_deviance.mean(),
-            "mean pinball loss": mean_pinball_loss.mean()
-        }   
+        }
     
 class Report(Dialog):
+    metricChange = Signal(str)
     def __init__(self, Y, Y_pred, parent=None):
         """ Y and Y_pred are nested lists """
         super().__init__("Metrics and Scoring", parent)
@@ -196,6 +169,7 @@ class Report(Dialog):
     
     def changeMetrics(self, metric:str):
         self.score_function = metric
+        self.metricChange.emit(metric)
     
     def metrics(self) -> QWidget:
         widget = QWidget()
@@ -205,8 +179,7 @@ class Report(Dialog):
         metricToShow = PrimaryComboBox(
             items=["r2 score","mean absolute error","mean squared error","mean squared logarithmic error",
                    "mean absolute percentage error","median absolute error","maximum residual error",
-                   "explained variance","mean tweedie deviance","mean poisson deviance","mean gamma deviance",
-                   "mean pinball loss"],
+                   "explained variance"],
             text="Metrics"
         )
         metricToShow.setMinimumWidth(250)
@@ -639,7 +612,8 @@ class Regressor(NodeContentWidget):
     
     def score_dialog(self):
         dialog = Report(self.Y_test_score, self.Y_pred_score)
-
+        score = scoring(self.Y_test_score, self.Y_pred_score)
+        dialog.metricChange.connect(lambda s: self.score_btn.setText(f"Score {score[s]:.2f}"))
         if dialog.exec():
             self.score_function = dialog.score_function
     
