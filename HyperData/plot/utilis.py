@@ -34,10 +34,8 @@ def find_mpl_object(figure:Figure, match=list([Line2D,Collection,Patch]), gid:st
 
     obj_found = list()
     for artist_class in match:
-        _found = figure.findobj(match=artist_class)
-        _found : list[Artist]
+        _found: list[Artist] = figure.findobj(match=artist_class)
         for artist in _found:
-            
             if artist.get_gid():
                 if gid:
                     if gid in artist.get_gid():

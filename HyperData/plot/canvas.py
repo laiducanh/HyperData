@@ -1,4 +1,5 @@
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+import matplotlib.markers
 from PySide6.QtCore import Signal
 import matplotlib
 from matplotlib.figure import Figure
@@ -48,6 +49,35 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
         
+        for _ax in self.fig.axes:     
+            _ax.spines["bottom"].set_gid("spine bottom")
+            _ax.plot(1, 0, marker=",", 
+                     color=matplotlib.colors.rgb2hex(_ax.spines["bottom"].get_edgecolor()),
+                     transform=_ax.transAxes,
+                     clip_on=False,
+                     gid="spine bottom"
+            )
+            _ax.spines["top"].set_gid("spine top")
+            _ax.plot(1, 1, marker=",", 
+                     color=matplotlib.colors.rgb2hex(_ax.spines["top"].get_edgecolor()),
+                     transform=_ax.transAxes,
+                     clip_on=False,
+                     gid="spine top"
+            )
+            _ax.spines["left"].set_gid("spine left")
+            _ax.plot(0, 1, marker=",", 
+                     color=matplotlib.colors.rgb2hex(_ax.spines["left"].get_edgecolor()),
+                     transform=_ax.transAxes,
+                     clip_on=False,
+                     gid="spine left"
+            )
+            _ax.spines["right"].set_gid("spine right")
+            _ax.plot(1, 1, marker=",", 
+                     color=matplotlib.colors.rgb2hex(_ax.spines["right"].get_edgecolor()),
+                     transform=_ax.transAxes,
+                     clip_on=False,
+                     gid="spine right"
+            )
     
     def serialize(self):
         figure = dict()
