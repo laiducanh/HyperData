@@ -42,22 +42,22 @@ class Grid_Plottype (QHBoxLayout):
         super().__init__()
                
         if plot3d:
-            for self.basic_plot in ['3d line','3d area','3d column','3d scatter','3d surface']:
+            for basic_plot in ['3d line','3d area','3d column','3d scatter','3d surface']:
                 self.button = _TransparentPushButton()
-                self.button.setIcon(ICON_PATH_3D[self.basic_plot])
+                self.button.setIcon(ICON_PATH_3D[basic_plot])
                 self.button.setIconSize(QSize(40,40))
                 self.button.setFixedSize(QSize(50,50))
                 self.button.setToolTip(self.basic_plot.title())
-                self.button.clicked.connect(lambda s=self.basic_plot: self.sig.emit(s))
+                self.button.pressed.connect(lambda s=basic_plot: self.sig.emit(s))
                 self.addWidget(self.button)
         else:
-            for self.basic_plot in ['2d line','2d area','2d column','2d scatter','pie']:
+            for basic_plot in ['2d line','2d area','2d column','2d scatter','pie']:
                 self.button = _TransparentPushButton()
-                self.button.setIcon(ICON_PATH_2D[self.basic_plot])
+                self.button.setIcon(ICON_PATH_2D[basic_plot])
                 self.button.setIconSize(QSize(40,40))
                 self.button.setFixedSize(QSize(50,50))
-                self.button.setToolTip(self.basic_plot.title())
-                self.button.clicked.connect(lambda s=self.basic_plot: self.sig.emit(s))
+                self.button.setToolTip(basic_plot.title())
+                self.button.pressed.connect(lambda s=basic_plot: self.sig.emit(s))
                 self.addWidget(self.button)
         ###
 
