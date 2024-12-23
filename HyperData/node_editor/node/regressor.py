@@ -17,7 +17,7 @@ from typing import Literal
 import pandas as pd
 import numpy as np
 
-DEBUG = True
+DEBUG = False
 
 class AlgorithmMenu(Menu):
     sig = Signal(str)
@@ -551,7 +551,7 @@ class Regressor(NodeContentWidget):
             for fold, (train_idx, test_idx) in enumerate(split):
                 result.append((train_idx, test_idx))
             self.node.input_sockets[0].socket_data = [result, X, Y]
-            print(self.node.input_sockets[0].socket_data)
+            print('data in', self.node.input_sockets[0].socket_data)
         
         try:
             if DEBUG or isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter):
@@ -560,7 +560,7 @@ class Regressor(NodeContentWidget):
                 self.X = self.node.input_sockets[0].socket_data[1]
                 self.Y = self.node.input_sockets[0].socket_data[2]
 
-                self.data_to_view = pd.concat([self.X, self.Y], axis=1)
+                data = pd.concat([self.X, self.Y], axis=1)
 
                 # convert self.X and self.Y into numpy arrays!
                 self.X = self.X.to_numpy()
@@ -579,16 +579,17 @@ class Regressor(NodeContentWidget):
                     self.Y_test_score.append(Y_test)
                     self.Y_pred_score.append(Y_pred)
 
-                    self.data_to_view[f"Fold{fold+1}_Prediction"] = Y_pred_all
+                    data[f"Fold{fold+1}_Prediction"] = Y_pred_all
 
                 score = scoring(self.Y_test_score, self.Y_pred_score)
                 self.score_btn.setText(f"Score: {score[self.score_function]:.2f}")
                 # change progressbar's color   
                 self.progress.changeColor('success')
                 # write log
+                if DEBUG or GLOBAL_DEBUG: print('data out', data)
                 logger.info(f"{self.name} {self.node.id}: {self.estimator} run successfully.")
             else:
-                self.data_to_view = pd.DataFrame()
+                data = pd.DataFrame()
                 self.score_btn.setText(f"Score: --")
                 # change progressbar's color   
                 self.progress.changeColor('fail')
@@ -596,7 +597,7 @@ class Regressor(NodeContentWidget):
                 logger.warning(f"{self.name} {self.node.id}: not a valid splitter, return an empty Dataframe.")
         
         except Exception as e:
-            self.data_to_view = pd.DataFrame()
+            data = pd.DataFrame()
             self.score_btn.setText(f"Score: --")
             # change progressbar's color   
             self.progress.changeColor('fail')
@@ -608,7 +609,8 @@ class Regressor(NodeContentWidget):
         
         
         self.node.output_sockets[0].socket_data = self.estimator
-        self.node.output_sockets[1].socket_data = self.data_to_view
+        self.node.output_sockets[1].socket_data = data.copy()
+        self.data_to_view = data.copy()
     
     def score_dialog(self):
         dialog = Report(self.Y_test_score, self.Y_pred_score)
@@ -621,7 +623,8 @@ class Regressor(NodeContentWidget):
         # reset input sockets
         for socket in self.node.input_sockets:
             socket.socket_data = None
-
+        # reset socket data
+        self.node.input_sockets[0].socket_data = [[],pd.DataFrame(), pd.DataFrame()]
         # update input sockets
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

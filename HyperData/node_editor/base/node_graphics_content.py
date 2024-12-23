@@ -36,6 +36,12 @@ class NodeContentWidget(ContentItem):
 
     def func(self, *args, **kwargs):
         """ main function of the node """
+        # make sure to properly process data_in
+        # before executing the main function
+        self.eval()
+
+    def eval (self):
+        """ use to process data_in """
         pass
     
     def exec_done(self):

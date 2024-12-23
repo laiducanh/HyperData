@@ -5,6 +5,7 @@ from node_editor.node.data_cleaning import *
 from node_editor.node.data_encoder import *
 from node_editor.node.classifier import Classifier
 from node_editor.node.meta_classifier import MetaClassifier
+from node_editor.node.regressor import Regressor
 from node_editor.node.train_test_split import TrainTestSplitter
 from node_editor.node.figure import *
 from node_editor.node.misc import *
@@ -86,6 +87,9 @@ class Node(NodeGraphicsNode):
             case "Meta-Classifier":
                 super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = MetaClassifier(self,parent)
+            case "Regressor":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+                self.content = Regressor(self,parent)
             case 'Executor':
                 super().__init__(title=title, inputs=[], outputs=[])
                 self.content = Executor(self,parent)

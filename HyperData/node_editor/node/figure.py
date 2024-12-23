@@ -5,30 +5,17 @@ from ui.base_widgets.menu import Action
 class Figure2D (NodeContentWidget):
     def __init__(self, node,parent=None):
         super().__init__(node,parent)
-        self.exec_btn.setText('Open Figure')
+
+        self.initCanvas()
+
+    def initCanvas(self):
         self.canvas = Canvas()
-        self.node.input_sockets[0].socket_data = pd.DataFrame()
-    
-    def initMenu(self):
-        action = Action("Open Figurre",self.menu)
-        action.triggered.connect(self.exec)
-        self.menu.addAction(action)
-        action = Action("View Data",self.menu)
-        action.triggered.connect(self.viewData)
-        self.menu.addAction(action)
-        self.menu.addSeparator()
-        action = Action("Show Comment",self.menu)
-        action.triggered.connect(self.comment.show)
-        self.menu.addAction(action)
-        action = Action("Hide Comment",self.menu)
-        action.triggered.connect(self.comment.hide)
-        self.menu.addAction(action)
-    
+       
     def eval (self):
-        if self.node.input_sockets[0].edges == []:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-        else:
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+                    
         self.label.setText(f'Shape: {str(self.node.input_sockets[0].socket_data.shape)}')
         self.data_to_view = self.node.input_sockets[0].socket_data
     
@@ -42,38 +29,12 @@ class Figure2D (NodeContentWidget):
     def deserialize(self, data, hashmap={}):
         pass
 
-class Figure3D (NodeContentWidget):
+class Figure3D (Figure2D):
     def __init__(self, node,parent=None):
         super().__init__(node,parent)
-        self.exec_btn.setText('Open Figure')
+    
+    def initCanvas(self):
         self.canvas = Canvas3D()
-        self.node.input_sockets[0].socket_data = pd.DataFrame()
-    
-    def initMenu(self):
-        action = Action("Open Figurre",self.menu)
-        action.triggered.connect(self.exec)
-        self.menu.addAction(action)
-        action = Action("View Data",self.menu)
-        action.triggered.connect(self.viewData)
-        self.menu.addAction(action)
-        self.menu.addSeparator()
-        action = Action("Show Comment",self.menu)
-        action.triggered.connect(self.comment.show)
-        self.menu.addAction(action)
-        action = Action("Hide Comment",self.menu)
-        action.triggered.connect(self.comment.hide)
-        self.menu.addAction(action)
-    
-    def eval (self):
-        if self.node.input_sockets[0].edges == []:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-        else:
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        self.label.setText(f'Shape: {str(self.node.input_sockets[0].socket_data.shape)}')
-        self.data_to_view = self.node.input_sockets[0].socket_data
-    
-    def exec(self):
-        self.sig.emit()
     
     def serialize(self):
         return {"figure":self.canvas.serialize(),

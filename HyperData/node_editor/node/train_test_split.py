@@ -8,9 +8,11 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from ui.base_widgets.frame import SeparateHLine
-from config.settings import logger
+from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
 from PySide6.QtCore import Qt
+
+DEBUG = False
 
 class SplitterBase(QWidget):
     def __init__(self, parent=None):
@@ -89,7 +91,7 @@ class Kfold (SplitterBase):
     def set_config(self, config):
         self.clear_layout()
 
-        if config == None: self._config = dict(n_splits=5,shuffle=False)
+        if not config: self._config = dict(n_splits=5,shuffle=False)
         else: self._config = config
         self.splitter = model_selection.KFold(**self._config)
 
@@ -247,7 +249,7 @@ class ShuffleSplit(SplitterBase):
         else: self._config = config
         self.splitter = model_selection.ShuffleSplit(**self._config)
 
-        self.splits = SpinBox(min=2, max=1000, step=1, text="number of splits")
+        self.splits = SpinBox(min=1, max=1000, step=1, text="number of splits")
         self.splits.button.setValue(self._config["n_splits"])
         self.splits.button.valueChanged.connect(self.set_splitter)
         self.vlayout.addWidget(self.splits)
@@ -351,19 +353,21 @@ class TrainTestSplitter (NodeContentWidget):
         self.node.output_sockets[0].setSocketLabel("Train/Test")
         self.node.output_sockets[1].setSocketLabel("Data")
         self.data_to_view = pd.DataFrame()
-        self.exec()
-        self._config = dict(splitter="K Fold",config=None)
-
+        self._config = dict(
+            splitter = "K Fold",
+            config = None,
+        )
+        self.splitter = model_selection.KFold()
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
-        splitter = ComboBox(items=["group k fold","group shuffle split","k fold",
-                                   "leave one group out", "leave p group out",
-                                   "leave one out", "leave p out","repeated k fold",
-                                   "repeated stratified k fold","shuffle split",
-                                   "stratified k fold","stratified shuffle split",
-                                   "stratified group k fold"], text="splitter")
+        splitter = ComboBox(items=["Group K Fold","Group Shuffle Split","K Fold",
+                                   "Leave One Group Out", "Leave p Group Out",
+                                   "Geave One Out", "Leave p Out","Repeated K Fold",
+                                   "Repeated Stratified K Fold","Shuffle Split",
+                                   "Stratified K Fold","Stratified Shuffle Split",
+                                   "Stratified Group K Fold"], text="Splitter")
         splitter.button.setCurrentText(self._config["splitter"])
         splitter.button.setMinimumWidth(200)
         splitter.button.currentTextChanged.connect(lambda: stackedlayout.setCurrentIndex(splitter.button.currentIndex()))
@@ -398,43 +402,69 @@ class TrainTestSplitter (NodeContentWidget):
         self.eval()
         result = list()
 
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets, preprocessing
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            X = df.iloc[:,:4]
+            Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
+            Y = pd.DataFrame(data=Y)
+            self.node.input_sockets[0].socket_data = X
+            self.node.input_sockets[1].socket_data = Y
+            print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
+
         try:
             if isinstance(self.node.input_sockets[0].socket_data, pd.DataFrame) and isinstance(self.node.input_sockets[1].socket_data, pd.DataFrame):
                 X = self.node.input_sockets[0].socket_data
                 Y = self.node.input_sockets[1].socket_data
 
-                self.data_to_view = X.copy()
-                self.data_to_view["Label Encoder"] = str()
+                data = X.copy()
+                data["Encoded Label"] = str()
                 n_classes = Y.shape[1]   
                 n_samples = Y.shape[0]
                 for i in range(n_samples):
                     for j in range(n_classes):
-                        self.data_to_view.iloc[i,-1] += str(Y.iloc[i,j])
+                        data.iloc[i,-1] += str(Y.iloc[i,j])
 
                 for fold, (train_idx, test_idx) in enumerate(self.splitter.split(X, Y)):
 
-                    self.data_to_view.loc[train_idx.tolist(),f"Fold{fold+1}"] = "Train"
-                    self.data_to_view.loc[test_idx.tolist(),f"Fold{fold+1}"] = "Test"     
-                    result.append((train_idx, test_idx))                       
-
-                logger.info(f"{self.name} run successfully.")
+                    data.loc[train_idx.tolist(),f"Fold{fold+1}"] = "Train"
+                    data.loc[test_idx.tolist(),f"Fold{fold+1}"] = "Test"     
+                    result.append((train_idx, test_idx))  
+                # change progressbar's color                     
+                self.progress.changeColor("success")
+                # write log
+                if DEBUG or GLOBAL_DEBUG: print('data out', data)
+                else: logger.info(f"{self.name} {self.node.id}: splitted data successfully.")
             else:
                 X, Y = pd.DataFrame(), pd.DataFrame()
-                self.data_to_view = pd.DataFrame()
-                logger.warning(f"{self.name} Not enough input data, return an empty DataFrame.")
+                data = pd.DataFrame()
+                # change progressbar's color   
+                self.progress.changeColor('fail')
+                # write log
+                logger.warning(f"{self.name} {self.node.id}: Not enough input data, return an empty DataFrame.")
 
         except Exception as e:
             X, Y = pd.DataFrame(), pd.DataFrame()
-            self.data_to_view = pd.DataFrame()
-            logger.error(f"{self.name} {repr(e)}, return an empty DataFrame.")
-       
+            data = pd.DataFrame()
+            # change progressbar's color   
+            self.progress.changeColor("fail")
+            # write log
+            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.exception(e)
+
         self.node.output_sockets[0].socket_data = [result, X, Y]
-        self.node.output_sockets[1].socket_data = self.data_to_view
+        self.node.output_sockets[1].socket_data = data.copy()
+        self.data_to_view = data.copy()
      
     def eval(self):
         # reset input sockets
         for socket in self.node.input_sockets:
             socket.socket_data = None
+        # reset socket data
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[1].socket_data = pd.DataFrame()
         # update input sockets
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

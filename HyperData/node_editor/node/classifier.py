@@ -4,18 +4,13 @@ import numpy as np
 from typing import Union
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import linear_model, svm, neighbors, ensemble, tree, gaussian_process
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.base import ClassifierMixin
-from sklearn.metrics import (accuracy_score, balanced_accuracy_score,confusion_matrix,
-                             top_k_accuracy_score,average_precision_score,roc_curve,auc,
-                             precision_recall_curve,
-                             brier_score_loss,f1_score,log_loss,precision_score,
-                             recall_score,jaccard_score,roc_auc_score)
+from sklearn import metrics
 from sklearn.utils.multiclass import unique_labels
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (DropDownPrimaryPushButton, Toggle, ComboBox, _TransparentPushButton, 
-                                    TransparentPushButton, SegmentedWidget, _PrimaryPushButton)
+from ui.base_widgets.button import (DropDownPrimaryPushButton, Toggle, PrimaryComboBox, _TransparentPushButton, 
+                                    TransparentPushButton, SegmentedWidget, _PrimaryPushButton, ComboBox)
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import BodyLabel
@@ -23,11 +18,12 @@ from ui.base_widgets.menu import Menu
 from plot.canvas import Canvas
 from node_editor.node.train_test_split import TrainTestSplitter
 from node_editor.node.report import ConfusionMatrix, ROC
-from config.settings import logger
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QScrollArea, QHBoxLayout,
-                             QApplication)
-from PySide6.QtGui import QAction, QCursor
+from config.settings import logger, GLOBAL_DEBUG
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QScrollArea, QHBoxLayout)
+from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, Signal
+
+DEBUG = False
 
 class ClassifierBase (QWidget):
     def __init__(self, parent=None):
@@ -63,21 +59,21 @@ class AlgorithmMenu(Menu):
         for i in ["Ridge Classifier","Logistic Regression","SGD Classifier",
                   "Passive Aggressive Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
             linear_model.addAction(action)
         self.addMenu(linear_model)
         
         svm = Menu("Support Vector Machines", self)
         for i in ["SVC", "NuSVC","Linear SVC"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
             svm.addAction(action)
         self.addMenu(svm)
 
         neighbors = Menu("Nearest Neighbors", self)
         for i in ["K Neighbors Classifier","Nearest Centroid", "Radius Neighbors Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
             neighbors.addAction(action)
         self.addMenu(neighbors)
 
@@ -85,14 +81,14 @@ class AlgorithmMenu(Menu):
         for i in ["Gradient Boosting Classifier","Histogram Gradient Boosting Classifier",
                   "Random Forest Classifier","Extra Trees Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
             ensembles.addAction(action)
         self.addMenu(ensembles)
 
         others = Menu("Others", self)
         for i in ["Decision Tree Classifier", "Gaussian Process Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda checked, type=i: self.sig.emit(type))
+            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
             others.addAction(action)
         self.addMenu(others)
 
@@ -100,24 +96,27 @@ def scoring(Y=list(), Y_pred=list()):
     """ Y and Y_pred are nested lists """
 
     if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
-        return {"Accuracy":"--",
-                "Balanced accuracy":"--",
-                "Top K accuracy":"--",
-                "Average precision":"--",
-                "Brier score loss":"--",
-                "F1 score":"--"}
+        return {
+            "Accuracy": "--",
+        }
+    
     else:
         accuracy = np.array([])
-        for ind, val in enumerate(Y):
-            accuracy = np.append(accuracy, accuracy_score(Y[ind], Y_pred[ind]))
 
-        return {"Accuracy":accuracy.mean(),
-                }
+        for idx in range(len(Y)):
+            accuracy = np.append(
+                accuracy,
+                metrics.accuracy_score(Y[idx], Y_pred[idx])
+            )
+
+        return {
+            "Accuracy": accuracy.mean(),
+        }
 
 class Report(Dialog):
     def __init__(self, Y, Y_pred, Y_pred_proba, parent=None):
         """ Y, Y_pred, and Y_pred_proba are nested lists """
-        super().__init__(title="Scoring",parent=parent)
+        super().__init__(title="Metrics and Scoring",parent=parent)
 
         self.score_function = "Accuracy"
 
@@ -156,11 +155,12 @@ class Report(Dialog):
         layout.setContentsMargins(0,0,0,0)
         widget.setLayout(layout)
 
-        metric_to_show = ComboBox(items=["Accuracy","Balanced accuracy","Top K accuracy",
-                                         "Average precision","Brier score loss","F1 score",
-                                         ], 
-                                  text="Metric")
-        metric_to_show.button.currentTextChanged.connect(lambda metric: self.change_metric(metric))
+        metric_to_show = PrimaryComboBox(
+            items=["Accuracy","Balanced accuracy","Average precision",
+                   "Brier score loss","F1 score",], 
+            text="Metric"
+        )
+        metric_to_show.button.currentTextChanged.connect(self.change_metric)
         layout.addWidget(metric_to_show)
 
         score = scoring(Y, Y_pred)
@@ -180,8 +180,10 @@ class Report(Dialog):
 
         fold = 0
 
-        _fold = ComboBox(items=[f"Fold {i+1}" for i in range(len(Y))],
-                        text="Fold")
+        _fold = PrimaryComboBox(
+            items=[f"Fold {i+1}" for i in range(len(Y))],
+            text="Fold"
+        )
         _fold.button.setCurrentText(f"Fold {fold+1}")
         layout.addWidget(_fold)
 
@@ -189,7 +191,7 @@ class Report(Dialog):
         if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
             cm = np.array([[1,0],[0,1]])
         else: 
-            cm = confusion_matrix(Y[fold], Y_pred[fold])
+            cm = metrics.confusion_matrix(Y[fold], Y_pred[fold])
         
         canvas = Canvas()
         canvas.fig.set_edgecolor("black")
@@ -248,8 +250,8 @@ class Report(Dialog):
             fpr, tpr = [0,0,1], [0,1,1]
             roc_auc = 1
         else:
-            fpr, tpr, _ = roc_curve(Y, Y_pred_proba) 
-            roc_auc = auc(fpr, tpr)
+            fpr, tpr, _ = metrics.roc_curve(Y, Y_pred_proba) 
+            roc_auc = metrics.auc(fpr, tpr)
 
         canvas = Canvas()
         for _ax in canvas.fig.axes: _ax.remove()
@@ -306,8 +308,8 @@ class Report(Dialog):
             precision, recall = [0,0,1], [0,1,1]
             pr_auc = 1
         else:
-            precision, recall, _ = precision_recall_curve(Y, Y_pred)
-            pr_auc = auc(recall, precision)
+            precision, recall, _ = metrics.precision_recall_curve(Y, Y_pred)
+            pr_auc = metrics.auc(recall, precision)
 
         canvas = Canvas()
         for _ax in canvas.fig.axes: _ax.remove()
@@ -1659,38 +1661,41 @@ class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.parent = parent
         self.X, self.Y = list(), list()
         self.Y_test_score, self.Y_pred_score, self.Y_pred_proba_score = list(), list(), list()
 
-        self.node.input_sockets[0].setTitle("Train/Test")
-        self.node.output_sockets[0].setTitle("Model")
-        self.node.output_sockets[1].setTitle("Data out")
+        self.node.input_sockets[0].setSocketLabel("Train/Test")
+        self.node.output_sockets[0].setSocketLabel("Model")
+        self.node.output_sockets[1].setSocketLabel("Data out")
 
         self.score_btn = _TransparentPushButton()
         self.score_btn.setText(f"Score: --")
         self.score_btn.released.connect(self.score_dialog)
-        self.layout.insertWidget(2,self.score_btn)
+        self.vlayout.insertWidget(2,self.score_btn)
         self.score_function = "Accuracy"
         
-        self._config = dict(estimator="Logistic Regression",config=None)
+        self._config = dict(
+            estimator = "Logistic Regression",
+            config = dict(),
+        )
+        
         self.estimator_list = ["Ridge Classifier","Logistic Regression","SGD Classifier",
                                "Passive Aggressive Classifier", "SVC", "NuSVC", "Linear SVC",
                                "K Neighbors Classifier","Nearest Centroid", "Radius Neighbors Classifier",
                                "Gradient Boosting Classifier", "Histogram Gradient Boosting Classifier",
                                "Random Forest Classifier", "Extra Trees Classifier",
                                "Decision Tree Classifier","Gaussian Process Classifier"]
-        self.estimator = linear_model.LogisticRegression()
+        
+        self.estimator = linear_model.LogisticRegression(**self._config["config"])
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
         menu = AlgorithmMenu()
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: stackedlayout.setCurrentIndex(self.estimator_list.index(string)))
         algorithm = DropDownPrimaryPushButton(text="Algorithm")
         algorithm.button.setText(self._config["estimator"].title())
         algorithm.button.setMenu(menu)
-        algorithm.button.released.connect(lambda: menu.exec(QCursor().pos()))
         dialog.main_layout.addWidget(algorithm)
         dialog.main_layout.addWidget(SeparateHLine())
         stackedlayout = QStackedLayout()
@@ -1724,22 +1729,36 @@ class Classifier (NodeContentWidget):
 
     def func(self):
         self.eval()
-        self.node.output_sockets[0].socket_data = self.estimator
 
-        # try:
-        if len(self.node.input_sockets[0].edges) == 1:
-            if isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter):
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets, model_selection, preprocessing
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            X = df.iloc[:,:4]
+            Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
+            Y = pd.DataFrame(data=Y)
+            split = model_selection.ShuffleSplit(n_splits=5, test_size=0.2).split(X, Y)
+            result = list()
+            for fold, (train_idx, test_idx) in enumerate(split):
+                result.append((train_idx, test_idx))
+            self.node.input_sockets[0].socket_data = [result, X, Y]
+            print('data in', self.node.input_sockets[0].socket_data)
+
+        try:
+            if DEBUG or isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter):
                 cv = self.node.input_sockets[0].socket_data[0]
                 self.X = self.node.input_sockets[0].socket_data[1]
                 self.Y = self.node.input_sockets[0].socket_data[2]
                 
-                self.data_to_view = self.node.input_sockets[0].socket_data[1].copy()
+                data = self.node.input_sockets[0].socket_data[1].copy()
                 n_classes = self.Y.shape[1]   
                 n_samples = self.Y.shape[0]
-                self.data_to_view[f"Label Encoder"] = str()
+                
+                data[f"Encoded Label"] = str()
                 for i in range(n_samples):
                     for j in range(n_classes):
-                        self.data_to_view.iloc[i,-1] += str(self.Y.iloc[i,j])
+                        data.iloc[i,-1] += str(self.Y.iloc[i,j])
 
                 # convert self.X and self.Y into numpy arrays!
                 self.X = self.X.to_numpy()
@@ -1760,40 +1779,54 @@ class Classifier (NodeContentWidget):
                     self.Y_pred_score.append(Y_pred)
                     self.Y_pred_proba_score.append(Y_pred_proba)
 
-                    n_classes = self.Y.shape[1]   
-                    n_samples = self.Y.shape[0]
-                    self.data_to_view[f"Fold{fold+1}_Prediction"] = str()
+                    Y_pred_all = np.reshape(Y_pred_all, (n_samples, n_classes))
+                    data[f"Fold{fold+1}_Prediction"] = str()
                     for i in range(n_samples):
                         for j in range(n_classes):
-                            self.data_to_view.iloc[i,-1] += str(Y_pred_all[i,j])
+                            data.iloc[i,-1] += str(Y_pred_all[i,j])
                                 
                 score = scoring(self.Y_test_score, self.Y_pred_score)
                 self.score_btn.setText(f"Score: {score[self.score_function]:.2f}")
                 
-                self.node.output_sockets[1].socket_data = None
-                logger.info(f"{self.name} {self.node.id}::run successfully.")
+                # change progressbar's color   
+                self.progress.changeColor('success')
+                # write log
+                if DEBUG or GLOBAL_DEBUG: print('data out', data)
+                logger.info(f"{self.name} {self.node.id}: {self.estimator} run successfully.")
 
-        else:
-            self.score_btn.setText(f"Score: --")
-            logger.warning(f"{self.name} {self.node.id}::Did not define splitter.")
+            else:
+                data = pd.DataFrame()
+                self.score_btn.setText(f"Score: --")
+                # change progressbar's color   
+                self.progress.changeColor('fail')
+                # write log
+                logger.warning(f"{self.name} {self.node.id}: Did not define splitter, return an empty Dataframe.")
         
-        # except Exception as e:
-        #     self.score_btn.setText(f"Score: --")
-        #     logger.error(f"{self.name} {self.node.id}::{repr(e)}.")
+        except Exception as e:
+            data = pd.DataFrame()
+            self.score_btn.setText(f"Score: --")
+            # change progressbar's color   
+            self.progress.changeColor('fail')
+            # write log
+            logger.error(f"{self.name} {self.node.id}: failed, return an empty Dataframe.")
+            logger.exception(e)
+
+        self.node.output_sockets[0].socket_data = self.estimator
+        self.node.output_sockets[1].socket_data = data.copy()
+        self.data_to_view = data.copy()
     
     def score_dialog(self):
-        # dialog = Dialog("Scoring", self.parent.parent)
         dialog = Report(self.Y_test_score, self.Y_pred_score, self.Y_pred_proba_score)
         
         if dialog.exec():
             self.score_function = dialog.score_function
-        pass
      
     def eval (self):
         # reset input sockets
         for socket in self.node.input_sockets:
             socket.socket_data = None
-
+        # reset socket data
+        self.node.input_sockets[0].socket_data = [[],pd.DataFrame(), pd.DataFrame()]
         # update input sockets
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

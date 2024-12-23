@@ -64,7 +64,7 @@ class NodeGraphicsScene(QGraphicsScene):
         self.addItem(node)
         self.nodes.append(node)
         if node.content: node.content.sig.connect(lambda: self.sig.emit(node))
-        logger.info(f"Scene::addNode: add node {node.id}.")
+        logger.info(f"Scene::addNode: add node {node.content.name} {node.id}.")
 
     def addEdge(self, edge:NodeGraphicsEdge):
         self.addItem(edge)
@@ -75,8 +75,8 @@ class NodeGraphicsScene(QGraphicsScene):
         if node in self.nodes: 
             self.nodes.remove(node)
             self.removeItem(node)
-            logger.info(f"Scene::removeNode: remove node {node.id}.")
-        else: logger.warn(f"Scene::removeNode: wanna remove node {node.id} from self.nodes but it's not in the list!")
+            logger.info(f"Scene::removeNode: remove node {node.content.name} {node.id}.")
+        else: logger.warn(f"Scene::removeNode: wanna remove node {node.content.name} {node.id} from self.nodes but it's not in the list!")
 
     def removeEdge(self, edge:NodeGraphicsEdge):
         if edge in self.edges: 

@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, Property, QSize, QEasingCurve
 from PySide6.QtGui import QResizeEvent, QColor, QPainter, QRegion, QPainterPath, QBrush
-import math
+import math, typing
 from ui.base_widgets.button import _PrimaryPushButton, _PushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
@@ -77,6 +77,7 @@ class ProgressBar(QProgressBar):
 
         self.lightBackgroundColor = QColor(0, 0, 0, 155)
         self.darkBackgroundColor = QColor(255, 255, 255, 155)
+        self.color = QColor("#0085f1")
         self.ani = QPropertyAnimation(self, b'val', self)
         self.setValue(self._val)
         self.valueChanged.connect(self._onValueChanged)
@@ -94,6 +95,12 @@ class ProgressBar(QProgressBar):
         self.ani.setDuration(300)
         self.ani.start()
         super().setValue(value)
+    
+    def changeColor(self, colortype:typing.Literal["fail", "success"]):
+        if colortype == "fail":
+            self.color = QColor("#e03131")
+        elif colortype == "success":
+            self.color = QColor("#0085f1")
 
     def paintEvent(self, e):
         painter = QPainter(self)
@@ -110,7 +117,7 @@ class ProgressBar(QProgressBar):
 
         # draw bar
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#0085f1"))
+        painter.setBrush(self.color)
         w = int(self.val / (self.maximum() - self.minimum()) * self.width())
         r = self.height() / 2
         painter.drawRoundedRect(0, 0, w, self.height(), r, r)

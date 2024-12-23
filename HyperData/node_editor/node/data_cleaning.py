@@ -1,21 +1,23 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
+import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from sklearn.experimental import enable_iterative_imputer
+from sklearn.experimental import enable_iterative_imputer # is required to load sklear.impute
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.line_edit import LineEdit, CompleterLineEdit
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
-from config.settings import logger
+from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout
 from PySide6.QtCore import Qt
+
+DEBUG = False
 
 class NAEliminator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
             axis='index',
             thresh='any',
@@ -44,43 +46,64 @@ class NAEliminator (NodeContentWidget):
             self.exec()
 
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            # randomly introduce some missing values
+            df = df.mask(np.random.random(df.shape) < 0.2)
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
 
         try:
             if self._config["thresh"].isdigit():
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.dropna(axis=self._config["axis"],
-                                                          thresh=int(self._config["thresh"]),
-                                                          ignore_index=self._config["ignore_index"])
+                data: pd.DataFrame = self.node.input_sockets[0].socket_data.dropna(
+                    axis=self._config["axis"],
+                    thresh=int(self._config["thresh"]),
+                    ignore_index=self._config["ignore_index"]
+                )
             
             elif self._config["thresh"] in ["any","all"]:
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.dropna(axis=self._config["axis"],
-                                                          how=self._config["thresh"],
-                                                          ignore_index=self._config["ignore_index"])
+                data = self.node.input_sockets[0].socket_data.dropna(
+                    axis=self._config["axis"],
+                    how=self._config["thresh"],
+                    ignore_index=self._config["ignore_index"]
+                )
             else:
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.dropna(axis=self._config["axis"],
-                                                          how="any",
-                                                          ignore_index=self._config["ignore_index"])
+                data = self.node.input_sockets[0].socket_data.dropna(
+                    axis=self._config["axis"],
+                    how="any",
+                    ignore_index=self._config["ignore_index"]
+                )
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: eliminated NaNs successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: logger.info(f"{self.name} {self.node.id}: eliminated NaNs successfully.")
         except Exception as e: 
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
         
                 
     def eval(self):
-        if self.node.input_sockets[0].hasEdge():
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        else:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
 class NAImputer (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
             imputer='univariate', 
             m_strategy='mean', 
@@ -187,53 +210,75 @@ class NAImputer (NodeContentWidget):
             self.exec()
 
     def func(self):
-        imputer = None
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            # randomly introduce some missing values
+            df = df.mask(np.random.random(df.shape) < 0.2)
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
+
         try:
+            imputer = None
             match self._config["imputer"]:
                 case 'univariate':
                     if self._config['u_strategy'] == 'next valid observation':
-                        self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
+                        data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
                     elif self._config['u_strategy'] == 'last valid observation':
-                        self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.fillna(method='bfill')
+                        data = self.node.input_sockets[0].socket_data.fillna(method='bfill')
                     else:
-                        imputer = SimpleImputer(strategy=self._config['u_strategy'],
-                                            fill_value=self._config['u_fill_value'])
+                        imputer = SimpleImputer(
+                            strategy=self._config['u_strategy'],
+                            fill_value=self._config['u_fill_value']
+                        )
                 case 'multivariate':
-                    imputer = IterativeImputer(max_iter=self._config['max_iter'],
-                                            tol=self._config["tol"],
-                                            initial_strategy=self._config["m_strategy"],
-                                            fill_value=self._config["m_fill_value"],
-                                            imputation_order=self._config['imputation_order'],
-                                            skip_complete=self._config["skip complete"])
+                    imputer = IterativeImputer(
+                        max_iter=self._config['max_iter'],
+                        tol=self._config["tol"],
+                        initial_strategy=self._config["m_strategy"],
+                        fill_value=self._config["m_fill_value"],
+                        imputation_order=self._config['imputation_order'],
+                        skip_complete=self._config["skip complete"]
+                    )
                 case "knn":
-                    imputer = KNNImputer(n_neighbors=self._config['n_neighbors'],
-                                        weights=self._config["weights"])
+                    imputer = KNNImputer(
+                        n_neighbors=self._config['n_neighbors'],
+                        weights=self._config["weights"]
+                    )
             if imputer:
                 columns = self.node.input_sockets[0].socket_data.columns
-                self.node.output_sockets[0].socket_data = imputer.fit_transform(self.node.input_sockets[0].socket_data)
-                self.node.output_sockets[0].socket_data = pd.DataFrame(self.node.output_sockets[0].socket_data, columns=columns)            
+                data = imputer.fit_transform(self.node.input_sockets[0].socket_data)
+                data = pd.DataFrame(data, columns=columns)     
+            # change progressbar's color
+            self.progress.changeColor('success')       
             # write log
-            logger.info(f"{self.name} {self.node.id}: imputed NaNs successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: logger.info(f"{self.name} {self.node.id}: imputed NaNs successfully.")
 
         except Exception as e:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
             logger.exception(e)
-        
-        self.data_to_view = self.node.output_sockets[0].socket_data        
+    
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy() 
 
     def eval(self):
-        if self.node.input_sockets[0].hasEdge():
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        else:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()            
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
 class DropDuplicate (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
             keep='first',
             ignore_index=False
@@ -256,25 +301,49 @@ class DropDuplicate (NodeContentWidget):
             self.exec()
     
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            # Randomly select rows to duplicate
+            duplicate_indices = np.random.choice(df.index, 10, replace=False)
+            # Append the duplicated rows to the original dataframe
+            df = pd.concat([df, df.loc[duplicate_indices]])
+            # randomly introduce some duplicates
+            # shuffle the dataframe to randomize the order of duplicates
+            df = df.sample(frac=1).reset_index(drop=True)
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
 
         if self._config["keep"] == 'none': keep = False
         else: keep = self._config["keep"]
 
         try:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.drop_duplicates(keep=keep,
-                                                                                                             ignore_index=self._config["ignore_index"])
+            data = self.node.input_sockets[0].socket_data.drop_duplicates(
+                keep=keep,
+                ignore_index=self._config["ignore_index"]
+            )
+            # change progressbar's color
+            self.progress.changeColor('success')       
             # write log
-            logger.info(f"{self.name} {self.node.id}: dropped duplicated values successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: logger.info(f"{self.name} {self.node.id}: dropped duplicated values successfully.")
         except Exception as e:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')       
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
 
     def eval(self):
-        if self.node.input_sockets[0].hasEdge():
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        else:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+    

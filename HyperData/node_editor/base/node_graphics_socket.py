@@ -13,7 +13,7 @@ CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsSocket (GraphicsSocket):
-    def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data:pd.DataFrame=None, parent=None):
+    def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data:pd.DataFrame|list=None, parent=None):
         super().__init__(node, socket_type, parent)
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
@@ -62,7 +62,7 @@ class NodeGraphicsSocket (GraphicsSocket):
 
     def hasEdge(self) -> bool:
         """ return True if there is at least one edge attached to the socket """
-        return self.edges is not []    
+        return False if not self.edges else True   
     
     def serialize(self):
         return {"id":self.id,

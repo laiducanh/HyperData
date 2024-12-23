@@ -45,7 +45,7 @@ class Main(QMainWindow):
     
     def debug(self):
         logger.setLevel(logging.DEBUG)
-        self.node_view.addNode("Data Reader")        
+        self.node_view.addNode("Classifier")        
 
     def add_node_view (self):
         self.node_view = NodeView(self)

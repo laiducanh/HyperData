@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphics
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
 from ui.utils import isDark
+from node_editor.graphics.graphics_content import ContentItem
 
 DEBUG = False
 
@@ -123,7 +124,7 @@ class NodeItem(QGraphicsItem):
             painter.setPen(self._pen_default if not self.isSelected() else self._pen_selected)
             painter.drawPath(path_outline.simplified())
     
-    def set_Content(self, content:QWidget):
+    def set_Content(self, content: ContentItem):
         self.content = content
         self.grContent = QGraphicsProxyWidget(self)
         self.content.setGeometry(int(self.edge_size)+10, int(self.title_height + self.edge_size),

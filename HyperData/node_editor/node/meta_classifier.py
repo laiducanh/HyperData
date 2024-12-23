@@ -77,13 +77,13 @@ class MetaClassifier(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].setTitle("Train/Test")
-        self.node.input_sockets[1].setTitle("Classifier")
-        self.node.output_sockets[0].setTitle("Model")
-        self.node.output_sockets[1].setTitle("Data out")
+        self.node.input_sockets[0].setSocketLabel("Train/Test")
+        self.node.input_sockets[1].setSocketLabel("Classifier")
+        self.node.output_sockets[0].setSocketLabel("Model")
+        self.node.output_sockets[1].setSocketLabel("Data out")
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent.parent)
+        dialog = Dialog("Configuration", self.parent)
         menu = AlgorithmMenu()
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: stackedlayout.setCurrentIndex(self.estimator_list.index(string)))

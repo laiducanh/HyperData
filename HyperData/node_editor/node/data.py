@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
-import platform
+import platform, os
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox, Toggle, _ComboBox, _TransparentToolButton, _TransparentPushButton
@@ -10,16 +10,16 @@ from ui.base_widgets.line_edit import CompleterLineEdit, Completer, TextEdit
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
-from config.settings import logger, encode
+from config.settings import logger, encode, GLOBAL_DEBUG
 from PySide6.QtWidgets import QFileDialog, QWidget, QStackedLayout, QVBoxLayout, QTableView, QHBoxLayout, QApplication, QMainWindow
 from PySide6.QtCore import QFileSystemWatcher
 
-DEBUG = True
+DEBUG = False
     
 class DataReader (NodeContentWidget):
     def __init__(self, node:NodeGraphicsNode, parent=None):
         super().__init__(node,parent)
-        self.exec_btn.setText('Load data')
+
         self.node.output_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
             nrows=100000,
@@ -28,7 +28,7 @@ class DataReader (NodeContentWidget):
             skip_blank_lines=True,
             encoding="utf_8",
             auto_update=True
-            )
+        )
         self.selectedFiles = None
         self.filetype = "csv"
         self.isReadable = True
@@ -114,12 +114,21 @@ class DataReader (NodeContentWidget):
 
         if self.selectedFiles and self.isReadable:
             if self.filetype == "csv":
-                data = pd.read_csv(self.selectedFiles, nrows=10,header=header,
-                                   delimiter=delimiter,skip_blank_lines=skip_blank_lines,
-                                   encoding=encoding)
+                data = pd.read_csv(
+                    self.selectedFiles, 
+                    nrows=10,
+                    header=header,
+                    delimiter=delimiter,
+                    skip_blank_lines=skip_blank_lines,
+                    encoding=encoding
+                )
             elif self.filetype == "excel":
-                data = pd.read_excel(self.selectedFiles, nrows=10,header=header,
-                                     sheet_name=sheet_name)
+                data = pd.read_excel(
+                    self.selectedFiles, 
+                    nrows=10,
+                    header=header,
+                    sheet_name=sheet_name
+                )
         self.model = TableModel(data, self.parent)
         self.preview.setModel(self.model)
 
@@ -143,6 +152,8 @@ class DataReader (NodeContentWidget):
             self.selectedFiles = importDialog.selectedFiles()[0]      
             # add file path for watcher
             self.watcher.addPath(self.selectedFiles)
+            # check filetype for reading
+            self.check_filetype(self.selectedFiles)
             # write log
             logger.info(f"DataReader {self.node.id}: Selected {self.selectedFiles}.")
             # reset Shape label before executing the main function
@@ -151,33 +162,41 @@ class DataReader (NodeContentWidget):
             super().exec(self.selectedFiles)
     
     def func (self, selectedFiles):
-        
         if self.isReadable:
             match self.filetype:
                 case "csv":
-                    data = pd.read_csv(selectedFiles, 
-                                       nrows=self._config["nrows"],
-                                       header=self._config["header"],
-                                       delimiter=self._config["delimiter"],
-                                       skip_blank_lines=self._config["skip_blank_lines"],
-                                       encoding=self._config["encoding"])
+                    data = pd.read_csv(
+                        selectedFiles, 
+                        nrows=self._config["nrows"],
+                        header=self._config["header"],
+                        delimiter=self._config["delimiter"],
+                        skip_blank_lines=self._config["skip_blank_lines"],
+                        encoding=self._config["encoding"]
+                    )
                     # write log
                     logger.info(f"DataReader {self.node.id}: Loaded a csv file.")
 
                 case "excel":
-                    data = pd.read_excel(selectedFiles, 
-                                         nrows=self._config["nrows"],
-                                         header=self._config["header"])
+                    data = pd.read_excel(
+                        selectedFiles, 
+                        nrows=self._config["nrows"],
+                        header=self._config["header"]
+                    )
                     # write log
                     logger.info(f"DataReader {self.node.id}: Loaded an excel file.")
+            
+            # change progressbar's color
+            self.progress.changeColor('success')
         else:
             data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.warning(f"DataReader {self.node.id}: Couldn't read data file, return an empty DataFrame.")
             logger.info(f"DataReader {self.node.id}: failed, file format is not supported.")
         
-        self.node.output_sockets[0].socket_data = data
-        self.data_to_view = data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
 
 
 class DataHolder (NodeContentWidget):
@@ -185,21 +204,40 @@ class DataHolder (NodeContentWidget):
         super().__init__(node, parent)
         
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
+
         try:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.copy(deep=True)
+            data = self.node.input_sockets[0].socket_data.copy(deep=True)
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            connect_to_edge = self.node.input_sockets[0].edges[0]
-            connect_to_node = connect_to_edge.start_socket.node
-            logger.info(f"{self.name} {self.node.id}: copied data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else:
+                connect_to_edge = self.node.input_sockets[0].edges[0]
+                connect_to_node = connect_to_edge.start_socket.node
+                logger.info(f"{self.name} {self.node.id}: copied data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
+           
         except Exception as e:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
-        
-        self.data_to_view = self.node.output_sockets[0].socket_data
+
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
 
     def eval(self):
+        self.node.input_sockets[0].socket_data = pd.DataFrame()  
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
@@ -208,25 +246,42 @@ class DataTranspose (NodeContentWidget):
         super().__init__(node, parent)
     
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
+
         try: 
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.transpose()
+            data = self.node.input_sockets[0].socket_data.transpose()
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            connect_to_edge = self.node.input_sockets[0].edges[0]
-            connect_to_node = connect_to_edge.start_socket.node
-            logger.info(f"{self.name} {self.node.id}: transposed data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else:
+                connect_to_edge = self.node.input_sockets[0].edges[0]
+                connect_to_node = connect_to_edge.start_socket.node
+                logger.info(f"{self.name} {self.node.id}: transposed data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
         except Exception as e: 
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data        
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()  
         
     def eval (self):
-        if self.node.input_sockets[0].hasEdge():
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        else:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()            
+        self.node.input_sockets[0].socket_data = pd.DataFrame()  
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+                      
 
 
 class DataConcator (NodeContentWidget):
@@ -238,7 +293,7 @@ class DataConcator (NodeContentWidget):
             axis='index',
             join='outer',
             ignore_index=False
-            )
+        )
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
@@ -258,28 +313,40 @@ class DataConcator (NodeContentWidget):
             self.exec()
     
     def func(self):
-        
-        if self.node.input_sockets[0].socket_data != []: 
-            try: 
-                self.node.output_sockets[0].socket_data = pd.concat(
-                    objs=self.node.input_sockets[0].socket_data,
-                    **self._config
-                    )
-                # write log
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data.append(df)
+            self.node.input_sockets[0].socket_data.append(df)
+            print('data in', self.node.input_sockets[0].socket_data)
+
+        try: 
+            data: pd.DataFrame = pd.concat(
+                objs=self.node.input_sockets[0].socket_data,
+                **self._config
+            )
+            # change progressbar's color
+            self.progress.changeColor('success')
+            # write log
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else:
                 connectedEdges = self.node.input_sockets[0].edges
                 connectedNodes = [edge.start_socket.node for edge in connectedEdges]
                 logger.info(f"{self.name} {self.node.id}: concated data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
-            except Exception as e:
-                self.node.output_sockets[0].socket_data = pd.DataFrame()
-                # write log
-                logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
-                logger.exception(e)
-        else:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+        except Exception as e:
+            data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
-            logger.info(f"{self.name} {self.node.id}: Not enough input, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
 
     def eval(self):
         self.node.input_sockets[0].socket_data = list()
@@ -290,7 +357,6 @@ class DataCombiner (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.exec_btn.setText('Combine')
         self.node.input_sockets[0].socket_data = list()
         self._config = dict(
             func="minimum",
@@ -312,26 +378,45 @@ class DataCombiner (NodeContentWidget):
             self.exec()
     
     def func(self):
-        self.node.output_sockets[0].socket_data = pd.DataFrame()
+        super().func()
+
         if self._config["func"] == "take smaller":
             func = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
         else:
             func = np.minimum
         overwrite = self._config["overwrite"]
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data.append(df)
+            self.node.input_sockets[0].socket_data.append(df)
+            print('data in', self.node.input_sockets[0].socket_data)
+
+        data = pd.DataFrame()
         try:
-            for data in self.node.input_sockets[0].socket_data:
-                self.node.output_sockets[0].socket_data = self.node.output_sockets[0].socket_data.combine(data, func=func, overwrite=overwrite)
+            for input_data in self.node.input_sockets[0].socket_data:
+                data = data.combine(input_data, func=func, overwrite=overwrite)
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            connectedEdges = self.node.input_sockets[0].edges
-            connectedNodes = [edge.start_socket.node for edge in connectedEdges]
-            logger.info(f"{self.name} {self.node.id}: combined data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else:
+                connectedEdges = self.node.input_sockets[0].edges
+                connectedNodes = [edge.start_socket.node for edge in connectedEdges]
+                logger.info(f"{self.name} {self.node.id}: combined data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
         except Exception as e:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data        
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy() 
 
     def eval(self):
         self.node.input_sockets[0].socket_data = list()
@@ -342,33 +427,44 @@ class DataMerge (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.exec_btn.setText('Merge')
-
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            self.node.input_sockets[1].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
+
         try:
-            if self.node.input_sockets[0].socket_data and self.node.input_sockets[1].socket_data:
-                data_left = self.node.input_sockets[0].socket_data
-                data_right = self.node.input_sockets[1].socket_data
-                self.node.output_sockets[0].socket_data = data_left.merge(data_right)
-            elif self.node.input_sockets[0].socket_data:
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            elif self.node.input_sockets[1].socket_data:
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
-            else:
-                self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data_left = self.node.input_sockets[0].socket_data
+            data_right = self.node.input_sockets[1].socket_data
+            data = data_left.merge(data_right)
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            node1 = self.node.input_sockets[0].edges[0].start_socket.node
-            node2 = self.node.input_sockets[1].edges[0].start_socket.node
-            logger.info(f"{self.name} {self.node.id}: merged data from {node1} {node1.id} and {node2} {node2.id} successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else:
+                node1 = self.node.input_sockets[0].edges[0].start_socket.node
+                node2 = self.node.input_sockets[1].edges[0].start_socket.node
+                logger.info(f"{self.name} {self.node.id}: merged data from {node1} {node1.id} and {node2} {node2.id} successfully.")
         except Exception as e:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data        
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()      
     
     def eval(self):
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[1].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
         for edge in self.node.input_sockets[1].edges:
@@ -382,7 +478,7 @@ class DataCompare (NodeContentWidget):
             align_axis="columns",
             keep_shape=False,
             keep_equal=False
-            )
+        )
     
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
@@ -403,30 +499,44 @@ class DataCompare (NodeContentWidget):
             self.exec()
     
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            self.node.input_sockets[1].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
+
         try:
-            if self.node.input_sockets[0].socket_data and self.node.input_sockets[1].socket_data:
-                data_left = self.node.input_sockets[0].socket_data
-                data_right = self.node.input_sockets[1].socket_data
-                self.node.output_sockets[0].socket_data = data_left.compare(data_right,**self._config)
-            elif self.node.input_sockets[0].socket_data:
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
-            elif self.node.input_sockets[1].socket_data:
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[1].socket_data
-            else:
-                self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data_left = self.node.input_sockets[0].socket_data
+            data_right = self.node.input_sockets[1].socket_data
+            data = data_left.compare(data_right,**self._config)
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            node1 = self.node.input_sockets[0].edges[0].start_socket.node
-            node2 = self.node.input_sockets[1].edges[0].start_socket.node
-            logger.info(f"{self.name} {self.node.id}: compared data from {node1} {node1.id} and {node2} {node2.id} successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: 
+                node1 = self.node.input_sockets[0].edges[0].start_socket.node
+                node2 = self.node.input_sockets[1].edges[0].start_socket.node
+                logger.info(f"{self.name} {self.node.id}: compared data from {node1} {node1.id} and {node2} {node2.id} successfully.")
+
         except Exception as e:
-            self.node.output_sockets[0].socket_data = pd.DataFrame()
+            data = pd.DataFrame()
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
     
     def eval(self):
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[1].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
         for edge in self.node.input_sockets[1].edges:
@@ -521,33 +631,48 @@ class DataLocator (NodeContentWidget):
             self.exec()
 
     def func(self):
-        try:
+        super().func()
 
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            self.initConfig()
+            print('data in', self.node.input_sockets[0].socket_data)
+
+        try:
             if self._config["type"] == "columns":
                 col_from = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_from"])
                 col_to = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_to"])+1
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[:,col_from:col_to]
+                data = self.node.input_sockets[0].socket_data.iloc[:,col_from:col_to]
 
             elif self._config["type"] == "rows":
                 row_from = int(self._config["row_from"])-1
                 row_to = int(self._config["row_to"])
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
+                data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: located data successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: logger.info(f"{self.name} {self.node.id}: located data successfully.")
 
         except Exception as e:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
             logger.exception(e)
-            
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
     
     def eval(self):
-        if self.node.input_sockets[0].edges == []:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-        else:
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
         self.initConfig()
 
@@ -555,7 +680,6 @@ class DataFilter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
             axis="columns",
             type="items",
@@ -613,44 +737,70 @@ class DataFilter (NodeContentWidget):
     
 
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
+
         try:
             if self._config["type"] == "items":
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
-                                                                                                        items=self._config["apply"])
+                data = self.node.input_sockets[0].socket_data.filter(
+                    axis=self._config["axis"],
+                    items=self._config["apply"]
+                )
             elif self._config["type"] == "contains":
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
-                                                                                                        like=self._config["apply"][0])
+                data = self.node.input_sockets[0].socket_data.filter(
+                    axis=self._config["axis"],
+                    like=self._config["apply"][0]
+                )
             elif self._config["type"] == "regular expression":
-                self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.filter(axis=self._config["axis"],
-                                                                                                        regex=self._config["apply"][0])
+                data = self.node.input_sockets[0].socket_data.filter(
+                    axis=self._config["axis"],
+                    regex=self._config["apply"][0]
+                )
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: filtered data successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: logger.info(f"{self.name} {self.node.id}: filtered data successfully.")
 
         except Exception as e:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
     
     def eval(self):
-        if self.node.input_sockets[0].hasEdge():
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        else:
-            self.node.input_sockets[0].socket_data = pd.DataFrame()
-            
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
 class DataSorter (NodeContentWidget):
     def __init__(self, node, parent=None):
         super().__init__(node, parent)
 
         self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.initConfig()
+    
+    def initConfig(self):
+        if self.node.input_sockets[0].socket_data.empty:
+            by = [""]
+        else: by = self.node.input_sockets[0].socket_data.columns[0]
+
         self._config = dict(
-            by=[""],
-            ascending=[True]
-            )
-        
+            by = by,
+            ascending = [True],
+        )
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
@@ -711,19 +861,38 @@ class DataSorter (NodeContentWidget):
             self.exec()
 
     def func(self):
+        super().func()
+
+        if DEBUG or GLOBAL_DEBUG:
+            from sklearn import datasets
+            data = datasets.load_iris()
+            df = pd.DataFrame(data=data.data, columns=data.feature_names)
+            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
+            self.node.input_sockets[0].socket_data = df
+            self.initConfig()
+            print('data in', self.node.input_sockets[0].socket_data)
+
         try:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data.sort_values(**self._config)
+            data: pd.DataFrame = self.node.input_sockets[0].socket_data.sort_values(**self._config)
+            # change progressbar's color
+            self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: sorted data successfully.")
+            if DEBUG or GLOBAL_DEBUG: print('data out', data)
+            else: logger.info(f"{self.name} {self.node.id}: sorted data successfully.")
         except Exception as e:
-            self.node.output_sockets[0].socket_data = self.node.input_sockets[0].socket_data
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
             logger.exception(e)
         
-        self.data_to_view = self.node.output_sockets[0].socket_data
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
 
     def eval(self):
-        if self.node.input_sockets[0].hasEdge():
-            self.node.input_sockets[0].socket_data = self.node.input_sockets[0].edges[0].start_socket.socket_data
-        else: self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+
+        self.initConfig()
