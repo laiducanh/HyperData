@@ -1,13 +1,14 @@
 from matplotlib.axes import Axes
 from matplotlib.patches import Rectangle, FancyBboxPatch
 from matplotlib.lines import Line2D
+from matplotlib.collections import PathCollection
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import colors
 import matplotlib.pyplot
 import pandas as pd
 import numpy as np
-import squarify, matplotlib, fractions
+import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
 DEBUG = True
@@ -61,6 +62,7 @@ def _dotstep(arr) -> float|int:
     """ thif function auto calculates the step between dots to draw on Canvas,  
         the step will be computed from the greatest division in the array
         of the greatest division of the closest denominator of each element in array
+        the step is considered as the amount of data each dot represents
     """
     Y = np.asarray(arr).flatten()
     try: 
@@ -69,7 +71,7 @@ def _dotstep(arr) -> float|int:
         _Y = np.zeros(Y.size, dtype=np.int32)
         for idx, y in enumerate(Y):
             _Y[idx] = fractions.Fraction(y).limit_denominator().denominator
-        fac = np.prod(_Y)/np.gcd(*_Y)
+        fac = np.prod(_Y)/np.gcd.reduce(_Y)
         step = (1/fac) * np.gcd.reduce(np.asarray(Y*fac, dtype=np.int32))
     return step
 
@@ -77,28 +79,28 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(0,10)
-        Y = np.array([2.2,3.4])
+        Y = np.array([2.2,3.2])
 
     X = np.asarray(X)
     Y = np.asarray(Y)
     
     step = _dotstep(Y)
     artist = list()
-
+    color = next(color_cycle)
     for _x, _y in zip(X, Y):
         if orientation == "vertical":
-            x = np.repeat(_x, int(_y*(1/step)))
+            x = np.repeat(_x, int(_y*(1/step)*0.5))
             y = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
         else:
             x = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
             y = np.repeat(_x, int(_y*(1/step)))
-
+        
         _line = ax.plot(
             x, y,
             gid=gid,
             marker=".",
             linewidth=0,
-            color="black",
+            color=color,
             markersize=14,
             *args, **kwargs
         )
@@ -259,15 +261,15 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
             artist += _lines
             bottom_idx += 1
         bottom += _Y
-        
+
     for ind, art in enumerate(artist):
         art.orientation = orientation
-        art.bottom = bottom
+        art.bottom = _bottom
         
     return artist
 
 def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
-                        width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
+                        width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
 
     df = pd.DataFrame(Y)
     df = (df.divide(df.sum())).transpose()
@@ -277,10 +279,10 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
     for index, values in df.items():   
         if orientation == "vertical":
             bars = ax.bar(X, values, gid=f"{gid}.{index+1}", 
-                          bottom=bottom, width=width, align=align, *args, **kwargs)
+                          bottom=bottom, width=width, *args, **kwargs)
         elif orientation == "horizontal":
             bars = ax.barh(X, values,gid=f"{gid}.{index+1}", 
-                           left=bottom, height=width, align=align, *args, **kwargs)
+                           left=bottom, height=width, *args, **kwargs)
         
         bottom += values
 
@@ -293,7 +295,6 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
     for ind, art in enumerate(artist):
         art.orientation = orientation
         art.bottom = _bottom
-        art.align = align
         art.width = width
         art.Xdata = np.asarray(X*len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]

@@ -255,7 +255,7 @@ class Marker(QWidget):
         self.markevery.button.valueChanged.connect(self.set_markevery)
         layout.addWidget(self.markevery)
 
-        self.markersize = DoubleSpinBox(text='Marker Size',min=0,max=20,step=2)
+        self.markersize = DoubleSpinBox(text='Marker Size',min=0,step=2)
         self.markersize.button.setValue(self.get_markersize())
         self.markersize.button.valueChanged.connect(self.set_markersize)
         layout.addWidget(self.markersize)
