@@ -8,7 +8,7 @@ from ui.base_widgets.window import ProgressBar
 from plot.curve.base_plottype.line import Line, Step, Stem, Stem3d, Area, StackedArea, StackedArea100
 from plot.curve.base_plottype.scatter import Scatter, Scatter3D
 from plot.curve.base_plottype.column import Column, Column3D, ClusteredColumn, Marimekko, Treemap
-from plot.curve.base_plottype.pie import Pie, Doughnut, MultilevelDoughnut, SemicircleDoughnut
+from plot.curve.base_plottype.pie import Pie, Coxcomb, Doughnut, MultilevelDoughnut, SemicircleDoughnut
 from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
@@ -141,6 +141,7 @@ class Curve (QWidget):
                 case "marimekko":              widget = Marimekko(*args)
                 case "treemap":                widget = Treemap(*args)
                 case "pie":                    widget = Pie(*args)
+                case "coxcomb":                widget = Coxcomb(*args)
                 case "doughnut":               widget = Doughnut(*args)
                 case "multilevel doughnut":    widget = MultilevelDoughnut(*args)
                 case "semicircle doughnut":    widget = SemicircleDoughnut(*args)

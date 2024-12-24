@@ -285,7 +285,7 @@ class Pie (QWidget):
         layout.addWidget(TitleLabel('2D Pie'))
         layout_2dpie = QHBoxLayout()
         layout.addLayout(layout_2dpie)
-        for i in ['pie']:
+        for i in ['pie','coxcomb']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_2dpie.addWidget(button)

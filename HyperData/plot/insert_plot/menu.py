@@ -46,7 +46,12 @@ class Menu_type_2D (Menu):
 
         pie = Menu('Pie', self)
         pie.setIcon(icon_pie)
-        for i in ['pie','doughnut','multilevel doughnut','semicircle doughnut']:
+        for i in ['pie','coxcomb']:
+            action = Action(text=i.title(), parent=self)
+            action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))
+            pie.addAction(action)
+        pie.addSeparator()
+        for i in ['doughnut','multilevel doughnut','semicircle doughnut']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))
             pie.addAction(action)

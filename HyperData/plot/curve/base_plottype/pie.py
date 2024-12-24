@@ -92,42 +92,17 @@ class Pie (QWidget):
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Wedge],
                                gid=self.gid)
-
-    def update_props(self, button=None):
-        if button != self.explode.button:
-            self.explode.button.setText(self.get_explode())
-
-        if button != self.labels.button:
-            self.labels.button.setText(self.get_labels())
-
-        if button != self.startangle.button:
-            self.startangle.button.setValue(self.get_startangle())
-
-        if button != self.radius.button:
-            self.radius.button.setValue(self.get_radius())
-
-        if button != self.counterclock.button:
-            self.counterclock.button.setChecked(self.get_counterclock())
-
-        if button != self.rotatelabels.button:
-            self.rotatelabels.button.setChecked(self.get_rotatelabels())
-
-        if button != self.normalize.button:
-            self.normalize.button.setChecked(self.get_normalize())
-        
-        self.column.update_props()
     
-    def update_plot(self, *args, **kwargs):
+    def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.props)
-        self.update_props(*args, **kwargs)
 
     def set_explode(self, value:str) -> None:
         try:
             if value == "": value = None
             else: value = [float(i) for i in value.split(",")]
             self.props.update(explode = value)
-            self.update_plot(self.explode.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -141,7 +116,7 @@ class Pie (QWidget):
             if value == "": value = None
             else: value = value.split(",")
             self.props.update(labels = value)
-            self.update_plot(self.labels.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -153,7 +128,7 @@ class Pie (QWidget):
     def set_startangle(self, value:float) -> None:
         try:
             self.props.update(startangle = value)
-            self.update_plot(self.startangle.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -163,17 +138,17 @@ class Pie (QWidget):
     def set_radius(self, value:float) -> None:
         try:
             self.props.update(radius = value)
-            self.update_plot(self.radius.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_radius(self) -> float:
-        return float(self.obj[0].radius)
+        return float(self.obj[0].r)
     
     def set_counterclock(self, value:bool) -> None:
         try:
             self.props.update(counterclock = value)
-            self.update_plot(self.counterclock.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -183,7 +158,7 @@ class Pie (QWidget):
     def set_rotatelabels(self, value:bool) -> None:
         try:
             self.props.update(rotatelabels = value)
-            self.update_plot(self.rotatelabels.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -193,7 +168,7 @@ class Pie (QWidget):
     def set_normalize(self, value:bool) -> None:
         try:
             self.props.update(normalize = value)
-            self.update_plot(self.normalize.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -203,6 +178,55 @@ class Pie (QWidget):
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
         return super().paintEvent(a0)
+
+class Coxcomb(Pie):
+    def __init__(self, gid, canvas, plot = None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+    
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+
+        self._layout.addWidget(TitleLabel("Pie"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.explode = LineEdit(text="Explode")
+        self.explode.button.setText(self.get_explode())
+        self.explode.button.textChanged.connect(self.set_explode)
+        self._layout.addWidget(self.explode)
+
+        self.labels = LineEdit(text="Labels")
+        self.labels.button.setText(self.get_labels())
+        self.labels.button.textChanged.connect(self.set_labels)
+        self._layout.addWidget(self.labels)
+
+        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle.button.setValue(self.get_startangle())
+        self.startangle.button.valueChanged.connect(self.set_startangle)
+        self._layout.addWidget(self.startangle)
+
+        self.radius = DoubleSpinBox(text="Radius",step=0.2)
+        self.radius.button.setValue(self.get_radius())
+        self.radius.button.valueChanged.connect(self.set_radius)
+        self._layout.addWidget(self.radius)
+
+        self.counterclock = Toggle(text="Counterclock")
+        self.counterclock.button.setChecked(self.get_counterclock())
+        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
+        self._layout.addWidget(self.counterclock)
+
+        self.rotatelabels = Toggle(text="Rotate Labels")
+        self.rotatelabels.button.setChecked(self.get_rotatelabels())
+        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
+        self._layout.addWidget(self.rotatelabels)
+
+        self.column = Wedge(self.gid, self.canvas, self.parent())
+        self.column.sig.connect(self.sig.emit)
+        self._layout.addWidget(self.column)
+
+        self._layout.addStretch()
 
 class Doughnut(Pie):
     sig = Signal()
@@ -218,15 +242,10 @@ class Doughnut(Pie):
         self.wedgewidth.button.valueChanged.connect(self.set_wedgewidth)
         self._layout.insertWidget(0, self.wedgewidth)
     
-    def update_props(self, button=None):
-        if button != self.wedgewidth.button:
-            self.wedgewidth.button.setValue(self.get_wedgewidth())
-        return super().update_props(button)
-    
     def set_wedgewidth(self, value:float):
         try:
             self.props.update(width = value)
-            self.update_plot(self.wedgewidth.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
 
@@ -346,15 +365,10 @@ class MultilevelDoughnut(Doughnut):
 
         self._layout.addStretch()
     
-    def update_props(self, button=None):
-        if button != self.pad.button:
-            self.pad.button.setValue(self.get_pad())
-        return super().update_props(button)
-    
     def set_pad(self, pad:float):
         try:
             self.props.update(pad=pad)
-            self.update_plot(self.pad.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     

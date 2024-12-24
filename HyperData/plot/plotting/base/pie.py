@@ -20,20 +20,60 @@ def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
     
     if not normalize and sum(X) > 1:
         X = [float(i)/sum(X) for i in X]
-
+    
     artist = ax.pie(X, explode=explode, labels=labels, startangle=startangle,
                     radius=radius, counterclock=counterclock, rotatelabels=rotatelabels,
-                    normalize=normalize, frame=True, *args, **kwargs)
+                    normalize=normalize, *args, **kwargs)
 
     # artist has type of [[wedges],[text],[autotexts]]
     for ind, obj in enumerate(artist[0]):
         obj.explode = explode
         obj.labels = labels
         obj.startangle = startangle
-        obj.radius = radius
         obj.counterclock = counterclock
         obj.rotatelabels = rotatelabels
         obj.normalize = normalize
+        obj.Xdata = X[ind]
+        obj.Ydata = None
+        thetam = np.pi * (obj.theta2 + obj.theta1)/360
+        obj.Xshow = obj.center[0] + obj.r * math.cos(thetam)
+        obj.Yshow = obj.center[1] + obj.r * math.sin(thetam)
+        obj.set_gid(f"{gid}.{ind+1}")
+        
+    for ind, obj in enumerate(artist[1]):
+        obj.set_gid(f"{gid}.{ind+1}")
+
+    return artist[0]
+
+def coxcomb(X, ax:Axes, gid, explode=None, labels=None, startangle=0,
+            radius=1, counterclock=True, rotatelabels=True, *args, **kwargs) -> list[Wedge]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.array([10,8,15])
+    
+    X = np.asarray(X)
+    X = (X/np.sum(X))/np.max(X/np.sum(X))
+
+    artist = ax.pie(
+        np.repeat([1], len(X)), 
+        explode=explode, 
+        labels=labels, 
+        startangle=startangle,
+        radius=radius, 
+        counterclock=counterclock, 
+        rotatelabels=rotatelabels,
+        *args, **kwargs
+    )
+
+    for ind, obj in enumerate(artist[0]):
+        obj.set_radius(X[ind] * radius)
+
+        obj.explode = explode
+        obj.labels = labels
+        obj.startangle = startangle
+        obj.radius = radius
+        obj.counterclock = counterclock
+        obj.rotatelabels = rotatelabels
         obj.Xdata = X[ind]
         obj.Ydata = None
         thetam = np.pi * (obj.theta2 + obj.theta1)/360
