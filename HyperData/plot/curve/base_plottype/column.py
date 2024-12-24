@@ -11,9 +11,10 @@ from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
 from plot.curve.base_elements.collection import Poly3DCollection
+from plot.curve.base_elements.line import Marker
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
-from matplotlib import patches, colors
+from matplotlib import patches, colors, lines
 from matplotlib.pyplot import colormaps
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection as Poly3D
 import numpy as np
@@ -58,11 +59,6 @@ class Column (QWidget):
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
         self._layout.addWidget(self.bottom)
 
-        # self.align = ComboBox(items=["center","edge"],text="Alignment")
-        # self.align.button.setCurrentText(self.get_alignment())
-        # self.align.button.currentTextChanged.connect(self.set_alignment)
-        # self._layout.addWidget(self.align)
-
         self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
         self.barwidth.button.setValue(self.get_barwidth())
         self.barwidth.button.valueChanged.connect(self.set_barwidth)
@@ -78,28 +74,15 @@ class Column (QWidget):
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Rectangle],
                                gid=self.gid)
-
-    def update_props(self, button=None):
-        if button != self.orientation.button:
-            self.orientation.button.setCurrentText(self.get_orientation())
-        if button != self.bottom.button:
-            self.bottom.button.setText(self.get_bottom())
-        if button != self.align.button:
-            self.align.button.setCurrentText(self.get_alignment())
-        if button != self.barwidth.button:
-            self.barwidth.button.setValue(self.get_barwidth())
-        
-        self.column.update_props()
     
-    def update_plot(self, *args, **kwargs):
+    def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.prop)
-        self.update_props(*args, **kwargs)
         
     def set_orientation(self, value:str):
         try:
             self.prop.update(orientation = value.lower())
-            self.update_plot(self.orientation.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -110,27 +93,17 @@ class Column (QWidget):
         try:
             if value == "": value = 0
             self.prop.update(bottom = float(value))
-            self.update_plot(self.bottom.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_bottom (self) -> str:
         return str(self.obj[0].bottom)
 
-    def set_alignment (self, value:str):
-        try: 
-            self.prop.update(align = value.lower())
-            self.update_plot(self.align.button)
-        except Exception as e:
-            logger.exception(e)
-    
-    def get_alignment(self) -> str:
-        return self.obj[0].align
-
     def set_barwidth (self, value:float):
         try: 
             self.prop.update(width = value)
-            self.update_plot(self.barwidth.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -208,32 +181,15 @@ class Column3D (QWidget):
         return find_mpl_object(figure=self.canvas.fig,
                                match=[Poly3D],
                                gid=self.gid)
-
-    def update_props(self, button=None):
-        if button != self.orientation.button:
-            self.orientation.button.setCurrentText(self.get_orientation())
-        if button != self.bottom.button:
-            self.bottom.button.setText(self.get_bottom())
-        if button != self.dx.button:
-            self.dx.button.setValue(self.get_dx())
-        if button != self.dy.button:
-            self.dy.button.setValue(self.get_dy())
-        if button != self.color.button:
-            self.color.button.setColor(self.get_color())
-        if button != self.shade.button:
-            self.shade.button.setChecked(self.get_shade())
-        
-        self.column.update_props()
     
-    def update_plot(self, *args, **kwargs):
+    def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.prop)
-        self.update_props(*args, **kwargs)
         
     def set_orientation(self, value:str):
         try:
             self.prop.update(orientation = value.lower())
-            self.update_plot(self.orientation.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -244,7 +200,7 @@ class Column3D (QWidget):
         try:
             if value == "": value = 0
             self.prop.update(bottom = float(value))
-            self.update_plot(self.bottom.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -254,7 +210,7 @@ class Column3D (QWidget):
     def set_dx (self, value:float):
         try: 
             self.prop.update(Dx = value)
-            self.update_plot(self.dx.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -264,7 +220,7 @@ class Column3D (QWidget):
     def set_dy(self, value:float):
         try:
             self.prop.update(Dy = value)
-            self.update_plot(self.dy.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -274,7 +230,7 @@ class Column3D (QWidget):
     def set_color(self, value:str):
         try:
             self.prop.update(color = value)
-            self.update_plot(self.color.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
 
@@ -288,13 +244,88 @@ class Column3D (QWidget):
     def set_shade(self, value:bool):
         try:
             self.prop.update(shade = value)
-            self.update_plot(self.shade.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_shade(self) -> bool:
         return self.obj[0].shade
 
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        self.obj = self.find_object()
+        return super().paintEvent(a0)
+
+class Dot(QWidget):
+    sig = Signal()
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
+        super().__init__(parent)
+        
+        self.gid = gid
+        self.canvas = canvas
+        self.plot = plot
+        self.obj = self.find_object()
+        self.prop = dict()
+        
+        self.initUI()
+
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+
+        self._layout.addWidget(TitleLabel("Dot"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.orientation.button.currentTextChanged.connect(self.set_orientation)
+        self._layout.addWidget(self.orientation)
+
+        self.bottom = LineEdit(text="Bottom")
+        self.bottom.button.setFixedWidth(150)
+        self.bottom.button.setText(self.get_bottom())
+        self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
+        self._layout.addWidget(self.bottom)
+
+        self.dot = Marker(self.gid, self.canvas, self.parent())
+        self.dot.sig.connect(self.sig.emit)
+        self._layout.addWidget(self.dot)
+
+        self._layout.addStretch()
+    
+    def find_object(self):
+        return find_mpl_object(
+            self.canvas.fig,
+            [lines.Line2D],
+            gid=self.gid
+        )
+    
+    def update_plot(self):
+        # self.sig.emit()
+        self.plot.plotting(**self.prop)
+    
+    def set_orientation(self, value:str):
+        try:
+            self.prop.update(orientation = value.lower())
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_orientation(self) -> str:
+        return self.obj[0].orientation
+    
+    def set_bottom (self, value:str):
+        try:
+            if value == "": value = 0
+            self.prop.update(bottom = float(value))
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_bottom (self) -> str:
+        return str(self.obj[0].bottom)
+    
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
         return super().paintEvent(a0)
@@ -316,15 +347,10 @@ class ClusteredColumn(Column):
         self.distance.button.valueChanged.connect(self.set_distance)
         self._layout.insertWidget(2, self.distance)
 
-    def update_props(self, button):
-        if button != self.distance.button:
-            self.distance.button.setValue(self.get_distance())
-        return super().update_props(button)
-    
     def set_distance(self, value:int):
         try:
             self.prop.update(distance = float(value/100))
-            self.update_plot(self.distance.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -369,21 +395,15 @@ class Marimekko (QWidget):
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Rectangle],
                                gid=self.gid)
-
-    def update_props(self, button=None):
-        if button != self.orientation.button:
-            self.orientation.button.setCurrentText(self.get_orientation())
-        self.column.update_props()
     
-    def update_plot(self, *args, **kwargs):
+    def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.prop)
-        self.update_props(*args, **kwargs)
     
     def set_orientation(self, value:str):
         try:
             self.prop.update(orientation = value.lower())
-            self.update_plot(self.orientation.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
 

@@ -143,7 +143,7 @@ class Bar (QWidget):
         layout_column2d_1 = QHBoxLayout()
         layout_column2d_1.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_column2d_1)
-        for i in ['2d column','2d clustered column','2d stacked column']:
+        for i in ['2d column','dot','2d clustered column','2d stacked column']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_column2d_1.addWidget(button)

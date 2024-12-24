@@ -25,7 +25,7 @@ class Menu_type_2D (Menu):
         
         bar = Menu('Column', self)
         bar.setIcon(icon_bar)
-        for i in ['2d column', '2d clustered column', '2d stacked column', '2d 100% stacked column',
+        for i in ['2d column', 'dot', '2d clustered column', '2d stacked column', '2d 100% stacked column',
                   'marimekko', 'treemap']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))

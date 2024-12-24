@@ -171,6 +171,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
         case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
         case "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
+        case "dot":                     artist = dot(X, Y, ax, gid, *args, **kwargs)
         case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
         case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
         case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)

@@ -1,15 +1,16 @@
 from matplotlib.axes import Axes
 from matplotlib.patches import Rectangle, FancyBboxPatch
+from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import colors
 import matplotlib.pyplot
 import pandas as pd
 import numpy as np
-import squarify, matplotlib
+import squarify, matplotlib, math, fractions
 from config.settings import logger, GLOBAL_DEBUG
 
-DEBUG = False
+DEBUG = True
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", 
               width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
@@ -56,6 +57,54 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
 
     return [artist]
 
+def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -> list[Line2D]:
+    """ thif function auto calculates the number of dots to draw on Canvas,  
+        the dots will be computed from the greatest division in Y 
+        of the greatest division of the closest denominator of each element in Y
+    """
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(0,10)
+        Y = np.array([2.2,3.4])
+
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    try: 
+        step = np.gcd.reduce(Y)
+    except: # if the input if float
+        _Y = np.zeros(Y.size, dtype=np.int32)
+        for idx, y in enumerate(Y):
+            _Y[idx] = fractions.Fraction(y).limit_denominator().denominator
+        fac = np.prod(_Y)/np.gcd(*_Y)
+        step = (1/fac) * np.gcd.reduce(np.asarray(Y*fac, dtype=np.int32))
+
+    artist = list()
+
+    for _x, _y in zip(X, Y):
+        if orientation == "vertical":
+            x = np.repeat(_x, int(_y*(1/step))+1)
+            y = np.linspace(bottom, _y+bottom, num=int(_y*(1/step))+1, endpoint=True, dtype=np.float16)
+        else:
+            x = np.linspace(bottom, _y+bottom, num=int(_y*(1/step))+1, endpoint=True, dtype=np.float16)
+            y = np.repeat(_x, int(_y*(1/step))+1)
+
+        _line = ax.plot(
+            x, y,
+            gid=gid,
+            marker="o",
+            linewidth=0,
+            color="black",
+            markersize=14,
+        )
+        artist += _line
+        
+    for ind, art in enumerate(artist):
+        art.orientation = orientation
+        art.bottom = bottom
+    
+    return artist
+
+    
 def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
                        width=0.8, bottom=0, align="center", distance=1, *args, **kwargs) -> list[Rectangle]:
 
