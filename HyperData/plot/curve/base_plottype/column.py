@@ -16,7 +16,6 @@ from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from matplotlib import patches, colors
 from matplotlib.pyplot import colormaps
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection as Poly3D
-from typing import List
 import numpy as np
 
 DEBUG = False
@@ -75,7 +74,7 @@ class Column (QWidget):
 
         self._layout.addStretch()
 
-    def find_object (self) -> List[patches.Rectangle]:
+    def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Rectangle],
                                gid=self.gid)
@@ -205,7 +204,7 @@ class Column3D (QWidget):
 
         self._layout.addStretch()
 
-    def find_object (self) -> List[Poly3D]:
+    def find_object (self) -> list[Poly3D]:
         return find_mpl_object(figure=self.canvas.fig,
                                match=[Poly3D],
                                gid=self.gid)
@@ -366,7 +365,7 @@ class Marimekko (QWidget):
 
         self._layout.addStretch()
     
-    def find_object (self) -> List[patches.Rectangle]:
+    def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Rectangle],
                                gid=self.gid)
@@ -417,7 +416,12 @@ class Treemap(QWidget):
         self.setLayout(self._layout)
         self._layout.setContentsMargins(0,0,0,0)
 
-        self.pad = DoubleSpinBox(text="Padding")
+        self.rounded = Toggle(text="Rounded")
+        self.rounded.button.setChecked(self.get_rounded())
+        self.rounded.button.checkedChanged.connect(self.set_rounded)
+        self._layout.addWidget(self.rounded)
+
+        self.pad = DoubleSpinBox(min=0,max=20,step=0.5,text="Padding")
         self.pad.button.setValue(self.get_pad())
         self.pad.button.valueChanged.connect(self.set_pad)
         self._layout.addWidget(self.pad)
@@ -433,29 +437,30 @@ class Treemap(QWidget):
         self._layout.addWidget(self.alpha)
         
         self._layout.addStretch()
-    def find_object(self) -> List[patches.Rectangle]:
+    def find_object(self) -> list[patches.Rectangle|patches.FancyBboxPatch]:
         return find_mpl_object(figure=self.canvas.fig,
-                               match=[patches.Rectangle],
+                               match=[patches.Rectangle,patches.FancyBboxPatch],
                                gid=self.gid)
  
     
-    def update_plot(self, *args, **kwargs):
+    def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.props)
-        self.update_props(*args, **kwargs)
     
-    def update_props(self, button=None):
-        if button != self.pad.button:
-            self.pad.button.setValue(self.get_pad())
-        if button != self.cmap.button:
-            self.cmap.button.setCurrentText(self.get_cmap())
-        if button != self.alpha.button:
-            self.alpha.button.setValue(self.get_alpha())
+    def set_rounded(self, value:bool):
+        try:
+            self.props.update(rounded=value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_rounded(self) -> bool:
+        return self.obj[0].rounded
 
     def set_pad(self, value:float):
         try:
             self.props.update(pad = value)
-            self.update_plot(self.pad.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -465,7 +470,7 @@ class Treemap(QWidget):
     def set_cmap(self, value:str):
         try:
             self.props.update(cmap = value)
-            self.update_plot(self.cmap.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
 
@@ -475,7 +480,7 @@ class Treemap(QWidget):
     def set_alpha (self, value:float):
         try: 
             self.props.update(alpha = float(value/100))
-            self.update_plot(self.alpha.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
 

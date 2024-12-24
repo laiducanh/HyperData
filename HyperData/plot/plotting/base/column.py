@@ -1,16 +1,18 @@
 from matplotlib.axes import Axes
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, FancyBboxPatch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import colors
-from typing import List
 import matplotlib.pyplot
 import pandas as pd
 import numpy as np
 import squarify, matplotlib
+from config.settings import logger, GLOBAL_DEBUG
+
+DEBUG = False
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", 
-              width=0.8, bottom=0, align="center", *args, **kwargs) -> List[Rectangle]:
+              width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
     
     if orientation == "vertical":
         artist = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
@@ -34,7 +36,7 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical",
     return artist
 
 def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
-              orientation="z", zsort="average", shade=True, *args, **kwargs) -> List[Poly3DCollection]:
+              orientation="z", zsort="average", shade=True, *args, **kwargs) -> list[Poly3DCollection]:
 
     match orientation:
         case "x":   x, y, z, dx, dy, dz = bottom, X, Y, Z, Dx, Dy
@@ -55,7 +57,7 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
     return [artist]
 
 def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                       width=0.8, bottom=0, align="center", distance=1, *args, **kwargs) -> List[Rectangle]:
+                       width=0.8, bottom=0, align="center", distance=1, *args, **kwargs) -> list[Rectangle]:
 
     multiplier = 0
     artist = list()
@@ -92,7 +94,7 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
     return artist
 
 def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                     width=0.8, bottom=0, align="center", *args, **kwargs) -> List[Rectangle]:
+                     width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
 
     df = (pd.DataFrame(Y)).transpose()
     artist = list()
@@ -128,7 +130,7 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
     return artist
 
 def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
-                        width=0.8, bottom=0, align="center", *args, **kwargs) -> List[Rectangle]:
+                        width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
 
     df = pd.DataFrame(Y)
     df = (df.divide(df.sum())).transpose()
@@ -163,7 +165,7 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
    
     return artist
 
-def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> List[Rectangle]:
+def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list[Rectangle]:
     
     df = pd.DataFrame(X)
     df = (df.divide(df.sum())).transpose()
@@ -198,10 +200,13 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> List
 
     return artist
 
-def treemap (X, ax:Axes, gid, pad=0, cmap="tab10", alpha=1, *args, **kwargs) -> List[Rectangle]:
+def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=False, *args, **kwargs) -> list[Rectangle]:
     
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.array([1,2,6])
+
     # descending sort
-    _X = -np.sort(-np.array(X))
+    _X = -np.sort(-np.asarray(X))
 
     values = squarify.normalize_sizes(_X, 100, 100)
 
@@ -219,22 +224,36 @@ def treemap (X, ax:Axes, gid, pad=0, cmap="tab10", alpha=1, *args, **kwargs) -> 
         if _rect["dy"] > 2*pad:
             _rect["y"] += pad
             _rect["dy"] -= 2*pad
-
-        rect = Rectangle(
-            xy      = (_rect['x'], _rect['y']),
-            width   = _rect['dx'],
-            height  = _rect['dy'],
-            color   = colors[ind],
-            alpha   = alpha,
-            gid     = f"{gid}.{ind+1}"
-            )
         
+        if rounded:
+            rect = FancyBboxPatch(
+                xy      = (_rect['x'], _rect['y']),
+                width   = _rect['dx'],
+                height  = _rect['dy'],
+                color   = colors[ind],
+                alpha   = alpha,
+                gid     = f"{gid}.{ind+1}",
+                boxstyle=f"round,pad={pad*0.5}",
+            )
+
+        else:
+            rect = Rectangle(
+                xy      = (_rect['x'], _rect['y']),
+                width   = _rect['dx'],
+                height  = _rect['dy'],
+                color   = colors[ind],
+                alpha   = alpha,
+                gid     = f"{gid}.{ind+1}"
+            )
+
         rect.pad = pad
         rect.cmap = cmap
+        rect.rounded = rounded
         rect.Xdata = X[ind]
         rect.Ydata = None
-        rect.Xshow = rect.get_center()[0]
-        rect.Yshow = rect.get_center()[1]
+        x, y, w, h = rect.get_bbox().bounds
+        rect.Xshow = x + w / 2
+        rect.Yshow = y + h / 2
 
         ax.add_artist(rect)
         artist.append(rect)

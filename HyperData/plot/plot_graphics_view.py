@@ -9,7 +9,7 @@ import matplotlib.backend_tools
 import matplotlib.collections
 import matplotlib.container
 from matplotlib.lines import Line2D
-from matplotlib.patches import Rectangle, Wedge, PathPatch
+from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.collections import Collection
 from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
@@ -217,8 +217,9 @@ class GraphicsView (QGraphicsView):
         super().mousePressEvent(event)
     
     def tooltip_onShow(self, event: MouseEvent):
-        stack = find_mpl_object(figure=self.canvas.fig,
-                                match=[Line2D,Collection,Rectangle,Wedge,PathPatch])
+        stack = find_mpl_object(
+            figure=self.canvas.fig,
+            match=[Line2D,Collection,Rectangle,Wedge,PathPatch,FancyBboxPatch])
         xp, yp, zp = None, None, None
         xs, ys = 0, 0
 
@@ -246,7 +247,7 @@ class GraphicsView (QGraphicsView):
                     yp = obj.get_ydata()[minpos]
                     xs, ys = xp, yp
                     
-                elif isinstance(obj, Rectangle):
+                elif isinstance(obj, (Rectangle,FancyBboxPatch)):
                     xp, yp = obj.Xdata, obj.Ydata
                     xs, ys = obj.Xshow, obj.Yshow
                     # decorate edgecolor of rectangle with facecolor (probablly)
