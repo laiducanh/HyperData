@@ -5,13 +5,14 @@ from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.button import Toggle
+from ui.base_widgets.button import Toggle, ComboBox
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from plot.curve.base_elements.patches import Wedge
+from plot.curve.base_elements.patches import Wedge, MultiWedges
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import patches
+from matplotlib.pyplot import colormaps
 from typing import List
 
 DEBUG = False
@@ -231,3 +232,131 @@ class Doughnut(Pie):
 
     def get_wedgewidth(self) -> float:
         return self.obj[0].width
+
+class SemicircleDoughnut(Doughnut):
+    def __init__(self, gid, canvas, plot=None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+
+        self._layout.addWidget(TitleLabel("Semicircle Doughnut"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.explode = LineEdit(text="Explode")
+        self.explode.button.setText(self.get_explode())
+        self.explode.button.textChanged.connect(self.set_explode)
+        self._layout.addWidget(self.explode)
+
+        self.labels = LineEdit(text="Labels")
+        self.labels.button.setText(self.get_labels())
+        self.labels.button.textChanged.connect(self.set_labels)
+        self._layout.addWidget(self.labels)
+
+        self.radius = DoubleSpinBox(text="Radius",step=0.2)
+        self.radius.button.setValue(self.get_radius())
+        self.radius.button.valueChanged.connect(self.set_radius)
+        self._layout.addWidget(self.radius)
+
+        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle.button.setValue(self.get_startangle())
+        self.startangle.button.valueChanged.connect(self.set_startangle)
+        self._layout.addWidget(self.startangle)
+
+        self.counterclock = Toggle(text="Counterclock")
+        self.counterclock.button.setChecked(self.get_counterclock())
+        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
+        self._layout.addWidget(self.counterclock)
+
+        self.rotatelabels = Toggle(text="Rotate Labels")
+        self.rotatelabels.button.setChecked(self.get_rotatelabels())
+        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
+        self._layout.addWidget(self.rotatelabels)
+
+        self.column = Wedge(self.gid, self.canvas, self.parent())
+        self.column.sig.connect(self.sig.emit)
+        self._layout.addWidget(self.column)
+
+        self._layout.addStretch()
+
+class MultilevelDoughnut(Doughnut):
+    def __init__(self, gid, canvas, plot=None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+    
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+
+        self._layout.addWidget(TitleLabel("Multilevel Doughnut"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.wedgewidth = DoubleSpinBox(min=0,max=1, step=0.1,text="Width")
+        self.wedgewidth.button.setValue(self.get_wedgewidth())
+        self.wedgewidth.button.valueChanged.connect(self.set_wedgewidth)
+        self._layout.insertWidget(0, self.wedgewidth)
+
+        self.explode = LineEdit(text="Explode")
+        self.explode.button.setText(self.get_explode())
+        self.explode.button.textChanged.connect(self.set_explode)
+        self._layout.addWidget(self.explode)
+
+        self.labels = LineEdit(text="Labels")
+        self.labels.button.setText(self.get_labels())
+        self.labels.button.textChanged.connect(self.set_labels)
+        self._layout.addWidget(self.labels)
+
+        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle.button.setValue(self.get_startangle())
+        self.startangle.button.valueChanged.connect(self.set_startangle)
+        self._layout.addWidget(self.startangle)
+
+        self.radius = DoubleSpinBox(text="Radius",step=0.2)
+        self.radius.button.setValue(self.get_radius())
+        self.radius.button.valueChanged.connect(self.set_radius)
+        self._layout.addWidget(self.radius)
+
+        self.counterclock = Toggle(text="Counterclock")
+        self.counterclock.button.setChecked(self.get_counterclock())
+        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
+        self._layout.addWidget(self.counterclock)
+
+        self.rotatelabels = Toggle(text="Rotate Labels")
+        self.rotatelabels.button.setChecked(self.get_rotatelabels())
+        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
+        self._layout.addWidget(self.rotatelabels)
+
+        self.normalize = Toggle(text="Normalize")
+        self.normalize.button.setChecked(self.get_normalize())
+        self.normalize.button.checkedChanged.connect(self.set_normalize)
+        self._layout.addWidget(self.normalize)
+
+        self.pad = DoubleSpinBox(min=0,max=1,step=0.01,text="Padding")
+        self.pad.button.setValue(self.get_pad())
+        self.pad.button.valueChanged.connect(self.set_pad)
+        self._layout.addWidget(self.pad)
+
+        self.column = MultiWedges(self.gid, self.canvas, self.parent())
+        self.column.sig.connect(self.sig.emit)
+        self._layout.addWidget(self.column)
+
+        self._layout.addStretch()
+    
+    def update_props(self, button=None):
+        if button != self.pad.button:
+            self.pad.button.setValue(self.get_pad())
+        return super().update_props(button)
+    
+    def set_pad(self, pad:float):
+        try:
+            self.props.update(pad=pad)
+            self.update_plot(self.pad.button)
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_pad(self) -> float:
+        return self.obj[0].pad

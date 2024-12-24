@@ -180,6 +180,8 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
         case "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
         case "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
+        case "multilevel doughnut":     artist = multilevel_doughnut(X, ax, gid, *args, **kwargs)
+        case "semicircle doughnut":     artist = semicircle_doughnut(X, ax, gid, *args, **kwargs)
         case "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
         case "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
         case "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)

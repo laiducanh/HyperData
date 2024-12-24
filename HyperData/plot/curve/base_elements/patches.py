@@ -9,7 +9,7 @@ from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
 from matplotlib import patches
 from matplotlib import colors, scale
-from typing import List
+import numpy as np
 
 DEBUG = False
 
@@ -52,7 +52,7 @@ class Rectangle (QWidget):
         self.alpha.button.valueChanged.connect(self.set_alpha)
         layout.addWidget(self.alpha)
     
-    def find_object (self) -> List[patches.Rectangle | patches.PathPatch]:
+    def find_object (self) -> list[patches.Rectangle | patches.PathPatch]:
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Rectangle, patches.PathPatch],
                                gid=self.gid)
@@ -146,7 +146,29 @@ class Wedge(Rectangle):
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
-    def find_object(self) -> List[patches.Wedge]:
+    def find_object(self) -> list[patches.Wedge]:
         return find_mpl_object(figure=self.canvas.fig,
                                match=[patches.Wedge],
                                gid=self.gid)
+
+class MultiWedges(Wedge):
+    """ 
+        this class behaves the same as Wedge except for 
+        set_facecolor function lightenes the color to 
+        set for multiple wedges 
+    """
+    sig = Signal()
+    def __init__(self, gid, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
+
+    def set_facecolor (self, value):
+        try:
+            i = 1
+            for obj in self.obj:
+                c = np.asarray(colors.to_rgba(value))
+                color = (1-1/i)*(1-c) + c
+                obj.set_facecolor(color)
+                i += 1/len(self.obj)
+        except Exception as e:
+            logger.exception(e)
+        self.update_plot(self.facecolor.button)

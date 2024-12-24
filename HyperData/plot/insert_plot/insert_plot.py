@@ -90,7 +90,8 @@ class NewPlot (Frame):
         #self.widget = QWidget()
         self.node = node
         self.plot3d = plot3d
-        self.plot_1input = ["pie","doughnut","treemap","marimekko",
+        self.plot_1input = ["pie","doughnut","multilevel doughnut","semicircle doughnut",
+                            "treemap","marimekko",
                             "histogram","stacked histogram",
                             "boxplot","violinplot","eventplot"]
         self.plot_3input = ["fill between","2d bubble"]

@@ -294,7 +294,7 @@ class Pie (QWidget):
         layout.addWidget(TitleLabel('Others'))
         layout_otherpie = QHBoxLayout()
         layout.addLayout(layout_otherpie)
-        for i in ['doughnut']:
+        for i in ['doughnut','multilevel doughnut','semicircle doughnut']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_otherpie.addWidget(button)
