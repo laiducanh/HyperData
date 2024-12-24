@@ -265,7 +265,7 @@ class Dot(QWidget):
         self.plot = plot
         self.obj = self.find_object()
         self.prop = dict()
-        
+
         self.initUI()
 
     def initUI(self):
@@ -329,7 +329,7 @@ class Dot(QWidget):
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
         return super().paintEvent(a0)
-    
+ 
 class ClusteredColumn(Column):
     def __init__(self, gid, canvas: Canvas, plot: NewPlot = None, parent=None):
         super().__init__(gid, canvas, plot, parent)
@@ -357,6 +357,30 @@ class ClusteredColumn(Column):
     def get_distance(self) -> int:
         return int(self.obj[0].distance*100)
 
+class ClusteredDot(Dot):
+    def __init__(self, gid, canvas, plot = None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+    
+    def initUI(self):
+        super().initUI()
+
+        self._layout.insertWidget(0, TitleLabel("Clustered Column"))
+        self._layout.insertWidget(1, SeparateHLine())
+
+        self.distance = SpinBox(min=0,max=100,step=10,text="Distance")
+        self.distance.button.setValue(self.get_distance())
+        self.distance.button.valueChanged.connect(self.set_distance)
+        self._layout.insertWidget(2, self.distance)
+    
+    def set_distance(self, value:int):
+        try:
+            self.prop.update(distance = float(value/100))
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_distance(self) -> int:
+        return int(self.obj[0].distance*100)
 
 class Marimekko (QWidget):
     sig = Signal()

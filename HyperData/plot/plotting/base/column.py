@@ -7,8 +7,8 @@ from matplotlib import colors
 import matplotlib.pyplot
 import pandas as pd
 import numpy as np
-import squarify, matplotlib, math, fractions
-from config.settings import logger, GLOBAL_DEBUG
+import squarify, matplotlib, fractions
+from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
 DEBUG = True
 
@@ -57,18 +57,12 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
 
     return [artist]
 
-def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -> list[Line2D]:
-    """ thif function auto calculates the number of dots to draw on Canvas,  
-        the dots will be computed from the greatest division in Y 
-        of the greatest division of the closest denominator of each element in Y
+def _dotstep(arr) -> float|int:
+    """ thif function auto calculates the step between dots to draw on Canvas,  
+        the step will be computed from the greatest division in the array
+        of the greatest division of the closest denominator of each element in array
     """
-
-    if DEBUG or GLOBAL_DEBUG:
-        X = np.arange(0,10)
-        Y = np.array([2.2,3.4])
-
-    X = np.asarray(X)
-    Y = np.asarray(Y)
+    Y = np.asarray(arr).flatten()
     try: 
         step = np.gcd.reduce(Y)
     except: # if the input if float
@@ -77,24 +71,36 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
             _Y[idx] = fractions.Fraction(y).limit_denominator().denominator
         fac = np.prod(_Y)/np.gcd(*_Y)
         step = (1/fac) * np.gcd.reduce(np.asarray(Y*fac, dtype=np.int32))
+    return step
 
+def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -> list[Line2D]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(0,10)
+        Y = np.array([2.2,3.4])
+
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    
+    step = _dotstep(Y)
     artist = list()
 
     for _x, _y in zip(X, Y):
         if orientation == "vertical":
-            x = np.repeat(_x, int(_y*(1/step))+1)
-            y = np.linspace(bottom, _y+bottom, num=int(_y*(1/step))+1, endpoint=True, dtype=np.float16)
+            x = np.repeat(_x, int(_y*(1/step)))
+            y = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
         else:
-            x = np.linspace(bottom, _y+bottom, num=int(_y*(1/step))+1, endpoint=True, dtype=np.float16)
-            y = np.repeat(_x, int(_y*(1/step))+1)
+            x = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
+            y = np.repeat(_x, int(_y*(1/step)))
 
         _line = ax.plot(
             x, y,
             gid=gid,
-            marker="o",
+            marker=".",
             linewidth=0,
             color="black",
             markersize=14,
+            *args, **kwargs
         )
         artist += _line
         
@@ -104,9 +110,8 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
     
     return artist
 
-    
 def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                       width=0.8, bottom=0, align="center", distance=1, *args, **kwargs) -> list[Rectangle]:
+                       width=0.8, bottom=0, distance=1, *args, **kwargs) -> list[Rectangle]:
 
     multiplier = 0
     artist = list()
@@ -118,10 +123,10 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         
         if orientation == "vertical":
             bars = ax.bar([a+offset for a in X], values, gid = f"{gid}.{index+1}",
-                          width=width, bottom=bottom, align=align, *args, **kwargs)
+                          width=width, bottom=bottom, *args, **kwargs)
         elif orientation == "horizontal":
             bars = ax.barh([a+offset for a in X], values, gid = f"{gid}.{index+1}",
-                           height=width, left=bottom, align=align, *args, **kwargs)
+                           height=width, left=bottom, *args, **kwargs)
 
         artist += bars.patches
     
@@ -132,7 +137,6 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
     for ind, art in enumerate(artist):
         art.orientation = orientation
         art.bottom = bottom
-        art.align = align
         art.width = width
         art.distance = distance
         art.Xdata = np.asarray(X*len(Y))[ind]
@@ -142,8 +146,50 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
 
     return artist
 
+def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, 
+                 distance=0.2, *args, **kwargs) -> list[Line2D]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([[2,4,7],[1,5,3]])
+
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    multiplier = 0
+    step = _dotstep(Y)
+    artist = list()
+
+    for idx, _Y in enumerate(Y):
+        offset = multiplier
+        multiplier += distance
+        color = next(color_cycle)
+        for _x, _y in zip(X, _Y):
+            if orientation == "vertical":
+                x = np.repeat(_x+offset, int(_y*(1/step)))
+                y = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
+            else:
+                x = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
+                y = np.repeat(_x+offset, int(_y*(1/step))+1)
+            _lines = ax.plot(
+                x, y,
+                gid = f"{gid}.{idx+1}",
+                color = color,
+                marker=".",
+                linewidth=0,
+                markersize=14,
+                *args, **kwargs
+            )
+            artist += _lines
+
+    for ind, art in enumerate(artist):
+        art.orientation = orientation
+        art.bottom = bottom
+        art.distance = distance
+    
+    return artist
+
 def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                     width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
+                     width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
 
     df = (pd.DataFrame(Y)).transpose()
     artist = list()
@@ -153,10 +199,10 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
 
         if orientation == "vertical":
             bars = ax.bar(X, values, gid=f"{gid}.{index+1}", 
-                          bottom=bottom, width=width, align=align, *args, **kwargs)
+                          bottom=bottom, width=width, *args, **kwargs)
         elif orientation == "horizontal":
             bars = ax.barh(X, values,gid=f"{gid}.{index+1}", 
-                           left=bottom, height=width, align=align, *args, **kwargs)
+                           left=bottom, height=width, *args, **kwargs)
         
         bottom += values
 
@@ -169,13 +215,55 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
     for ind, art in enumerate(artist):
         art.orientation = orientation
         art.bottom = _bottom
-        art.align = align
         art.width = width
         art.Xdata = np.asarray(X*len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
 
+    return artist
+
+def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kwargs) -> list[Line2D]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([[2,4,7],[1,5,3]])
+    
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    step = _dotstep(Y)
+    artist = list()
+    _bottom = bottom
+    bottom = np.repeat([bottom], X.size)
+
+    for idx, _Y in enumerate(Y):
+        color = next(color_cycle)
+        bottom_idx = 0
+        for _x, _y in zip(X, _Y):
+            b = bottom[bottom_idx]
+            if orientation == "vertical":
+                x = np.repeat(_x, int(_y*(1/step)))
+                y = np.linspace(b+step, _y+b, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
+            else:
+                x = np.linspace(b+step, _y+b, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
+                y = np.repeat(_x, int(_y*(1/step)))
+            _lines = ax.plot(
+                x, y,
+                gid = f"{gid}.{idx+1}",
+                color = color,
+                marker=".",
+                linewidth=0,
+                markersize=14,
+                *args, **kwargs
+            )
+            artist += _lines
+            bottom_idx += 1
+        bottom += _Y
+        
+    for ind, art in enumerate(artist):
+        art.orientation = orientation
+        art.bottom = bottom
+        
     return artist
 
 def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
