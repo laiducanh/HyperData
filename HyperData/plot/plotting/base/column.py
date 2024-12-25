@@ -171,7 +171,7 @@ def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=2
     
     return artist
 
-def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', size1=1, size2=1, *args, **kwargs) -> list[Line2D,PathCollection]:
+def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> list[Line2D,PathCollection]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -194,26 +194,25 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', size1=1, size2=1, *a
                 solid_capstyle="round",
                 gid=gid,
             )
-            line[0].orientation = orientation
             artist += line
 
         # draw two heads
-        p1 = ax.scatter(
+        p1 = ax.plot(
             X, Y, 
-            s=matplotlib.rcParams["lines.markersize"]**2*size1, 
             marker='o', 
             gid=f"{gid}.1", 
+            linestyle="none",
             zorder=line[0].get_zorder()+1
         )
-        p2 = ax.scatter(
+        p2 = ax.plot(
             X, Z, 
-            s=matplotlib.rcParams["lines.markersize"]**2*size2, 
             marker='o', 
             gid=f"{gid}.2", 
+            linestyle="none",
             zorder=line[0].get_zorder()+1
         )
-        artist.append(p1)
-        artist.append(p2)
+        artist += p1
+        artist += p2
 
     else:
          # connecting lines
@@ -226,39 +225,29 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', size1=1, size2=1, *a
                 solid_capstyle="round",
                 gid=gid,
             )
-            line[0].orientation = orientation
             artist += line
 
         # draw two heads
-        p1 = ax.scatter(
+        p1 = ax.plot(
             Y, X, 
-            s=matplotlib.rcParams["lines.markersize"]**2*size1, 
             marker='o', 
             gid=f"{gid}.1", 
+            linestyle="none",
             zorder=line[0].get_zorder()+1
         )
         p2 = ax.scatter(
             Z, X, 
-            s=matplotlib.rcParams["lines.markersize"]**2*size2, 
             marker='o', 
             gid=f"{gid}.2", 
+            linestyle="none",
             zorder=line[0].get_zorder()+1
         )
-        artist.append(p1)
-        artist.append(p2)
+        artist += p1
+        artist += p2
+    
+    for art in artist:
+        art.orientation = orientation
 
-    p1.sizes = size1
-    p2.sizes = size2
-    p1.Xdata = X
-    p2.Xdata = X
-    p1.Ydata = Y
-    p2.Ydata = Y
-    p1.Xshow = p1.Xdata
-    p2.Xshow = p2.Xdata
-    p1.Yshow = p1.Ydata
-    p2.Yshow = p2.Ydata
-    
-    
     return artist
 
 

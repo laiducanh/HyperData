@@ -10,8 +10,8 @@ from ui.base_widgets.color import ColorDropdown
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
-from plot.curve.base_elements.collection import Poly3DCollection, SingleColorCollection
-from plot.curve.base_elements.line import Marker, Line
+from plot.curve.base_elements.collection import Poly3DCollection
+from plot.curve.base_elements.line import Marker, Line, DumbbellMarker
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from matplotlib import patches, colors, lines, collections
@@ -416,30 +416,17 @@ class Dumbbell(QWidget):
         self._layout.addWidget(TitleLabel("Head 1"))
         self._layout.addWidget(SeparateHLine())
 
-        self.size1 = DoubleSpinBox(min=0, step=2, text="Head size")
-        self.size1.button.setValue(self.get_size1())
-        self.size1.button.valueChanged.connect(self.set_size1)
-        self._layout.addWidget(self.size1)
-
-        self.head1 = SingleColorCollection(f"{self.gid}.1", self.canvas)
+        self.head1 = DumbbellMarker(f"{self.gid}.1", self.canvas)
         self._layout.addWidget(self.head1)
 
         self._layout.addWidget(TitleLabel("Head 2"))
         self._layout.addWidget(SeparateHLine())
 
-        self.size2 = DoubleSpinBox(min=0, step=2, text="Head size")
-        self.size2.button.setValue(self.get_size2())
-        self.size2.button.valueChanged.connect(self.set_size2)
-        self._layout.addWidget(self.size2)
-
-        self.head1 = SingleColorCollection(f"{self.gid}.2", self.canvas)
+        self.head1 = DumbbellMarker(f"{self.gid}.2", self.canvas)
         self._layout.addWidget(self.head1)
 
     def find_object(self):
-        line = find_mpl_object(self.canvas.fig, [lines.Line2D], self.gid)
-        p1 = find_mpl_object(self.canvas.fig, [collections.PathCollection], f"{self.gid}.1")
-        p2 = find_mpl_object(self.canvas.fig, [collections.PathCollection], f"{self.gid}.2")
-        return line, p1, p2
+        return find_mpl_object(self.canvas.fig, [lines.Line2D], self.gid)
 
     def update_plot(self):
         self.plot.plotting(**self.props)
@@ -452,27 +439,7 @@ class Dumbbell(QWidget):
             logger.exception(e)
     
     def get_orientation(self) -> str:
-        return self.obj[0][0].orientation
-
-    def set_size1(self, value:float):
-        try:
-            self.props.update(size1 = value)
-            self.update_plot()
-        except Exception as e:
-            logger.exception(e)
-        
-    def get_size1(self) -> float:
-        return self.obj[1][0].sizes
-
-    def set_size2(self, value:float):
-        try:
-            self.props.update(size2 = value)
-            self.update_plot()
-        except Exception as e:
-            logger.exception(e)
-    
-    def get_size2(self) -> float:
-        return self.obj[2][0].sizes
+        return self.obj[0].orientation
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
