@@ -143,7 +143,7 @@ class Bar (QWidget):
         layout_column2d_1 = QHBoxLayout()
         layout_column2d_1.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_column2d_1)
-        for i in ['2d column','dot','clustered dot','stacked dot','2d clustered column','2d stacked column']:
+        for i in ['2d column','2d clustered column','2d stacked column']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_column2d_1.addWidget(button)
@@ -154,6 +154,15 @@ class Bar (QWidget):
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_column2d_2.addWidget(button)
+        layout.addWidget(SeparateHLine())
+        layout.addWidget(TitleLabel('Dot'))
+        layout_dot = QHBoxLayout()
+        layout_dot.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(layout_dot)
+        for i in ['dot','clustered dot','stacked dot','dumbbell']:
+            button = Plottype_Button(i, 50, f"{i.title()}")
+            button.sig.connect(lambda type: self.sig.emit(type))
+            layout_dot.addWidget(button)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('3D Column'))
         layout_column3d = QHBoxLayout()

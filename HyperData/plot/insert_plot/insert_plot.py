@@ -95,7 +95,7 @@ class NewPlot (Frame):
                             "treemap","marimekko",
                             "histogram","stacked histogram",
                             "boxplot","violinplot","eventplot"]
-        self.plot_3input = ["fill between","2d bubble"]
+        self.plot_3input = ["fill between","2d bubble","dumbbell"]
         self.plot_3dtype = ["3d line","3d step","3d stem","3d column",
                         "3d scatter"]
         self.plot_4input = ["3d bubble"]
