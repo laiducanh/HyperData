@@ -183,35 +183,69 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', size1=1, size2=1, *a
     Z = np.asarray(Z)
     artist = list()
 
-    # connecting lines
-    for idx, x in enumerate(X):
-        line = ax.plot(
-            np.repeat(x, 2),
-            (Y[idx], Z[idx]),
-            color='black',
-            linewidth=1,
-            solid_capstyle="round",
-            gid=gid,
-        )
-        artist += line
+    if orientation == "vertical":
+        # connecting lines
+        for idx, x in enumerate(X):
+            line = ax.plot(
+                np.repeat(x, 2),
+                (Y[idx], Z[idx]),
+                color='black',
+                linewidth=1,
+                solid_capstyle="round",
+                gid=gid,
+            )
+            line[0].orientation = orientation
+            artist += line
 
-    # draw two heads
-    p1 = ax.scatter(
-        X, Y, 
-        s=matplotlib.rcParams["lines.markersize"]**2*size1, 
-        marker='o', 
-        gid=f"{gid}.1", 
-        zorder=line[0].get_zorder()+1
-    )
-    p2 = ax.scatter(
-        X, Z, 
-        s=matplotlib.rcParams["lines.markersize"]**2*size2, 
-        marker='o', 
-        gid=f"{gid}.2", 
-        zorder=line[0].get_zorder()+1
-    )
-    artist.append(p1)
-    artist.append(p2)
+        # draw two heads
+        p1 = ax.scatter(
+            X, Y, 
+            s=matplotlib.rcParams["lines.markersize"]**2*size1, 
+            marker='o', 
+            gid=f"{gid}.1", 
+            zorder=line[0].get_zorder()+1
+        )
+        p2 = ax.scatter(
+            X, Z, 
+            s=matplotlib.rcParams["lines.markersize"]**2*size2, 
+            marker='o', 
+            gid=f"{gid}.2", 
+            zorder=line[0].get_zorder()+1
+        )
+        artist.append(p1)
+        artist.append(p2)
+
+    else:
+         # connecting lines
+        for idx, x in enumerate(X):
+            line = ax.plot(
+                (Y[idx], Z[idx]),
+                np.repeat(x, 2),
+                color='black',
+                linewidth=1,
+                solid_capstyle="round",
+                gid=gid,
+            )
+            line[0].orientation = orientation
+            artist += line
+
+        # draw two heads
+        p1 = ax.scatter(
+            Y, X, 
+            s=matplotlib.rcParams["lines.markersize"]**2*size1, 
+            marker='o', 
+            gid=f"{gid}.1", 
+            zorder=line[0].get_zorder()+1
+        )
+        p2 = ax.scatter(
+            Z, X, 
+            s=matplotlib.rcParams["lines.markersize"]**2*size2, 
+            marker='o', 
+            gid=f"{gid}.2", 
+            zorder=line[0].get_zorder()+1
+        )
+        artist.append(p1)
+        artist.append(p2)
 
     p1.sizes = size1
     p2.sizes = size2

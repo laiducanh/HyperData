@@ -408,6 +408,11 @@ class Dumbbell(QWidget):
         self.line = Line(self.gid, self.canvas)
         self._layout.addWidget(self.line)
 
+        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.orientation.button.currentTextChanged.connect(self.set_orientation)
+        self._layout.addWidget(self.orientation)
+
         self._layout.addWidget(TitleLabel("Head 1"))
         self._layout.addWidget(SeparateHLine())
 
@@ -438,6 +443,16 @@ class Dumbbell(QWidget):
 
     def update_plot(self):
         self.plot.plotting(**self.props)
+
+    def set_orientation(self, value:str):
+        try:
+            self.props.update(orientation = value.lower())
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_orientation(self) -> str:
+        return self.obj[0][0].orientation
 
     def set_size1(self, value:float):
         try:
