@@ -25,6 +25,7 @@ legend_picked = False
 def remove_artist (ax:Axes, gid:str) -> List[Artist]:
     artist_removed = list()
     for artist in find_mpl_object(figure=ax.figure,match=[Artist],gid=gid):
+        artist_removed.append(artist)
         artist.remove()
         if GLOBAL_DEBUG or DEBUG:
             pass
@@ -38,7 +39,8 @@ def update_props (from_obj: Artist, to_obj: Artist,
         to_obj_props = to_obj.properties()
         from_obj_props = from_obj.properties()
 
-        to_obj.update_from(from_obj)
+        if type(from_obj) == type(to_obj):
+            to_obj.update_from(from_obj)
 
         # for step plots
         if isinstance(to_obj, Line2D):
