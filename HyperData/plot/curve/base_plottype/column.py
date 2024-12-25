@@ -523,9 +523,9 @@ class Treemap(QWidget):
         self.setLayout(self._layout)
         self._layout.setContentsMargins(0,0,0,0)
 
-        self.rounded = Toggle(text="Rounded")
-        self.rounded.button.setChecked(self.get_rounded())
-        self.rounded.button.checkedChanged.connect(self.set_rounded)
+        self.rounded = DoubleSpinBox(text="Rounded")
+        self.rounded.button.setValue(self.get_rounded())
+        self.rounded.button.valueChanged.connect(self.set_rounded)
         self._layout.addWidget(self.rounded)
 
         self.pad = DoubleSpinBox(min=0,max=20,step=0.5,text="Padding")
@@ -538,30 +538,35 @@ class Treemap(QWidget):
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
         self._layout.addWidget(self.cmap)
 
+        self.column = Rectangle(self.gid, self.canvas, self.parent())
+        self.column.sig.connect(self.sig.emit)
+        self._layout.addWidget(self.column)
+
         self.alpha = Slider(text='Transparency',min=0,max=100)
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
         self._layout.addWidget(self.alpha)
         
         self._layout.addStretch()
-    def find_object(self) -> list[patches.Rectangle|patches.FancyBboxPatch]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[patches.Rectangle,patches.FancyBboxPatch],
-                               gid=self.gid)
- 
+    def find_object(self) -> list[patches.FancyBboxPatch]:
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[patches.FancyBboxPatch],
+            gid=self.gid,
+        )
     
     def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.props)
     
-    def set_rounded(self, value:bool):
+    def set_rounded(self, value:float):
         try:
             self.props.update(rounded=value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
-    def get_rounded(self) -> bool:
+    def get_rounded(self) -> float:
         return self.obj[0].rounded
 
     def set_pad(self, value:float):

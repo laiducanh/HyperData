@@ -52,10 +52,11 @@ class Rectangle (QWidget):
         self.alpha.button.valueChanged.connect(self.set_alpha)
         layout.addWidget(self.alpha)
     
-    def find_object (self) -> list[patches.Rectangle | patches.PathPatch]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[patches.Rectangle, patches.PathPatch],
-                               gid=self.gid)
+    def find_object (self) -> list[patches.Rectangle | patches.PathPatch | patches.FancyBboxPatch]:
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[patches.Rectangle, patches.PathPatch, patches.FancyBboxPatch],
+            gid=self.gid)
 
     def update_props(self, button=None):
         if button != self.edgestyle.button:

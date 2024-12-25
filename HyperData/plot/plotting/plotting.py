@@ -42,9 +42,9 @@ def update_props (from_obj: Artist, to_obj: Artist,
         if type(from_obj) == type(to_obj):
             to_obj.update_from(from_obj)
 
-        # for step plots
-        if isinstance(to_obj, Line2D):
-            to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
+            # for step plots
+            if isinstance(to_obj, Line2D):
+                to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
         
     except Exception as e:
         logger.exception(e)
@@ -155,9 +155,10 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     
     # get old artist that will be replaced
     # but its properties will apply to the new ones
-    artist_old = find_mpl_object(ax.figure,
-                                 match=[Line2D,Collection,Rectangle,Wedge,PathPatch],
-                                 gid=gid)
+    artist_old = find_mpl_object(
+        ax.figure,
+        match=[Line2D,Collection,Rectangle,Wedge,PathPatch,FancyBboxPatch],
+        gid=gid)
     
     remove_artist(ax, gid)
     
@@ -204,7 +205,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
     
     # some plot types cannot update props from old artists
-    if plot_type not in ["treemap"]:
+    if plot_type not in []:
         if artist_old != []:
             for art in artist:
                 for art_old in artist_old:

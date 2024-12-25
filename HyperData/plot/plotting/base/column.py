@@ -10,7 +10,7 @@ import numpy as np
 import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
-DEBUG = True
+DEBUG = False
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", 
               width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
@@ -500,7 +500,7 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list
 
     return artist
 
-def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=False, *args, **kwargs) -> list[Rectangle]:
+def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=0, *args, **kwargs) -> list[Rectangle]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([1,2,6])
@@ -514,7 +514,7 @@ def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=False, *ar
     
     colors = matplotlib.colormaps[cmap](np.linspace(0,1,len(_X)))
     # colors = matplotlib.pyplot.get_cmap(cmap)
-
+    print(pad, cmap, rounded)
     artist = list()
     for ind, _rect in enumerate(rects):
         
@@ -533,17 +533,18 @@ def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=False, *ar
                 color   = colors[ind],
                 alpha   = alpha,
                 gid     = f"{gid}.{ind+1}",
-                boxstyle=f"round,pad={pad*0.5}",
+                boxstyle=f"round,pad=0,rounding_size={rounded}",
             )
 
         else:
-            rect = Rectangle(
+            rect = FancyBboxPatch(
                 xy      = (_rect['x'], _rect['y']),
                 width   = _rect['dx'],
                 height  = _rect['dy'],
                 color   = colors[ind],
                 alpha   = alpha,
-                gid     = f"{gid}.{ind+1}"
+                gid     = f"{gid}.{ind+1}",
+                boxstyle="square,pad=0",
             )
 
         rect.pad = pad
