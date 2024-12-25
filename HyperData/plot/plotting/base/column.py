@@ -192,7 +192,7 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
                 color='black',
                 linewidth=1,
                 solid_capstyle="round",
-                gid=gid,
+                gid=f"{gid}.0",
             )
             artist += line
 
@@ -223,7 +223,7 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
                 color='black',
                 linewidth=1,
                 solid_capstyle="round",
-                gid=gid,
+                gid=f"{gid}.0",
             )
             artist += line
 

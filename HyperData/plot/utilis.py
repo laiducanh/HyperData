@@ -1,6 +1,6 @@
 from matplotlib.lines import Line2D
 from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection
-from matplotlib.patches import Patch
+from matplotlib.patches import Patch, Rectangle
 from matplotlib.colors import to_hex
 from matplotlib.artist import Artist
 from matplotlib.figure import Figure
@@ -22,7 +22,7 @@ def get_color(artist:Artist):
     elif isinstance(artist, LineCollection):
         return to_hex(artist.get_edgecolor()[0])
 
-    elif isinstance(artist, Patch):
+    elif isinstance(artist, (Patch, Rectangle)):
         return to_hex(artist.get_facecolor())
 
     return "white"
@@ -38,7 +38,7 @@ def find_mpl_object(figure:Figure, match=list([Line2D,Collection,Patch]), gid:st
         for artist in _found:
             if artist.get_gid():
                 if gid:
-                    if gid == artist.get_gid():
+                    if gid in artist.get_gid():
                         obj_found.append(artist)
                 else: obj_found.append(artist)
         #obj_found += [artist for artist in _found if artist.get_gid() != None]

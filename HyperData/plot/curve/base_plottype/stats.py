@@ -50,7 +50,7 @@ class Histogram (QWidget):
         self._layout.addWidget(TitleLabel("Histogram"))
         self._layout.addWidget(SeparateHLine())
 
-        self.bins = SpinBox(text="Bins")
+        self.bins = SpinBox(text="Bins",min=1)
         self.bins.button.setValue(self.get_bins())
         self.bins.button.valueChanged.connect(self.set_bins)
         self._layout.addWidget(self.bins)
@@ -275,6 +275,8 @@ class Boxplot (QWidget):
         self.choose_component.addButton(text='Medians', func=lambda: self.stackedlayout.setCurrentIndex(4))
         self.choose_component.addButton(text='Means', func=lambda: self.stackedlayout.setCurrentIndex(5))
 
+        self.choose_component.setCurrentWidget("Boxes")
+
         self.stackedlayout = QStackedLayout()
         self._layout.addLayout(self.stackedlayout)
 
@@ -382,8 +384,11 @@ class Boxplot (QWidget):
         layout_means.addWidget(self.means)
     
     def find_object(self) -> List[lines.Line2D | patches.PathPatch]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[lines.Line2D, patches.PathPatch])
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[lines.Line2D, patches.PathPatch],
+            gid=self.gid
+        )
 
     def update_plot(self, *args, **kwargs):
         # self.sig.emit()
@@ -588,6 +593,8 @@ class Violinplot (QWidget):
         self.choose_component.addButton(text='Medians', func=lambda: self.stackedlayout.setCurrentIndex(5))
         self.choose_component.addButton(text='Quantiles', func=lambda: self.stackedlayout.setCurrentIndex(6))
 
+        self.choose_component.setCurrentWidget("Bodies")
+
         self.stackedlayout = QStackedLayout()
         self._layout.addLayout(self.stackedlayout)
 
@@ -683,9 +690,11 @@ class Violinplot (QWidget):
         layout_cquantiles.addWidget(self.cquantiles)
     
     def find_object(self) -> List[collections.PolyCollection | collections.LineCollection]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[collections.PolyCollection, collections.LineCollection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[collections.PolyCollection, collections.LineCollection],
+            gid=self.gid
+        )
 
     def update_plot(self, *args, **kwargs):
         # self.sig.emit()
@@ -842,9 +851,11 @@ class Eventplot(QWidget):
         self._layout.addWidget(self.eventcollection)
     
     def find_object(self):
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[collections.EventCollection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[collections.EventCollection],
+            gid=self.gid
+        )
 
     def update_props(self, button=None):
         if button != self.orientation.button:
@@ -950,9 +961,11 @@ class Hist2d (QWidget):
         self._layout.addWidget(self.quadmesh)
 
     def find_object(self) -> List[collections.QuadMesh]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[collections.QuadMesh],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[collections.QuadMesh],
+            gid=self.gid
+        )
     
     def update_props(self, button=None):
         if button != self.binx.button:
