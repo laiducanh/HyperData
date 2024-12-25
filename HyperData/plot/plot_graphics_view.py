@@ -10,12 +10,13 @@ import matplotlib.collections
 import matplotlib.container
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
-from matplotlib.collections import Collection
+from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection, EventCollection
 from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
 from matplotlib.text import Text
 from plot.canvas import Canvas
 import matplotlib, math
+import numpy as np
 from matplotlib.backend_bases import MouseEvent
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
@@ -229,10 +230,10 @@ class GraphicsView (QGraphicsView):
         for obj in reversed(stack): # the object on top will be picked
             if obj.contains(event)[0]:
                 # save the original properties of the picked artist
-                _lw = obj.get_linewidth()
                 _alp = obj.get_alpha() if obj.get_alpha() else 1
+                _c = np.array(matplotlib.colors.to_rgba(get_color(obj)))
                 # decorate the artist when it is hovered
-                obj.set(linewidth=_lw+4, alpha=_alp*0.5)
+                obj.set(alpha=_alp*0.5)
                 obj.axes.draw_artist(obj)
                 
 
@@ -246,17 +247,21 @@ class GraphicsView (QGraphicsView):
                     xp = obj.get_xdata()[minpos]
                     yp = obj.get_ydata()[minpos]
                     xs, ys = xp, yp
+                    # decorate line by darken its color
+                    obj.set(color = _c*0.5)
+                    obj.axes.draw_artist(obj)
+                    obj.set(color = _c)
                     
-                elif isinstance(obj, (Rectangle,FancyBboxPatch)):
+                elif isinstance(obj, (Rectangle,FancyBboxPatch,PathPatch,
+                                      LineCollection,PolyCollection,EventCollection)):
                     xp, yp = obj.Xdata, obj.Ydata
                     xs, ys = obj.Xshow, obj.Yshow
-                    # decorate edgecolor of rectangle with facecolor (probablly)
-                    _ec = obj.get_edgecolor()
-                    obj.set(edgecolor = get_color(obj))
+                    # decorate patch by darken its facecolor
+                    obj.set(facecolor = _c*0.5)
                     obj.axes.draw_artist(obj)
-                    obj.set(edgecolor = _ec)
-                
-                elif isinstance(obj, Collection):              
+                    obj.set(facecolor = _c)
+                                
+                elif isinstance(obj, PathCollection):              
                     # determine the closest data point to the cursor
                     dist = list()
                     for x, y in zip(obj.Xshow, obj.Yshow):
@@ -267,11 +272,10 @@ class GraphicsView (QGraphicsView):
                     ys = obj.Yshow[minpos]
                     xp = obj.Xdata[minpos]
                     yp = obj.Ydata[minpos]
-                    # decorate edgecolor of collection with facecolor (probablly)
-                    _ec = obj.get_edgecolor()
-                    obj.set(edgecolor = get_color(obj))
+                    # decorate pathcollection by darken its facecolor
+                    obj.set(facecolor = _c*0.5)
                     obj.axes.draw_artist(obj)
-                    obj.set(edgecolor = _ec)
+                    obj.set(facecolor = _c)
                 
                 elif isinstance(obj, Wedge):
                     # tooltip will be placed at cursor
@@ -285,9 +289,9 @@ class GraphicsView (QGraphicsView):
 
                 # determine the information from the picked artist
                 s = f"{obj.get_gid().title()}\n"
-                if xp: s += f"{str(xp)}"
-                if yp: s += f", {str(yp)}"
-                if zp: s += f", {str(zp)}"
+                if xp: s += f"{xp:.3f}"
+                if yp: s += f", {yp:.3f}"
+                if zp: s += f", {zp:.3f}"
                 self.tooltip.set_text(s)
                 
                 # determine where to put tooltip on canvas
@@ -306,7 +310,7 @@ class GraphicsView (QGraphicsView):
                 self.canvas.figure.draw_artist(self.tooltip)
 
                 # update the artist to the original properties
-                obj.set(linewidth=_lw, alpha=_alp)
+                obj.set(alpha=_alp)
 
                 # make sure the annotation will be removed
                 self.tooltip.remove() 
