@@ -11,7 +11,7 @@ from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
 from plot.curve.base_elements.collection import Poly3DCollection
-from plot.curve.base_elements.line import Marker, Line, DumbbellMarker
+from plot.curve.base_elements.line import Marker, Line
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from matplotlib import patches, colors, lines, collections
@@ -416,13 +416,13 @@ class Dumbbell(QWidget):
         self._layout.addWidget(TitleLabel("Head 1"))
         self._layout.addWidget(SeparateHLine())
 
-        self.head1 = DumbbellMarker(f"{self.gid}.1", self.canvas)
+        self.head1 = Marker(f"{self.gid}.1", self.canvas)
         self._layout.addWidget(self.head1)
 
         self._layout.addWidget(TitleLabel("Head 2"))
         self._layout.addWidget(SeparateHLine())
 
-        self.head1 = DumbbellMarker(f"{self.gid}.2", self.canvas)
+        self.head1 = Marker(f"{self.gid}.2", self.canvas)
         self._layout.addWidget(self.head1)
 
     def find_object(self):

@@ -250,11 +250,6 @@ class Marker(QWidget):
         self.marker.button.currentTextChanged.connect(self.set_marker)
         layout.addWidget(self.marker)
 
-        self.markevery = SpinBox(text='Mark Every',min=1,max=100,step=1)
-        self.markevery.button.setValue(self.get_markevery())
-        self.markevery.button.valueChanged.connect(self.set_markevery)
-        layout.addWidget(self.markevery)
-
         self.markersize = DoubleSpinBox(text='Marker Size',min=0,step=2)
         self.markersize.button.setValue(self.get_markersize())
         self.markersize.button.valueChanged.connect(self.set_markersize)
@@ -280,29 +275,16 @@ class Marker(QWidget):
                                [lines.Line2D], 
                                gid=self.gid)
     
-    def update_props(self, button=None):
-        if button != self.marker.button:
-            self.marker.button.setCurrentText(self.get_marker())
-        
-        if button != self.markevery.button:
-            self.markevery.button.setValue(self.get_markevery())
-        
-        if button != self.markersize.button:
-            self.markersize.button.setValue(self.get_markersize())
-        
-        if button != self.markeredgewidth.button:
-            self.markeredgewidth.button.setValue(self.get_markeredgewidth())
-        
-        if button != self.markerfacecolor.button:
-            self.markerfacecolor.button.setColor(self.get_markerfacecolor())
-        
-        if button != self.markeredgecolor.button:
-            self.markeredgecolor.button.setColor(self.get_markeredgecolor())
+    def update_props(self):
+        self.marker.button.setCurrentText(self.get_marker())
+        self.markersize.button.setValue(self.get_markersize())
+        self.markeredgewidth.button.setValue(self.get_markeredgewidth())
+        self.markerfacecolor.button.setColor(self.get_markerfacecolor())
+        self.markeredgecolor.button.setColor(self.get_markeredgecolor())
     
-    def update_plot(self, *args, **kwargs):
+    def update_plot(self):
         # self.sig.emit()
         self.canvas.draw_idle()
-        self.update_props(*args, **kwargs)
     
     def set_marker (self, marker):
         try:
@@ -311,29 +293,14 @@ class Marker(QWidget):
                 obj.set_marker(marker)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.marker.button)
+        self.update_plot()
     
     def get_marker(self):
         try:
-            if self.obj[0].get_marker() == None:
+            if not self.obj[0].get_marker():
                 return "None"
-            return self.obj[0].get_marker()
+            return marker_lib[self.obj[0].get_marker()]
         except: return "None"
-
-    def set_markevery(self, value):
-        try: 
-            for obj in self.obj:
-                obj.set_markevery(value)
-        except Exception as e:
-            logger.exception(e)
-        self.update_plot(self.markevery.button)
-    
-    def get_markevery(self):
-        try:
-            if self.obj[0].get_markevery() == None:
-                return 1
-            return self.obj[0].get_markevery()
-        except: return 1
 
     def set_markersize (self, value):
         try: 
@@ -341,7 +308,7 @@ class Marker(QWidget):
                 obj.set_markersize(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.markersize.button)
+        self.update_plot()
     
     def get_markersize(self):
         try: return self.obj[0].get_markersize()
@@ -353,7 +320,7 @@ class Marker(QWidget):
                 obj.set_markeredgewidth(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.markeredgewidth.button)
+        self.update_plot()
     
     def get_markeredgewidth(self):
         try: return self.obj[0].get_markeredgewidth()
@@ -365,7 +332,7 @@ class Marker(QWidget):
                 obj.set_markerfacecolor(color)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.markerfacecolor.button)
+        self.update_plot()
     
     def get_markerfacecolor(self):
         try: return colors.to_hex(self.obj[0].get_markerfacecolor())
@@ -377,7 +344,7 @@ class Marker(QWidget):
                 obj.set_markeredgecolor(color)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.markeredgecolor.button)
+        self.update_plot()
     
     def get_markeredgecolor(self):
         try: return colors.to_hex(self.obj[0].get_markeredgecolor())
@@ -386,6 +353,7 @@ class Marker(QWidget):
     def paintEvent(self, a0: QPaintEvent) -> None:
         # update self.obj as soon as possible
         self.obj = self.find_object()
+        self.update_props()
         return super().paintEvent(a0)
 
 class Line2D (QWidget):
@@ -538,53 +506,3 @@ class LineCollection(QWidget):
         # update self.obj as soon as possible
         self.obj = self.find_object()
         return super().paintEvent(a0)
-
-class DumbbellMarker(Marker):
-    def __init__(self, gid, canvas, parent=None):
-        super().__init__(gid, canvas, parent)
-    
-    def initUI(self):
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)   
-
-        self.marker = ComboBox(text='Marker Style',items=marker_lib.values())
-        self.marker.button.setCurrentText(self.get_marker())
-        self.marker.button.currentTextChanged.connect(self.set_marker)
-        layout.addWidget(self.marker)
-
-        self.markersize = DoubleSpinBox(text='Marker Size',min=0,step=2)
-        self.markersize.button.setValue(self.get_markersize())
-        self.markersize.button.valueChanged.connect(self.set_markersize)
-        layout.addWidget(self.markersize)
-
-        self.markeredgewidth = DoubleSpinBox(text='Marker Edge Width',min=0,max=5,step=0.5)
-        self.markeredgewidth.button.setValue(self.get_markeredgewidth())
-        self.markeredgewidth.button.valueChanged.connect(self.set_markeredgewidth)
-        layout.addWidget(self.markeredgewidth)
-
-        self.markerfacecolor = ColorDropdown(text='Marker Face Color',color=self.get_markerfacecolor(),parent=self.parent())
-        self.markerfacecolor.button.setColor(self.get_markerfacecolor())
-        self.markerfacecolor.button.colorChanged.connect(self.set_markerfacecolor)
-        layout.addWidget(self.markerfacecolor)
-
-        self.markeredgecolor = ColorDropdown(text='Marker Edge Color',color=self.get_markeredgecolor(),parent=self.parent())
-        self.markeredgecolor.button.setColor(self.get_markeredgecolor())
-        self.markeredgecolor.button.colorChanged.connect(self.set_markeredgecolor)
-        layout.addWidget(self.markeredgecolor)
-
-    def update_props(self, button=None):
-        if button != self.marker.button:
-            self.marker.button.setCurrentText(self.get_marker())
-        
-        if button != self.markersize.button:
-            self.markersize.button.setValue(self.get_markersize())
-        
-        if button != self.markeredgewidth.button:
-            self.markeredgewidth.button.setValue(self.get_markeredgewidth())
-        
-        if button != self.markerfacecolor.button:
-            self.markerfacecolor.button.setColor(self.get_markerfacecolor())
-        
-        if button != self.markeredgecolor.button:
-            self.markeredgecolor.button.setColor(self.get_markeredgecolor())
