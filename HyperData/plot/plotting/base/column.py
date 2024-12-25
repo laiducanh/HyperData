@@ -6,7 +6,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import colors
 import matplotlib.pyplot
-import pandas as pd
 import numpy as np
 import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG, color_cycle
@@ -112,22 +111,88 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
     
     return artist
 
+def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=20,
+           sizes=0.1, distance=0.05, *args, **kwargs) -> list[PathCollection]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(0,10)
+        Y = np.array([2.2,3.5])
+    
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    
+    step = _dotstep(Y)
+    artist = list()
+    color = next(color_cycle)
+    max_npoints = math.ceil(np.max(Y)*(1/step)*(1/cols))
+    max_npoints = max_npoints if max_npoints > rows else rows
+
+    for _x, _y in zip(X, Y):
+        if orientation == 'vertical':
+            x = np.linspace(_x+bottom, _x+bottom+cols*sizes+distance, cols)
+            x = np.tile(x, max_npoints)
+            y = np.linspace(step, np.max(Y), max_npoints)
+            y = np.repeat(y, cols)
+        else:
+            y = np.linspace(_x+bottom, _x+bottom+cols*sizes+distance, cols)
+            y = np.tile(y, max_npoints)
+            x = np.linspace(step, np.max(Y), max_npoints)
+            x = np.repeat(x, cols)
+        colors = np.repeat('lightgray', cols*max_npoints)
+        colors[:int(_y*(1/step))] = color
+        print(x, y)
+        for _xx, _yy, _c in zip(x, y, colors):
+            print(_xx, _yy)
+            r = Rectangle((_xx, _yy), sizes, sizes, color=_c,
+                transform = ax.transAxes)
+            ax.add_artist(r)
+        ax.set_xlim(x[0],x[-1])
+        ax.set_ylim(y[0], y[-1])
+    #     _scatter = ax.scatter(
+    #         x, y, 
+    #         marker='s', 
+    #         s=matplotlib.rcParams["lines.markersize"]**2*sizes/max_npoints,
+    #         linewidths=0, 
+    #         color=colors,
+    #         gid=gid
+    #     )
+        
+        artist.append(r)
+    
+    for art in artist:
+        art.sizes = sizes
+        art.orientation = orientation
+        art.bottom = bottom
+        art.distance = distance
+        art.Xdata = X
+        art.Ydata = Y
+        art.Xshow = art.Xdata
+        art.Yshow = art.Ydata
+    
+    return artist
+
 def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
                        width=0.8, bottom=0, distance=1, *args, **kwargs) -> list[Rectangle]:
 
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([[2,4,7],[1,5,3]])
+
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+
     multiplier = 0
     artist = list()
-    df = (pd.DataFrame(Y)).transpose()
 
-    for index, values in df.items():
+    for idx, y in enumerate(Y):
         offset = width*multiplier
         multiplier += distance
         
         if orientation == "vertical":
-            bars = ax.bar([a+offset for a in X], values, gid = f"{gid}.{index+1}",
+            bars = ax.bar([a+offset for a in X], y, gid = f"{gid}.{idx+1}",
                           width=width, bottom=bottom, *args, **kwargs)
         elif orientation == "horizontal":
-            bars = ax.barh([a+offset for a in X], values, gid = f"{gid}.{index+1}",
+            bars = ax.barh([a+offset for a in X], y, gid = f"{gid}.{idx+1}",
                            height=width, left=bottom, *args, **kwargs)
 
         artist += bars.patches
@@ -141,7 +206,7 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.bottom = bottom
         art.width = width
         art.distance = distance
-        art.Xdata = np.asarray(X*len(Y))[ind]
+        art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = np.asarray(Y).flatten()[ind]
@@ -193,20 +258,25 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
 def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
                      width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
 
-    df = (pd.DataFrame(Y)).transpose()
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([[2,4,7],[1,5,3]])
+
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+
     artist = list()
     _bottom = bottom
     
-    for index, values in df.items():
-
+    for idx, y in enumerate(Y):
         if orientation == "vertical":
-            bars = ax.bar(X, values, gid=f"{gid}.{index+1}", 
+            bars = ax.bar(X, y, gid=f"{gid}.{idx+1}", 
                           bottom=bottom, width=width, *args, **kwargs)
         elif orientation == "horizontal":
-            bars = ax.barh(X, values,gid=f"{gid}.{index+1}", 
+            bars = ax.barh(X, y,gid=f"{gid}.{idx+1}", 
                            left=bottom, height=width, *args, **kwargs)
         
-        bottom += values
+        bottom += y
 
         artist += bars.patches
     
@@ -218,7 +288,7 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.orientation = orientation
         art.bottom = _bottom
         art.width = width
-        art.Xdata = np.asarray(X*len(Y))[ind]
+        art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
@@ -271,20 +341,27 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
 def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
                         width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
 
-    df = pd.DataFrame(Y)
-    df = (df.divide(df.sum())).transpose()
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([[2,4,7],[1,5,3]])
+
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    Y = Y/np.sum(Y, axis=0)
+
     artist = list()
     _bottom = bottom
 
-    for index, values in df.items():   
+    for idx, y in enumerate(Y):
+    #for index, values in df.items():   
         if orientation == "vertical":
-            bars = ax.bar(X, values, gid=f"{gid}.{index+1}", 
+            bars = ax.bar(X, y, gid=f"{gid}.{idx+1}", 
                           bottom=bottom, width=width, *args, **kwargs)
         elif orientation == "horizontal":
-            bars = ax.barh(X, values,gid=f"{gid}.{index+1}", 
+            bars = ax.barh(X, y,gid=f"{gid}.{idx+1}", 
                            left=bottom, height=width, *args, **kwargs)
         
-        bottom += values
+        bottom += y
 
         artist += bars.patches
     
@@ -296,7 +373,7 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
         art.orientation = orientation
         art.bottom = _bottom
         art.width = width
-        art.Xdata = np.asarray(X*len(Y))[ind]
+        art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
@@ -305,22 +382,27 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
 
 def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list[Rectangle]:
     
-    df = pd.DataFrame(X)
-    df = (df.divide(df.sum())).transpose()
-    max_x = [sum(a) for a in np.array(X).transpose()]
-    width = [a/max(max_x) for a in max_x]
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.array([[2,4,7],[1,5,3]])
+
+    X = np.asarray(X)
+    max_x = np.sum(X, axis=0)
+    width = max_x/np.max(max_x)
+    pos = np.cumsum(width) - width*0.5
+    X = X/max_x
+
+   
     bottom = 0
     artist = list()
 
-    pos = [sum(width[:n])+width[n]/2 for n,_ in enumerate(width)] 
-    
-    for index, values in df.items():
+   
+    for idx, x in enumerate(X):
         if orientation == "vertical":
-            bars = ax.bar(pos,values,width=width,bottom=bottom,gid=f"{gid}.{index+1}", *args, **kwargs)
+            bars = ax.bar(pos,x,width=width,bottom=bottom,gid=f"{gid}.{idx+1}", *args, **kwargs)
         elif orientation == "horizontal":
-            bars = ax.barh(pos,values,height=width,left=bottom,gid=f"{gid}.{index+1}", *args, **kwargs)
+            bars = ax.barh(pos,x,height=width,left=bottom,gid=f"{gid}.{idx+1}", *args, **kwargs)
 
-        bottom += values
+        bottom += x
 
         artist += bars.patches
     
