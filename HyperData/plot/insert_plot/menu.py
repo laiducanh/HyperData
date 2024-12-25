@@ -30,7 +30,7 @@ class Menu_type_2D (Menu):
             action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))
             bar.addAction(action)
         bar.addSeparator()
-        for i in ['dot','clustered dot','stacked dot']:
+        for i in ['dot','clustered dot','stacked dot','dumbbell']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))
             bar.addAction(action)

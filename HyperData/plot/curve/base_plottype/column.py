@@ -1,20 +1,20 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QPaintEvent
-from PySide6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox, Slider
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.color import ColorDropdown
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
-from plot.curve.base_elements.collection import Poly3DCollection
-from plot.curve.base_elements.line import Marker
+from plot.curve.base_elements.collection import Poly3DCollection, SingleColorCollection
+from plot.curve.base_elements.line import Marker, Line
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
-from matplotlib import patches, colors, lines
+from matplotlib import patches, colors, lines, collections
 from matplotlib.pyplot import colormaps
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection as Poly3D
 import numpy as np
@@ -329,7 +329,7 @@ class Dot(QWidget):
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
         return super().paintEvent(a0)
- 
+
 class ClusteredColumn(Column):
     def __init__(self, gid, canvas: Canvas, plot: NewPlot = None, parent=None):
         super().__init__(gid, canvas, plot, parent)
@@ -381,6 +381,87 @@ class ClusteredDot(Dot):
     
     def get_distance(self) -> int:
         return int(self.obj[0].distance*100)
+
+class Dumbbell(QWidget):
+    sig = Signal()
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot=None, parent=None):
+        super().__init__(parent)
+        
+        if "." in gid:
+            self.gid = gid.split(".")[0]
+        else: self.gid = gid
+        self.canvas = canvas
+        self.plot = plot
+        self.obj = self.find_object()
+        self.props = dict()
+        self.initUI()
+    
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+
+        self._layout.addWidget(TitleLabel("Lines"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.line = Line(self.gid, self.canvas)
+        self._layout.addWidget(self.line)
+
+        self._layout.addWidget(TitleLabel("Head 1"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.size1 = DoubleSpinBox(min=0, step=2, text="Head size")
+        self.size1.button.setValue(self.get_size1())
+        self.size1.button.valueChanged.connect(self.set_size1)
+        self._layout.addWidget(self.size1)
+
+        self.head1 = SingleColorCollection(f"{self.gid}.1", self.canvas)
+        self._layout.addWidget(self.head1)
+
+        self._layout.addWidget(TitleLabel("Head 2"))
+        self._layout.addWidget(SeparateHLine())
+
+        self.size2 = DoubleSpinBox(min=0, step=2, text="Head size")
+        self.size2.button.setValue(self.get_size2())
+        self.size2.button.valueChanged.connect(self.set_size2)
+        self._layout.addWidget(self.size2)
+
+        self.head1 = SingleColorCollection(f"{self.gid}.2", self.canvas)
+        self._layout.addWidget(self.head1)
+
+    def find_object(self):
+        line = find_mpl_object(self.canvas.fig, [lines.Line2D], self.gid)
+        p1 = find_mpl_object(self.canvas.fig, [collections.PathCollection], f"{self.gid}.1")
+        p2 = find_mpl_object(self.canvas.fig, [collections.PathCollection], f"{self.gid}.2")
+        return line, p1, p2
+
+    def update_plot(self):
+        self.plot.plotting(**self.props)
+
+    def set_size1(self, value:float):
+        try:
+            self.props.update(size1 = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+        
+    def get_size1(self) -> float:
+        return self.obj[1][0].sizes
+
+    def set_size2(self, value:float):
+        try:
+            self.props.update(size2 = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_size2(self) -> float:
+        return self.obj[2][0].sizes
+
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        self.obj = self.find_object()
+        return super().paintEvent(a0)
 
 class Marimekko (QWidget):
     sig = Signal()

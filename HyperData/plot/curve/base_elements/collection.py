@@ -35,9 +35,6 @@ class SingleColorCollection (QWidget):
         self.setLayout(self._layout)
         self._layout.setContentsMargins(0,0,0,0)
 
-        self._layout.addWidget(TitleLabel('PolyCollection'))
-        self._layout.addWidget(SeparateHLine())
-
         self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
         self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)

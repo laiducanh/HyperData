@@ -7,7 +7,7 @@ from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.window import ProgressBar
 from plot.curve.base_plottype.line import Line, Step, Stem, Stem3d, Area, StackedArea, StackedArea100
 from plot.curve.base_plottype.scatter import Scatter, Scatter3D
-from plot.curve.base_plottype.column import Column, Dot, Column3D, ClusteredColumn, ClusteredDot, Marimekko, Treemap
+from plot.curve.base_plottype.column import Column, Dot, Dumbbell, Column3D, ClusteredColumn, ClusteredDot, Marimekko, Treemap
 from plot.curve.base_plottype.pie import Pie, Coxcomb, Doughnut, MultilevelDoughnut, SemicircleDoughnut
 from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d
 from plot.canvas import Canvas
@@ -136,6 +136,7 @@ class Curve (QWidget):
                 case "2d bubble":              widget = Scatter(*args)
                 case "2d column":              widget = Column(*args)
                 case "dot":                    widget = Dot(*args)
+                case "dumbbell":               widget = Dumbbell(*args)
                 case "2d stacked column":      widget = Column(*args)
                 case "stacked dot":            widget = Dot(*args)
                 case "2d 100% stacked column": widget = Column(*args)
