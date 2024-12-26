@@ -524,17 +524,18 @@ class Treemap(QWidget):
         self._layout.setContentsMargins(0,0,0,0)
 
         self.rounded = DoubleSpinBox(text="Rounded")
-        self.rounded.button.setValue(self.get_rounded())
         self.rounded.button.valueChanged.connect(self.set_rounded)
         self._layout.addWidget(self.rounded)
 
         self.pad = DoubleSpinBox(min=0,max=20,step=0.5,text="Padding")
-        self.pad.button.setValue(self.get_pad())
         self.pad.button.valueChanged.connect(self.set_pad)
         self._layout.addWidget(self.pad)
 
+        self.cmap_on = Toggle(text="Use colormap")
+        self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
+        self._layout.addWidget(self.cmap_on)
+
         self.cmap = ComboBox(items=colormaps(), text="Colormap")
-        self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
         self._layout.addWidget(self.cmap)
 
@@ -542,10 +543,8 @@ class Treemap(QWidget):
         self.column.sig.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        self._layout.addWidget(self.alpha)
+        self.column.facecolor.setEnabled(not self.get_cmap_on())
+        self.cmap.setEnabled(self.get_cmap_on())
         
         self._layout.addStretch()
     def find_object(self) -> list[patches.FancyBboxPatch]:
@@ -558,6 +557,12 @@ class Treemap(QWidget):
     def update_plot(self):
         # self.sig.emit()
         self.plot.plotting(**self.props)
+    
+    def update_props(self):
+        self.rounded.button.setValue(self.get_rounded())
+        self.pad.button.setValue(self.get_pad())
+        self.cmap_on.button.setChecked(self.get_cmap_on())
+        self.cmap.button.setCurrentText(self.get_cmap())
     
     def set_rounded(self, value:float):
         try:
@@ -578,6 +583,18 @@ class Treemap(QWidget):
     
     def get_pad(self) -> float:
         return float(self.obj[0].pad)
+    
+    def set_cmap_on(self, value:bool):
+        try:
+            self.props.update(cmap_on=value)
+            self.update_plot()
+            self.column.facecolor.setEnabled(not value)
+            self.cmap.setEnabled(value)
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_cmap_on(self) -> bool:
+        return self.obj[0].cmap_on
           
     def set_cmap(self, value:str):
         try:
@@ -589,19 +606,9 @@ class Treemap(QWidget):
     def get_cmap(self) -> str:
         return self.obj[0].cmap
 
-    def set_alpha (self, value:float):
-        try: 
-            self.props.update(alpha = float(value/100))
-            self.update_plot()
-        except Exception as e:
-            logger.exception(e)
-
-    def get_alpha (self):
-        if self.obj[0].get_alpha() != None:
-            return int(self.obj[0].get_alpha()*100)
-        return 100
-
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
+        self.update_props()
         return super().paintEvent(a0)
+
 

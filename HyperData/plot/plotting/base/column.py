@@ -10,7 +10,7 @@ import numpy as np
 import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
-DEBUG = False
+DEBUG = True
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", 
               width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
@@ -418,8 +418,8 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
         
     return artist
 
-def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
-                        width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
+def stackedcolumn2d100 (X, Y, ax:Axes, gid, artist_old:list[Rectangle],
+                        orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -457,10 +457,14 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical",
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
+
+        for art_old in artist_old:
+            if art.get_gid() == art_old.get_gid():
+                art.update_from(art_old)
    
     return artist
 
-def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list[Rectangle]:
+def marimekko (X, ax:Axes, gid, artist_old:list[Rectangle], orientation="vertical", *args, **kwargs) -> list[Rectangle]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([[2,4,7],[1,5,3]])
@@ -494,13 +498,18 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
 
+        for art_old in artist_old:
+            if art.get_gid() == art_old.get_gid():
+                art.update_from(art_old)
+
+
     ax.set_xlim(pos[0]-width[0]/2,pos[-1]+width[-1]/2)
     ax.set_ylim(0,1)
     ax.set_axis_on()
 
     return artist
 
-def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=0, *args, **kwargs) -> list[Rectangle]:
+def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=True, cmap="tab10", alpha=1, rounded=0, *args, **kwargs) -> list[FancyBboxPatch]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([1,2,6])
@@ -511,10 +520,13 @@ def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=0, *args, 
     values = squarify.normalize_sizes(_X, 100, 100)
 
     rects = squarify.squarify(values, 0, 0, 100, 100)
-    
-    colors = matplotlib.colormaps[cmap](np.linspace(0,1,len(_X)))
+
+    if cmap_on:
+        colors = matplotlib.colormaps[cmap](np.linspace(0,1,len(_X)))
+    else: colors = np.repeat([None], len(_X))
+
     # colors = matplotlib.pyplot.get_cmap(cmap)
-    print(pad, cmap, rounded)
+    #print(pad, cmap, rounded)
     artist = list()
     for ind, _rect in enumerate(rects):
         
@@ -546,8 +558,10 @@ def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=0, *args, 
                 gid     = f"{gid}.{ind+1}",
                 boxstyle="square,pad=0",
             )
-
+        
+        
         rect.pad = pad
+        rect.cmap_on = cmap_on
         rect.cmap = cmap
         rect.rounded = rounded
         rect.Xdata = X[ind]
@@ -555,6 +569,19 @@ def treemap (X, ax:Axes, gid, pad=0.0, cmap="tab10", alpha=1, rounded=0, *args, 
         x, y, w, h = rect.get_bbox().bounds
         rect.Xshow = x + w / 2
         rect.Yshow = y + h / 2
+        
+        for rect_old in artist_old:
+            if rect.get_gid() == rect_old.get_gid():
+                rect.set(
+                    edgecolor=rect_old.get_edgecolor(),
+                    linewidth=rect_old.get_linewidth(),
+                    linestyle=rect_old.get_linestyle(),
+                    alpha=rect_old.get_alpha(),
+                )
+                if not cmap_on:
+                    rect.set(
+                        facecolor=rect_old.get_facecolor()
+                    )
 
         ax.add_artist(rect)
         artist.append(rect)

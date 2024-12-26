@@ -58,26 +58,16 @@ class Rectangle (QWidget):
             match=[patches.Rectangle, patches.PathPatch, patches.FancyBboxPatch],
             gid=self.gid)
 
-    def update_props(self, button=None):
-        if button != self.edgestyle.button:
-            self.edgestyle.button.setCurrentText(self.get_edgestyle())
-
-        if button != self.edgewidth.button:
-            self.edgewidth.button.setValue(self.get_edgewidth())
-        
-        if button != self.facecolor.button:
-            self.facecolor.button.setColor(self.get_facecolor())
-        
-        if button != self.edgecolor.button:
-            self.edgecolor.button.setColor(self.get_edgecolor())
-        
-        if button != self.alpha.button:
-            self.alpha.button.setValue(self.get_alpha())
+    def update_props(self):
+        self.edgestyle.button.setCurrentText(self.get_edgestyle())
+        self.edgewidth.button.setValue(self.get_edgewidth())
+        self.facecolor.button.setColor(self.get_facecolor())
+        self.edgecolor.button.setColor(self.get_edgecolor())
+        self.alpha.button.setValue(self.get_alpha())
     
     def update_plot(self, *args, **kwargs):
         # self.sig.emit()
         self.canvas.draw_idle()
-        self.update_props(*args, **kwargs)
 
     def set_edgestyle(self, value:str):
         try:
@@ -139,6 +129,7 @@ class Rectangle (QWidget):
     def paintEvent(self, a0: QPaintEvent) -> None:
         # update self.obj as soon as possible
         self.obj = self.find_object()
+        self.update_props()
         return super().paintEvent(a0)
     
 class Wedge(Rectangle):
