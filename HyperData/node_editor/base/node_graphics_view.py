@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtCore import Qt, QEvent, QPoint, QTimeLine, Signal
-from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent
+from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QCursor
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode, NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
@@ -25,6 +25,7 @@ class NodeGraphicsView(QGraphicsView):
         super().__init__(parent)
         self.grScene = grScene
         self.initUI()
+        self.initMenu()
 
         self.setScene(self.grScene)
 
@@ -35,8 +36,6 @@ class NodeGraphicsView(QGraphicsView):
         self._pan_start_x = 0
         self._pan_start_y = 0
         self._numScheduledScalings = 0
-        self.lastMousePos = QPoint()
-
 
     def initUI(self):
         self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.LosslessImageRendering | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
@@ -46,6 +45,53 @@ class NodeGraphicsView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+    
+    def initMenu(self):
+        self.menu = Menu(parent=self)
+        action = Action(text="Select All", shortcut="Ctrl+A", parent=self.menu)
+        action.triggered.connect(self.selectAll)
+        self.menu.addAction(action)            
+        action = Action(text="Zoom in", shortcut="Ctrl+Up", parent=self.menu)
+        action.triggered.connect(lambda: self.scaling_time(1.2))
+        self.menu.addAction(action)
+        action = Action(text="Zoom out", shortcut="Ctrl+Down", parent=self.menu)
+        action.triggered.connect(lambda: self.scaling_time(0.8))
+        self.menu.addAction(action)
+        self.menu.addSeparator()
+
+        data_processing = Menu(text="Data Processing")
+        self.menu.addMenu(data_processing)
+        for text in ["Data Reader", "Data Concator", "Data Transpose", 
+                                                        "Data Combiner", "Data Merge", "Data Compare",
+                                                        "Data Locator","Data Filter", "Data Holder",
+                                                        "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
+                                                        ]:
+            action = Action(text=text, parent=data_processing)
+            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            data_processing.addAction(action)
+        machine_learning = Menu(text="Machine Learning")
+        self.menu.addMenu(machine_learning)
+        for text in ["Classifier","Meta-Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
+            action = Action(text=text, parent=machine_learning)
+            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            machine_learning.addAction(action)
+        visualization = Menu(text="Visualization")
+        self.menu.addMenu(visualization)
+        for text in ["Figure"]:
+            action = Action(text=text, parent=visualization)
+            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            visualization.addAction(action)
+        misc = Menu(text="Misc")
+        self.menu.addMenu(misc)
+        for text in ["Executor", "User Define Card", "Undefined Node"]:
+            action = Action(text=text, parent=misc)
+            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            misc.addAction(action)
+        
+    def addNode(self, node_title:str):
+        node = Node(title=node_title,parent=self)
+        self.grScene.addNode(node)
+        node.setPos(self.last_rmb_click_scene_pos.x(), self.last_rmb_click_scene_pos.y())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -120,11 +166,7 @@ class NodeGraphicsView(QGraphicsView):
         
 
 
-    def leftMouseButtonRelease(self, event:QMouseEvent, node_title:str=None):
-        """
-        parse node title to 'node_title' to create new node at the mouse position
-
-        """
+    def leftMouseButtonRelease(self, event:QMouseEvent):
         super().mouseReleaseEvent(event)
 
         # get item which we release mouse button on
@@ -135,23 +177,18 @@ class NodeGraphicsView(QGraphicsView):
             if self.distanceBetweenClickAndReleaseIsOff(event):
                 res = self.edgeDragEnd(item)
                 if res: return
-
-        if node_title:
-            node = Node(title=node_title,parent=self)
-            self.grScene.addNode(node)
-            mouse_position = event.position()
-            scene_position = self.grScene.views()[0].mapToScene(mouse_position.toPoint())
-            node.setPos(scene_position.x(), scene_position.y())
         
 
 
     def rightMouseButtonPress(self, event:QMouseEvent):
         super().mousePressEvent(event)
 
+        self.last_rmb_click_scene_pos = self.mapToScene(event.pos())
+
     def rightMouseButtonRelease(self, event:QMouseEvent):
         item = self.itemAt(event.pos())
         pos = self.mapToGlobal(event.pos())
-        if item != None:
+        if item:
             if isinstance(item, Node):
                 item.setSelected(True)
                 item.menu.exec(pos)
@@ -159,51 +196,8 @@ class NodeGraphicsView(QGraphicsView):
             elif isinstance(item.parentItem(), Node):
                 item.parentItem().setSelected(True)
                 item.parentItem().menu.exec(pos)
-                
-            
         else:
-            menu = Menu(parent=self)
-            action = Action(text="Select All", shortcut="Ctrl+A", parent=menu)
-            action.triggered.connect(self.selectAll)
-            menu.addAction(action)            
-            action = Action(text="Zoom in", shortcut="Ctrl+Up", parent=menu)
-            action.triggered.connect(lambda: self.scaling_time(1.2))
-            menu.addAction(action)
-            action = Action(text="Zoom out", shortcut="Ctrl+Down", parent=menu)
-            action.triggered.connect(lambda: self.scaling_time(0.8))
-            menu.addAction(action)
-            menu.addSeparator()
-
-            data_processing = Menu(text="Data Processing")
-            menu.addMenu(data_processing)
-            for text in ["Data Reader", "Data Concator", "Data Transpose", 
-                                                          "Data Combiner", "Data Merge", "Data Compare",
-                                                          "Data Locator","Data Filter", "Data Holder",
-                                                          "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
-                                                          ]:
-                action = Action(text=text, parent=data_processing)
-                action.triggered.connect(lambda text=text,checked=True: self.leftMouseButtonRelease(event,text))
-                data_processing.addAction(action)
-            machine_learning = Menu(text="Machine Learning")
-            menu.addMenu(machine_learning)
-            for text in ["Classifier","Meta-Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
-                action = Action(text=text, parent=machine_learning)
-                action.triggered.connect(lambda text=text,checked=True: self.leftMouseButtonRelease(event,text))
-                machine_learning.addAction(action)
-            visualization = Menu(text="Visualization")
-            menu.addMenu(visualization)
-            for text in ["Figure"]:
-                action = Action(text=text, parent=visualization)
-                action.triggered.connect(lambda text=text,checked=True: self.leftMouseButtonRelease(event,text))
-                visualization.addAction(action)
-            misc = Menu(text="Misc")
-            menu.addMenu(misc)
-            for text in ["Executor", "User Define Card", "Undefined Node"]:
-                action = Action(text=text, parent=misc)
-                action.triggered.connect(lambda text=text,checked=True: self.leftMouseButtonRelease(event,text))
-                misc.addAction(action)
-                
-            menu.exec(pos)
+            self.menu.exec(pos)
 
         super().mouseReleaseEvent(event)
 
