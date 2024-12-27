@@ -1,18 +1,19 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QPaintEvent
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
-from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox, Slider
 from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
 from plot.curve.base_elements.collection import Poly3DCollection
 from plot.curve.base_elements.line import Marker, Line
 from plot.utilis import find_mpl_object
+from plot.curve.base_plottype.base import PlotConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from matplotlib import patches, colors, lines, collections
 from matplotlib.pyplot import colormaps
@@ -21,46 +22,24 @@ import numpy as np
 
 DEBUG = False
 
-class Column (QWidget):
+class Column (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
         
-        self.gid = gid
-        self.canvas = canvas
-        self.plot = plot
-        self.obj = self.find_object()
-        self.prop = dict(
-            orientation = "vertical",
-            bottom      = 0,
-            align       = "center",
-            width       = 0.8
-        )
-
-        self.initUI()
-
     def initUI(self):
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
-
-        self._layout.addWidget(TitleLabel("Column"))
-        self._layout.addWidget(SeparateHLine())
+        super().initUI()
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
-        self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
         self._layout.addWidget(self.orientation)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
         self._layout.addWidget(self.bottom)
 
         self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
-        self.barwidth.button.setValue(self.get_barwidth())
         self.barwidth.button.valueChanged.connect(self.set_barwidth)
         self._layout.addWidget(self.barwidth)
 
@@ -71,28 +50,32 @@ class Column (QWidget):
         self._layout.addStretch()
 
     def find_object (self) -> list[patches.Rectangle]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[patches.Rectangle],
-                               gid=self.gid)
-    
-    def update_plot(self):
-        # self.sig.emit()
-        self.plot.plotting(**self.prop)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[patches.Rectangle],
+            gid=self.gid
+        )
+
+    def update_props(self):
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.bottom.button.setText(self.get_bottom())
+        self.barwidth.button.setValue(self.get_barwidth())
         
     def set_orientation(self, value:str):
         try:
-            self.prop.update(orientation = value.lower())
+            self.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
+            self.plot.progressbar.changeColor()
     
     def get_orientation(self) -> str:
         return self.obj[0].orientation
     
     def set_bottom (self, value:str):
         try:
-            if value == "": value = 0
-            self.prop.update(bottom = float(value))
+            if value: value = 0
+            self.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -102,38 +85,18 @@ class Column (QWidget):
 
     def set_barwidth (self, value:float):
         try: 
-            self.prop.update(width = value)
+            self.props.update(width = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_barwidth (self) -> float:
         return self.obj[0].width
-
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
     
-class Column3D (QWidget):
+class Column3D (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
-        
-        self.gid = gid
-        self.canvas = canvas
-        self.plot = plot
-        self.obj = self.find_object()
-        self.prop = dict(
-            orientation = "z",
-            bottom      = 0,
-            Dx          = 0.5,
-            Dy          = 0.5,
-            shade       = True,
-            zsort       = "average",
-            color       = self.get_color(),
-        )
-
-        self.initUI()
 
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -178,17 +141,15 @@ class Column3D (QWidget):
         self._layout.addStretch()
 
     def find_object (self) -> list[Poly3D]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[Poly3D],
-                               gid=self.gid)
-    
-    def update_plot(self):
-        # self.sig.emit()
-        self.plot.plotting(**self.prop)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[Poly3D],
+            gid=self.gid
+        )
         
     def set_orientation(self, value:str):
         try:
-            self.prop.update(orientation = value.lower())
+            self.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -199,7 +160,7 @@ class Column3D (QWidget):
     def set_bottom (self, value:str):
         try:
             if value == "": value = 0
-            self.prop.update(bottom = float(value))
+            self.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -209,7 +170,7 @@ class Column3D (QWidget):
 
     def set_dx (self, value:float):
         try: 
-            self.prop.update(Dx = value)
+            self.props.update(Dx = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -219,7 +180,7 @@ class Column3D (QWidget):
     
     def set_dy(self, value:float):
         try:
-            self.prop.update(Dy = value)
+            self.props.update(Dy = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -229,7 +190,7 @@ class Column3D (QWidget):
     
     def set_color(self, value:str):
         try:
-            self.prop.update(color = value)
+            self.props.update(color = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -243,7 +204,7 @@ class Column3D (QWidget):
     
     def set_shade(self, value:bool):
         try:
-            self.prop.update(shade = value)
+            self.props.update(shade = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -251,31 +212,16 @@ class Column3D (QWidget):
     def get_shade(self) -> bool:
         return self.obj[0].shade
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
-
-class Dot(QWidget):
+class Dot(PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
         
-        self.gid = gid
-        self.canvas = canvas
-        self.plot = plot
-        self.obj = self.find_object()
-        self.prop = dict()
-
-        self.initUI()
-
     def initUI(self):
         self._layout = QVBoxLayout()
         self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self._layout)
         self._layout.setContentsMargins(0,0,0,0)
-
-        self._layout.addWidget(TitleLabel("Dot"))
-        self._layout.addWidget(SeparateHLine())
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
         self.orientation.button.setCurrentText(self.get_orientation())
@@ -301,13 +247,9 @@ class Dot(QWidget):
             gid=self.gid
         )
     
-    def update_plot(self):
-        # self.sig.emit()
-        self.plot.plotting(**self.prop)
-    
     def set_orientation(self, value:str):
         try:
-            self.prop.update(orientation = value.lower())
+            self.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -318,29 +260,20 @@ class Dot(QWidget):
     def set_bottom (self, value:str):
         try:
             if value == "": value = 0
-            self.prop.update(bottom = float(value))
+            self.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_bottom (self) -> str:
         return str(self.obj[0].bottom)
-    
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
 
 class ClusteredColumn(Column):
     def __init__(self, gid, canvas: Canvas, plot: NewPlot = None, parent=None):
         super().__init__(gid, canvas, plot, parent)
-
-        self.prop.update(distance = 1)
     
     def initUI(self):
         super().initUI()
-
-        self._layout.insertWidget(0, TitleLabel("Clustered Column"))
-        self._layout.insertWidget(1, SeparateHLine())
 
         self.distance = SpinBox(min=0,max=100,step=10,text="Distance")
         self.distance.button.setValue(self.get_distance())
@@ -349,7 +282,7 @@ class ClusteredColumn(Column):
 
     def set_distance(self, value:int):
         try:
-            self.prop.update(distance = float(value/100))
+            self.props.update(distance = float(value/100))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -364,9 +297,6 @@ class ClusteredDot(Dot):
     def initUI(self):
         super().initUI()
 
-        self._layout.insertWidget(0, TitleLabel("Clustered Column"))
-        self._layout.insertWidget(1, SeparateHLine())
-
         self.distance = SpinBox(min=0,max=100,step=10,text="Distance")
         self.distance.button.setValue(self.get_distance())
         self.distance.button.valueChanged.connect(self.set_distance)
@@ -374,7 +304,7 @@ class ClusteredDot(Dot):
     
     def set_distance(self, value:int):
         try:
-            self.prop.update(distance = float(value/100))
+            self.props.update(distance = float(value/100))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
@@ -382,7 +312,7 @@ class ClusteredDot(Dot):
     def get_distance(self) -> int:
         return int(self.obj[0].distance*100)
 
-class Dumbbell(QWidget):
+class Dumbbell(PlotConfigBase):
     sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
@@ -390,11 +320,6 @@ class Dumbbell(QWidget):
         if "." in gid:
             self.gid = gid.split(".")[0]
         else: self.gid = gid
-        self.canvas = canvas
-        self.plot = plot
-        self.obj = self.find_object()
-        self.props = dict()
-        self.initUI()
     
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -428,9 +353,6 @@ class Dumbbell(QWidget):
     def find_object(self):
         return find_mpl_object(self.canvas.fig, [lines.Line2D], self.gid)
 
-    def update_plot(self):
-        self.plot.plotting(**self.props)
-
     def set_orientation(self, value:str):
         try:
             self.props.update(orientation = value.lower())
@@ -441,22 +363,10 @@ class Dumbbell(QWidget):
     def get_orientation(self) -> str:
         return self.obj[0].orientation
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
-
-class Marimekko (QWidget):
+class Marimekko (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
-        
-        self.gid = gid
-        self.canvas = canvas
-        self.plot = plot
-        self.obj = self.find_object()
-        self.prop = dict(orientation = "vertical")
-
-        self.initUI()
     
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -464,11 +374,7 @@ class Marimekko (QWidget):
         self.setLayout(self._layout)
         self._layout.setContentsMargins(0,0,0,0)
 
-        self._layout.addWidget(TitleLabel("Column"))
-        self._layout.addWidget(SeparateHLine())
-
         self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
-        self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
         self._layout.addWidget(self.orientation)
 
@@ -479,43 +385,29 @@ class Marimekko (QWidget):
         self._layout.addStretch()
     
     def find_object (self) -> list[patches.Rectangle]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[patches.Rectangle],
-                               gid=self.gid)
-    
-    def update_plot(self):
-        # self.sig.emit()
-        self.plot.plotting(**self.prop)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[patches.Rectangle],
+            gid=self.gid
+        )
+
+    def update_props(self):
+        self.orientation.button.setCurrentText(self.get_orientation())
     
     def set_orientation(self, value:str):
         try:
-            self.prop.update(orientation = value.lower())
+            self.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
 
     def get_orientation(self) -> str:
         return self.obj[0].orientation
-    
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
 
-class Treemap(QWidget):
+class Treemap(PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
         super().__init__(parent)
-
-        self.gid = gid
-        self.canvas = canvas
-        self.setParent(parent)
-        self.plot = plot
-        self.obj = self.find_object()
-        self.props = dict(
-            pad   = 0,
-            cmap  = "tab10",
-            alpha = 1)
-        self.initUI()
     
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -553,10 +445,6 @@ class Treemap(QWidget):
             match=[patches.FancyBboxPatch],
             gid=self.gid,
         )
-    
-    def update_plot(self):
-        # self.sig.emit()
-        self.plot.plotting(**self.props)
     
     def update_props(self):
         self.rounded.button.setValue(self.get_rounded())
@@ -606,9 +494,5 @@ class Treemap(QWidget):
     def get_cmap(self) -> str:
         return self.obj[0].cmap
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        self.update_props()
-        return super().paintEvent(a0)
 
 

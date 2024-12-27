@@ -354,7 +354,7 @@ class GraphicsView (QGraphicsView):
         self.legend_picked = legend_onPress(event, self.canvas)
 
         if not self.legend_picked:
-            if event.button == 1 and event.dblclick:
+            if event.button == 1:
                 for obj in stack:
                     if obj.contains(event)[0]:
                         self.mpl_pressed.emit(obj.get_gid())

@@ -9,6 +9,7 @@ from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
+from plot.curve.base_elements.base import ArtistConfigBase
 from matplotlib.collections import Collection, PolyCollection
 from matplotlib.collections import QuadMesh as Mesh
 from mpl_toolkits.mplot3d import art3d
@@ -19,21 +20,13 @@ from typing import List
 
 DEBUG = False
 
-class SingleColorCollection (QWidget):
+class SingleColorCollection (ArtistConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
-        super().__init__(parent)
-
-        self.gid = gid
-        self.canvas = canvas  
-        self.obj = self.find_object()
-        self.setParent(parent)
-        self.initUI()
+        super().__init__(gid, canvas, parent)
 
     def initUI (self):
-        self._layout = QVBoxLayout()
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
+        super().initUI()
 
         self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
         self.edgewidth.button.setValue(self.get_edgewidth())
@@ -61,26 +54,18 @@ class SingleColorCollection (QWidget):
         self._layout.addStretch()
     
     def find_object (self) -> List[Collection | PolyCollection]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[Collection, PolyCollection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[Collection, PolyCollection],
+            gid=self.gid
+        )
     
-    def update_props(self, button=None):
-        if button != self.edgewidth.button:
-            self.edgewidth.button.setValue(self.get_edgewidth())
-        if button != self.edgestyle.button:
-            self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        if button != self.facecolor.button:
-            self.facecolor.button.setColor(self.get_facecolor())
-        if button != self.edgecolor.button:
-            self.edgecolor.button.setColor(self.get_edgecolor())
-        if button != self.alpha.button:
-            self.alpha.button.setValue(self.get_alpha())
-    
-    def update_plot(self, *args, **kwargs):
-        # self.sig.emit()
-        self.canvas.draw_idle()
-        self.update_props(*args, **kwargs)
+    def update_props(self):
+        self.edgewidth.button.setValue(self.get_edgewidth())
+        self.edgestyle.button.setCurrentText(self.get_edgestyle())
+        self.facecolor.button.setColor(self.get_facecolor())
+        self.edgecolor.button.setColor(self.get_edgecolor())
+        self.alpha.button.setValue(self.get_alpha())
 
     def set_edgewidth (self, value):
         try: 
@@ -88,7 +73,6 @@ class SingleColorCollection (QWidget):
                 obj.set_linewidth(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgewidth.button)
     
     def get_edgewidth (self):
         try:
@@ -101,7 +85,6 @@ class SingleColorCollection (QWidget):
                 obj.set_linestyle(value.lower())
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgestyle.button)
     
     def get_edgestyle (self):
         try:
@@ -122,7 +105,6 @@ class SingleColorCollection (QWidget):
                 obj.set_facecolor(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.facecolor.button)
     
     def get_facecolor(self):
         try: 
@@ -135,7 +117,6 @@ class SingleColorCollection (QWidget):
                 obj.set_edgecolor(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgecolor.button)
     
     def get_edgecolor (self):
         try:
@@ -148,7 +129,6 @@ class SingleColorCollection (QWidget):
                 obj.set_alpha(value/100)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.alpha.button)
 
     def get_alpha (self):
         try:
@@ -157,51 +137,35 @@ class SingleColorCollection (QWidget):
             return 100
         except: return 100
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        # update self.obj as soon as possible
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
-
-class CmapCollection (QWidget):
+class CmapCollection (ArtistConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
-        super().__init__(parent)
-
-        self.gid = gid
-        self.canvas = canvas  
-        self.obj = self.find_object()
-        self.setParent(parent)
-        self.initUI()
+        super().__init__(gid, canvas, parent)
 
     def initUI(self):
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('CmapCollection'))
-        layout.addWidget(SeparateHLine())
+        super().initUI()
 
         self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
         self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        layout.addWidget(self.edgewidth)
+        self._layout.addWidget(self.edgewidth)
 
         self.edgestyle = ComboBox(text='Edge Style',items=linestyle_lib.values())
         self.edgestyle.button.setCurrentText(self.get_edgestyle())
         self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        layout.addWidget(self.edgestyle)
+        self._layout.addWidget(self.edgestyle)
 
         self.cmap_on = Toggle(text="Colormap On")
         self.cmap_on.button.setChecked(self.get_cmap_on())
         self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
-        layout.addWidget(self.cmap_on)
+        self._layout.addWidget(self.cmap_on)
 
         self.cmap_widget = QWidget()
         self.cmap_widget.setEnabled(self.get_cmap_on())
         cmap_layout = QVBoxLayout()
         cmap_layout.setContentsMargins(0,0,0,0)
         self.cmap_widget.setLayout(cmap_layout)
-        layout.addWidget(self.cmap_widget)
+        self._layout.addWidget(self.cmap_widget)
 
         self.cmap = ComboBox(items=colormaps(), text="Colormap")
         self.cmap.button.setCurrentText(self.get_cmap())
@@ -215,46 +179,35 @@ class CmapCollection (QWidget):
 
         self.facecolor = ColorDropdown(text='Face Color',color=self.get_facecolor(), parent=self.parent())
         self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        layout.addWidget(self.facecolor)
+        self._layout.addWidget(self.facecolor)
 
         self.edgecolor = ColorDropdown(text='Edge Color',color=self.get_edgecolor(), parent=self.parent())
         self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(self.edgecolor)
+        self._layout.addWidget(self.edgecolor)
 
         self.alpha = Slider(text='Transparency',min=0,max=100)
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
+        self._layout.addWidget(self.alpha)
 
-        layout.addStretch()
+        self._layout.addStretch()
     
     def find_object (self) -> list[Collection]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[Collection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[Collection],
+            gid=self.gid
+        )
     
-    def update_props(self, button=None):
-        if button != self.edgewidth.button:
-            self.edgewidth.button.setValue(self.get_edgewidth())
-        if button != self.edgestyle.button:
-            self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        if button != self.cmap_on.button:
-            self.cmap_on.button.setChecked(self.get_cmap_on())
-        if button != self.cmap.button:
-            self.cmap.button.setCurrentText(self.get_cmap())
-        if button != self.norm.button:
-            self.norm.button.setCurrentText(self.get_norm())
-        if button != self.facecolor.button:
-            self.facecolor.button.setColor(self.get_facecolor())
-        if button != self.edgecolor.button:
-            self.edgecolor.button.setColor(self.get_edgecolor())
-        if button != self.alpha.button:
-            self.alpha.button.setValue(self.get_alpha())
-    
-    def update_plot(self, *args, **kwargs):
-        # self.sig.emit()
-        self.canvas.draw_idle()
-        self.update_props(*args, **kwargs)
+    def update_props(self):
+        self.edgewidth.button.setValue(self.get_edgewidth())
+        self.edgestyle.button.setCurrentText(self.get_edgestyle())
+        self.cmap_on.button.setChecked(self.get_cmap_on())
+        self.cmap.button.setCurrentText(self.get_cmap())
+        self.norm.button.setCurrentText(self.get_norm())
+        self.facecolor.button.setColor(self.get_facecolor())
+        self.edgecolor.button.setColor(self.get_edgecolor())
+        self.alpha.button.setValue(self.get_alpha())
     
     def set_cmap_on (self, checked):
         self.cmap_widget.setEnabled(checked)
@@ -265,9 +218,7 @@ class CmapCollection (QWidget):
         else:
             self.set_cmap(None)
             self.set_norm(None)
-        
-        self.update_props(self.cmap_on.button)
-        
+                
     def get_cmap_on(self):
         if isinstance(self.obj[0].get_array(), numpy.ma.core.MaskedArray):
             return True
@@ -279,7 +230,6 @@ class CmapCollection (QWidget):
                 obj.set_linewidth(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgewidth.button)
     
     def get_edgewidth (self):
         return self.obj[0].get_linewidth()
@@ -290,7 +240,6 @@ class CmapCollection (QWidget):
                 obj.set_linestyle(value.lower())
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgestyle.button)
     
     def get_edgestyle (self):
         ls = self.obj[0].get_linestyle()
@@ -318,7 +267,6 @@ class CmapCollection (QWidget):
                     obj.set_cmap(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.cmap.button)
     
     def get_cmap(self) -> str:
         return self.obj[0].get_cmap().name
@@ -331,7 +279,6 @@ class CmapCollection (QWidget):
                 obj.set_norm(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.norm.button)
 
     def get_norm(self) -> str:
         _scale_mapping = scale._scale_mapping
@@ -346,7 +293,6 @@ class CmapCollection (QWidget):
                 obj.set_facecolor(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.facecolor.button)
     
     def get_facecolor(self):
         return colors.to_hex(self.obj[0].get_facecolor()[0])
@@ -357,7 +303,6 @@ class CmapCollection (QWidget):
                 obj.set_edgecolor(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgecolor.button)
     
     def get_edgecolor (self):
         if len(self.obj[0].get_edgecolor()) > 1:
@@ -370,53 +315,39 @@ class CmapCollection (QWidget):
                 obj.set_alpha(value/100)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.alpha.button)
 
     def get_alpha (self):
         if self.obj[0].get_alpha() != None:
             return int(self.obj[0].get_alpha()*100)
         return 100
-
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        # update self.obj as soon as possible
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
     
-class QuadMesh(QWidget):
+class QuadMesh(ArtistConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
-        super().__init__(parent)
-
-        self.gid = gid
-        self.canvas = canvas  
-        self.obj = self.find_object()
-        self.setParent(parent)
-        self.initUI()
+        super().__init__(gid, canvas, parent)
     
     def initUI(self):
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
+        super().initUI()
 
         self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
         self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        layout.addWidget(self.edgewidth)
+        self._layout.addWidget(self.edgewidth)
 
         self.edgestyle = ComboBox(text='Edge Style',items=linestyle_lib.values())
         self.edgestyle.button.setCurrentText(self.get_edgestyle())
         self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        layout.addWidget(self.edgestyle)
+        self._layout.addWidget(self.edgestyle)
 
         self.edgecolor = ColorDropdown(text='Edge Color',color=self.get_edgecolor(), parent=self.parent())
         self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(self.edgecolor)
+        self._layout.addWidget(self.edgecolor)
 
         self.cmap_widget = QWidget()
         cmap_layout = QVBoxLayout()
         cmap_layout.setContentsMargins(0,0,0,0)
         self.cmap_widget.setLayout(cmap_layout)
-        layout.addWidget(self.cmap_widget)
+        self._layout.addWidget(self.cmap_widget)
 
         self.cmap = ComboBox(items=colormaps(), text="Colormap")
         self.cmap.button.setCurrentText(self.get_cmap())
@@ -431,33 +362,22 @@ class QuadMesh(QWidget):
         self.alpha = Slider(text='Transparency',min=0,max=100)
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
+        self._layout.addWidget(self.alpha)
 
-        layout.addStretch()
+        self._layout.addStretch()
     
     def find_object (self) -> list[Mesh]:
         return find_mpl_object(figure=self.canvas.fig,
                                match=[Mesh],
                                gid=self.gid)
     
-    def update_props(self, button=None):
-        if button != self.edgewidth.button:
-            self.edgewidth.button.setValue(self.get_edgewidth())
-        if button != self.edgestyle.button:
-            self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        if button != self.edgecolor.button:
-            self.edgecolor.button.setColor(self.get_edgecolor())
-        if button != self.cmap.button:
-            self.cmap.button.setCurrentText(self.get_cmap())
-        if button != self.norm.button:
-            self.norm.button.setCurrentText(self.get_norm())
-        if button != self.alpha.button:
-            self.alpha.button.setValue(self.get_alpha())
-    
-    def update_plot(self, *args, **kwargs):
-        # self.sig.emit()
-        self.canvas.draw_idle()
-        self.update_props(*args, **kwargs)
+    def update_props(self):
+        self.edgewidth.button.setValue(self.get_edgewidth())
+        self.edgestyle.button.setCurrentText(self.get_edgestyle())
+        self.edgecolor.button.setColor(self.get_edgecolor())
+        self.cmap.button.setCurrentText(self.get_cmap())
+        self.norm.button.setCurrentText(self.get_norm())
+        self.alpha.button.setValue(self.get_alpha())
     
     def set_edgewidth (self, value):
         try: 
@@ -465,7 +385,6 @@ class QuadMesh(QWidget):
                 obj.set_linewidth(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgewidth.button)
     
     def get_edgewidth (self):
         return self.obj[0].get_linewidth()
@@ -476,7 +395,6 @@ class QuadMesh(QWidget):
                 obj.set_linestyle(value.lower())
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgestyle.button)
     
     def get_edgestyle (self):
         ls = self.obj[0].get_linestyle()
@@ -495,7 +413,6 @@ class QuadMesh(QWidget):
                 obj.set_edgecolor(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.edgecolor.button)
     
     def get_edgecolor (self):
         if len(self.obj[0].get_edgecolor()) > 1:
@@ -508,7 +425,6 @@ class QuadMesh(QWidget):
                     obj.set_cmap(value)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.cmap.button)
     
     def get_cmap(self) -> str:
         return self.obj[0].get_cmap().name
@@ -519,7 +435,6 @@ class QuadMesh(QWidget):
                 obj.set_norm(value.lower())
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.norm.button)
 
     def get_norm(self) -> str:
         _scale_mapping = scale._scale_mapping
@@ -534,33 +449,19 @@ class QuadMesh(QWidget):
                 obj.set_alpha(value/100)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.alpha.button)
 
     def get_alpha (self):
         if self.obj[0].get_alpha() != None:
             return int(self.obj[0].get_alpha()*100)
         return 100
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        # update self.obj as soon as possible
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
-    
-class Poly3DCollection (QWidget):
+class Poly3DCollection (ArtistConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, parent)
 
-        self.gid = gid
-        self.canvas = canvas  
-        self.obj = self.find_object()
-        self.setParent(parent)
-        self.initUI()
-    
     def initUI(self):
-        self._layout = QVBoxLayout()
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
+        super().initUI()
 
         self.zsort = ComboBox(items=["average","min","max"], text="Zsort")
         self.zsort.button.setCurrentText(self.get_zsort())
@@ -575,26 +476,20 @@ class Poly3DCollection (QWidget):
         self._layout.addStretch()
 
     def find_object(self) -> List[art3d.Poly3DCollection]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[art3d.Poly3DCollection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[art3d.Poly3DCollection],
+            gid=self.gid
+        )
     
-    def update_props(self, button=None):
-        if button != self.zsort.button:
-            self.zsort.button.setCurrentText(self.get_zsort())
-        if button != self.alpha.button:
-            self.alpha.button.setValue(self.get_alpha())
-    
-    def update_plot(self, *args, **kwargs):
-        # self.sig.emit()
-        self.canvas.draw_idle()
-        self.update_props(*args, **kwargs)
+    def update_props(self):
+        self.zsort.button.setCurrentText(self.get_zsort())
+        self.alpha.button.setValue(self.get_alpha())
 
     def set_zsort(self, value:str):
         try:
             for obj in self.obj:
                 obj.set_zsort(value.lower())
-            self.update_plot(self.zsort.button)
         except Exception as e:
             logger.exception(e)
     
@@ -609,7 +504,6 @@ class Poly3DCollection (QWidget):
                 obj.set_alpha(value/100)
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.alpha.button)
 
     def get_alpha (self):
         try:
@@ -617,9 +511,3 @@ class Poly3DCollection (QWidget):
                 return int(self.obj[0].get_alpha()*100)
             return 100
         except: return 100
-        
-
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        # update self.obj as soon as possible
-        self.obj = self.find_object()
-        return super().paintEvent(a0)

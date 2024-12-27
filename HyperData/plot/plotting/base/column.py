@@ -12,8 +12,7 @@ from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
 DEBUG = True
 
-def column2d (X, Y, ax:Axes, gid, orientation="vertical", 
-              width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
+def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
     
     if orientation == "vertical":
         artist = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
@@ -418,8 +417,7 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
         
     return artist
 
-def stackedcolumn2d100 (X, Y, ax:Axes, gid, artist_old:list[Rectangle],
-                        orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
+def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -458,13 +456,9 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, artist_old:list[Rectangle],
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
 
-        for art_old in artist_old:
-            if art.get_gid() == art_old.get_gid():
-                art.update_from(art_old)
-   
     return artist
 
-def marimekko (X, ax:Axes, gid, artist_old:list[Rectangle], orientation="vertical", *args, **kwargs) -> list[Rectangle]:
+def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list[Rectangle]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([[2,4,7],[1,5,3]])
@@ -497,11 +491,6 @@ def marimekko (X, ax:Axes, gid, artist_old:list[Rectangle], orientation="vertica
         art.Ydata = None
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
-
-        for art_old in artist_old:
-            if art.get_gid() == art_old.get_gid():
-                art.update_from(art_old)
-
 
     ax.set_xlim(pos[0]-width[0]/2,pos[-1]+width[-1]/2)
     ax.set_ylim(0,1)

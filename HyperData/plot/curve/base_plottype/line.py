@@ -3,8 +3,6 @@ from PySide6.QtGui import QPaintEvent
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
 from plot.curve.base_elements.line import Line2D, LineCollection, Marker
 from plot.curve.base_elements.line import Line as LineBase
-from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.button import Toggle, ComboBox, SegmentedWidget
 from ui.base_widgets.spinbox import DoubleSpinBox
 from matplotlib.collections import Collection
@@ -12,29 +10,19 @@ from matplotlib import lines, collections
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.collection import SingleColorCollection
+from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
 
 DEBUG = False
 
-class Line (QWidget):
+class Line (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
         
-        self.gid = gid
-        self.canvas = canvas
-        self.plot = plot
-        self.props = dict()
-        self.obj = self.find_object()
-
-        self.initUI()
-
     def initUI(self):
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
+        super().initUI()
 
         self.line = Line2D(self.gid, self.canvas, self.parent())
         self.line.sig.connect(self.sig.emit)
@@ -43,66 +31,56 @@ class Line (QWidget):
         self._layout.addStretch()
     
     def find_object (self) -> list[lines.Line2D]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[lines.Line2D],
-                               gid=self.gid)
-
-    def update_plot(self, *args, **kwargs):
-        # self.sig.emit()
-        self.plot.plotting(**self.props)
-        self.update_props(*args, **kwargs)
-    
-    def update_props(self, button=None):
-        pass
-
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[lines.Line2D],
+            gid=self.gid
+        )
  
-class Step (Line):
+class Step (PlotConfigBase):
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
+        super().initUI()
 
         self.where = ComboBox(items=['pre', 'post', 'mid'], text="Where")
         self.where.button.setCurrentText(self.get_where())
         self.where.button.currentTextChanged.connect(self.set_where)
         self._layout.addWidget(self.where)
         self.line = Line2D(self.gid, self.canvas, self.parent())
-        self.line.sig.connect(self.sig.emit)
         self._layout.addWidget(self.line)
 
         self._layout.addStretch()
     
-    def update_props(self, button=None):
-        if button != self.where.button:
-            self.where.button.setCurrentText(self.get_where())
-        self.line.update_props()
+    def find_object (self) -> list[lines.Line2D]:
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[lines.Line2D],
+            gid=self.gid,
+        )
+    
+    def update_props(self):
+        self.where.button.setCurrentText(self.get_where())
 
     def set_where (self, value:str):
         try:
             self.props.update(where = value)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
-        self.update_plot(self.where.button)
     
     def get_where (self) -> str:
         return self.obj[0].where
 
-class Stem(Line):
+class Stem(PlotConfigBase):
+    sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
+        super().initUI()
         
         self.choose_component = SegmentedWidget()
         self._layout.addWidget(self.choose_component)
@@ -144,24 +122,20 @@ class Stem(Line):
         layout_baseline.addWidget(self.baseline)
 
     def find_object(self):
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[lines.Line2D, collections.LineCollection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[lines.Line2D, collections.LineCollection],
+            gid=self.gid
+        )
 
-    def update_props(self, button=None):
-        if button != self.orientation.button:
-            self.orientation.button.setCurrentText(self.get_orientation())
-        if button != self.bottom.button:
-            self.bottom.button.setValue(self.get_bottom())
-
-        self.stemline.update_props()
-        self.markerline.update_props()
-        self.baseline.update_props()
+    def update_props(self):
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.bottom.button.setValue(self.get_bottom())
 
     def set_orientation(self, value:str):
         try:
             self.props.update(orientation = value.lower())
-            self.update_plot(self.orientation.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -171,7 +145,7 @@ class Stem(Line):
     def set_bottom(self, value:float):
         try:
             self.props.update(bottom = value)
-            self.update_plot(self.bottom.button)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -189,27 +163,13 @@ class Stem3d (Stem):
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.blockSignals(False)
 
-class Area (QWidget):
+class Area (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas: Canvas, plot:NewPlot, parent=None):
-        super().__init__(parent)
-        self.gid = gid
-        self.canvas = canvas
-        self.obj = self.find_obj()
-        self.plot = plot
-        self.prop = dict()
-
-        self.initUI()
+        super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
-
-        self.title = TitleLabel('Area')
-        self._layout.addWidget(self.title)
-        self._layout.addWidget(SeparateHLine())
+        super().initUI()
 
         self.step = ComboBox(text='Step',items=['pre','post','mid','none'])
         self.step.button.setCurrentText(self.get_step())
@@ -230,27 +190,21 @@ class Area (QWidget):
         self._layout.addStretch()
 
     def find_obj (self) -> list[Collection]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[Collection],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[Collection],
+            gid=self.gid
+        )
     
-    def update_plot(self, *args, **kwargs):
-        # self.sig.emit()
-        self.plot.plotting(**self.prop)
-        self.update_props(*args, **kwargs)  
-    
-    def update_props(self, button=None):
-        if button != self.step.button:
-            self.step.button.setCurrentText(self.get_step())
-        if button != self.orientation.button:
-            self.orientation.button.setCurrentText(self.get_orientation())
-        self.patch.update_props()
+    def update_props(self):
+        self.step.button.setCurrentText(self.get_step())
+        self.orientation.button.setCurrentText(self.get_orientation())
     
     def set_step(self, value:str):
         try:
-            self.prop.update(step = value.lower())
-            if value == "none": self.prop.update(step = None)
-            self.update_plot(self.step.button)
+            self.props.update(step = value.lower())
+            if value == "none": self.props.update(step = None)
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
@@ -259,17 +213,13 @@ class Area (QWidget):
 
     def set_orientation(self, value:str):
         try:
-            self.prop.update(orientation = value.lower())
-            self.update_plot(self.orientation.button)
+            self.props.update(orientation = value.lower())
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_orientation(self) -> str:
         return self.obj[0].orientation
-
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_obj()
-        return super().paintEvent(a0)
     
 class StackedArea(Area):
     def __init__(self, gid, canvas: Canvas, plot:NewPlot, parent=None):
@@ -280,10 +230,6 @@ class StackedArea(Area):
         self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self._layout)
         self._layout.setContentsMargins(0,0,0,0)
-
-        self.title = TitleLabel('Stacked Area')
-        self._layout.addWidget(self.title)
-        self._layout.addWidget(SeparateHLine())
 
         self.baseline = ComboBox(text='Baseline',items=['zero','sym','wiggle','weighted_wiggle'])
         self.baseline.button.setCurrentText(self.get_baseline())
@@ -302,24 +248,20 @@ class StackedArea(Area):
         self._layout.addWidget(self.patch)
         
         self._layout.addStretch()
-
         
     def set_baseline(self, value:str):
         try:
-            self.prop.update(baseline = value.lower())
-            self.update_plot(self.baseline.button)
+            self.props.update(baseline = value.lower())
+            self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_baseline(self) -> str:
         return self.obj[0].baseline
 
-    def update_props(self, button=None):
-        if button != self.step.button:
-            self.step.button.setCurrentText(self.get_step())
-        if button != self.baseline.button:
-            self.baseline.button.setCurrentText(self.get_baseline())
-        self.patch.update_props()
+    def update_props(self):
+        self.step.button.setCurrentText(self.get_step())
+        self.baseline.button.setCurrentText(self.get_baseline())
 
 class StackedArea100 (Area):
     def __init__(self, gid, canvas: Canvas, plot:NewPlot, parent=None):
@@ -337,6 +279,3 @@ class StackedArea100 (Area):
         self._layout.addWidget(self.patch)
         
         self._layout.addStretch()
-    
-    def update_props(self, button=None):
-        self.patch.update_props()

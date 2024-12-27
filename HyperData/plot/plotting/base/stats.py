@@ -211,7 +211,7 @@ def boxplot(X, ax:Axes, gid:str, showbox = True, notch = False,
    
     return artist
 
-def violinplot(X, ax:Axes, gid:str, vert=True, widths=0.5,
+def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
                showmeans=False, showextrema=True, showmedians=False,
                points=100, bw_method="scott", quantiles=None, *args, **kwargs) -> list[PolyCollection | LineCollection]:
 
@@ -221,10 +221,18 @@ def violinplot(X, ax:Axes, gid:str, vert=True, widths=0.5,
     X = np.asarray(X)
 
     artist = list()
-    _artist = ax.violinplot(X, vert=vert, widths=widths,
-                            showextrema=showextrema, showmeans=showmeans,
-                            showmedians=showmedians, points=points,
-                            bw_method=bw_method, quantiles=quantiles, *args, **kwargs)
+    _artist = ax.violinplot(
+        X, 
+        orientation=orientation, 
+        widths=widths,
+        showextrema=showextrema, 
+        showmeans=showmeans,
+        showmedians=showmedians, 
+        points=points,
+        bw_method=bw_method, 
+        quantiles=quantiles, 
+        *args, **kwargs
+    )
 
     bodies = _artist.get("bodies")
     cmeans = _artist.get("cmeans")
@@ -259,7 +267,7 @@ def violinplot(X, ax:Axes, gid:str, vert=True, widths=0.5,
         cquantiles.set_gid(gid=f"{gid}/cquantiles")
     
     for art in artist:
-        art.vert = vert
+        art.orientation = orientation
         art.widths = widths
         art.showmeans = showmeans
         art.showextrema = showextrema
@@ -277,21 +285,27 @@ def violinplot(X, ax:Axes, gid:str, vert=True, widths=0.5,
 
     return artist
 
-def eventplot(X, ax:Axes, gid:str, orientation="horizontal", 
-              lineoffsets=1, linelengths=1, linewidths=1.5, *args, **kwargs) -> list[EventCollection]:
+def eventplot(X, ax:Axes, gid:str, orientation="horizontal",
+              lineoffsets=1, linelengths=1, *args, **kwargs) -> list[EventCollection]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.gamma(4, size=(3, 50))
 
     X = np.asarray(X)
 
-    artist = ax.eventplot(X, gid=gid, *args, **kwargs)
+    artist = ax.eventplot(
+        X, 
+        gid=gid, 
+        orientation=orientation,
+        lineoffsets=lineoffsets,
+        linelengths=linelengths,
+        *args, **kwargs
+    )
     
     for art in artist:
         art.orientation = orientation
         art.lineoffsets = lineoffsets
         art.linelengths = linelengths
-        art.linewidths = linewidths
         art.Xdata = None
         art.Ydata = None
         p = np.array(art.get_paths()[0].vertices).mean(axis=0)

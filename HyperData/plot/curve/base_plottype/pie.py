@@ -5,10 +5,11 @@ from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.button import Toggle, ComboBox
+from ui.base_widgets.button import Toggle
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Wedge, MultiWedges
+from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import patches
@@ -17,26 +18,10 @@ from typing import List
 
 DEBUG = False
 
-class Pie (QWidget):
+class Pie (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
-        self.gid = gid
-        self.canvas = canvas
-        self.setParent(parent)
-        self.plot = plot
-        self.obj = self.find_object()
-        self.props = dict(
-            explode=None,
-            labels=None,
-            startangle=0,
-            radius=1,
-            counterclock=True,
-            rotatelabels=False,
-            normalize=True
-        )
-
-        self.initUI()
+        super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -89,13 +74,11 @@ class Pie (QWidget):
         self._layout.addStretch()
 
     def find_object (self) -> List[patches.Wedge]:
-        return find_mpl_object(figure=self.canvas.fig,
-                               match=[patches.Wedge],
-                               gid=self.gid)
-    
-    def update_plot(self):
-        # self.sig.emit()
-        self.plot.plotting(**self.props)
+        return find_mpl_object(
+            figure=self.canvas.fig,
+            match=[patches.Wedge],
+            gid=self.gid
+        )
 
     def set_explode(self, value:str) -> None:
         try:
@@ -175,10 +158,6 @@ class Pie (QWidget):
     def get_normalize(self) -> bool:
         return self.obj[0].normalize
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()
-        return super().paintEvent(a0)
-
 class Coxcomb(Pie):
     def __init__(self, gid, canvas, plot = None, parent=None):
         super().__init__(gid, canvas, plot, parent)
@@ -232,8 +211,6 @@ class Doughnut(Pie):
     sig = Signal()
     def __init__(self, gid, canvas, plot = None, parent=None):
         super().__init__(gid, canvas, plot, parent)
-
-        self.props.update(width=0.3)
     
     def initUI(self):
         super().initUI()

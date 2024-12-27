@@ -30,7 +30,7 @@ class Main(QMainWindow):
            
         ### Adjust the main window's size
         #self.setMinimumSize(int(self.screen_size[2]*0.55),int(self.screen_size[3]*0.55)) # set minimum size for display
-        
+
         menu_bar = MenuBar(self)
         self.setMenuBar(menu_bar)
 

@@ -31,7 +31,7 @@ def remove_artist (ax:Axes, gid:str) -> list[Artist]:
             pass
     return artist_removed
 
-def _update_props (from_obj: Artist, to_obj: Artist) -> None:  
+def update_props (from_obj: Artist, to_obj: Artist) -> None:  
     try:      
         #print("update props")
         #print(to_obj, from_obj)
@@ -165,53 +165,51 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     rescale_plot(ax.figure)
     
     match plot_type:
-        case "2d line":                 artist = line2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d step":                 artist = step2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d stem":                 artist = stem2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, artist_old, *args, **kwargs)
-        case "fill between":            artist = fill_between(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d column":               artist = column2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "dot":                     artist = dot(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "dumbbell":                artist = dumbbell(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "clustered dot":           artist = clustereddot(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "stacked dot":             artist = stackeddot(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "marimekko":               artist = marimekko(X, ax, gid, artist_old, *args, **kwargs)
+        case "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
+        case "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
+        case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
+        case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
+        case "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
+        case "dot":                     artist = dot(X, Y, ax, gid, *args, **kwargs)
+        case "dumbbell":                artist = dumbbell(X, Y, Z, ax, gid, *args, **kwargs)
+        case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
+        case "clustered dot":           artist = clustereddot(X, Y, ax, gid, *args, **kwargs)
+        case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
+        case "stacked dot":             artist = stackeddot(X, Y, ax, gid, *args, **kwargs)
+        case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
+        case "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
         case "treemap":                 artist = treemap(X, ax, gid, artist_old, *args, **kwargs)
-        case "2d scatter":              artist = scatter2d(X, Y, ax, gid, artist_old, *args, **kwargs)
-        case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "pie":                     artist = pie(X, ax, gid, artist_old, *args, **kwargs)
-        case "coxcomb":                 artist = coxcomb(X, ax, gid, artist_old, *args, **kwargs)
-        case "doughnut":                artist = doughnut(X, ax, gid, artist_old, *args, **kwargs)
-        case "multilevel doughnut":     artist = multilevel_doughnut(X, ax, gid, artist_old, *args, **kwargs)
-        case "semicircle doughnut":     artist = semicircle_doughnut(X, ax, gid, artist_old, *args, **kwargs)
-        case "histogram":               artist = histogram(X, ax, gid, artist_old, *args, **kwargs)
-        case "stacked histogram":       artist = stacked_histogram(X, ax, gid, artist_old, *args, **kwargs)
-        case "boxplot":                 artist = boxplot(X, ax, gid, artist_old, *args, **kwargs)
-        case "violinplot":              artist = violinplot(X, ax, gid, artist_old, *args, **kwargs)
-        case "eventplot":               artist = eventplot(X, ax, gid, artist_old, *args, **kwargs)
-        case "hist2d":                  artist = hist2d(X, Y, ax, gid, artist_old, *args, **kwargs)
+        case "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
+        case "coxcomb":                 artist = coxcomb(X, ax, gid, *args, **kwargs)
+        case "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
+        case "multilevel doughnut":     artist = multilevel_doughnut(X, ax, gid, *args, **kwargs)
+        case "semicircle doughnut":     artist = semicircle_doughnut(X, ax, gid, *args, **kwargs)
+        case "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
+        case "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
+        case "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)
+        case "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
+        case "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
+        case "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
 
-        case "3d line":                 artist = line3d(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "3d step":                 artist = step3d(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "3d column":               artist = column3d(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, artist_old, *args, **kwargs)
-        case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, artist_old, *args, **kwargs)
+        case "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
+        case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
     
-    # some plot types cannot update props from old artists
-    # if plot_type not in []:
-    #     if artist_old != []:
-    #         for art in artist:
-    #             for art_old in artist_old:
-    #                 if art._update:
-    #                     print(art)
-    #                     if art.get_gid() == art_old.get_gid():
-    #                         update_props(art_old, art)
+    # some plot types cannot generally update props from old artists
+    if plot_type not in ["treemap"]:
+        if artist_old != []:
+            for art in artist:
+                for art_old in artist_old:
+                    if art.get_gid() == art_old.get_gid():
+                        update_props(art_old, art)
     # update legend if necessary
     set_legend(ax.figure.canvas)
 

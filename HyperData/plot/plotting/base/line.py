@@ -51,10 +51,10 @@ def step2d (X, Y, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
         _step = ax.step(_X, _Y, where=where, color=next(color_cycle),
                         gid=gid, *args, **kwargs)
         artist += _step
-            
+    
     for art in artist:
         art.where = where
-
+            
     return artist
 
 def step3d (X, Y, Z, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
