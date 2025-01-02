@@ -14,13 +14,13 @@ class Menu_type_2D (Menu):
         line.setIcon(icon_line)
         for i in ['2d line', '2d step','2d stem']:
             action = Action(text=i.title(), parent=self)
-            action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))
+            action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             line.addAction(action)
         
         line.addSeparator()
         for i in ['fill between', '2d area', '2d stacked area', '2d 100% stacked area']:
             action = Action(text=i.title(), parent=self)
-            action.triggered.connect(lambda type=i,checked=True: self.sig.emit(type.lower()))
+            action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             line.addAction(action)
         
         bar = Menu('Column', self)
