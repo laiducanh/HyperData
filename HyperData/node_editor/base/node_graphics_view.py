@@ -67,25 +67,25 @@ class NodeGraphicsView(QGraphicsView):
                                                         "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                         ]:
             action = Action(text=text, parent=data_processing)
-            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
             data_processing.addAction(action)
         machine_learning = Menu(text="Machine Learning")
         self.menu.addMenu(machine_learning)
         for text in ["Classifier","Meta-Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
             action = Action(text=text, parent=machine_learning)
-            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
             machine_learning.addAction(action)
         visualization = Menu(text="Visualization")
         self.menu.addMenu(visualization)
         for text in ["Figure"]:
             action = Action(text=text, parent=visualization)
-            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
             visualization.addAction(action)
         misc = Menu(text="Misc")
         self.menu.addMenu(misc)
         for text in ["Executor", "User Define Card", "Undefined Node"]:
             action = Action(text=text, parent=misc)
-            action.triggered.connect(lambda text=text,checked=True: self.addNode(text))
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
             misc.addAction(action)
         
     def addNode(self, node_title:str):

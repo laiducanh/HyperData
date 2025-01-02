@@ -59,21 +59,21 @@ class AlgorithmMenu(Menu):
         for i in ["Ridge Classifier","Logistic Regression","SGD Classifier",
                   "Passive Aggressive Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
+            action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             linear_model.addAction(action)
         self.addMenu(linear_model)
         
         svm = Menu("Support Vector Machines", self)
         for i in ["SVC", "NuSVC","Linear SVC"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
+            action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             svm.addAction(action)
         self.addMenu(svm)
 
         neighbors = Menu("Nearest Neighbors", self)
         for i in ["K Neighbors Classifier","Nearest Centroid", "Radius Neighbors Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
+            action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             neighbors.addAction(action)
         self.addMenu(neighbors)
 
@@ -81,14 +81,14 @@ class AlgorithmMenu(Menu):
         for i in ["Gradient Boosting Classifier","Histogram Gradient Boosting Classifier",
                   "Random Forest Classifier","Extra Trees Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
+            action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             ensembles.addAction(action)
         self.addMenu(ensembles)
 
         others = Menu("Others", self)
         for i in ["Decision Tree Classifier", "Gaussian Process Classifier"]:
             action = QAction(i, self)
-            action.triggered.connect(lambda s=i,checked=True: self.sig.emit(s))
+            action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             others.addAction(action)
         self.addMenu(others)
 
