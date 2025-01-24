@@ -14,6 +14,7 @@ class NodeContentWidget(ContentItem):
         self.parent = parent
         self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
+        self.eval()
 
     def config(self):
         pass
