@@ -103,7 +103,7 @@ def set_legend(canvas: Canvas, *args, **kwargs):
             _legend.set_gid("legend")
 
             for _handle, _leghandle, _legtext \
-            in zip(_handles, _legend.legendHandles, _legend.get_texts()):
+            in zip(_handles, _legend.legend_handles, _legend.get_texts()):
                 _leghandle.set_gid(_handle.get_gid())
                 _legtext.set_gid(_handle.get_gid())                
 
