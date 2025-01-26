@@ -70,6 +70,7 @@ class DataCompare (NodeContentWidget):
         self.data_to_view = data.copy()
     
     def eval(self):
+        self.resetStatus()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         self.node.input_sockets[1].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
