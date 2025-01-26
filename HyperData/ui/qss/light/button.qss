@@ -76,7 +76,6 @@ _TogglePushButton:checked:disabled, _ToggleToolButton:checked:pressed {
 }
 
 _DropDownPushButton::menu-indicator,
-_DropDownPrimaryPushButton::menu-indicator,
 _DropDownTransparentPushButton::menu-indicator,
 _ToolButton::menu-indicator {
     image: url(ui/icons/black/ChevronDown_black.svg);
@@ -87,3 +86,14 @@ _ToolButton::menu-indicator {
     margin: 0px;
     margin-right: 10px;
 }
+
+_DropDownPrimaryPushButton::menu-indicator {
+    image: url(ui/icons/white/ChevronDown_white.svg);
+    width: 10px;
+    height: 10px;
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    margin: 0px;
+    margin-right: 10px;
+}
+

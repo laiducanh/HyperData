@@ -5,14 +5,14 @@ from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.button import HButton
 
 class _SpinBox (QSpinBox):
-    def __init__(self, min:int=0, max:int=100, step:int=1, parent=None) -> None:
+    def __init__(self, min:int=0, max:int=100, step:int=1, parent=None):
         super().__init__(parent)
 
         self.setRange(min, max)
         self.setSingleStep(step)
 
 class _DoubleSpinBox (QDoubleSpinBox):
-    def __init__(self, min:int=0, max:int=100, step:int=1, parent=None) -> None:
+    def __init__(self, min:int=0, max:int=100, step:int=1, parent=None):
         super().__init__(parent)
 
         self.setRange(min, max)

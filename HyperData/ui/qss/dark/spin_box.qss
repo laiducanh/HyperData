@@ -4,8 +4,8 @@ _SpinBox, _DoubleSpinBox {
     border: none;
     border-radius: 8px;
     font: 11.5pt;
-    padding: 7px 12px 7px 12px;
-
+    padding: 7px 20px 7px 12px;
+    height: 34px;
 }
 
 _SpinBox::up-button, _DoubleSpinBox::up-button {
@@ -13,7 +13,7 @@ _SpinBox::up-button, _DoubleSpinBox::up-button {
     subcontrol-position: top right;
     position: relative;
     left: -10px;
-    top: 8px;
+    top: 9px;
     border: none;
     width: 8px;
     height: 8px;
@@ -24,7 +24,7 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
     subcontrol-origin: margin;
     subcontrol-position: bottom right;
     left: -10px;
-    bottom: 4px;
+    bottom: 5px;
     border: none;
     width: 8px;
     height: 8px;
@@ -32,7 +32,7 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
 }
 
 _SpinBox:hover, _DoubleSpinBox:hover {
-    border: 1px solid rgba(0, 120, 215, 1);
+    background: rgba(220, 220, 220, 0.1);
 }
 
 _SpinBox:focus, _DoubleSpinBox:focus {

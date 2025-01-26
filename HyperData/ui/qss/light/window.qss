@@ -3,6 +3,10 @@ QMainWindow, QMenuBar, QTableView, QAbstractTableModel {
     color:black;
 }
 
+QMainWindow::title {
+    color: red;
+}
+
 NodeContentWidget {
     background: transparent;
 }

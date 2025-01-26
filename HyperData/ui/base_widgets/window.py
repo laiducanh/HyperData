@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, Property, QSize, QEasingCurve
-from PySide6.QtGui import QResizeEvent, QColor, QPainter, QRegion, QPainterPath, QBrush
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QBrush, QPen
 import math, typing
 from ui.base_widgets.button import _PrimaryPushButton, _PushButton
 from ui.base_widgets.text import TitleLabel
@@ -11,9 +11,9 @@ class Dialog (QDialog):
     def __init__(self, title:str=None, parent=None):
         super().__init__(parent)
 
-        self.setWindowFlags(Qt.WindowType.Dialog|Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        #self.setWindowTitle(title)  
+        # self.setWindowFlags(Qt.WindowType.Dialog|Qt.WindowType.FramelessWindowHint)
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setWindowTitle(title)  
         
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -43,12 +43,12 @@ class Dialog (QDialog):
         # Create rounded rectangle path
         path = QPainterPath()
         path.addRoundedRect(self.rect().toRectF(), 10, 10)
-       
+
         # Fill the dialog background
         if isDark():
             painter.fillPath(path, QBrush(QColor(32,32,32)))
         else:
-            painter.fillPath(path, QBrush(Qt.GlobalColor.white))
+            painter.fillPath(path, QBrush(QColor(250,250,250)))
     
     def showEvent(self, event):
         

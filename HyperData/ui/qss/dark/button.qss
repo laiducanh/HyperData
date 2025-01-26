@@ -15,11 +15,13 @@ _ToolButton[hasMenu=true] {
 _PushButton:hover, _DropDownPushButton:hover, _ToolButton:hover, 
 _TogglePushButton:hover, _ToggleToolButton:hover {
     background: rgba(220, 220, 220, 0.1);
+    border: none;
 }
 
 _PushButton:pressed, _DropDownPushButton:pressed, _ToolButton:pressed, _TogglePushButton:pressed, _ToggleToolButton:pressed {
-    color: rgba(67, 67, 67, 0.6);
+    color: rgba(0, 0, 0, 0.63);
     background: rgba(220, 220, 220, 0.4);
+    border: none;
 }
 
 _PushButton:disabled, _DropDownPushButton:disabled, _ToolButton:disabled, _TogglePushButton:disabled, _ToggleToolButton:disabled {

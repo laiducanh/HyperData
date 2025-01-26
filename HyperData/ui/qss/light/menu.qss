@@ -1,8 +1,10 @@
 Menu {
     border: 1px solid rgba(200, 200, 200, 0.8);
     border-radius: 8px;
-    background: white;
+    font: 11.5pt;
+    background-color: white;
     padding: 4px 3px 4px 3px;
+    color: rgba(67, 67, 67, 1);
     outline: none;
 }
 
@@ -22,9 +24,9 @@ Menu::separator {
 
 Menu::item {
     color: rgba(67, 67, 67, 1);
-    background: transparent;
-    padding: 5px 30px 5px 20px;
-    border-radius: 6px;
+    background: white;
+    padding: 7px 30px 7px 20px;
+    border-radius: 8px;
     border: none;
     
 }

@@ -1,9 +1,10 @@
 _LineEdit, _TextEdit {
+    font: 11.5pt;
     color: rgba(62, 62, 62, 1);
     background-color: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
     border-radius: 6px;
-    padding: 4px 12px 5px 12px;
+    padding: 7px 12px 7px 12px;
 }
 
 _TextEdit {

@@ -9,6 +9,16 @@ _ComboBox {
 }
 
 _ComboBox:hover {
+    background: rgba(220, 220, 220, 0.8);
+}
+
+_PrimaryComboBox {
+    background-color: rgba(0, 120, 215, 1);
+    color: white;
+}
+
+_PrimaryComboBox:hover {
+    background-color: rgba(0, 120, 215, 0.9);
     border: 2px solid rgba(0, 120, 215, 1);
 }
 
@@ -20,14 +30,14 @@ _TransparentComboBox:hover {
     background-color: rgba(220, 220, 220, 0.8);
 }
 
-_ComboBox:disabled, _TransparentComboBox:disabled {
+_ComboBox:disabled, _PrimaryComboBox:disabled, _TransparentComboBox:disabled {
     color: rgba(0, 0, 0, 0.36);
     background: rgba(249, 249, 249, 0.3);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-_ComboBox::drop-down, _TransparentComboBox::drop-down {
+_ComboBox::drop-down, _PrimaryComboBox::drop-down, _TransparentComboBox::drop-down {
     border: none;
     margin: 0px;
     margin-right: 17px;
@@ -37,6 +47,12 @@ _ComboBox::drop-down, _TransparentComboBox::drop-down {
 
 _ComboBox::down-arrow, _TransparentComboBox::down-arrow {
     image: url(ui/icons/black/ChevronDown_black.svg);
+    width: 10px;
+    height: 10px;
+}
+
+_PrimaryComboBox::down-arrow {
+    image: url(ui/icons/white/ChevronDown_white.svg);
     width: 10px;
     height: 10px;
 }

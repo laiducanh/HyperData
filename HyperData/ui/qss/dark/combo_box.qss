@@ -13,6 +13,16 @@ _ComboBox:hover {
     color: white;
 }
 
+_PrimaryComboBox {
+    background-color: rgba(0, 120, 215, 1);
+    color: white;
+}
+
+_PrimaryComboBox:hover {
+    background-color: rgba(0, 120, 215, 0.9);
+    border: 2px solid rgba(0, 120, 215, 1);
+}
+
 _ComboBox:disabled {
     color: rgba(0, 0, 0, 0.36);
     background: rgba(249, 249, 249, 0.3);

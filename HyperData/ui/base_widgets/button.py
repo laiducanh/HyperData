@@ -245,11 +245,11 @@ class HButton(QWidget):
         self.text2 = value
     
     def enterEvent(self, event):
-        self.label2.show()
+        #self.label2.show()
         return super().enterEvent(event)
 
     def leaveEvent(self, a0):
-        self.label2.hide()
+        #self.label2.hide()
         return super().leaveEvent(a0)
 
 class PushButton (HButton):
