@@ -14,7 +14,6 @@ class NodeContentWidget(ContentItem):
         self.parent = parent
         self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
-        self.eval()
 
     def config(self):
         pass
@@ -22,17 +21,17 @@ class NodeContentWidget(ContentItem):
     def run_threadpool(self, *args, **kwargs):
         """ use for threadpool run """
         self.progress.setValue(0)
-        self.progress._setValue(0)
         self.worker = Worker(self.func, *args, **kwargs)
         self.worker.signals.finished.connect(self.exec_done)
         self.threadpool.start(self.worker)
-        self.timerStart()
-        self.progress.setValue(30)
     
     def exec (self, *args, **kwargs):
         """ use to process data_out
          this function will be called when pressing execute button """
         self.num_signal_pipeline = 0 # reset number of pipeline signal
+        for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
+            edge.end_socket.node.content.resetStatus()
+        self.timerStart()
         self.run_threadpool(*args, **kwargs)
 
     def func(self, *args, **kwargs):
@@ -53,8 +52,11 @@ class NodeContentWidget(ContentItem):
         for socket in self.node.output_sockets:
             for edge in socket.edges:
                 try: edge.end_socket.node.content.eval()
-                except Exception as e: print(e)
-
+                except Exception as e:
+                    # write log
+                    logger.warning(f"{self.name} {self.node.id}: could not evaluate the connected node {edge.end_socket.node.id}.")
+                    logger.exception(e)
+        
         self.pipeline()
         self.progress.setValue(100)
 

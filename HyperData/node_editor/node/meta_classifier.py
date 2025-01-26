@@ -1,6 +1,6 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from node_editor.node.classifier import ClassifierBase, AlgorithmMenu
+from node_editor.node.classifier.classifier import ClassifierBase, AlgorithmMenu
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import DropDownPushButton, Toggle, ComboBox
 from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox

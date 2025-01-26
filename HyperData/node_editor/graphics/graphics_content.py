@@ -59,7 +59,6 @@ class ContentItem(QWidget):
         self.hlayout.addWidget(comment)
 
         self.label = _TransparentPushButton()
-        self.label.setText(f'Shape: (0, 0)')
         self.label.pressed.connect(self.viewData)
         #self.label.setContentsMargins(5,0,5,3)
         self.vlayout.addWidget(self.label)
@@ -97,13 +96,14 @@ class ContentItem(QWidget):
     def run_threadpool(self, *args, **kwargs):
         pass
     
-    def timerStart (self):
-        self.timer.start(5000)
+    def timerStart (self, time:int=1000):
+        self.timer.start(time)
+        pass
     
     def timerStop (self, step:int=10):
         if self.progress.value() < 100-step:
             self.progress.setValue(self.progress.value()+step)
-        self.timerStart()
+            self.timerStart()
     
     def exec (self, *args, **kwargs):
         pass
@@ -128,6 +128,10 @@ class ContentItem(QWidget):
     def viewData (self):
         self.view.update_data(self.data_to_view)
         self.view.show()
+    
+    def resetStatus(self):
+        self.progress.setValue(0)
+        self.label.setText('Shape: (--, --)') 
         
     def serialize(self):
         return dict()

@@ -21,6 +21,7 @@ class Figure2D (NodeContentWidget):
     
     def exec(self):
         self.sig.emit()
+        self.eval()
     
     def serialize(self):
         return {"figure":self.canvas.serialize(),
