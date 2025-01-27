@@ -272,7 +272,7 @@ class ExploreView (QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
 
-        self.univar_plot = ["histogram","pie","boxplot","density","kde"]
+        self.univar_plot = ["histogram","boxplot","density","kde"]
         self.bivar_plot = ["line","scatter","bar","area","hexbin"]
         self.multivar_plot = ["heatmap","correlation","covariance"]
         self.nan_plot = ["NaNs matrix","NaNs bar"]
@@ -396,7 +396,6 @@ class ExploreView (QWidget):
                     case "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
                     case "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
                     case "histogram": self.data.hist(varx, ax=ax)
-                    case "pie": self.data.plot.pie(varx, ax=ax)
                     case "boxplot": self.data.boxplot(varx, ax=ax)
                     case "density": self.data[varx].plot.density(ax=ax)
                     case "kde": self.data[varx].plot.kde(ax=ax)
