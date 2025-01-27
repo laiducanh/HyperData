@@ -272,10 +272,9 @@ class ExploreView (QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
 
-        self.univar_plot = ["histogram","pie","treemap"]
-        self.bivar_plot = ["line","scatter","bar",
-                           "violin","swarm","boxplot"]
-        self.multivar_plot = ["heatmap"]
+        self.univar_plot = ["histogram","pie","boxplot","density","kde"]
+        self.bivar_plot = ["line","scatter","bar","area","hexbin"]
+        self.multivar_plot = ["heatmap","correlation","covariance"]
         self.nan_plot = ["NaNs matrix","NaNs bar"]
         
         self.initUI()
@@ -342,36 +341,13 @@ class ExploreView (QWidget):
     def update_selection(self):
         try:
             # update x and y variables for plot
-            # self.varx.button.disconnect()
-            # self.vary.button.disconnect()
             self.varx.button.clear()
             self.vary.button.clear()
 
             plottype = self.btn.text()
-            if plottype in ["violin","boxplot","heatmap","histogram"]:
-                self.data_inUse = self.data.copy().select_dtypes(np.number)
-                self.data_inUseX = self.data.copy().select_dtypes(np.number)
-                self.data_inUseY = self.data.copy().select_dtypes(np.number)
-            elif plottype in ["swarm","pie"]:
-                self.data_inUse = self.data.copy()
-                self.data_inUseX = self.data.copy().select_dtypes(np.object_)
-                self.data_inUseY = self.data.copy().select_dtypes(np.number)
-            elif plottype in ["line","scatter","bar"]:
-                self.data_inUse = self.data.copy()
-                self.data_inUseX = self.data.copy()
-                self.data_inUseY = self.data.copy().select_dtypes(np.number)
-            else:
-                self.data_inUse = self.data.copy()
-                self.data_inUseX = self.data.copy()
-                self.data_inUseY = self.data.copy()
 
-            if plottype in ["pie","treemap","line"]:
-                for x in self.data_inUseX.columns:
-                    if self.data_inUseX[x].value_counts().size > 10:
-                        self.data_inUseX = self.data_inUseX.drop(labels=[x],axis=1)
-
-            self.varx.button.addItems(self.data_inUseX.columns)
-            self.vary.button.addItems(self.data_inUseY.columns)
+            self.varx.button.addItems(self.data.columns)
+            self.vary.button.addItems(self.data.columns)
             
             # self.varx.button.currentTextChanged.connect(self.update_plot)
             # self.vary.button.currentTextChanged.connect(self.update_plot)
@@ -407,52 +383,44 @@ class ExploreView (QWidget):
         try:
             plottype = self.btn.text()
             
+            varx = self.varx.button.currentText()
+            vary = self.vary.button.currentText()
+            
             if self.data.empty:
                 self.canvas.fig.clear()
             else:
                 self.canvas.fig.clear()
                 ax = self.canvas.fig.add_subplot()
-                #ax.xaxis.set_major_locator(MaxNLocator(3))
-
-                label_varx = self.varx.button.currentText()
-                label_vary = self.vary.button.currentText()
-                varx = self.data_inUseX[label_varx]
-                vary = self.data_inUseY[label_vary]
                 
                 match plottype:
                     case "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
                     case "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
-                    case "histogram": ax.hist(varx)
-                    case "pie": ax.pie(x=varx.value_counts(),labels=varx.unique())
-                    case "treemap": squarify.plot(sizes=varx.value_counts(), label=varx.unique(),
-                                                ax=ax)
-                    case "line": ax.plot(varx, vary)
-                    case "scatter": ax.scatter(varx, vary)
-                    case "bar": ax.bar(varx, vary)
-                    case "boxplot": 
-                        ax.boxplot([varx, vary],labels=[label_varx, label_vary])
-                    case "violin": 
-                        ax.violinplot([varx, vary])
-                        ax.set_xticks([1,2],[label_varx, label_vary])
-                    case "swarm":
-                        sns.swarmplot(data=self.data_inUse, x=label_varx, y=label_vary,
-                                    ax=ax)
-                    case "heatmap": 
-                        ax.imshow(self.data_inUse, aspect='auto')
-                        ax.set_xticks(range(len(self.data_inUse.columns)), labels=self.data_inUse.columns)
-
+                    case "histogram": self.data.hist(varx, ax=ax)
+                    case "pie": self.data.plot.pie(varx, ax=ax)
+                    case "boxplot": self.data.boxplot(varx, ax=ax)
+                    case "density": self.data[varx].plot.density(ax=ax)
+                    case "kde": self.data[varx].plot.kde(ax=ax)
+                    case "line": self.data.plot.line(varx, vary, ax=ax)
+                    case "scatter": self.data.plot.scatter(varx, vary, ax=ax)
+                    case "bar": self.data.plot.bar(varx, vary, ax=ax)
+                    case "area": self.data.plot.area(varx, vary, ax=ax)
+                    case "hexbin": self.data.plot.hexbin(varx, vary, ax=ax)
+                    case "heatmap": ax.imshow(self.data.select_dtypes(include="number"), aspect="auto")
+                    case "correlation": ax.imshow(self.data.corr(numeric_only=True), aspect="auto")
+                    case "covariance": ax.imshow(self.data.cov(numeric_only=True), aspect="auto")
             
-                xticks = []
-                for ind, label in enumerate(ax.get_xticklabels()):
-                    # keep the maximum number of xticks = 10
-                    if ind % np.ceil(len(ax.get_xticklabels())/5):
-                        xticks.append("")
-                    else: xticks.append(label)
-                ax.set_xticks(ax.get_xticks(), xticks)
+            #     xticks = []
+            #     for ind, label in enumerate(ax.get_xticklabels()):
+            #         # keep the maximum number of xticks = 10
+            #         if ind % np.ceil(len(ax.get_xticklabels())/5):
+            #             xticks.append("")
+            #         else: xticks.append(label)
+            #     ax.set_xticks(ax.get_xticks(), xticks)
 
             self.canvas.draw_idle() 
             
         except Exception as e:
+            print(e)
             logger.exception(e)
         
 class DataView (QWidget):
