@@ -141,7 +141,7 @@ class DataReader (NodeContentWidget):
         
         dialog = FileDialog(
             caption="Import data",
-            filter="""Microsoft excel (*.slsx *.xls);;Comma-separated values (*.csv)"""
+            filter="""Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)"""
         )
         if dialog.exec():
             self.selectedFiles = dialog.selectedFiles()[0]
