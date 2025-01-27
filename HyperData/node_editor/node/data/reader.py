@@ -1,15 +1,14 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-import platform
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from ui.base_widgets.window import Dialog
+from ui.base_widgets.window import Dialog, FileDialog
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import BodyLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode, GLOBAL_DEBUG
-from PySide6.QtWidgets import QFileDialog, QTableView
+from PySide6.QtWidgets import QTableView
 from PySide6.QtCore import QFileSystemWatcher
 
 DEBUG = False
@@ -140,24 +139,22 @@ class DataReader (NodeContentWidget):
             
     def exec (self):    
         
-        importDialog = QFileDialog(caption="Import data")
-        # MacOS has a bug that prevents native dialog from properly working
-        # then use the option of DontUseNativeDialog
-        if platform.system() == "Darwin":
-            importDialog.setOption(QFileDialog.Option.DontUseNativeDialog)
-
-        if importDialog.exec():
-            self.selectedFiles = importDialog.selectedFiles()[0]      
-            # add file path for watcher
-            self.watcher.addPath(self.selectedFiles)
-            # check filetype for reading
-            self.check_filetype(self.selectedFiles)
-            # write log
-            logger.info(f"DataReader {self.node.id}: Selected {self.selectedFiles}.")
-            # reset status of the node before executing the main function
-            self.resetStatus()
-            # execute main function
-            super().exec(self.selectedFiles)
+        dialog = FileDialog(
+            caption="Import data",
+            filter="""Microsoft excel (*.slsx *.xls);;Comma-separated values (*.csv)"""
+        )
+        if dialog.exec():
+            self.selectedFiles, _ = dialog.getOpenFileName()
+        # add file path for watcher
+        self.watcher.addPath(self.selectedFiles)
+        # check filetype for reading
+        self.check_filetype(self.selectedFiles)
+        # write log
+        logger.info(f"DataReader {self.node.id}: Selected {self.selectedFiles}.")
+        # reset status of the node before executing the main function
+        self.resetStatus()
+        # execute main function
+        super().exec(self.selectedFiles)
     
     def func (self, selectedFiles):
         if self.isReadable:

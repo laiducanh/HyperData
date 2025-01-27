@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout)
+from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout, QFileDialog)
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, Property, QSize, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QBrush, QPen
-import math, typing
+import math, typing, platform
 from ui.base_widgets.button import _PrimaryPushButton, _PushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
@@ -148,3 +148,14 @@ class ProgressDialog (QProgressDialog):
             painter.fillPath(path, QBrush(QColor(32,32,32)))
         else:
             painter.fillPath(path, QBrush(QColor(200,200,200)))
+
+class FileDialog(QFileDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # MacOS has a bug that prevents native dialog from properly working
+        # then use the option of DontUseNativeDialog
+        if platform.system() == "Darwin":
+            self.setOption(QFileDialog.Option.DontUseNativeDialog)
+
+

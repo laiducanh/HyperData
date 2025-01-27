@@ -15,7 +15,7 @@ from plot.plot_graphics_view import GraphicsView
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.button import _TransparentToolButton
 from ui.base_widgets.line_edit import _SearchBox
-from ui.base_widgets.window import ProgressDialog
+from ui.base_widgets.window import ProgressDialog, FileDialog
 from plot.canvas import Canvas
 from plot.grid.grid import Grid
 from plot.label.graph_title import GraphTitle
@@ -72,6 +72,7 @@ class PlotView (QMainWindow):
         self.plot_visual.mpl_pressed.connect(self.update_sidebar)
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
         self.plot_visual.mouse_released.connect(self.treeview_func)
+        self.plot_visual.save_figure.connect(self.save_figure)
         self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.main_layout.addWidget(self.plot_visual)
@@ -221,7 +222,19 @@ class PlotView (QMainWindow):
                         item.child(child).setIcon(0,QIcon(pixmap))  
         except Exception as e: 
             logger.exception(e)
-        
+
+    def save_figure(self):
+        dialog = FileDialog(
+            caption="Save Figure",
+            filter="""Portable Network Graphics (*.png);;Tagged Image File Format (*.tiff);;JPEG (*.jpg *.jpeg);;
+                      PDF (*.pdf);;Scalable Vector Graphics (*.svg);;PostScript formats (*.ps *.eps)"""
+        )
+        if dialog.exec():
+            self.canvas.fig.savefig(
+                fname=dialog.getSaveFileName()[0], 
+                dpi=config["plot_dpi"]
+            )
+
     def keyPressEvent(self, key: QKeyEvent) -> None:
 
         if key.key() == Qt.Key.Key_Slash:
@@ -237,6 +250,9 @@ class PlotView (QMainWindow):
         
         elif key.key() == Qt.Key.Key_H and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.stackedlayout.setCurrentIndex(0)
+        
+        elif key.key() == Qt.Key.Key_F and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.save_figure()
 
         super().keyPressEvent(key)
 

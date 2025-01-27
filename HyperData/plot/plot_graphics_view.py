@@ -109,6 +109,7 @@ class GraphicsView (QGraphicsView):
     backtoScene = Signal()
     backtoHome = Signal()
     mpl_pressed = Signal(str)
+    save_figure = Signal()
     def __init__(self, canvas:Canvas,parent=None):
         super().__init__(parent)
 
@@ -153,6 +154,11 @@ class GraphicsView (QGraphicsView):
         home = Action(text="&Home", shortcut="Ctrl+H", parent=self.menu)
         home.triggered.connect(self.backtoHome.emit)
         self.menu.addAction(home)
+        self.menu.addSeparator()
+
+        save = Action(text="Save Figure", shortcut="Ctrl+F", parent=self.menu)
+        save.triggered.connect(self.save_figure.emit)
+        self.menu.addAction(save)
 
         self.menu.addSeparator()
 
@@ -402,7 +408,7 @@ class GraphicsView (QGraphicsView):
         
       
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        self.key_pressed.emit(event)
+        #self.key_pressed.emit(event)
         return super().keyPressEvent(event)
     
     

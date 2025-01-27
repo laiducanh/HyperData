@@ -8,6 +8,7 @@ from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.list import ListWidget
+from ui.base_widgets.spinbox import SpinBox
 from ui.utils import get_path
 from config.settings import config
 import os, darkdetect, sys
@@ -79,6 +80,18 @@ class Figure_Tooltip(Frame):
         button.button.setChecked(config["plot_tooltip"])
         button.button.checkedChanged.connect(lambda s: config.update(plot_tooltip=s))
         layout.addWidget(button)
+
+class Figure_Dpi(Frame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        layout = QHBoxLayout()
+        self.setLayout(layout)
+
+        button = SpinBox(text="DPI", min=50,max=3000,step=50)
+        button.button.setValue(config["plot_dpi"])
+        button.button.valueChanged.connect(lambda s: config.update(plot_dpi=s))
+        layout.addWidget(button)
     
 class SettingsWindow (QMainWindow):
     def __init__(self, parent:QMainWindow=None):
@@ -114,5 +127,6 @@ class SettingsWindow (QMainWindow):
         layout.addWidget(figure)
 
         figure_layout.addWidget(Figure_Tooltip(parent))
+        figure_layout.addWidget(Figure_Dpi(parent))
 
         
