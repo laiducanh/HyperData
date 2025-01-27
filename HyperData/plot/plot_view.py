@@ -203,11 +203,10 @@ class PlotView (QMainWindow):
     def update_plotlist(self):
         try:
             self.treeview_data["Graph"] = ["Manage graph"]
-            for obj in find_mpl_object(self.canvas.fig):
-                if "graph " in obj.get_gid():
-                    _gid = obj.get_gid().split("/")[0].title()
-                    if _gid not in self.treeview_data["Graph"]:
-                        self.treeview_data["Graph"].insert(-1,_gid)
+            plot_list = [s for s in find_mpl_object(self.canvas.fig,gid="graph ")]
+            for gid in set([s.get_gid() for s in plot_list]):
+                _gid = gid.split("/")[0].title()
+                self.treeview_data["Graph"].insert(-1,_gid)
             self.treeview.setData(self.treeview_data)
 
             # update color icon for each graph
@@ -217,10 +216,7 @@ class PlotView (QMainWindow):
                     name = item.child(child).text(0).lower()
                     if "graph " in name:
                         color = 'white' # whenever color changes to white, there is an error!
-                        for graph in self.canvas.fig.findobj():
-                            if graph._gid != None and name in graph._gid:
-                                color = get_color(graph)
-                                break
+                        color = get_color(find_mpl_object(self.canvas.fig,gid=name,rule="exact")[0])
                         pixmap.fill(QColor(color))
                         item.child(child).setIcon(0,QIcon(pixmap))  
         except Exception as e: 

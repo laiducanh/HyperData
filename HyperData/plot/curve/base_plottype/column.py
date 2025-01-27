@@ -44,7 +44,7 @@ class Column (PlotConfigBase):
         self._layout.addWidget(self.barwidth)
 
         self.column = Rectangle(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -134,7 +134,7 @@ class Column3D (PlotConfigBase):
         self._layout.addWidget(self.shade) 
 
         self.column = Poly3DCollection(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -234,7 +234,7 @@ class Dot(PlotConfigBase):
         self._layout.addWidget(self.bottom)
 
         self.dot = Marker(self.gid, self.canvas, self.parent())
-        self.dot.sig.connect(self.sig.emit)
+        self.dot.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.dot)
 
         self._layout.addStretch()
@@ -330,6 +330,7 @@ class Dumbbell(PlotConfigBase):
         self._layout.addWidget(SeparateHLine())
 
         self.line = Line(self.gid, self.canvas)
+        self.line.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.line)
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
@@ -341,12 +342,14 @@ class Dumbbell(PlotConfigBase):
         self._layout.addWidget(SeparateHLine())
 
         self.head1 = Marker(f"{self.gid}.1", self.canvas)
+        self.head1.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.head1)
 
         self._layout.addWidget(TitleLabel("Head 2"))
         self._layout.addWidget(SeparateHLine())
 
-        self.head1 = Marker(f"{self.gid}.2", self.canvas)
+        self.head2 = Marker(f"{self.gid}.2", self.canvas)
+        self.head2.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.head1)
 
     def find_object(self):
@@ -378,7 +381,7 @@ class Marimekko (PlotConfigBase):
         self._layout.addWidget(self.orientation)
 
         self.column = Rectangle(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -431,7 +434,7 @@ class Treemap(PlotConfigBase):
         self._layout.addWidget(self.cmap)
 
         self.column = Rectangle(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self.column.facecolor.setEnabled(not self.get_cmap_on())

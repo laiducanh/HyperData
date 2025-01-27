@@ -27,7 +27,7 @@ class Scatter(PlotConfigBase):
         self._layout.addWidget(self.sizes)
 
         self.collection = CmapCollection(self.gid, self.canvas, self.parent())
-        self.collection.sig.connect(self.sig.emit)
+        self.collection.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.collection)
 
         self._layout.addStretch()

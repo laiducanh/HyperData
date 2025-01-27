@@ -21,7 +21,6 @@ from typing import List
 DEBUG = False
 
 class SingleColorCollection (ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -71,6 +70,7 @@ class SingleColorCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -83,6 +83,7 @@ class SingleColorCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linestyle(value.lower())
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -103,6 +104,7 @@ class SingleColorCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_facecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -115,6 +117,7 @@ class SingleColorCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_edgecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -127,6 +130,7 @@ class SingleColorCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(value/100)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
 
@@ -138,7 +142,6 @@ class SingleColorCollection (ArtistConfigBase):
         except: return 100
 
 class CmapCollection (ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -228,6 +231,7 @@ class CmapCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -238,6 +242,7 @@ class CmapCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linestyle(value.lower())
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -265,6 +270,7 @@ class CmapCollection (ArtistConfigBase):
                 for obj in self.obj:
                     obj.set_array(value)
                     obj.set_cmap(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -277,6 +283,7 @@ class CmapCollection (ArtistConfigBase):
                 value = value.lower()
             for obj in self.obj:
                 obj.set_norm(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
 
@@ -291,6 +298,7 @@ class CmapCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_facecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -301,6 +309,7 @@ class CmapCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_edgecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -313,6 +322,7 @@ class CmapCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(value/100)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
 
@@ -322,7 +332,6 @@ class CmapCollection (ArtistConfigBase):
         return 100
     
 class QuadMesh(ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
         super().__init__(gid, canvas, parent)
     
@@ -383,6 +392,7 @@ class QuadMesh(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -393,6 +403,7 @@ class QuadMesh(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linestyle(value.lower())
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -411,6 +422,7 @@ class QuadMesh(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_edgecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -422,7 +434,8 @@ class QuadMesh(ArtistConfigBase):
     def set_cmap(self, value:str):
         try:
             for obj in self.obj:
-                    obj.set_cmap(value)
+                obj.set_cmap(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -433,6 +446,7 @@ class QuadMesh(ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_norm(value.lower())
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
 
@@ -447,6 +461,7 @@ class QuadMesh(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(value/100)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
 
@@ -456,7 +471,6 @@ class QuadMesh(ArtistConfigBase):
         return 100
 
 class Poly3DCollection (ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid, canvas: Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -490,6 +504,7 @@ class Poly3DCollection (ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_zsort(value.lower())
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -502,6 +517,7 @@ class Poly3DCollection (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(value/100)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
 

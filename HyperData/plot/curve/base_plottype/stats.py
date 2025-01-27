@@ -76,7 +76,7 @@ class Histogram (PlotConfigBase):
         self._layout.addWidget(self.log)
 
         self.column = Rectangle(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -246,7 +246,7 @@ class Boxplot (PlotConfigBase):
         self.widths.button.valueChanged.connect(self.set_widths)
         layout_boxes.addWidget(self.widths)
         self.boxes = Rectangle(f"{self.gid}/boxes", self.canvas, self.parent())
-        self.boxes.sig.connect(self.sig.emit)
+        self.boxes.onChange.connect(self.sig.emit)
         layout_boxes.addWidget(self.boxes)
 
         self.stackedlayout.setCurrentWidget(boxes)
@@ -548,7 +548,7 @@ class Violinplot (PlotConfigBase):
         self.bw_method.button.currentTextChanged.connect(self.set_bw_method)
         layout_bodies.addWidget(self.bw_method)
         self.bodies = SingleColorCollection(f"{self.gid}/bodies", self.canvas)
-        self.bodies.sig.connect(self.sig.emit)
+        self.bodies.onChange.connect(self.sig.emit)
         layout_bodies.addWidget(self.bodies)
 
         cmeans = QWidget()
@@ -561,7 +561,7 @@ class Violinplot (PlotConfigBase):
         self.showmeans.button.checkedChanged.connect(self.set_showmeans)
         layout_cmeans.addWidget(self.showmeans)
         self.cmeans = LineCollection(f"{self.gid}/cmeans",self.canvas)
-        self.cmeans.sig.connect(self.sig.emit)
+        self.cmeans.onChange.connect(self.sig.emit)
         layout_cmeans.addWidget(self.cmeans)
 
         cmins = QWidget()
@@ -570,7 +570,7 @@ class Violinplot (PlotConfigBase):
         cmins.setLayout(layout_cmins)
         self.stackedlayout.addWidget(cmins)
         self.cmins = LineCollection(f"{self.gid}/cmins", self.canvas)
-        self.cmins.sig.connect(self.sig.emit)
+        self.cmins.onChange.connect(self.sig.emit)
         layout_cmins.addWidget(self.cmins)
 
         cmaxes = QWidget()
@@ -579,7 +579,7 @@ class Violinplot (PlotConfigBase):
         cmaxes.setLayout(layout_cmaxes)
         self.stackedlayout.addWidget(cmaxes)
         self.cmaxes = LineCollection(f"{self.gid}/cmaxes", self.canvas)
-        self.cmaxes.sig.connect(self.sig.emit)
+        self.cmaxes.onChange.connect(self.sig.emit)
         layout_cmaxes.addWidget(self.cmaxes)
 
         cbars = QWidget()
@@ -592,7 +592,7 @@ class Violinplot (PlotConfigBase):
         self.showextrema.button.checkedChanged.connect(self.set_showextrema)
         layout_cbars.addWidget(self.showextrema)
         self.cbars = LineCollection(f"{self.gid}/cbars", self.canvas)
-        self.cbars.sig.connect(self.sig.emit)
+        self.cbars.onChange.connect(self.sig.emit)
         layout_cbars.addWidget(self.cbars)
 
         cmedians = QWidget()
@@ -605,7 +605,7 @@ class Violinplot (PlotConfigBase):
         self.showmedians.button.checkedChanged.connect(self.set_showmedians)
         layout_cmedians.addWidget(self.showmedians)
         self.cmedians = LineCollection(f"{self.gid}/cmedians", self.canvas)
-        self.cmedians.sig.connect(self.sig.emit)
+        self.cmedians.onChange.connect(self.sig.emit)
         layout_cmedians.addWidget(self.cmedians)
 
         cquantiles = QWidget()
@@ -614,7 +614,7 @@ class Violinplot (PlotConfigBase):
         cquantiles.setLayout(layout_cquantiles)
         self.stackedlayout.addWidget(cquantiles)
         self.cquantiles = SingleColorCollection(f"{self.gid}/cquantiles", self.canvas)
-        self.cquantiles.sig.connect(self.sig.emit)
+        self.cquantiles.onChange.connect(self.sig.emit)
         layout_cquantiles.addWidget(self.cquantiles)
     
     def find_object(self) -> list[collections.PolyCollection, collections.LineCollection]:
@@ -745,7 +745,7 @@ class Eventplot(PlotConfigBase):
         self._layout.addWidget(self.linelengths)
 
         self.eventcollection = LineCollection(self.gid, self.canvas)
-        self.eventcollection.sig.connect(self.sig.emit)
+        self.eventcollection.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.eventcollection)
     
     def find_object(self) -> list[collections.EventCollection]:
@@ -824,7 +824,7 @@ class Hist2d (PlotConfigBase):
         self._layout.addWidget(self.density)
 
         self.quadmesh = QuadMesh(self.gid, self.canvas)
-        self.quadmesh.sig.connect(self.sig.emit)
+        self.quadmesh.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.quadmesh)
 
     def find_object(self) -> list[collections.QuadMesh]:

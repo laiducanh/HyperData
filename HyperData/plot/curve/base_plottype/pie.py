@@ -68,7 +68,7 @@ class Pie (PlotConfigBase):
         self._layout.addWidget(self.normalize)
 
         self.column = Wedge(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -202,7 +202,7 @@ class Coxcomb(Pie):
         self._layout.addWidget(self.rotatelabels)
 
         self.column = Wedge(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -273,7 +273,7 @@ class SemicircleDoughnut(Doughnut):
         self._layout.addWidget(self.rotatelabels)
 
         self.column = Wedge(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()
@@ -337,7 +337,7 @@ class MultilevelDoughnut(Doughnut):
         self._layout.addWidget(self.pad)
 
         self.column = MultiWedges(self.gid, self.canvas, self.parent())
-        self.column.sig.connect(self.sig.emit)
+        self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
 
         self._layout.addStretch()

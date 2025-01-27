@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QPaintEvent
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
@@ -13,6 +13,9 @@ class ArtistConfigBase(QWidget):
         self.gid = gid
         self.canvas = canvas
         self.obj = self.find_object()
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.update_plot)
 
         self.initUI()
     
@@ -31,6 +34,13 @@ class ArtistConfigBase(QWidget):
 
     def update_props(self):
         pass
+
+    def prepare_update(self, wait_time=300):
+        #self.timer.start(wait_time)
+        self.update_plot()
+    
+    def update_plot(self):
+        self.onChange.emit()
     
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()            

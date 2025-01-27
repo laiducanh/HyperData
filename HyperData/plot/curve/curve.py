@@ -90,7 +90,9 @@ class Curve (QWidget):
             _label = self.legend.button.toPlainText()
             if _label == "":
                 _label = "_"
-            self.obj[0].set_label(_label)
+            for obj in self.obj:
+                obj.set_label(_label)
+            
             set_legend(self.canvas)
             self.canvas.draw_idle()
             self.progressbar.setValue(100)

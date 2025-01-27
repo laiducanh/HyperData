@@ -45,6 +45,8 @@ def update_props (from_obj: Artist, to_obj: Artist) -> None:
             # for step plots
             if isinstance(to_obj, Line2D):
                 to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
+
+        to_obj.update(dict(label=from_obj.get_label()))
         
     except Exception as e:
         logger.exception(e)
@@ -74,15 +76,26 @@ def legend_onMove(event:MouseEvent, canvas:Canvas):
     return legend_picked
     
 def set_legend(canvas: Canvas, *args, **kwargs):
-    try:
-        _handles: list[Artist] = canvas.axes.get_legend_handles_labels()[0]   + \
-                canvas.axesx2.get_legend_handles_labels()[0] + \
-                canvas.axesy2.get_legend_handles_labels()[0] + \
-                canvas.axespie.get_legend_handles_labels()[0]
-        _labels: list[str] = canvas.axes.get_legend_handles_labels()[1]   + \
-                canvas.axesx2.get_legend_handles_labels()[1] + \
-                canvas.axesy2.get_legend_handles_labels()[1] + \
-                canvas.axespie.get_legend_handles_labels()[1]
+    try:   
+        _handles: list[Artist] = find_mpl_object(
+            canvas.fig,
+            match=[Artist],
+            gid="graph "
+        )
+        plot_list = set([s.get_gid() for s in _handles])
+        _labels, _handles = list(), list()
+        for gid in plot_list:
+            arts = find_mpl_object(
+                canvas.fig,
+                match=[Artist],
+                gid=gid,
+                rule="exact"
+            )
+
+            if arts[0].get_label() and not arts[0].get_label().startswith("_"):
+                _labels.append(arts[0].get_label())
+                _handles.append(arts[0])
+        
         old_title = None
         global bbox, legend_picked
         legend_picked = False
@@ -120,6 +133,12 @@ def set_legend(canvas: Canvas, *args, **kwargs):
             
     except Exception as e:
         logger.exception(e)
+
+def remove_legend(canvas: Canvas):
+    _legend = get_legend(canvas)
+    if _legend:
+        _legend.remove()
+  
 
 def _set_legend(ax:Axes):
     _artist = list()
@@ -160,8 +179,9 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         ax.figure,
         match=[Line2D,Collection,Rectangle,Wedge,PathPatch,FancyBboxPatch],
         gid=gid)
-    
+   
     remove_artist(ax, gid)
+    remove_legend(ax.figure.canvas)
     
     # rescale all axes while remove old artists and add new artists
     rescale_plot(ax.figure)

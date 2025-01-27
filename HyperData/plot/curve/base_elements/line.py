@@ -11,7 +11,6 @@ from matplotlib import lines, collections, colors
 DEBUG = False
 
 class Line(ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent=parent)
         
@@ -97,6 +96,7 @@ class Line(ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_linestyle(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -108,6 +108,7 @@ class Line(ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_solid_capstyle(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -119,6 +120,7 @@ class Line(ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_solid_joinstyle(value)
+            self.prepare_update()
         except Exception as e: 
             logger.exception(e)
     
@@ -130,6 +132,7 @@ class Line(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_dash_capstyle(value)
+            self.prepare_update()
         except Exception as e: 
             logger.exception(e)
     
@@ -141,6 +144,7 @@ class Line(ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_dash_joinstyle(value)
+            self.prepare_update()
         except Exception as e: 
             logger.exception(e)
     
@@ -152,6 +156,7 @@ class Line(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -163,6 +168,7 @@ class Line(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(float(value/100))
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -177,6 +183,7 @@ class Line(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_color(color)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -186,7 +193,6 @@ class Line(ArtistConfigBase):
 
 
 class Marker(ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent=parent)
 
@@ -239,6 +245,7 @@ class Marker(ArtistConfigBase):
             marker = list(marker_lib.keys())[list(marker_lib.values()).index(marker.lower())]
             for obj in self.obj:
                 obj.set_marker(marker)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -253,6 +260,7 @@ class Marker(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_markersize(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -264,6 +272,7 @@ class Marker(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_markeredgewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -275,6 +284,7 @@ class Marker(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_markerfacecolor(color)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -286,6 +296,7 @@ class Marker(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_markeredgecolor(color)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -295,7 +306,6 @@ class Marker(ArtistConfigBase):
 
 
 class Line2D (ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
             
@@ -303,15 +313,14 @@ class Line2D (ArtistConfigBase):
         super().initUI()
 
         self.line = Line(self.gid, self.canvas, self)
-        self.line.sig.connect(self.sig.emit)
+        self.line.onChange.connect(self.onChange.emit)
         self._layout.addWidget(self.line)
 
         self.marker = Marker(self.gid, self.canvas, self)
-        self.marker.sig.connect(self.sig.emit)
+        self.marker.onChange.connect(self.onChange.emit)
         self._layout.addWidget(self.marker)
 
 class LineCollection(ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -357,6 +366,7 @@ class LineCollection(ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_linestyle(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -368,6 +378,7 @@ class LineCollection(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_linewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -379,6 +390,7 @@ class LineCollection(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(float(value/100))
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -393,6 +405,7 @@ class LineCollection(ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_edgecolor(color)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     

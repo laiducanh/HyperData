@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QTimer
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from ui.base_widgets.button import ComboBox
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
@@ -13,7 +13,6 @@ import numpy as np
 DEBUG = False
 
 class Rectangle (ArtistConfigBase):
-    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent=parent)
 
@@ -60,6 +59,7 @@ class Rectangle (ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_linestyle(value.lower())
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -70,6 +70,7 @@ class Rectangle (ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_linewidth(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -80,6 +81,7 @@ class Rectangle (ArtistConfigBase):
         try: 
             for obj in self.obj:
                 obj.set_alpha(float(value/100))
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -92,6 +94,7 @@ class Rectangle (ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_facecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -102,6 +105,7 @@ class Rectangle (ArtistConfigBase):
         try:
             for obj in self.obj:
                 obj.set_edgecolor(value)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
@@ -110,7 +114,6 @@ class Rectangle (ArtistConfigBase):
     
 class Wedge(Rectangle):
     """ same as Rectangle, but overwrite set and get functions """
-    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -129,7 +132,6 @@ class MultiWedges(Wedge):
         set_facecolor function lightenes the color to 
         set for multiple wedges 
     """
-    sig = Signal()
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -141,5 +143,6 @@ class MultiWedges(Wedge):
                 color = (1-1/i)*(1-c) + c
                 obj.set_facecolor(color)
                 i += 1/len(self.obj)
+            self.prepare_update()
         except Exception as e:
             logger.exception(e)

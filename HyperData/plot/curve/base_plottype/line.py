@@ -25,7 +25,7 @@ class Line (PlotConfigBase):
         super().initUI()
 
         self.line = Line2D(self.gid, self.canvas, self.parent())
-        self.line.sig.connect(self.sig.emit)
+        self.line.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.line)
 
         self._layout.addStretch()
@@ -50,6 +50,7 @@ class Step (PlotConfigBase):
         self.where.button.currentTextChanged.connect(self.set_where)
         self._layout.addWidget(self.where)
         self.line = Line2D(self.gid, self.canvas, self.parent())
+        self.line.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.line)
 
         self._layout.addStretch()
@@ -102,10 +103,10 @@ class Stem(PlotConfigBase):
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
         layout_stemline.addWidget(self.orientation)
         self.stemline = LineCollection(f"{self.gid}/stemlines", self.canvas)
-        self.stemline.sig.connect(self.sig.emit)
+        self.stemline.onChange.connect(self.sig.emit)
         layout_stemline.addWidget(self.stemline)
         self.markerline = Marker(f"{self.gid}/markerline", self.canvas)
-        self.markerline.sig.connect(self.sig.emit)
+        self.markerline.onChange.connect(self.sig.emit)
         layout_stemline.addWidget(self.markerline)
 
         baseline = QWidget()
@@ -118,7 +119,7 @@ class Stem(PlotConfigBase):
         self.bottom.button.valueChanged.connect(self.set_bottom)
         layout_baseline.addWidget(self.bottom)
         self.baseline = LineBase(f"{self.gid}/baseline", self.canvas)
-        self.baseline.sig.connect(self.sig.emit)
+        self.baseline.onChange.connect(self.sig.emit)
         layout_baseline.addWidget(self.baseline)
 
     def find_object(self):
@@ -184,7 +185,7 @@ class Area (PlotConfigBase):
         self._layout.addSpacing(10)
 
         self.patch = SingleColorCollection(self.gid, self.canvas, self.parent())
-        self.patch.sig.connect(self.update_plot)
+        self.patch.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.patch)
         
         self._layout.addStretch()
@@ -244,7 +245,7 @@ class StackedArea(Area):
         self._layout.addSpacing(10)
 
         self.patch = SingleColorCollection(self.gid, self.canvas, self.parent())
-        self.patch.sig.connect(self.update_plot)
+        self.patch.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.patch)
         
         self._layout.addStretch()
@@ -275,7 +276,7 @@ class StackedArea100 (Area):
         self._layout.setContentsMargins(0,0,0,0)
 
         self.patch = SingleColorCollection(self.gid, self.canvas, self.parent())
-        self.patch.sig.connect(self.update_plot)
+        self.patch.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.patch)
         
         self._layout.addStretch()
