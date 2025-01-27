@@ -140,7 +140,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Set Windows style for all platforms
-    # app.setStyle(QStyleFactory.create("window"))
+    app.setStyle(QStyleFactory.create("window"))
     
     main_window = Main()
     main_window.show()

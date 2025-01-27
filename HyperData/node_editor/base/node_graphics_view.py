@@ -62,28 +62,30 @@ class NodeGraphicsView(QGraphicsView):
         data_processing = Menu(text="Data Processing")
         self.menu.addMenu(data_processing)
         for text in ["Data Reader", "Data Concator", "Data Transpose", 
-                                                        "Data Combiner", "Data Merge", "Data Compare",
-                                                        "Data Locator","Data Filter", "Data Holder",
-                                                        "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
-                                                        ]:
+                     "Data Combiner", "Data Merge", "Data Compare",
+                     "Data Locator","Data Filter", "Data Holder","Data Sorter",
+                     "Nan Eliminator", "Nan Imputer", "Drop Duplicate",]:
             action = Action(text=text, parent=data_processing)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             data_processing.addAction(action)
         machine_learning = Menu(text="Machine Learning")
         self.menu.addMenu(machine_learning)
-        for text in ["Classifier","Meta-Classifier","Train/Test Splitter","Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
+        for text in ["Classifier","Bagging-Classifier","Voting-Classifier",
+                     "Regressor",
+                     "Train/Test Splitter",
+                     "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",]:
             action = Action(text=text, parent=machine_learning)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             machine_learning.addAction(action)
         visualization = Menu(text="Visualization")
         self.menu.addMenu(visualization)
-        for text in ["Figure"]:
+        for text in ["Figure 2D", "Figure 3D"]:
             action = Action(text=text, parent=visualization)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             visualization.addAction(action)
         misc = Menu(text="Misc")
         self.menu.addMenu(misc)
-        for text in ["Executor", "User Define Card", "Undefined Node"]:
+        for text in ["Executor", "Looper", "Undefined Node"]:
             action = Action(text=text, parent=misc)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             misc.addAction(action)

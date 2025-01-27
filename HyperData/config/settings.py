@@ -124,25 +124,25 @@ encode = ['ascii',
  'utf_8_sig']
 
 ### Initialize setting and logging profiles
-# dataPath = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-# dataPathDir = QDir(dataPath)
-# if not dataPathDir.exists():
-#     # create the directory (including parent directories if they don't exist);
-#     # that the argument of mkpath is relative to the QDir's object path, so
-#     # using '.' means that it will create the actual dataPath
-#     dataPathDir.mkpath('.')  
+dataPath = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+dataPathDir = QDir(dataPath)
+if not dataPathDir.exists():
+    # create the directory (including parent directories if they don't exist);
+    # that the argument of mkpath is relative to the QDir's object path, so
+    # using '.' means that it will create the actual dataPath
+    dataPathDir.mkpath('.')  
 
 appName = 'HyperData'
-# configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
-configFile = "config.json.txt"
+configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
+# configFile = "config.json.txt"
 if os.path.exists(configFile):
     with open(configFile, "r") as file:
         raw_data = file.read()
         config = json.loads(raw_data)
 else: config = {"theme":"Light", "dock area":"Left", "version":"0.9.1"}
 
-# logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
-logFile = "debug.txt"
+logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
+#logFile = "debug.txt"
 logging.getLogger('matplotlib.font_manager').disabled = True
 # Create and configure logger
 logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='w')
