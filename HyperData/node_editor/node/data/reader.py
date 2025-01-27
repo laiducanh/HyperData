@@ -24,7 +24,8 @@ class DataReader (NodeContentWidget):
             header=0,
             skip_blank_lines=True,
             encoding="utf_8",
-            auto_update=True
+            auto_update=True,
+            sheet_name=None,
         )
         self.selectedFiles = None
         self.filetype = "csv"
@@ -48,7 +49,6 @@ class DataReader (NodeContentWidget):
         
     def config(self):
         # Note that this configuration works for csv file
-        
         dialog = Dialog("Configuration", self.parent)
         auto_update = Toggle(text="Auto update")
         dialog.main_layout.addWidget(auto_update)
@@ -77,9 +77,10 @@ class DataReader (NodeContentWidget):
         self.encoding.button.currentTextChanged.connect(self.update_preview)
         self.sheet_name = ComboBox(text="Sheet name",text2="abc")
         dialog.main_layout.addWidget(self.sheet_name)
-        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
         if self.filetype == "excel":
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
+            self.sheet_name.button.setCurrentText(self._config["sheet_name"])
+        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
 
         dialog.main_layout.addWidget(BodyLabel("Preview"))
         dialog.main_layout.addWidget(SeparateHLine())
@@ -95,7 +96,8 @@ class DataReader (NodeContentWidget):
             self._config["encoding"] = self.encoding.button.currentText()
             self._config["sheet_name"] = self.sheet_name.button.currentText()
             self._config["auto_update"] = auto_update.button.isChecked()
-            super().exec(self.selectedFiles)
+            self._config["skip_blank_lines"] = self.skip_blank_lines.button.isChecked()
+            super().exec()
     
     def update_preview (self):
         delimiter = self._delimiterDict[self.delimiter.button.currentText()]
@@ -154,14 +156,15 @@ class DataReader (NodeContentWidget):
             # reset status of the node before executing the main function
             self.resetStatus()
             # execute main function
-            super().exec(self.selectedFiles)
+            super().exec()
     
-    def func (self, selectedFiles):
+    def func (self):
+        data = pd.DataFrame()
         if self.isReadable:
             match self.filetype:
                 case "csv":
                     data = pd.read_csv(
-                        selectedFiles, 
+                        self.selectedFiles, 
                         nrows=self._config["nrows"],
                         header=self._config["header"],
                         delimiter=self._config["delimiter"],
@@ -173,9 +176,10 @@ class DataReader (NodeContentWidget):
 
                 case "excel":
                     data = pd.read_excel(
-                        selectedFiles, 
+                        self.selectedFiles, 
                         nrows=self._config["nrows"],
-                        header=self._config["header"]
+                        header=self._config["header"],
+                        sheet_name=self._config["sheet_name"] if self._config["sheet_name"] else 0
                     )
                     # write log
                     logger.info(f"DataReader {self.node.id}: Loaded an excel file.")
