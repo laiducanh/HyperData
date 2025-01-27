@@ -13,12 +13,16 @@ class DataCorrelator (NodeContentWidget):
 
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
+            type="correlation",
             method="pearson",
             numeric_only=True
             )
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
+        method = ComboBox(text="Type",items=["correlation","covariance"])
+        method.button.setCurrentText(self._config["type"])
+        dialog.main_layout.addWidget(method)
         function = ComboBox(items=["pearson","kendall","spearman"],text="Method")
         dialog.main_layout.addWidget(function)
         function.button.setCurrentText(self._config["method"])
@@ -29,6 +33,7 @@ class DataCorrelator (NodeContentWidget):
         if dialog.exec():
             self._config["method"] = function.button.currentText()
             self._config["numeric_only"] = overwrite.button.isChecked()
+            self._config["type"] = method.button.currentText()
             self.exec()
     
     def func(self):
@@ -42,13 +47,20 @@ class DataCorrelator (NodeContentWidget):
 
         data = pd.DataFrame()
         try:
-            data = self.node.input_sockets[0].socket_data.corr(**self._config)
+            if self._config["type"] == "correlation":
+                data = self.node.input_sockets[0].socket_data.corr(
+                    method=self._config["method"],
+                    numeric_only=self._config["numeric_only"],
+                )   
+            else:
+                data = self.node.input_sockets[0].socket_data.cov(
+                    numeric_only=self._config["numeric_only"]
+                )
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else:
-                logger.info(f"{self.name} {self.node.id}: run successfully.")
+            logger.info(f"{self.name} {self.node.id}: run successfully.")
+
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
