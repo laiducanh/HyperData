@@ -1,14 +1,16 @@
 import sys, os, json, logging
 
-from PySide6.QtCore import QThreadPool, Qt
+from PySide6.QtCore import QThreadPool, Qt, QDir
 from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
-from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
+from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPalette)
 
 from plot.plot_view import PlotView
 from node_editor.node_view import NodeView, NodeUserDefine
 from node_editor.node_node import Node, Figure2D, Figure3D, UserDefine
 from window.menu_bar import MenuBar
 from config.settings import GLOBAL_DEBUG, config, logger
+from ui.utils import get_path
+
 try:
     from ctypes import windll  # Only exists on Windows.
     myappid = 'mycompany.myproduct.subproduct.version'
@@ -19,7 +21,7 @@ except ImportError as e:
 
 __version__ = config["version"]
 
-DEBUG = True
+DEBUG = False
 
 class Main(QMainWindow):
     def __init__(self):
@@ -45,7 +47,6 @@ class Main(QMainWindow):
     
     def debug(self):
         logger.setLevel(logging.DEBUG)
-        self.node_view.addNode("Figure 2D")        
 
     def add_node_view (self):
         self.node_view = NodeView(self)
@@ -132,12 +133,14 @@ class Main(QMainWindow):
      
 
 if __name__ == "__main__":
-    
+        
+    logger.info(get_path())
+    QDir.addSearchPath('ui', os.path.join(get_path(), 'ui'))
     
     app = QApplication(sys.argv)
 
     # Set Windows style for all platforms
-    app.setStyle(QStyleFactory.create("Windows"))
+    # app.setStyle(QStyleFactory.create("window"))
     
     main_window = Main()
     main_window.show()

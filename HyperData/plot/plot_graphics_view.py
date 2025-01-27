@@ -25,7 +25,7 @@ from ui.base_widgets.menu import Menu, Action
 from config.settings import GLOBAL_DEBUG
 from plot.plotting.plotting import legend_onMove, legend_onPress, legend_onRelease
 
-DEBUG = True
+DEBUG = False
 
 class WidgetItem (QGraphicsItem):
     def __init__(self, widget, parent=None):

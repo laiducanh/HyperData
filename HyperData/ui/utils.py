@@ -1,12 +1,13 @@
 from PySide6.QtGui import QIcon
-from config.settings import config
+from config.settings import config, logger
 
 import os, darkdetect, sys
 
 def icon(fileName:str) -> QIcon:
+    
     if isDark():
-        return QIcon(os.path.join("ui","icons","white",fileName))
-    return QIcon(os.path.join("ui","icons","black",fileName))
+        return QIcon(os.path.join(get_path(),"ui","icons","white",fileName))
+    return QIcon(os.path.join(get_path(),"ui","icons","black",fileName))
 
 def isDark() -> bool:
     if config["theme"] == "Dark":
@@ -20,6 +21,8 @@ def isDark() -> bool:
 
 def get_path():
     try:
+        return os.path.join(os.getcwd(), sys._MEIPASS)
+    except Exception as e:
+        logger.error(e)
         return os.getcwd()
-    except Exception:
-        return os.path.join(sys.__MEIPASS, os.getcwd())
+        

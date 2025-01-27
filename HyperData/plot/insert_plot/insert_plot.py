@@ -20,16 +20,16 @@ from typing import List
 
 DEBUG = False
 
-ICON_PATH_2D = {'2d line':os.path.join("Plot","line.svg"),
-                '2d area':os.path.join("Plot","area.svg"),
-                '2d column':os.path.join("Plot","bar.svg"),
-                '2d scatter':os.path.join("Plot","scatter.svg"),
-                'pie':os.path.join("Plot","pie.svg"),}
-ICON_PATH_3D = {'3d line':os.path.join("Plot","line.svg"),
-                '3d area':os.path.join("Plot","area.svg"),
-                '3d column':os.path.join("Plot","bar.svg"),
-                '3d scatter':os.path.join("Plot","scatter.svg"),
-                '3d surface':os.path.join("Plot","surface.svg")}
+ICON_PATH_2D = {'2d line':os.path.join("Plot","line.png"),
+                '2d area':os.path.join("Plot","area.png"),
+                '2d column':os.path.join("Plot","bar.png"),
+                '2d scatter':os.path.join("Plot","scatter.png"),
+                'pie':os.path.join("Plot","pie.png"),}
+ICON_PATH_3D = {'3d line':os.path.join("Plot","line.png"),
+                '3d area':os.path.join("Plot","area.png"),
+                '3d column':os.path.join("Plot","bar.png"),
+                '3d scatter':os.path.join("Plot","scatter.png"),
+                '3d surface':os.path.join("Plot","surface.png")}
 
 
 class Grid_Plottype (QHBoxLayout):
@@ -47,7 +47,7 @@ class Grid_Plottype (QHBoxLayout):
                 self.button.setIcon(ICON_PATH_3D[basic_plot])
                 self.button.setIconSize(QSize(40,40))
                 self.button.setFixedSize(QSize(50,50))
-                self.button.setToolTip(self.basic_plot.title())
+                self.button.setToolTip(basic_plot.title())
                 self.button.pressed.connect(lambda s=basic_plot: self.sig.emit(s))
                 self.addWidget(self.button)
         else:
@@ -244,7 +244,7 @@ class InsertPlot (QWidget):
 
     def __init__(self, canvas:Canvas, node, plot3d=False, parent=None):
         super().__init__(parent)
-        
+
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.layout.setContentsMargins(10,0,10,15)
@@ -273,9 +273,9 @@ class InsertPlot (QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop|Qt.AlignmentFlag.AlignJustify)
         self.scroll_area.verticalScrollBar().rangeChanged.connect(lambda min, max: self.scroll_area.verticalScrollBar().setSliderPosition(max))
-
+  
     def add_plot (self, plot_type):
-
+ 
         self.num_plot += 1   
         newplot = NewPlot(self.num_plot, plot_type, self.canvas, self.node, self.plot3d)
         self.plotlist.append(newplot)

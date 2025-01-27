@@ -6,6 +6,7 @@ from ui.base_widgets.button import _PrimaryPushButton
 from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.list import ListWidget
+from ui.utils import get_path
 
 class Plottype_Button (_PrimaryPushButton):
     sig = Signal(str)
@@ -26,14 +27,37 @@ class Plottype_Button (_PrimaryPushButton):
 
 class SideBar (ListWidget):
     sig = Signal()
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
 
         self.setFixedWidth(150)
         self.addItems(['Line Graphs','Column Graphs','Scatter Graphs','Pie Graphs','Statistics Graphs','Surface Graphs'])
         self.setCurrentRow(0)
+
+        self.setStyleSheet(
+            """
+            ListWidget, TreeWidget {
+                background-color: transparent;
+                border: none;
+                border-radius: 6px;
+                padding-right: 5px;
+                padding-left: 5px;
+            }
+
+            ListWidget::item, TreeWidget::item {
+                padding: 4px;
+                margin-top: 2px;
+                margin-bottom: 2px;
+                padding-left: 20px;
+                color: black;
+            }
+
+            ListWidget::item:hover, TreeWidget::item:hover {
+                background-color: rgba(222, 222, 222, 1);
+            }"""
+        )
     
 
 class Line2d (QWidget):
@@ -132,12 +156,12 @@ class Bar (QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","bar.png"))
-        #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
+        # fig = QLabel()
+        # pixmap = QPixmap(os.path.join("UI","Plot","bar.png"))
+        # pixmap = pixmap.scaled(400,400)
+        # fig.setPixmap(pixmap)
+        # fig.setFixedWidth(100)
+        # layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('2D Column'))
         layout_column2d_1 = QHBoxLayout()
@@ -194,12 +218,12 @@ class Scatter2D (QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","scatter.png"))
-        #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
+        # fig = QLabel()
+        # pixmap = QPixmap(os.path.join("UI","Plot","scatter.png"))
+        # pixmap = pixmap.scaled(400,400)
+        # fig.setPixmap(pixmap)
+        # fig.setFixedWidth(100)
+        # layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('Scatter'))
         layout_scatter3 = QHBoxLayout()
@@ -238,12 +262,12 @@ class Scatter3D(QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","scatter.png"))
-        #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
+        # fig = QLabel()
+        # pixmap = QPixmap(os.path.join("UI","Plot","scatter.png"))
+        # pixmap = pixmap.scaled(400,400)
+        # fig.setPixmap(pixmap)
+        # fig.setFixedWidth(100)
+        # layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('Scatter'))
         layout_scatter3 = QHBoxLayout()
@@ -284,12 +308,12 @@ class Pie (QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","pie.png"))
-        #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
+        # fig = QLabel()
+        # pixmap = QPixmap(os.path.join("UI","Plot","pie.png"))
+        # pixmap = pixmap.scaled(400,400)
+        # fig.setPixmap(pixmap)
+        # fig.setFixedWidth(100)
+        # layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('2D Pie'))
         layout_2dpie = QHBoxLayout()
@@ -329,12 +353,12 @@ class Statistics (QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","stats.png"))
-        #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
+        # fig = QLabel()
+        # pixmap = QPixmap(os.path.join("UI","Plot","stats.png"))
+        # pixmap = pixmap.scaled(400,400)
+        # fig.setPixmap(pixmap)
+        # fig.setFixedWidth(100)
+        # layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('Histogram'))
         layout_hist = QHBoxLayout()
@@ -376,12 +400,12 @@ class Surface (QWidget):
         text.setWordWrap(True)
         
         layout2.addWidget(text)
-        fig = QLabel()
-        pixmap = QPixmap(os.path.join("UI","Plot","surface.png"))
-        #pixmap = pixmap.scaled(400,400)
-        fig.setPixmap(pixmap)
-        fig.setFixedWidth(100)
-        layout1.addWidget(fig)
+        # fig = QLabel()
+        # pixmap = QPixmap(os.path.join("UI","Plot","surface.png"))
+        # pixmap = pixmap.scaled(400,400)
+        # fig.setPixmap(pixmap)
+        # fig.setFixedWidth(100)
+        # layout1.addWidget(fig)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('3D'))
         layout_surface = QHBoxLayout()
@@ -410,7 +434,7 @@ class Plottype_Window (QMainWindow):
         #self.setStyleSheet('QWidget { background:#BDC3C7;}')
         #self.setWindowOpacity(0.97)
         self.setFixedSize(QSize(700,500))
-        self.setWindowIcon(QIcon(os.path.join("UI","app-icon.png")))
+        self.setWindowIcon(QIcon(os.path.join(get_path(),"ui", "icons", "app-icon.png")))
         self.setWindowTitle('Plot Types')
 
         layout = QHBoxLayout()
@@ -419,7 +443,7 @@ class Plottype_Window (QMainWindow):
         self.central_widget.setLayout(layout)
         self.setCentralWidget(self.central_widget)
         
-        listview = SideBar()
+        listview = SideBar(parent)
         layout.addWidget(listview)
         listview.currentTextChanged.connect(self.func)
 

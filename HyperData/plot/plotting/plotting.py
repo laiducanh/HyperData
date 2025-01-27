@@ -17,7 +17,7 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.backend_bases import MouseEvent
 from typing import List, Union, Literal
 
-DEBUG = True
+DEBUG = False
 
 bbox = None
 legend_picked = False

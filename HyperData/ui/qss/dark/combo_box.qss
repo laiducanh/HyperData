@@ -39,7 +39,7 @@ _ComboBox::drop-down {
 }
 
 _ComboBox::down-arrow {
-    image: url(ui/icons/white/ChevronDown_white.svg);
+    image: url(ui:icons/white/ChevronDown_white.svg);
     width: 10px;
     height: 10px;
 }

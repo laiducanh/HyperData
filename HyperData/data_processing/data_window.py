@@ -10,7 +10,7 @@ from config.settings import list_name, GLOBAL_DEBUG, logger
 from ui.base_widgets.button import _DropDownPushButton, _PrimaryPushButton, ComboBox
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.menu import Menu, Action
-#from ui.base_widgets.icons import Icon
+from ui.utils import get_path
 from plot.canvas import ExplorerCanvas
 import seaborn as sns
 
@@ -461,7 +461,7 @@ class DataView (QWidget):
         
         self.setWindowTitle("Data")
         layout = QHBoxLayout(self)
-        self.setWindowIcon(QIcon(os.path.join("data-window.png")))
+        self.setWindowIcon(QIcon(os.path.join(get_path(),"ui","icons","data-window.png")))
         screen = QGuiApplication.primaryScreen().geometry().getRect()
         self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
         
@@ -482,7 +482,7 @@ class DataSelection (QWidget):
         
         self.setWindowTitle("Data")
         layout = QVBoxLayout(self)
-        self.setWindowIcon(QIcon(os.path.join("UI","Icons","data-window.png")))
+        self.setWindowIcon(QIcon(os.path.join(get_path(),"ui","icons","data-window.png")))
         screen = QGuiApplication.primaryScreen().geometry().getRect()
         self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
         

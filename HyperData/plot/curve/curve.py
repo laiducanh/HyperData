@@ -19,7 +19,7 @@ from matplotlib.artist import Artist
 from matplotlib import legend
 from typing import List
 
-DEBUG = True
+DEBUG = False
 
 class Curve (QWidget):
     sig = Signal() # fire signal when plot updated

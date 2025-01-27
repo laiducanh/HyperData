@@ -141,10 +141,10 @@ class ProgressDialog (QProgressDialog):
 
         # Create rounded rectangle path
         path = QPainterPath()
-        path.addRoundedRect(self.rect().toRectF(), 10, 10)
+        path.addRoundedRect(self.rect().toRectF(), 6, 6)
 
         # Fill the dialog background
-        if isDark:
+        if isDark():
             painter.fillPath(path, QBrush(QColor(32,32,32)))
         else:
-            painter.fillPath(path, QBrush(Qt.GlobalColor.white))
+            painter.fillPath(path, QBrush(QColor(200,200,200)))

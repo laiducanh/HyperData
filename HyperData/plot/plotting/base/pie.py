@@ -7,7 +7,7 @@ import math
 import numpy as np
 from config.settings import GLOBAL_DEBUG, logger
 
-DEBUG = True
+DEBUG = False
 
 def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
          radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:

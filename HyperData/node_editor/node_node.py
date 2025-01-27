@@ -4,11 +4,11 @@ from node_editor.node.data.data import *
 from node_editor.node.data_cleaning.data_cleaning import *
 from node_editor.node.data_encoder.data_encoder import *
 from node_editor.node.classifier.classifier import Classifier
-from node_editor.node.meta_classifier import MetaClassifier
+from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingClassifier, VotingClassifier
 from node_editor.node.regressor.regressor import Regressor
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
 from node_editor.node.figure import *
-from node_editor.node.misc import *
+from node_editor.node.misc.misc import *
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -82,17 +82,26 @@ class Node(NodeGraphicsNode):
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = TrainTestSplitter(self,parent)
             case "Classifier":
-                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
                 self.content = Classifier(self,parent)
+            case "Bagging-Classifier":
+                super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+                self.content = BaggingClassifier(self,parent)
+            case "Voting-Classifier":
+                super().__init__(title=title, inputs=[MULTI_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+                self.content = VotingClassifier(self,parent)
             case "Meta-Classifier":
                 super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = MetaClassifier(self,parent)
             case "Regressor":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = Regressor(self,parent)
-            case 'Executor':
+            case "Executor":
                 super().__init__(title=title, inputs=[], outputs=[])
                 self.content = Executor(self,parent)
+            case "Looper":
+                super().__init__(title=title, inputs=[], outputs=[])
+                self.content = Looper(self,parent)
             case 'User Define Card':
                 super().__init__(title=title, inputs=[], outputs=[])
                 self.content = UserDefine(self,parent)

@@ -17,7 +17,7 @@ _SpinBox::up-button, _DoubleSpinBox::up-button {
     border: none;
     width: 8px;
     height: 8px;
-    border-image: url(ui/icons/black/Up_black.svg);
+    border-image: url(ui:icons/black/Up_black.svg);
 }
 
 _SpinBox::down-button, _DoubleSpinBox::down-button {
@@ -28,7 +28,7 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
     border: none;
     width: 8px;
     height: 8px;
-    border-image: url(ui/icons/black/Down_black.svg);
+    border-image: url(ui:icons/black/Down_black.svg);
 }
 
 _SpinBox:hover, _DoubleSpinBox:hover {

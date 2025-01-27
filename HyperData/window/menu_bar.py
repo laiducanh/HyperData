@@ -17,11 +17,11 @@ class MenuBar(QMenuBar):
         action = QAction('Save',self)
         action.triggered.connect(self.parent().saveToFile)
         fileMenu.addAction(action)
-        action = QAction('\0Settings',self)
+        action = QAction('Settings',self)
         action.triggered.connect(self.setting_onClick)
         fileMenu.addAction(action)
         fileMenu.addSeparator()
-        action = QAction('\0Quit', self)
+        action = QAction('Quit', self)
         action.triggered.connect(parent.close)
         fileMenu.addAction(action)       
 
@@ -31,10 +31,18 @@ class MenuBar(QMenuBar):
         aboutMenu.addAction(action)       
     
         self.settings_window = SettingsWindow(parent)
-        self.updateDialog = UpdateDialog(parent=parent)
+        self.updateDialog = UpdateDialog(parent=self)
+
+        self.updateDialog.request()
+        if self.updateDialog.new_update:
+            self.updateDialog.exec()
 
     def setting_onClick(self):
         self.settings_window.show()
     
     def checkupdate_onClick(self):
+        # create new update Dialog
+        self.updateDialog = UpdateDialog(parent=self)
+        self.updateDialog.request()
         self.updateDialog.exec()
+        

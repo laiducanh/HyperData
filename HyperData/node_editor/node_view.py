@@ -54,10 +54,12 @@ class NodeView (QMainWindow):
                                                           "Data Locator","Data Filter", "Data Holder","Data Sorter",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
-                                        "Machine Learning": ["Classifier","Regressor","Train/Test Splitter",
+                                        "Machine Learning": ["Classifier","Bagging-Classifier","Voting-Classifier",
+                                                             "Regressor",
+                                                             "Train/Test Splitter",
                                                              "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
                                         "Visualization": ["Figure 2D", "Figure 3D"],
-                                        "Misc": ["Executor", "User Define Card", "Undefined Node"]})
+                                        "Misc": ["Executor", "Looper", "Undefined Node"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)
         self.list_widget_layout.addWidget(self.nodesListWidget)
         self.search_box.set_TreeView(self.nodesListWidget)

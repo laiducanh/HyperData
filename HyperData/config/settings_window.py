@@ -1,4 +1,4 @@
-from PySide6.QtGui import QKeyEvent, QAction
+from PySide6.QtGui import QKeyEvent, QAction, QIcon
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout, QApplication
 from PySide6.QtCore import QSize, Qt
 
@@ -8,8 +8,9 @@ from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.list import ListWidget
+from ui.utils import get_path
 from config.settings import config
-import os, darkdetect
+import os, darkdetect, sys
 
 class Theme (Frame):
     def __init__(self, parent:QMainWindow=None):
@@ -41,15 +42,15 @@ class Theme (Frame):
         
     def _setStyleSheet (self, theme=["light","dark"]):
         string = str()
-        path = os.path.join("ui","qss", theme)
+        path = os.path.join(get_path(), "ui","qss", theme)
         for file in os.listdir(path):
             with open(os.path.join(path, file), 'r') as f:
                 string += f.read()
         self.app.setStyleSheet(string)
-        for widget in self.app.allWidgets():
-            if widget.isVisible():
-                try: widget.update()
-                except: pass
+        # for widget in self.app.allWidgets():
+        #     if widget.isVisible():
+        #         try: widget.update()
+        #         except: pass
 
 class DockWidget_Position (Frame):
     def __init__(self, parent=None):

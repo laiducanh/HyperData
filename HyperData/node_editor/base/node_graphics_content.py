@@ -42,7 +42,7 @@ class NodeContentWidget(ContentItem):
 
     def eval (self):
         """ use to process data_in """
-        pass
+        self.resetStatus()
     
     def exec_done(self):
         """ this function will be called when threadpool finishes running"""

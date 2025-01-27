@@ -8,6 +8,7 @@ from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine
+from ui.utils import get_path
 from config.settings import color_lib
 
 PALETTES = {
@@ -210,9 +211,9 @@ class ColorPickerButton (_PushButton):
                      0.7152*_pc.getRgb()[1]+ \
                      0.0722*_pc.getRgb()[2]
         if brightness >= 128:
-            icon = os.path.join("ui","icons","black","ChevronDown_black.svg")
+            icon = os.path.join(get_path(),"ui","icons","black","ChevronDown_black.svg")
         else:
-            icon = os.path.join("ui","icons","white","ChevronDown_white.svg")
+            icon = os.path.join(get_path(),"ui","icons","white","ChevronDown_white.svg")
         renderer = QSvgRenderer(icon)
         renderer.render(painter, rect)
         

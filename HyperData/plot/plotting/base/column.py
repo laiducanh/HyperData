@@ -10,7 +10,7 @@ import numpy as np
 import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
-DEBUG = True
+DEBUG = False
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
     
