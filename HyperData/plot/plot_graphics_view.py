@@ -22,7 +22,7 @@ from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
-from config.settings import GLOBAL_DEBUG
+from config.settings import GLOBAL_DEBUG, config, logger
 from plot.plotting.plotting import legend_onMove, legend_onPress, legend_onRelease
 
 DEBUG = False
@@ -147,10 +147,10 @@ class GraphicsView (QGraphicsView):
     def Menu(self, graph_list=list()):
         self.menu.clear()
 
-        nodeview = Action(text="&Node View", parent=self.menu)
+        nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
         nodeview.triggered.connect(self.backtoScene.emit)
         self.menu.addAction(nodeview)
-        home = Action(text="&Home", parent=self.menu)
+        home = Action(text="&Home", shortcut="Ctrl+H", parent=self.menu)
         home.triggered.connect(self.backtoHome.emit)
         self.menu.addAction(home)
 
@@ -341,7 +341,7 @@ class GraphicsView (QGraphicsView):
 
         self.legend_picked = legend_onMove(event, self.canvas)
 
-        if not self.legend_picked:
+        if not self.legend_picked and config["plot_tooltip"]:
             self.tooltip_onShow(event)
             
         self.canvas.blit(self.canvas.fig.bbox)

@@ -229,8 +229,14 @@ class PlotView (QMainWindow):
             self.stackedlayout.setCurrentWidget(self.treeview)
         
         elif key.key() == Qt.Key.Key_M:
-            point_to_show = self.plot_visual.scene().sceneRect().center().toPoint()
+            point_to_show = self.mapToGlobal(self.plot_visual.scene().sceneRect().center().toPoint())
             self.plot_visual.menu.exec(point_to_show)
+        
+        elif key.key() == Qt.Key.Key_N and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.sig_back_to_grScene.emit()
+        
+        elif key.key() == Qt.Key.Key_H and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.stackedlayout.setCurrentIndex(0)
 
         super().keyPressEvent(key)
 

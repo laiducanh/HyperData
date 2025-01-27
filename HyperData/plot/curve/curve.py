@@ -67,7 +67,7 @@ class Curve (QWidget):
         self.layout2.addWidget(TitleLabel('Label'))
         self.layout2.addWidget(SeparateHLine())
         self.legend = TextEdit()
-        self.legend.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.legend.button.setPlainText(self.get_label())
         self.legend.setFixedHeight(100)
         self.layout2.addWidget(self.legend)

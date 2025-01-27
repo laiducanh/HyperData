@@ -2,7 +2,7 @@ from PySide6.QtGui import QKeyEvent, QAction, QIcon
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QDockWidget, QStackedLayout, QApplication
 from PySide6.QtCore import QSize, Qt
 
-from ui.base_widgets.button import _ComboBox, ComboBox
+from ui.base_widgets.button import _ComboBox, ComboBox, Toggle
 from ui.base_widgets.color import ColorPickerButton
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
@@ -67,13 +67,25 @@ class DockWidget_Position (Frame):
     
     def setPos (self, pos):
         config["dock area"] = pos
+
+class Figure_Tooltip(Frame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        layout = QHBoxLayout()
+        self.setLayout(layout)
+
+        button = Toggle(text="Show Tooltip")
+        button.button.setChecked(config["plot_tooltip"])
+        button.button.checkedChanged.connect(lambda s: config.update(plot_tooltip=s))
+        layout.addWidget(button)
     
 class SettingsWindow (QMainWindow):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent)
 
         self.sidebar = ListWidget()
-        self.sidebar.addItems(["Appearance","Shortcuts"])
+        self.sidebar.addItems(["Appearance","Figure"])
         self.sidebar.setCurrentRow(0)
         self.sidebar.currentRowChanged.connect(lambda: layout.setCurrentIndex(self.sidebar.currentRow()))
 
@@ -97,9 +109,10 @@ class SettingsWindow (QMainWindow):
         appearance_layout.addWidget(Theme(parent))
         appearance_layout.addWidget(DockWidget_Position(parent))
 
-        shortcut = QWidget()
-        shortcut_layout = QVBoxLayout()
-        shortcut.setLayout(shortcut_layout)
-        layout.addWidget(shortcut)
+        figure = QWidget()
+        figure_layout = QVBoxLayout(figure)
+        layout.addWidget(figure)
+
+        figure_layout.addWidget(Figure_Tooltip(parent))
 
         
