@@ -74,7 +74,6 @@ class Column (PlotConfigBase):
     
     def set_bottom (self, value:str):
         try:
-            if value: value = 0
             self.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:

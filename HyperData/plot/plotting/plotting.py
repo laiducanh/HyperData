@@ -24,7 +24,8 @@ legend_picked = False
 
 def remove_artist (ax:Axes, gid:str) -> list[Artist]:
     artist_removed = list()
-    for artist in find_mpl_object(figure=ax.figure,match=[Artist],gid=gid):
+    
+    for artist in find_mpl_object(figure=ax.figure,match=[Artist],gid=gid,rule="exact"):
         artist_removed.append(artist)
         artist.remove()
         if GLOBAL_DEBUG or DEBUG:
@@ -85,7 +86,7 @@ def set_legend(canvas: Canvas, *args, **kwargs):
         old_title = None
         global bbox, legend_picked
         legend_picked = False
-
+        
         # if not get_legend(canvas): 
         #     mpl_background = canvas.copy_from_bbox(canvas.fig.bbox)
 
@@ -101,11 +102,12 @@ def set_legend(canvas: Canvas, *args, **kwargs):
             _legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
             
             _legend.set_gid("legend")
-
-            for _handle, _leghandle, _legtext \
-            in zip(_handles, _legend.legend_handles, _legend.get_texts()):
-                _leghandle.set_gid(_handle.get_gid())
-                _legtext.set_gid(_handle.get_gid())                
+            
+            # for _handle, _leghandle, _legtext \
+            # in zip(_handles, _legend.legend_handles, _legend.get_texts()):
+            #     print("awpoic", _handle.get_gid())
+            #     _leghandle.set_gid(f"{_handle.get_gid()}")
+            #     _legtext.set_gid(f"{_handle.get_gid()}")     
 
             # if old_title: 
             #     _legend.set_title(old_title.get_text())
@@ -151,7 +153,7 @@ def rescale_plot(figure:Figure) -> None:
         _ax.autoscale()    
 
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> List[Artist]:
-    
+   
     # get old artist that will be replaced
     # but its properties will apply to the new ones
     artist_old = find_mpl_object(
@@ -202,7 +204,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
         case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
         case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
-    
+  
     # some plot types cannot generally update props from old artists
     if plot_type not in ["treemap"]:
         if artist_old != []:
@@ -210,9 +212,10 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
                 for art_old in artist_old:
                     if art.get_gid() == art_old.get_gid():
                         update_props(art_old, art)
+   
     # update legend if necessary
     set_legend(ax.figure.canvas)
-
+    
     ax.figure.canvas.draw_idle()
     if DEBUG or GLOBAL_DEBUG: print("plotting")
     return artist

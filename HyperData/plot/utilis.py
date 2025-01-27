@@ -4,7 +4,7 @@ from matplotlib.patches import Patch, Rectangle
 from matplotlib.colors import to_hex
 from matplotlib.artist import Artist
 from matplotlib.figure import Figure
-from typing import List
+from typing import List, Literal
 import numpy as np
 
 def get_color(artist:Artist):
@@ -27,7 +27,7 @@ def get_color(artist:Artist):
 
     return "white"
 
-def find_mpl_object(figure:Figure, match=list([Line2D,Collection,Patch]), gid:str=None) -> List[Artist]:
+def find_mpl_object(figure:Figure, match=list([Line2D,Collection,Patch]), gid:str=None, rule:Literal["exact","contain"]="contain") -> List[Artist]:
 
     """ This function is used to find artist plot (having gid) in matplotlib,
         for other objects such as text, use matplotlib function findobj() instead """
@@ -38,7 +38,9 @@ def find_mpl_object(figure:Figure, match=list([Line2D,Collection,Patch]), gid:st
         for artist in _found:
             if artist.get_gid():
                 if gid:
-                    if gid in artist.get_gid():
+                    if rule == "contain" and gid in artist.get_gid():
+                        obj_found.append(artist)
+                    elif rule == "exact" and gid == artist.get_gid():
                         obj_found.append(artist)
                 else: obj_found.append(artist)
         #obj_found += [artist for artist in _found if artist.get_gid() != None]

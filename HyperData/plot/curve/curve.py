@@ -87,12 +87,10 @@ class Curve (QWidget):
     def set_label (self):
         try:
             self.progressbar.setValue(0)
-            self.progressbar._setValue(0)
             _label = self.legend.button.toPlainText()
             if _label == "":
                 _label = "_"
-            for obj in self.obj:
-                obj.set_label(_label)
+            self.obj[0].set_label(_label)
             set_legend(self.canvas)
             self.canvas.draw_idle()
             self.progressbar.setValue(100)
@@ -111,7 +109,6 @@ class Curve (QWidget):
     def update_plot (self):
         try:
             self.progressbar.setValue(0)
-            self.progressbar._setValue(0)
             if get_legend(self.canvas): set_legend(self.canvas)
             self.canvas.draw_idle()
             self.sig.emit()
