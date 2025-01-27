@@ -8,6 +8,7 @@ from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingC
 from node_editor.node.regressor.regressor import Regressor
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
 from node_editor.node.figure import *
+from node_editor.node.predictor import Predictor
 from node_editor.node.misc.misc import *
 
 SINGLE_IN = 1
@@ -96,6 +97,9 @@ class Node(NodeGraphicsNode):
             case "Regressor":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = Regressor(self,parent)
+            case "Predictor":
+                super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = Predictor(self,parent)
             case "Executor":
                 super().__init__(title=title, inputs=[], outputs=[])
                 self.content = Executor(self,parent)

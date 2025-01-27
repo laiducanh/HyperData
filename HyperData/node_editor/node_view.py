@@ -56,7 +56,7 @@ class NodeView (QMainWindow):
                                                           ],
                                         "Machine Learning": ["Classifier","Bagging-Classifier","Voting-Classifier",
                                                              "Regressor",
-                                                             "Train/Test Splitter",
+                                                             "Train/Test Splitter","Predictor",
                                                              "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
                                         "Visualization": ["Figure 2D", "Figure 3D"],
                                         "Misc": ["Executor", "Looper", "Undefined Node"]})
