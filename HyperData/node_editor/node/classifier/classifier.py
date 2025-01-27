@@ -30,7 +30,7 @@ from node_editor.node.classifier.extra_trees import ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
 
-DEBUG = False
+DEBUG = True
 
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -176,7 +176,7 @@ class Classifier (NodeContentWidget):
                             data.iloc[i,-1] += str(Y_pred_all[i,j])
                                 
                 score = scoring(self.Y_test, self.Y_pred)
-                self.score_btn.setText(f"Score: {score[self.score_function]:.2f}")
+                self.score_btn.setText(f"Score: {score[self.score_function]}")
                 
                 # change progressbar's color   
                 self.progress.changeColor('success')

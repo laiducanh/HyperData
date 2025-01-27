@@ -35,7 +35,7 @@ from PySide6.QtWidgets import QStackedLayout
 from sklearn import linear_model
 import pandas as pd
 
-DEBUG = False
+DEBUG = True
 
 class Regressor(NodeContentWidget):
     def __init__(self, node, parent=None):
@@ -161,7 +161,7 @@ class Regressor(NodeContentWidget):
                     data[f"Fold{fold+1}_Prediction"] = Y_pred_all
 
                 score = scoring(self.Y_test_score, self.Y_pred_score)
-                self.score_btn.setText(f"Score: {score[self.score_function]:.2f}")
+                self.score_btn.setText(f"Score: {score[self.score_function]}")
                 # change progressbar's color   
                 self.progress.changeColor('success')
                 # write log
@@ -194,7 +194,7 @@ class Regressor(NodeContentWidget):
     def score_dialog(self):
         dialog = Report(self.Y_test_score, self.Y_pred_score)
         score = scoring(self.Y_test_score, self.Y_pred_score)
-        dialog.metricChange.connect(lambda s: self.score_btn.setText(f"Score {score[s]:.2f}"))
+        dialog.metricChange.connect(lambda s: self.score_btn.setText(f"Score {score[s]}"))
         if dialog.exec():
             self.score_function = dialog.score_function
     

@@ -2,7 +2,7 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import (PrimaryComboBox, SegmentedWidget,  TransparentPushButton)
 from config.settings import logger, GLOBAL_DEBUG
 from plot.canvas import Canvas
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
 from sklearn import metrics
 from matplotlib.axes import Axes
@@ -72,14 +72,14 @@ def scoring(Y=list(), Y_pred=list()):
             
 
         return {
-            "r2 score": r2.mean(),
-            "mean absolute error": mean_absolute_error.mean(),
-            "mean squared error": mean_squared_error.mean(),
-            "mean squared logarithmic error": mean_squared_log_error.mean(),
-            "mean absolute percentage error": mean_absolute_percentage_error.mean(),
-            "median absolute error": median_absolute_error.mean(),
-            "maximum residual error": max_error.mean(),
-            "explained variance": explained_variance_score.mean(),
+            "r2 score": f"{r2.mean():.2f} +/- {r2.std():.2f}",
+            "mean absolute error": f"{mean_absolute_error.mean():.2f} +/- {mean_squared_error.std():.2f}",
+            "mean squared error": f"{mean_squared_error.mean():.2f} +/- {mean_squared_error.std():.2f}",
+            "mean squared logarithmic error": f"{mean_squared_log_error.mean():.2f} +/- {mean_squared_log_error.std():.2f}",
+            "mean absolute percentage error": f"{mean_absolute_percentage_error.mean():.2f} +/- {mean_absolute_percentage_error.std():.2f}",
+            "median absolute error": f"{median_absolute_error.mean():.2f} +/- {median_absolute_error.std():.2f}",
+            "maximum residual error": f"{max_error.mean():.2f} +/- {max_error.std():.2f}",
+            "explained variance": f"{explained_variance_score.mean():.2f} +/- {explained_variance_score.std():.2f}",
         }
     
 class Report(Dialog):
@@ -121,6 +121,7 @@ class Report(Dialog):
     def metrics(self) -> QWidget:
         widget = QWidget()
         layout = QVBoxLayout(widget)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(0,0,0,0)
 
         metricToShow = PrimaryComboBox(
@@ -129,7 +130,7 @@ class Report(Dialog):
                    "explained variance"],
             text="Metrics"
         )
-        metricToShow.setMinimumWidth(250)
+        metricToShow.button.setMinimumWidth(250)
         metricToShow.button.setCurrentText(self.score_function)
         metricToShow.button.currentTextChanged.connect(self.changeMetrics)
         layout.addWidget(metricToShow)
