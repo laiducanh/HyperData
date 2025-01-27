@@ -49,6 +49,9 @@ class Node(NodeGraphicsNode):
             case 'Data Compare':
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = DataCompare(self,parent)
+            case "Data Correlator":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = DataCorrelator(self,parent)
             case "Data Locator":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = DataLocator(self,parent)

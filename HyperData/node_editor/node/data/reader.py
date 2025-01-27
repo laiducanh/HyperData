@@ -144,17 +144,17 @@ class DataReader (NodeContentWidget):
             filter="""Microsoft excel (*.slsx *.xls);;Comma-separated values (*.csv)"""
         )
         if dialog.exec():
-            self.selectedFiles, _ = dialog.getOpenFileName()
-        # add file path for watcher
-        self.watcher.addPath(self.selectedFiles)
-        # check filetype for reading
-        self.check_filetype(self.selectedFiles)
-        # write log
-        logger.info(f"DataReader {self.node.id}: Selected {self.selectedFiles}.")
-        # reset status of the node before executing the main function
-        self.resetStatus()
-        # execute main function
-        super().exec(self.selectedFiles)
+            self.selectedFiles = dialog.selectedFiles()[0]
+            # add file path for watcher
+            self.watcher.addPath(self.selectedFiles)
+            # check filetype for reading
+            self.check_filetype(self.selectedFiles)
+            # write log
+            logger.info(f"DataReader {self.node.id}: Selected {self.selectedFiles}.")
+            # reset status of the node before executing the main function
+            self.resetStatus()
+            # execute main function
+            super().exec(self.selectedFiles)
     
     def func (self, selectedFiles):
         if self.isReadable:

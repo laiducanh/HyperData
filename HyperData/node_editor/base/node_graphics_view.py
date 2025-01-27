@@ -62,7 +62,7 @@ class NodeGraphicsView(QGraphicsView):
         data_processing = Menu(text="Data Processing")
         self.menu.addMenu(data_processing)
         for text in ["Data Reader", "Data Concator", "Data Transpose", 
-                     "Data Combiner", "Data Merge", "Data Compare",
+                     "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
                      "Data Locator","Data Filter", "Data Holder","Data Sorter",
                      "Nan Eliminator", "Nan Imputer", "Drop Duplicate",]:
             action = Action(text=text, parent=data_processing)
