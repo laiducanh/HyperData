@@ -53,11 +53,10 @@ class DataConcator (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else:
-                connectedEdges = self.node.input_sockets[0].edges
-                connectedNodes = [edge.start_socket.node for edge in connectedEdges]
-                logger.info(f"{self.name} {self.node.id}: concated data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
+            connectedEdges = self.node.input_sockets[0].edges
+            connectedNodes = [edge.start_socket.node for edge in connectedEdges]
+            logger.info(f"{self.name} {self.node.id}: concated data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
+        
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color

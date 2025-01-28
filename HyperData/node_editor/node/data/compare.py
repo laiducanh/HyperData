@@ -52,11 +52,9 @@ class DataCompare (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else: 
-                node1 = self.node.input_sockets[0].edges[0].start_socket.node
-                node2 = self.node.input_sockets[1].edges[0].start_socket.node
-                logger.info(f"{self.name} {self.node.id}: compared data from {node1} {node1.id} and {node2} {node2.id} successfully.")
+            node1 = self.node.input_sockets[0].edges[0].start_socket.node
+            node2 = self.node.input_sockets[1].edges[0].start_socket.node
+            logger.info(f"{self.name} {self.node.id}: compared data from {node1} {node1.id} and {node2} {node2.id} successfully.")
 
         except Exception as e:
             data = pd.DataFrame()

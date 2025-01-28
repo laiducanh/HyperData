@@ -15,29 +15,27 @@ class DataCombiner (NodeContentWidget):
         self.node.input_sockets[0].socket_data = list()
         self._config = dict(
             func="minimum",
-            overwrite=True
             )
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        function = ComboBox(items=["take smaller","minimum"],text="Function")
+        function = ComboBox(items=["take smaller","take bigger","minimum","maximum"],text="Function")
         dialog.main_layout.addWidget(function)
         function.button.setCurrentText(self._config["func"])
-        overwrite = Toggle(text="Overwrite")
-        dialog.main_layout.addWidget(overwrite)
-        overwrite.button.setChecked(self._config["overwrite"])
 
         if dialog.exec():
             self._config["func"] = function.button.currentText()
-            self._config["overwrite"] = overwrite.button.isChecked()
             self.exec()
     
     def func(self):
         if self._config["func"] == "take smaller":
             func = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
-        else:
+        elif self._config["func"] == "take bigger":
+            func = lambda s1, s2: s1 if s1.sum() > s2.sum() else s2
+        elif self._config["func"] == "minimum":
             func = np.minimum
-        overwrite = self._config["overwrite"]
+        else:
+            func = np.maximum
 
         if DEBUG or GLOBAL_DEBUG:
             from sklearn import datasets
@@ -51,15 +49,14 @@ class DataCombiner (NodeContentWidget):
         data = pd.DataFrame()
         try:
             for input_data in self.node.input_sockets[0].socket_data:
-                data = data.combine(input_data, func=func, overwrite=overwrite)
+                data = data.combine(input_data, func=func)
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else:
-                connectedEdges = self.node.input_sockets[0].edges
-                connectedNodes = [edge.start_socket.node for edge in connectedEdges]
-                logger.info(f"{self.name} {self.node.id}: combined data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
+            connectedEdges = self.node.input_sockets[0].edges
+            connectedNodes = [edge.start_socket.node for edge in connectedEdges]
+            logger.info(f"{self.name} {self.node.id}: combined data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
+        
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color

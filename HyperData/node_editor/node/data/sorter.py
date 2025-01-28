@@ -98,8 +98,7 @@ class DataSorter (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else: logger.info(f"{self.name} {self.node.id}: sorted data successfully.")
+            logger.info(f"{self.name} {self.node.id}: sorted data successfully.")
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
