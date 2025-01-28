@@ -231,7 +231,7 @@ class PlotView (QMainWindow):
         )
         if dialog.exec():
             self.canvas.fig.savefig(
-                fname=dialog.getSaveFileName()[0], 
+                fname=dialog.selectedFiles()[0], 
                 dpi=config["plot_dpi"]
             )
 

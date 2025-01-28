@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Signal, Qt, QTimer
 from PySide6.QtGui import QAction
-import pandas
+import pandas, os
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.line_edit import _TextEdit
 from ui.base_widgets.button import _TransparentPushButton, _TransparentToolButton
-from ui.base_widgets.window import ProgressBar
+from ui.base_widgets.window import ProgressBar, FileDialog
 
 class NodeComment (_TextEdit):
     def __init__(self, parent=None):
@@ -87,6 +87,9 @@ class ContentItem(QWidget):
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
         self.menu.addSeparator()
+        action = QAction("Save Data", self.menu)
+        action.triggered.connect(self.saveData)
+        self.menu.addAction(action)
         action = QAction("Delete Card",self.menu)
         action.triggered.connect(lambda: self.parent.deleteSelected())
         self.menu.addAction(action)
@@ -129,6 +132,21 @@ class ContentItem(QWidget):
     def viewData (self):
         self.view.update_data(self.data_to_view)
         self.view.show()
+    
+    def saveData(self):
+        dialog = FileDialog(
+            caption="Import data",
+            filter="""Microsoft excel (*.xlsx);;Comma-separated values (*.csv)"""
+        )
+        if dialog.exec():
+            path = dialog.selectedFiles()[0]
+            ext = os.path.splitext(path)[1]
+            if ext == ".xlsx":
+                self.data_to_view.to_excel(path)
+            elif ext == ".csv":
+                self.data_to_view.to_csv(path)
+            else:
+                self.data_to_view.to_csv(f"{path}.csv")
     
     def resetStatus(self):
         self.progress.setValue(0)
