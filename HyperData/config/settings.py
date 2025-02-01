@@ -139,7 +139,7 @@ if os.path.exists(configFile):
     with open(configFile, "r") as file:
         raw_data = file.read()
         config = json.loads(raw_data)
-else: config = {"theme":"Light", "dock area":"Left", "version":"0.9.2", 
+else: config = {"theme":"Light", "dock area":"Left", "version":"0.9.3", 
                 "plot_tooltip":False, "plot_dpi":300}
 
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")

@@ -49,7 +49,7 @@ class NodeView (QMainWindow):
         self.static_layout.addWidget(self.search_box)
 
         self.nodesListWidget = Draggable_TreeWidget()
-        self.nodesListWidget.setData({"Data Processing": ["Data Reader", "Data Concator", "Data Transpose", 
+        self.nodesListWidget.setData({"Data Processing": ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
                                                           "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
                                                           "Data Locator","Data Filter", "Data Holder","Data Sorter",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
