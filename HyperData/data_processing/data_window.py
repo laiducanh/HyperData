@@ -1,16 +1,18 @@
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication, QLabel, QAbstractItemView,
                              QCompleter, QPushButton, QMainWindow, QScrollBar)
-from PySide6.QtGui import QIcon, QGuiApplication
+from PySide6.QtGui import QIcon, QGuiApplication, QBrush, QColor
 from PySide6.QtCore import QModelIndex, QSize, Signal, Qt, QAbstractTableModel, QMetaType
 import os, missingno, squarify
 from time import gmtime, strftime
 import pandas as pd
 import numpy as np
 from config.settings import list_name, GLOBAL_DEBUG, logger
-from ui.base_widgets.button import _DropDownPushButton, _PrimaryPushButton, ComboBox
+from ui.base_widgets.button import (_DropDownPushButton, _PrimaryPushButton, ComboBox, Toggle, _ComboBox,
+                                    _TransparentPushButton, _TransparentToolButton)
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.menu import Menu, Action
-from ui.utils import get_path
+from ui.base_widgets.window import Dialog
+from ui.utils import get_path, isDark
 from plot.canvas import ExplorerCanvas
 import seaborn as sns
 
@@ -20,8 +22,9 @@ class TableModel(QAbstractTableModel):
     def __init__(self, data, parent=None):
         super().__init__(parent)
         self._data = data
-        self.numRows=100    
-        self.numColumns=100
+        self.numRows = 100    
+        self.numColumns = 100
+        self.toggleDecor = False
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         """
@@ -33,13 +36,45 @@ class TableModel(QAbstractTableModel):
         if index.row()>=self.numRows or index.row()<0 or index.column()>=self.numColumns or index.column()<0:
             return 
         
-        if role==Qt.ItemDataRole.DisplayRole:
-            return str(self._data.iloc[index.row(), index.column()])
-        elif role==Qt.ItemDataRole.BackgroundRole:
-            return QGuiApplication.palette().base()
+        value = self._data.iloc[index.row(), index.column()]
+        
+        if self.toggleDecor:
+            value = str(value)
+            if value.isdigit():
+                background_color = QColor("#6C7EE1")
+            elif value.replace('.','',1).isdigit():
+                background_color = QColor("#92B9E3")
+            elif value.lower() in ['true','false']:
+                background_color = QColor("#FFC4A4")
+            elif value == 'nan':
+                background_color = QColor("#FBA2D0")
+            else:
+                background_color = QColor("#C688EB")
+            
+        else:
+            if isDark(): background_color = QColor("black")
+            else: background_color = QColor("white")
+
+        brightness = 0.2126*background_color.getRgb()[0]+ \
+                     0.7152*background_color.getRgb()[1]+ \
+                     0.0722*background_color.getRgb()[2]
+        if brightness >= 128: text_color = QColor("black")
+        else: text_color = QColor("white")
+        
+        if role == Qt.ItemDataRole.DisplayRole:
+            return str(value)
+        elif role == Qt.ItemDataRole.ForegroundRole:
+            return QBrush(text_color)
+        elif role == Qt.ItemDataRole.BackgroundRole:
+            #return QGuiApplication.palette().base()
+            return QBrush(background_color)
             
         return 
-    
+
+    def toggleDecoration(self, toggle=False):
+        self.toggleDecor = toggle
+        self.layoutChanged.emit()
+      
     def canFetchMore(self, index):
         """
         index=QModelIndex
@@ -112,6 +147,7 @@ class TableView (QWidget):
 
         self.setWindowTitle("Data")
         self.data = data
+        self.model = TableModel(data, self.parent())
         
         self.clipboard = QApplication.clipboard()
         self.selected_values = list()
@@ -124,7 +160,16 @@ class TableView (QWidget):
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         #self.view.setStyleSheet("QWidget {background:white}")
 
+        self.hlayout = QHBoxLayout()
+        self.vlayout.addLayout(self.hlayout)
+        self.decorate = Toggle(text="Decoration")
+        self.decorate.button.setChecked(False)
+        self.decorate.button.checkedChanged.connect(lambda c: self.model.toggleDecoration(c))
+        
+        self.hlayout.addWidget(self.decorate)
+        self.hlayout.addStretch()
         self.time_update = BodyLabel()
+        self.hlayout.addWidget(self.time_update)
         
         self.view = QTableView(self.parent())
         self.update_data(self.data)
@@ -169,9 +214,6 @@ class TableView (QWidget):
         layout4.addWidget(text)
         self.unique = BodyLabel()
         layout4.addWidget(self.unique)
-
-        self.vlayout.addWidget(self.time_update)
-
 
     def on_selection (self):
 
@@ -276,6 +318,8 @@ class ExploreView (QWidget):
         self.bivar_plot = ["line","scatter","bar","area","hexbin"]
         self.multivar_plot = ["heatmap","correlation","covariance"]
         self.nan_plot = ["NaNs matrix","NaNs bar"]
+
+        self.grouplist = []
         
         self.initUI()
         self.initMenu()
@@ -283,6 +327,18 @@ class ExploreView (QWidget):
     
     def initUI(self):
         self.vlayout = QVBoxLayout(self)
+        self.describe_layout = QHBoxLayout()
+        self.describe_layout.setContentsMargins(0,0,0,0)
+        self.vlayout.addLayout(self.describe_layout)
+        self.groupby = Toggle(text="Group by")
+        self.groupby.button.checkedChanged.connect(self.update_describe)
+        self.groupby.button.checkedChanged.connect(lambda c: self.groupby2.setEnabled(c))
+        self.describe_layout.addWidget(self.groupby)
+        self.groupby2 = _TransparentPushButton(text="Choose group" if not self.grouplist else str(self.grouplist))
+        self.groupby2.setEnabled(False)
+        self.groupby2.pressed.connect(self.groupbyDialog)
+        self.describe_layout.addWidget(self.groupby2)
+        self.describe_layout.addStretch()
         self.view = QTableView(self.parent())
         self.vlayout.addWidget(self.view)
         self.plot_widget = QWidget()
@@ -338,6 +394,54 @@ class ExploreView (QWidget):
         menu.addMenu(menu_nan)
         return menu
 
+    def groupbyDialog(self):
+        class GroupWidget(QWidget):
+            def __init__(self, parent:Dialog, cols:list=[], group:str=None):
+                super().__init__(parent)
+
+                idx = parent.main_layout.count()-1
+                parent.main_layout.insertWidget(idx, self)
+
+                self.hlayout = QHBoxLayout(self)
+                self.hlayout.setContentsMargins(0,0,0,0)
+
+                self.col = _ComboBox(parent=parent)
+                self.col.addItems(cols)
+                self.col.setCurrentText(group)
+                self.hlayout.addWidget(self.col)
+
+                delete = _TransparentToolButton(parent=parent)
+                delete.setIcon("delete.png")
+                delete.pressed.connect(self.onDelete)
+                self.hlayout.addWidget(delete)
+
+            def onDelete(self):
+                self.parent().main_layout.removeWidget(self)
+                self.deleteLater()
+                QApplication.processEvents()
+                self.parent().adjustSize()
+
+        def add(group=None):
+            GroupWidget(dialog, self.data.columns, group)
+
+        dialog = Dialog("Group by", self.parent())
+
+        add_btn = _TransparentPushButton(self)
+        add_btn.setIcon("add.png")
+        add_btn.pressed.connect(add)
+        dialog.main_layout.addWidget(add_btn)
+
+        for group in self.grouplist:
+            add(group)
+
+        if dialog.exec():
+            self.grouplist = []
+            for widget in dialog.findChildren(GroupWidget):
+                widget : GroupWidget
+                self.grouplist.append(widget.col.currentText())
+            self.groupby2.setText(str(self.grouplist))
+            self.update_describe()
+
     def update_selection(self):
         try:
             # update x and y variables for plot
@@ -368,16 +472,20 @@ class ExploreView (QWidget):
 
     def update_data (self, data:pd.DataFrame):
         self.data = data
-        if data.empty:
+        self.update_describe()
+        self.update_selection()
+        self.update_plot()
+    
+    def update_describe(self):
+        if self.data.empty:
             describe = pd.DataFrame()
+        elif self.groupby.button.isChecked() and self.grouplist != []:
+            describe = self.data.groupby(self.grouplist).describe()
         else:
-            describe = data.describe()
+            describe = self.data.describe()
         
         self.model = TableModel(describe, self.parent())
         self.view.setModel(self.model)
-
-        self.update_selection()
-        self.update_plot()
     
     def update_plot(self):
         try:

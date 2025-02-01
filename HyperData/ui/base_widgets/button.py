@@ -10,8 +10,8 @@ from ui.utils import icon as Icon
 import os
 
 class _PushButton (QPushButton):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self._icon = None
