@@ -277,8 +277,6 @@ class TableView (QWidget):
 
         string = list()
         for value in self.selected_values:
-            print("abc", value, type(value))
-
             value = str(value)
             if value.isdigit():
                 string.append('int')
