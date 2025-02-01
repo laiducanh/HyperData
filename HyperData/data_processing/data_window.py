@@ -42,7 +42,7 @@ class TableModel(QAbstractTableModel):
             value = str(value)
             if value.isdigit():
                 background_color = QColor("#6C7EE1")
-            elif value.replace('.','',1).isdigit():
+            elif value.replace('.','',1).replace('-','',1).isdigit():
                 background_color = QColor("#92B9E3")
             elif value.lower() in ['true','false']:
                 background_color = QColor("#FFC4A4")
@@ -277,10 +277,12 @@ class TableView (QWidget):
 
         string = list()
         for value in self.selected_values:
+            print("abc", value, type(value))
+
             value = str(value)
             if value.isdigit():
                 string.append('int')
-            elif value.replace('.','',1).isdigit():
+            elif value.replace('.','',1).replace('-','',1).isdigit():
                 string.append("float")
             elif value.lower() in ['true','false']:
                 string.append('boolean')
