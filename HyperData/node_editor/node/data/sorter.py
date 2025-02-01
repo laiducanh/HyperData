@@ -8,6 +8,38 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QApplication
 
 DEBUG = False
 
+class SorterWidget(QWidget):
+    def __init__(self, data:pd.DataFrame, by:str, order:bool, parent:Dialog):
+        super().__init__(parent)
+        self.hlayout = QHBoxLayout(self)
+        self.hlayout.setContentsMargins(0,0,0,0)
+
+        idx = parent.main_layout.count()-1
+        parent.main_layout.insertWidget(idx, self)
+
+        self.col = _ComboBox(parent=parent)
+        self.col.setObjectName("by")
+        if not data.empty: self.col.addItems(data.columns)
+        self.col.setCurrentText(by)
+        self.hlayout.addWidget(self.col)
+
+        self.ascending = _ComboBox(["ascending","descending"],parent=parent)
+        self.ascending.setObjectName("ascending")
+        if order: self.ascending.setCurrentText("ascending")
+        else: self.ascending.setCurrentText("descending")
+        self.hlayout.addWidget(self.ascending)
+
+        delete = _TransparentToolButton(parent=parent)
+        delete.setIcon("delete.png")
+        delete.pressed.connect(self.onDelete)
+        self.hlayout.addWidget(delete)
+
+    def onDelete(self):
+        self.parent().main_layout.removeWidget(self)
+        self.deleteLater()
+        QApplication.processEvents()
+        self.parent().adjustSize()
+
 class DataSorter (NodeContentWidget):
     def __init__(self, node:NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
@@ -27,50 +59,17 @@ class DataSorter (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-
-        self.widget_index = 0
-        
-        class ShorterWidget(QWidget):
-            def __init__(self, data:pd.DataFrame, by:str, order:bool, parent=None):
-                super().__init__(parent)
-                self.hlayout = QHBoxLayout(self)
-                self.hlayout.setContentsMargins(0,0,0,0)
-
-                self.col = _ComboBox(parent=dialog)
-                self.col.setObjectName("by")
-                if not data.empty: self.col.addItems(data.columns)
-                self.col.setCurrentText(by)
-                self.hlayout.addWidget(self.col)
-
-                self.ascending = _ComboBox(["ascending","descending"],dialog)
-                self.ascending.setObjectName("ascending")
-                if order: self.ascending.setCurrentText("ascending")
-                else: self.ascending.setCurrentText("descending")
-                self.hlayout.addWidget(self.ascending)
-
-                delete = _TransparentToolButton(dialog)
-                delete.setIcon("delete.png")
-                delete.pressed.connect(self.onDelete)
-                self.hlayout.addWidget(delete)
-            
-            def onDelete(self):
-                dialog.main_layout.removeWidget(self)
-                self.deleteLater()
-                QApplication.processEvents()
-                dialog.adjustSize()
         
         def add(by="", order=True):
-            widget = ShorterWidget(self.node.input_sockets[0].socket_data, by, order)
-            dialog.main_layout.insertWidget(self.widget_index, widget)
-            self.widget_index += 1
-
-        for by, order in zip(self._config.get("by"), self._config.get("ascending")):
-            add(by, order)
+            SorterWidget(self.node.input_sockets[0].socket_data, by, order, dialog)
 
         add_btn = _TransparentPushButton(self)
         add_btn.setIcon("add.png")
         add_btn.pressed.connect(add)
         dialog.main_layout.addWidget(add_btn)
+
+        for by, order in zip(self._config.get("by"), self._config.get("ascending")):
+            add(by, order)
 
         if dialog.exec():
             # reset self._config
