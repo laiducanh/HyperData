@@ -64,6 +64,9 @@ class Node(NodeGraphicsNode):
             case "Data Inserter":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = DataInserter(self,parent)
+            case "Data Scaler":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = DataScaler(self,parent)
             case 'Nan Eliminator':
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = NAEliminator(self,parent)
