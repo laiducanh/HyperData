@@ -94,6 +94,9 @@ class Node(NodeGraphicsNode):
             case "Train/Test Splitter":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = TrainTestSplitter(self,parent)
+            case "Feature Expander":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = FeatureExpander(self,parent)
             case "Classifier":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
                 self.content = Classifier(self,parent)

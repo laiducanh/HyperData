@@ -139,11 +139,12 @@ if os.path.exists(configFile):
     with open(configFile, "r") as file:
         raw_data = file.read()
         config = json.loads(raw_data)
-else: config = {"theme":"Light", "dock area":"Left", "version":"0.9.3", 
+else: config = {"theme":"Light", "dock area":"Left",  
                 "plot_tooltip":False, "plot_dpi":300}
-
+    
+config["version"] = "0.9.31"
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
-logFile = "debug.txt"
+#logFile = "debug.txt"
 logging.getLogger('matplotlib.font_manager').disabled = True
 # Create and configure logger
 logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='w')

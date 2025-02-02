@@ -1,19 +1,16 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import preprocessing
-from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import Toggle, PrimaryComboBox
+from ui.base_widgets.button import Toggle, PrimaryComboBox, ComboBox
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import DoubleSpinBox
-from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
+from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
 
-DEBUG = True
+DEBUG = False
 
 class ScalerBase(QWidget):
     def __init__(self, parent=None):
@@ -150,6 +147,74 @@ class RobustScaler(ScalerBase):
         self._config["unit_variance"] = self.unit_variance.button.isChecked()
         self.scaler = preprocessing.RobustScaler(**self._config)
 
+class QuantileTransfomer(ScalerBase):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    
+    def set_config(self, config=None):
+
+        self.clear_layout()
+
+        if not config: self._config = dict(
+            n_quantiles = 1000,
+            output_distribution = "uniform",
+            subsample = 10000
+        )
+        else: self._config = config
+        self.scaler = preprocessing.QuantileTransformer(**self._config)
+    
+        self.n_quantiles = SpinBox(min=1, max=10000, step=1000,
+                                   text="Number of quantiles")
+        self.n_quantiles.button.setValue(self._config["n_quantiles"])
+        self.vlayout.addWidget(self.n_quantiles)
+
+        self.output_distribution = ComboBox(items=["uniform","normal"], text="Distribution")
+        self.output_distribution.button.setCurrentText(self._config["output_distribution"])
+        self.vlayout.addWidget(self.output_distribution)
+
+        self.subsampleOn = Toggle(text="Subsample")
+        self.subsampleOn.button.setChecked(True if self._config["subsample"] else False)
+        self.subsampleOn.button.checkedChanged.connect(lambda c: self.subsample.button.setEnabled(c))
+        self.vlayout.addWidget(self.subsampleOn)
+
+        self.subsample = SpinBox(min=1, max=100000, step=10000, text="Number of subsamples")
+        self.subsample.button.setValue(self._config["subsample"])
+        self.vlayout.addWidget(self.subsample)
+    
+    def set_estimator(self):
+        self._config["n_quantiles"] = self.n_quantiles.button.value()
+        self._config["output_distribution"] = self.output_distribution.button.currentText()
+        self._config["subsample"] = self.subsample.button.value()
+        self.scaler = preprocessing.QuantileTransformer(**self._config)
+
+class PowerTransformer(ScalerBase):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    
+    def set_config(self, config=None):
+
+        self.clear_layout()
+
+        if not config: self._config = dict(
+            method = "yeo-johnson",
+            standardize = True
+        )
+        else: self._config = config
+        self.scaler = preprocessing.PowerTransformer(**self._config)
+    
+        self.method = ComboBox(items=["yeo-johnson","box-cox"], text="Method")
+        self.method.button.setCurrentText(self._config["method"])
+        self.vlayout.addWidget(self.method)
+
+        self.standardize = Toggle(text="Standardize")
+        self.standardize.button.setChecked(self._config["standardize"])
+        self.vlayout.addWidget(self.standardize)
+    
+    def set_estimator(self):
+        self._config["method"] = self.method.button.currentText()
+        self._config["standardize"] = self.standardize.button.isChecked()
+        self.scaler = preprocessing.PowerTransformer(**self._config)
+
 class DataScaler (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
@@ -159,7 +224,8 @@ class DataScaler (NodeContentWidget):
             config = dict(),
         )
         
-        self.scaler_list = ["Standard Scaler","Min-Max Scaler","Maximum Absolute Scaler","Robust Scaler"]
+        self.scaler_list = ["Standard Scaler","Min-Max Scaler","Maximum Absolute Scaler",
+                            "Robust Scaler","Quantile Transformer","Power Transformer"]
         
         self.scaler = preprocessing.StandardScaler(**self._config["config"])
     
@@ -180,6 +246,8 @@ class DataScaler (NodeContentWidget):
         self.stackedlayout.addWidget(MinMaxScaler())
         self.stackedlayout.addWidget(MaxAbsScaler())
         self.stackedlayout.addWidget(RobustScaler())
+        self.stackedlayout.addWidget(QuantileTransfomer())
+        self.stackedlayout.addWidget(PowerTransformer())
         self.stackedlayout.setCurrentIndex(self.scaler_list.index(scaler.button.currentText()))
  
         if dialog.exec():
@@ -204,7 +272,7 @@ class DataScaler (NodeContentWidget):
             data = self.node.input_sockets[0].socket_data.copy()
             columns = data.columns
             X = data.to_numpy()
-            data_transformed = self.scaler.fit_transform(X)
+            data_transformed = self.scaler.fit_transform(X, **self._config["config"])
             data = pd.DataFrame(data_transformed, columns=columns)
             
             # change progressbar's color   

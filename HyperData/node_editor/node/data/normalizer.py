@@ -6,7 +6,7 @@ from sklearn.preprocessing import normalize
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox
 
-DEBUG = True
+DEBUG = False
 
 class DataNormalizer (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

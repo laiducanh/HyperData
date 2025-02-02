@@ -35,7 +35,7 @@ from PySide6.QtWidgets import QStackedLayout
 from sklearn import linear_model
 import pandas as pd
 
-DEBUG = True
+DEBUG = False
 
 class Regressor(NodeContentWidget):
     def __init__(self, node, parent=None):
