@@ -11,3 +11,4 @@ from node_editor.node.data.combiner import DataCombiner
 from node_editor.node.data.correlator import DataCorrelator
 from node_editor.node.data.inserter import DataInserter
 from node_editor.node.data.scaler import DataScaler
+from node_editor.node.data.normalizer import DataNormalizer

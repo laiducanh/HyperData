@@ -64,7 +64,7 @@ class NodeGraphicsView(QGraphicsView):
         for text in ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
                      "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
                      "Data Locator","Data Filter", "Data Holder","Data Sorter",
-                     "Data Scaler",
+                     "Data Scaler","Data Normalizer",
                      "Nan Eliminator", "Nan Imputer", "Drop Duplicate",]:
             action = Action(text=text, parent=data_processing)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
