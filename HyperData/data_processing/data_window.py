@@ -52,7 +52,7 @@ class TableModel(QAbstractTableModel):
                 background_color = QColor("#C688EB")
             
         else:
-            if isDark(): background_color = QColor("black")
+            if isDark(): background_color = QColor(32,32,32)
             else: background_color = QColor("white")
 
         brightness = 0.2126*background_color.getRgb()[0]+ \
