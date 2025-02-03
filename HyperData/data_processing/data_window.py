@@ -14,6 +14,7 @@ from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.window import Dialog
 from ui.utils import get_path, isDark
 from plot.canvas import ExplorerCanvas
+from data_processing.utlis import check_float, check_integer
 import seaborn as sns
 
 DEBUG = False
@@ -40,9 +41,9 @@ class TableModel(QAbstractTableModel):
         
         if self.toggleDecor:
             value = str(value)
-            if value.isdigit():
+            if check_integer(value):
                 background_color = QColor("#6C7EE1")
-            elif value.replace('.','',1).replace('-','',1).isdigit():
+            elif check_float(value):
                 background_color = QColor("#92B9E3")
             elif value.lower() in ['true','false']:
                 background_color = QColor("#FFC4A4")
@@ -278,9 +279,9 @@ class TableView (QWidget):
         string = list()
         for value in self.selected_values:
             value = str(value)
-            if value.isdigit():
+            if check_integer(value):
                 string.append('int')
-            elif value.replace('.','',1).replace('-','',1).isdigit():
+            elif check_float(value):
                 string.append("float")
             elif value.lower() in ['true','false']:
                 string.append('boolean')
