@@ -4,8 +4,12 @@ from PySide6.QtCore import QStandardPaths, QDir
 GLOBAL_DEBUG = False
 
 # list_name is replaced by column_labels
+# can handle maximum of 475281 columns
 list_name =list(string.ascii_lowercase)
-for j in [''.join(i) for i in itertools.product(string.ascii_lowercase, repeat = 2)]: list_name.append(j) # can handle maximum of 702 columns
+for repeat in range(5):
+    for j in [''.join(i) for i in itertools.product(string.ascii_lowercase, repeat = repeat)]:
+        list_name.append(j)
+
 
 from matplotlib import font_manager
 font_lib = font_manager.get_font_names()
@@ -144,7 +148,7 @@ else: config = {"theme":"Light", "dock area":"Left",
     
 config["version"] = "0.9.31"
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
-#logFile = "debug.txt"
+logFile = "debug.txt"
 logging.getLogger('matplotlib.font_manager').disabled = True
 # Create and configure logger
 logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='w')

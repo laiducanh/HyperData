@@ -18,8 +18,8 @@ class Dialog (QDialog):
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.vlayout.setContentsMargins(20,30,20,10)
-        self.vlayout.addWidget(TitleLabel(title))
-        self.vlayout.addWidget(SeparateHLine())
+        # self.vlayout.addWidget(TitleLabel(title))
+        # self.vlayout.addWidget(SeparateHLine())
 
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)

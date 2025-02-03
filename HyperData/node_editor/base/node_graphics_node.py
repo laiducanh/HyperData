@@ -64,6 +64,7 @@ class NodeGraphicsNode (GraphicsNode):
             # update socket positions when content was enlarged
             for socket in self.output_sockets:
                 socket.setPos(self.width, socket.pos().y())
+            self.socket_pipeline_out.setPos(self.width, self.socket_pipeline_out.pos().y())
             # update title position
             self.title_item.setTextWidth(self.width)
             # update edges

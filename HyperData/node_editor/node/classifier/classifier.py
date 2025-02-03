@@ -30,7 +30,7 @@ from node_editor.node.classifier.extra_trees import ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
 
-DEBUG = False
+DEBUG = True
 
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -126,7 +126,11 @@ class Classifier (NodeContentWidget):
             data = datasets.load_iris()
             df = pd.DataFrame(data=data.data, columns=data.feature_names)
             df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            X = df.iloc[:,:4]
+            #X = df.iloc[:,:4]
+            random_state = np.random.RandomState(0)
+            n_samples, n_features = data.data.shape
+            X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
+            X = pd.DataFrame(X)
             Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
             Y = pd.DataFrame(data=Y)
             split = model_selection.ShuffleSplit(n_splits=5, test_size=0.2).split(X, Y)
@@ -161,7 +165,7 @@ class Classifier (NodeContentWidget):
                     Y_train, Y_test = self.Y[train_idx], self.Y[test_idx]
                     
                     self.create_model()
-                    self.model.fit(X_train, Y_train)
+                    self.model.fit(X_train, Y_train.ravel())
                     Y_pred = self.model.predict(X_test)
                     Y_pred_all = self.model.predict(self.X)
 
@@ -218,3 +222,8 @@ class Classifier (NodeContentWidget):
         # update input sockets
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+
+    def resetStatus(self):
+        try: self.score_btn.setText(f"Score: --")
+        except: pass
+        return super().resetStatus()
