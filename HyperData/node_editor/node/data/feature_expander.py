@@ -65,10 +65,12 @@ class PolynomialFeatures (ExpanderBase):
 
         self.interaction_only = Toggle(text="Only interaction features")
         self.interaction_only.button.setChecked(self._config["interaction_only"])
+        self.interaction_only.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.interaction_only)
         
         self.include_bias = Toggle(text="Include bias")
         self.include_bias.button.setChecked(self._config["include_bias"])
+        self.include_bias.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.include_bias)
     
     def set_estimator(self):
@@ -97,23 +99,28 @@ class SplineTransfomer(ExpanderBase):
         
         self.n_knots = SpinBox(min=1, text="Number of knots")
         self.n_knots.button.setValue(self._config["n_knots"])
+        self.n_knots.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_knots)
 
         self.degree = SpinBox(text="Degree")
         self.degree.button.setValue(self._config["degree"])
+        self.degree.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.degree)
 
         self.knots = ComboBox(items=["uniform","quantile"], text="Knot positions")
         self.knots.button.setCurrentText(self._config["knots"])
+        self.knots.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.knots)
 
         self.extrapolation = ComboBox(items=["error","constant","linear","continue","periodic"],
                                       text="Extrapolation")
         self.extrapolation.button.setCurrentText(self._config["extrapolation"])
+        self.extrapolation.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.extrapolation)
 
         self.include_bias = Toggle(text="Include bias")
         self.include_bias.button.setChecked(self._config["include_bias"])
+        self.include_bias.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.include_bias)
     
     def set_estimator(self):

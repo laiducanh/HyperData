@@ -70,6 +70,9 @@ class Node(NodeGraphicsNode):
             case "Data Scaler":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = DataScaler(self,parent)
+            case "Pairwise Measurer":
+                super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = PairwiseMeasurer(self,parent)
             case 'Nan Eliminator':
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = NAEliminator(self,parent)

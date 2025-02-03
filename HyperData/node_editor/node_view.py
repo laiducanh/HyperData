@@ -52,7 +52,7 @@ class NodeView (QMainWindow):
         self.nodesListWidget.setData({"Data Processing": ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
                                                           "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
                                                           "Data Locator","Data Filter", "Data Holder","Data Sorter",
-                                                          "Data Scaler","Data Normalizer",
+                                                          "Data Scaler","Data Normalizer","Pairwise Measurer",
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
                                         "Machine Learning": ["Classifier","Bagging-Classifier","Voting-Classifier",
