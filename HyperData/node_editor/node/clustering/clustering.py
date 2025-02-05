@@ -65,7 +65,7 @@ class Clustering (NodeContentWidget):
         action.triggered.connect(self.config)
         self.menu.addAction(action)
         self.menu.addSeparator()
-        action = QAction("Visualization", self.menu)
+        action = QAction("Score", self.menu)
         action.triggered.connect(self.score_dialog)
         self.menu.addAction(action)
         self.menu.addSeparator()
@@ -127,10 +127,10 @@ class Clustering (NodeContentWidget):
             data = datasets.load_iris()
             df = pd.DataFrame(data=data.data, columns=data.feature_names)
             df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            #X = df.iloc[:,:4]
+            X = df.iloc[:,:4]
             random_state = np.random.RandomState(0)
             n_samples, n_features = data.data.shape
-            X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
+            #X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
             X = pd.DataFrame(X)
             Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
             Y = pd.DataFrame(data=Y)
@@ -143,7 +143,10 @@ class Clustering (NodeContentWidget):
             columms = self.node.input_sockets[0].socket_data.columns
             self.X = self.node.input_sockets[0].socket_data
             self.model.fit(self.X)
-            data = pd.DataFrame(self.model.cluster_centers_, columns=columms)
+            self.X["Prediction"] = self.model.labels_
+            df = pd.DataFrame(self.model.cluster_centers_, columns=columms)
+            df["Prediction"] = range(len(self.model.cluster_centers_))
+            data = pd.concat([df, self.X])
 
             score = scoring(
                 self.X, 
