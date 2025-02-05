@@ -56,7 +56,7 @@ class NodeView (QMainWindow):
                                                           "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                                           ],
                                         "Machine Learning": ["Classifier","Bagging-Classifier","Voting-Classifier",
-                                                             "Regressor", "Clustering",
+                                                             "Regressor", "Clustering","Decomposition",
                                                              "Train/Test Splitter","Predictor","Feature Expander",
                                                              "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
                                         "Visualization": ["Figure 2D", "Figure 3D"],

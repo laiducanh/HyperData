@@ -7,6 +7,7 @@ from node_editor.node.classifier.classifier import Classifier
 from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingClassifier, VotingClassifier
 from node_editor.node.regressor.regressor import Regressor
 from node_editor.node.clustering.clustering import Clustering
+from node_editor.node.decomposition.decomposition import Decomposition
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
 from node_editor.node.figure import *
 from node_editor.node.predictor import Predictor
@@ -119,6 +120,9 @@ class Node(NodeGraphicsNode):
             case "Clustering":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = Clustering(self,parent)
+            case "Decomposition":
+                super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+                self.content = Decomposition(self,parent)
             case "Predictor":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = Predictor(self,parent)
