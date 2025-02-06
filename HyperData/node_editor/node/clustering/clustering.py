@@ -25,7 +25,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 from sklearn import cluster
 
-DEBUG = True
+DEBUG = False
         
 class Clustering (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

@@ -123,6 +123,9 @@ class Node(NodeGraphicsNode):
             case "Decomposition":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
                 self.content = Decomposition(self,parent)
+            case "Feature Selector":
+                super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = FeatureSelector(self,parent)
             case "Predictor":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = Predictor(self,parent)

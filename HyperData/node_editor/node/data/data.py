@@ -14,3 +14,4 @@ from node_editor.node.data.scaler import DataScaler
 from node_editor.node.data.normalizer import DataNormalizer
 from node_editor.node.data.feature_expander import FeatureExpander
 from node_editor.node.data.pairwise import PairwiseMeasurer
+from node_editor.node.data.feature_selector import FeatureSelector
