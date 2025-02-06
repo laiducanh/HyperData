@@ -5,6 +5,11 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.decomposition.report import Report
 from node_editor.node.decomposition.base import MethodBase
 from node_editor.node.decomposition.pca import PCA
+from node_editor.node.decomposition.incremental_pca import IncrementalPCA
+from node_editor.node.decomposition.sparse_pca import SparsePCA
+from node_editor.node.decomposition.minibatch_sparse_pca import MiniBatchSparsePCA
+from node_editor.node.decomposition.kernel_pca import KernelPCA
+from node_editor.node.decomposition.truncated_svd import TruncatedSVD
 from config.settings import logger, encode, GLOBAL_DEBUG
 from ui.base_widgets.button import _TransparentPushButton, Toggle, PrimaryComboBox
 from ui.base_widgets.window import Dialog
@@ -15,7 +20,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 from sklearn import decomposition
 
-DEBUG = True
+DEBUG = False
         
 class Decomposition (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -31,7 +36,8 @@ class Decomposition (NodeContentWidget):
             config = dict(),
         )
 
-        self.method_list = ["Principal Component Analysis"]
+        self.method_list = ["PCA","Incremental PCA","Sparse PCA","Mini-batch Sparse PCA",
+                            "Kernel PCA","Truncated SVD"]
 
         self.model = decomposition.PCA(**self._config["config"])
         self.X = pd.DataFrame()
@@ -79,7 +85,11 @@ class Decomposition (NodeContentWidget):
         self.stackedlayout = QStackedLayout()
         dialog.main_layout.addLayout(self.stackedlayout)
         self.stackedlayout.addWidget(PCA())
-        
+        self.stackedlayout.addWidget(IncrementalPCA())
+        self.stackedlayout.addWidget(SparsePCA())
+        self.stackedlayout.addWidget(MiniBatchSparsePCA())
+        self.stackedlayout.addWidget(KernelPCA())
+        self.stackedlayout.addWidget(TruncatedSVD())
         self.stackedlayout.setCurrentIndex(self.method_list.index(method.button.currentText()))
  
         if dialog.exec():

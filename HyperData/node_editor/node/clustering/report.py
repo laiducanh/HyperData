@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from sklearn import metrics, preprocessing
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import (PrimaryComboBox, ComboBox, Toggle, SegmentedWidget,
                                     TransparentPushButton)
@@ -9,7 +8,8 @@ from plot.canvas import Canvas
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QHBoxLayout, QApplication)
 from PySide6.QtCore import Qt
-from sklearn.cluster import KMeans
+from sklearn.cluster import (KMeans, MiniBatchKMeans, AffinityPropagation, MeanShift, SpectralClustering,
+                             BisectingKMeans, AgglomerativeClustering, DBSCAN, HDBSCAN, OPTICS, Birch)
 from sklearn.metrics import (rand_score, adjusted_rand_score, mutual_info_score, fowlkes_mallows_score,
                              adjusted_mutual_info_score, homogeneity_score, completeness_score,
                              silhouette_score,calinski_harabasz_score, davies_bouldin_score)
@@ -30,7 +30,10 @@ def scoring(X, labels_true, labels_pred):
         }
 
 class Visualization(QWidget):
-    def __init__(self, model:KMeans, X:pd.DataFrame, parent=None):
+    def __init__(self, model:KMeans|MiniBatchKMeans|AffinityPropagation|MeanShift|
+                 SpectralClustering|BisectingKMeans|AgglomerativeClustering|DBSCAN|
+                 HDBSCAN|OPTICS|Birch, 
+                 X:pd.DataFrame, parent=None):
         super().__init__(parent)
 
         self.model = model
@@ -88,6 +91,7 @@ class Visualization(QWidget):
                 s=300,
                 marker='x',
             )
+
         elif self.plot.button.currentText() == "Fireworks":
             for k, col in zip(range(n_clusters), colors):
                 class_members = self.model.labels_ == k
@@ -126,7 +130,10 @@ class Visualization(QWidget):
         self.canvas.draw_idle()
     
 class Metrics(QWidget):
-    def __init__(self, model:KMeans, X:pd.DataFrame, labels_true, parent=None):
+    def __init__(self, model:KMeans|MiniBatchKMeans|AffinityPropagation|MeanShift|
+                 SpectralClustering|BisectingKMeans|AgglomerativeClustering|DBSCAN|
+                 HDBSCAN|OPTICS|Birch,
+                 X:pd.DataFrame, labels_true, parent=None):
         super().__init__(parent)
 
         layout = QVBoxLayout(self)
@@ -155,7 +162,7 @@ class Metrics(QWidget):
         self.score_function = metric
 
 class Report(Dialog):
-    def __init__(self, model:KMeans, X:pd.DataFrame, labels_true, parent=None):
+    def __init__(self, model, X:pd.DataFrame, labels_true, parent=None):
         super().__init__(title="Clustering",parent=parent)
 
         self.segment_widget = SegmentedWidget()
