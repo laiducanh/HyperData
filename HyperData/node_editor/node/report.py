@@ -3,13 +3,15 @@ from ui.base_widgets.button import ComboBox, _PrimaryPushButton
 from ui.base_widgets.text import BodyLabel
 from plot.canvas import Canvas
 import numpy as np
+import pandas as pd
 import itertools
 from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve, det_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+from sklearn.inspection import DecisionBoundaryDisplay
 
 class ConfusionMatrix (QWidget):
-    def __init__(self, Y, Y_pred, parent=None):
+    def __init__(self, Y_test, Y_pred, parent=None):
         """ Y, and Y_pred are nested lists """
         super().__init__(parent=parent)
 
@@ -18,11 +20,11 @@ class ConfusionMatrix (QWidget):
         layout.setContentsMargins(0,0,0,0)
 
         self.fold = 0
-        self.Y = Y
+        self.Y_test = Y_test
         self.Y_pred = Y_pred
         self.clipboard = QApplication.clipboard()   
 
-        _fold = ComboBox(items=[f"Fold {i+1}" for i in range(len(Y))],
+        _fold = ComboBox(items=[f"Fold {i+1}" for i in range(len(Y_test))],
                         text="Fold")
         _fold.button.setCurrentText(f"Fold {self.fold+1}")
         _fold.button.currentTextChanged.connect(self.setFold)
@@ -52,10 +54,10 @@ class ConfusionMatrix (QWidget):
         self.draw_plot()
     
     def compute_matrix(self):
-        if len(self.Y) == 0 or len(self.Y_pred) == 0: # check if Y or Y_pred is an empty list
+        if len(self.Y_test) == 0 or len(self.Y_pred) == 0: # check if Y or Y_pred is an empty list
             cm = np.array([[1,0],[0,1]])
         else: 
-            cm = confusion_matrix(self.Y[self.fold], self.Y_pred[self.fold])
+            cm = confusion_matrix(self.Y_test[self.fold], self.Y_pred[self.fold])
 
         self.cm.setText(str(cm))
 
@@ -454,3 +456,69 @@ class DET(ROC):
         # self.canvas.fig.set_tight_layout("rect")
         self.canvas.draw_idle()
 
+class DecisionBoundary(QWidget):
+    def __init__(self, estimator, X: pd.DataFrame, Y:pd.DataFrame, parent=None):
+        """ X_train is a nested list """
+        super().__init__(parent)
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.estimator = estimator
+        self.X = X
+        self.Y = Y
+        
+        btn_layout = QHBoxLayout()
+        layout.addLayout(btn_layout)
+
+        self.x_btn = ComboBox(items=list(X.columns), text="X")
+        self.x_btn.button.setCurrentIndex(0)
+        self.x_btn.button.currentTextChanged.connect(self.draw_plot)
+        btn_layout.addWidget(self.x_btn)
+
+        self.y_btn = ComboBox(items=list(X.columns), text="Y")
+        self.y_btn.button.setCurrentIndex(1)
+        self.y_btn.button.currentTextChanged.connect(self.draw_plot)
+        btn_layout.addWidget(self.y_btn)
+
+        self.resolution = ComboBox(items=["50", "100", "150", "200", "300", "400", "500", 
+                                          "600", "700", "800", "900", "1000"],
+                                   text="Resolution")
+        self.resolution.button.setCurrentText("100")
+        self.resolution.button.currentTextChanged.connect(self.draw_plot)
+        btn_layout.addWidget(self.resolution)
+
+        self.canvas = Canvas()
+        layout.addWidget(self.canvas)
+        self.draw_plot()
+    
+    def draw_plot(self):
+        x = self.X.iloc[:, self.x_btn.button.currentIndex()]
+        y = self.X.iloc[:, self.y_btn.button.currentIndex()]
+        X = pd.concat([x, y],axis=1)
+
+        self.estimator.fit(X, self.Y)
+        # clear plot
+        self.canvas.fig.clear()
+
+        # add axis
+        self.ax = self.canvas.fig.add_subplot()
+
+        DecisionBoundaryDisplay.from_estimator(
+            self.estimator,
+            X,
+            alpha=0.9,
+            plot_method="contourf",
+            grid_resolution=int(self.resolution.button.currentText()),
+            ax=self.ax,
+            xlabel=self.x_btn.button.currentText(),
+            ylabel=self.y_btn.button.currentText()
+        )
+        self.ax.scatter(
+            x, y,
+            c=self.Y,
+            edgecolors="k"
+        )
+
+        self.canvas.draw_idle()

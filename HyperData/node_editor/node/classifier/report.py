@@ -4,7 +4,7 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import (PrimaryComboBox, TransparentPushButton, SegmentedWidget, _PrimaryPushButton)
 from ui.base_widgets.text import BodyLabel
 from plot.canvas import Canvas
-from node_editor.node.report import ConfusionMatrix, ROC, PrecisionRecall, DET
+from node_editor.node.report import ConfusionMatrix, ROC, PrecisionRecall, DET, DecisionBoundary
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QHBoxLayout, QApplication)
 from PySide6.QtCore import Qt
@@ -126,7 +126,7 @@ def scoring(Y=list(), Y_pred=list()):
         }
 
 class Report(Dialog):
-    def __init__(self, model, X, Y, Y_pred, parent=None):
+    def __init__(self, model, estimator, X, Y, X_test, Y_test, Y_pred, parent=None):
         """ X, Y, and Y_pred are nested lists """
         super().__init__(title="Metrics and Scoring",parent=parent)
 
@@ -139,26 +139,30 @@ class Report(Dialog):
 
         self.segment_widget.addButton(text='Metrics', func=lambda: self.stackedlayout.setCurrentIndex(0))
         self.segment_widget.addButton(text='Confusion Matrix', func=lambda: self.stackedlayout.setCurrentIndex(1))
-        self.segment_widget.addButton(text='ROC Curve', func=lambda: self.stackedlayout.setCurrentIndex(2))
-        self.segment_widget.addButton(text='PR Curve', func=lambda: self.stackedlayout.setCurrentIndex(3))
-        self.segment_widget.addButton(text='DET Curve', func=lambda: self.stackedlayout.setCurrentIndex(4))
+        self.segment_widget.addButton(text='Decision Boundary', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment_widget.addButton(text='ROC Curve', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.segment_widget.addButton(text='PR Curve', func=lambda: self.stackedlayout.setCurrentIndex(4))
+        self.segment_widget.addButton(text='DET Curve', func=lambda: self.stackedlayout.setCurrentIndex(5))
 
         self.stackedlayout = QStackedLayout()
         self.main_layout.addLayout(self.stackedlayout)
 
-        metrics = self.metrics(Y, Y_pred)
+        metrics = self.metrics(Y_test, Y_pred)
         self.stackedlayout.addWidget(metrics)
 
-        confusion_mat = ConfusionMatrix(Y, Y_pred)
+        confusion_mat = ConfusionMatrix(Y_test, Y_pred)
         self.stackedlayout.addWidget(confusion_mat)
 
-        roc = ROC(model, X, Y)
+        decision_boundary = DecisionBoundary(estimator, X, Y)
+        self.stackedlayout.addWidget(decision_boundary)
+
+        roc = ROC(model, X_test, Y_test)
         self.stackedlayout.addWidget(roc)
 
-        pr = PrecisionRecall(model, X, Y)
+        pr = PrecisionRecall(model, X_test, Y_test)
         self.stackedlayout.addWidget(pr)
 
-        det = DET(model, X, Y)
+        det = DET(model, X_test, Y_test)
         self.stackedlayout.addWidget(det)
 
         self.stackedlayout.setCurrentIndex(0)

@@ -30,7 +30,7 @@ from node_editor.node.classifier.extra_trees import ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
 
-DEBUG = False
+DEBUG = True
 
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -126,10 +126,10 @@ class Classifier (NodeContentWidget):
             data = datasets.load_iris()
             df = pd.DataFrame(data=data.data, columns=data.feature_names)
             df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            #X = df.iloc[:,:4]
+            X = df.iloc[:,:4]
             random_state = np.random.RandomState(0)
             n_samples, n_features = data.data.shape
-            X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
+            #X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
             X = pd.DataFrame(X)
             Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
             Y = pd.DataFrame(data=Y)
@@ -156,18 +156,18 @@ class Classifier (NodeContentWidget):
                         data.iloc[i,-1] += str(self.Y.iloc[i,j])
 
                 # convert self.X and self.Y into numpy arrays!
-                self.X = self.X.to_numpy()
-                self.Y = self.Y.to_numpy()
+                X = self.X.to_numpy()
+                Y = self.Y.to_numpy()
                 
                 for fold, (train_idx, test_idx) in enumerate(cv):
 
-                    X_train, X_test = self.X[train_idx], self.X[test_idx]
-                    Y_train, Y_test = self.Y[train_idx], self.Y[test_idx]
+                    X_train, X_test = X[train_idx], X[test_idx]
+                    Y_train, Y_test = Y[train_idx], Y[test_idx]
                     
                     self.create_model()
                     self.model.fit(X_train, Y_train.ravel())
                     Y_pred = self.model.predict(X_test)
-                    Y_pred_all = self.model.predict(self.X)
+                    Y_pred_all = self.model.predict(X)
 
                     self.X_test.append(X_test)
                     self.Y_test.append(Y_test)
@@ -210,7 +210,7 @@ class Classifier (NodeContentWidget):
         self.data_to_view = data.copy()
     
     def score_dialog(self):
-        dialog = Report(self.model, self.X_test, self.Y_test, self.Y_pred)
+        dialog = Report(self.model, self.estimator, self.X, self.Y, self.X_test, self.Y_test, self.Y_pred)
         
         if dialog.exec():
             self.score_function = dialog.score_function
