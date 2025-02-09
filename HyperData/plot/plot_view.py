@@ -10,7 +10,7 @@ from PySide6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
 ### Import self classes
 from plot.insert_plot.insert_plot import InsertPlot
 from plot.curve.curve import Curve
-from plot.axes.axes import Tick, Spine
+from plot.axes.axes import Tick, Spine, Tick3D, Spine3D
 from plot.plot_graphics_view import GraphicsView
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.button import _TransparentToolButton
@@ -18,8 +18,9 @@ from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.window import ProgressDialog, FileDialog
 from plot.canvas import Canvas
 from plot.grid.grid import Grid
+from plot.grid.grid_3d import Grid3D
 from plot.label.graph_title import GraphTitle
-from plot.label.axes_label import AxesLabel2D
+from plot.label.axes_label import AxesLabel2D, AxesLabel3D
 from plot.label.legend import LegendLabel
 from config.settings import GLOBAL_DEBUG, logger, config
 from node_editor.node_node import Node
@@ -34,7 +35,6 @@ class PlotView (QMainWindow):
         
         ### 
         #self.data_window = DataView(data,self)
-
         self.node = node
         self.canvas = canvas
         self.num_plot = 0
@@ -46,11 +46,23 @@ class PlotView (QMainWindow):
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
-        self.treeview_data = {"Graph":["Manage graph"],
-                               "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
-                               "Spine":["Spine bottom","Spine left","Spine top","Spine right"],
-                               "Figure":["Plot size","Grid"],
-                               "Label":["Title","Axis label","Legend","Data annotation"],}
+        if self.plot3d:
+            self.treeview_data = {
+                "Graph":["Manage graph"],
+                "Tick":["Tick X3D","Tick Y3D","Tick Z3D"],
+                "Spine":["Spine X3D","Spine Y3D","Spine Z3D"],
+                "Figure":["Plot size","Grid"],
+                "Label":["Title","Axis label","Legend","Data annotation"],
+            }
+
+        else:
+            self.treeview_data = {
+                "Graph":["Manage graph"],
+                "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
+                "Spine":["Spine bottom","Spine left","Spine top","Spine right"],
+                "Figure":["Plot size","Grid"],
+                "Label":["Title","Axis label","Legend","Data annotation"],
+            }
         
         self.diag = ProgressDialog("Initializing figure", None, parent)
         self.diag.progressbar._setValue(0)
@@ -127,19 +139,22 @@ class PlotView (QMainWindow):
 
         self.diag.setLabelText("Loading ticks")
         QApplication.processEvents()
-        self.tick = Tick(self.canvas, self.parent())
+        if self.plot3d: self.tick = Tick3D(self.canvas, self.parent())
+        else: self.tick = Tick(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.tick)
         self.diag.progressbar._setValue(60)
 
         self.diag.setLabelText("Loading spines")
         QApplication.processEvents()
-        self.spine = Spine(self.canvas, self.parent())
+        if self.plot3d: self.spine = Spine3D(self.canvas, self.parent())
+        else: self.spine = Spine(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.spine)
         self.diag.progressbar._setValue(70)
 
         self.diag.setLabelText("Loading grid")
         QApplication.processEvents()
-        self.grid = Grid(self.canvas,self.parent())
+        if self.plot3d: self.grid = Grid3D(self.canvas, self.parent())
+        else: self.grid = Grid(self.canvas,self.parent())
         self.stackedlayout.addWidget(self.grid)
         self.diag.progressbar._setValue(80)
         
@@ -147,7 +162,8 @@ class PlotView (QMainWindow):
         QApplication.processEvents()
         self.title = GraphTitle(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.title)
-        self.axeslabel = AxesLabel2D(self.canvas, self.parent())
+        if self.plot3d: self.axeslabel = AxesLabel3D(self.canvas, self.parent())
+        else: self.axeslabel = AxesLabel2D(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.axeslabel)
         self.legendlabel = LegendLabel(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.legendlabel)

@@ -52,7 +52,8 @@ def update_props (from_obj: Artist, to_obj: Artist) -> None:
         logger.exception(e)
 
 def get_legend(canvas: Canvas) -> Legend:
-    return canvas.axesleg.get_legend()
+    try: return canvas.axesleg.get_legend()
+    except: canvas.axes.get_legend()
 
 def legend_onRelease(event:MouseEvent, canvas:Canvas):
     global legend_picked, _legend

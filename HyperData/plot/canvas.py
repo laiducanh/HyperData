@@ -121,3 +121,7 @@ class Canvas3D (Canvas):
     def initAxes(self):
         self.axes = self.fig.add_subplot(projection='3d')  
         self.axesleg = None
+
+        self.axes.xaxis.set_gid("x3d")
+        self.axes.yaxis.set_gid("y3d")
+        self.axes.zaxis.set_gid("z3d")

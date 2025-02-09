@@ -169,3 +169,30 @@ class AxesLabel2D (QWidget):
         self.stackedlayout.addWidget(self.top)
         self.right = AxesLabelBase('right', canvas, parent)
         self.stackedlayout.addWidget(self.right)
+
+class AxesLabel3D(QWidget):
+    def __init__(self, canvas:Canvas, parent=None):
+        super().__init__(parent)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        choose_axis = SegmentedWidget()
+        layout.addWidget(choose_axis)
+
+        choose_axis.addButton(text='X3D', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        choose_axis.addButton(text='Y3D', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        choose_axis.addButton(text='Z3D', func=lambda: self.stackedlayout.setCurrentIndex(2))
+
+        choose_axis.setCurrentWidget('X3D')
+
+        self.stackedlayout = QStackedLayout()
+        layout.addLayout(self.stackedlayout)
+
+        self.bot = AxesLabelBase('x3d', canvas, parent)
+        self.stackedlayout.addWidget(self.bot)
+        self.left = AxesLabelBase('y3d', canvas, parent)
+        self.stackedlayout.addWidget(self.left)
+        self.top = AxesLabelBase('z3d', canvas, parent)
+        self.stackedlayout.addWidget(self.top)

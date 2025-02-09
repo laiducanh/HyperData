@@ -64,10 +64,10 @@ class Main(QMainWindow):
         if node.id in self.stack_scene:
             self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
         else:
-            if isinstance(node.content, Figure2D):
-                plot_view = PlotView(node, node.content.canvas, False, self)
-            elif isinstance(node.content, Figure3D):
+            if isinstance(node.content, Figure3D):
                 plot_view = PlotView(node, node.content.canvas, True, self)
+            elif isinstance(node.content, Figure2D):
+                plot_view = PlotView(node, node.content.canvas, False, self)
             self.stack_scene.append(node.id)
             plot_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
             self.mainlayout.addWidget(plot_view)
