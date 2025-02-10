@@ -8,6 +8,7 @@ from ui.base_widgets.line_edit import LineEdit, _LineEdit
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.window import ProgressDialog
 from plot.utilis import find_mpl_object
+from config.settings import logger
 import matplotlib
 from matplotlib.axis import Axis
 from plot.canvas import Canvas
@@ -77,7 +78,7 @@ class TickBase2D_1 (QWidget):
         self.diag.progressbar._setValue(30)
         QApplication.processEvents()
 
-        scale = ComboBox(items=['Linear','Log','Symlog','Logit','Asinh'],
+        scale = ComboBox(items=['linear','log','symlog','logit','asinh'],
                          text='Scale',text2=f"Set {self.axis} axis' scale")
         scale.button.currentTextChanged.connect(self.set_scale)
         scale.button.setCurrentText(self.get_scale())
@@ -135,7 +136,7 @@ class TickBase2D_1 (QWidget):
                 self.obj.axes.set_xlim(left=float(value))
             else:
                 self.obj.axes.set_ylim(bottom=float(value))
-        except Exception as e: print(e)
+        except Exception as e: logger.exception(e)
         
         self.canvas.draw_idle()
     
@@ -146,7 +147,7 @@ class TickBase2D_1 (QWidget):
                 self.obj.axes.set_xlim(right=float(value))
             else:
                 self.obj.axes.set_ylim(top=float(value))
-        except Exception as e: print(e)
+        except Exception as e: logger.exception(e)
 
         self.canvas.draw_idle()
 
@@ -160,7 +161,7 @@ class TickBase2D_1 (QWidget):
             if self.axis in ['bottom','top']: self.obj.axes.set_xscale(value)
             else: self.obj.axes.set_yscale(value)
             self.canvas.draw_idle()
-        except:pass
+        except Exception as e: logger.exception(e)
     
     def get_scale (self):
         if self.axis in ['bottom','top']: return self.obj.axes.get_xscale()
@@ -267,7 +268,7 @@ class TickBase2D_2 (QWidget):
             if self.type == 'major': self.obj.set_major_locator(matplotlib.ticker.MultipleLocator(float(value)))
             else: self.obj.set_minor_locator(matplotlib.ticker.MultipleLocator(float(value)))
             self.canvas.draw_idle()
-        except:pass
+        except Exception as e: logger.exception(e)
     
     def set_tickvalues (self, value:str):
         try:
@@ -275,7 +276,7 @@ class TickBase2D_2 (QWidget):
             if self.type == 'major': self.obj.set_ticks(value)
             else: self.obj.set_ticks(value,minor=True)
             self.canvas.draw_idle()
-        except:pass
+        except Exception as e: logger.exception(e)
     
     def set_ticklabels (self, value:str):
         try:
@@ -283,7 +284,7 @@ class TickBase2D_2 (QWidget):
             if self.type == 'major': self.obj.set_ticklabels(value)
             else: self.obj.set_ticklabels(value,minor=True)
             self.canvas.draw_idle()
-        except:pass
+        except Exception as e: logger.exception(e)
     
     def get_ticklabels(self):
         

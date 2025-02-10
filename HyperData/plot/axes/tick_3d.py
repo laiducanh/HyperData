@@ -76,7 +76,7 @@ class TickBase3D_1 (QWidget):
         self.diag.progressbar._setValue(30)
         QApplication.processEvents()
 
-        scale = ComboBox(items=['Linear','Log','Symlog','Logit','Asinh'],
+        scale = ComboBox(items=['linear','log','symlog','logit','asinh'],
                          text='Scale',text2=f"Set {self.axis} axis' scale")
         scale.button.currentTextChanged.connect(self.set_scale)
         scale.button.setCurrentText(self.get_scale())
