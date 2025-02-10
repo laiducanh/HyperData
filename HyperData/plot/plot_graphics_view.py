@@ -49,7 +49,7 @@ class WidgetItem (QGraphicsItem):
             self.height
         ).normalized()     
     
-class _ToolTip (QGraphicsItem):
+class ToolTip (QGraphicsItem):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -130,9 +130,6 @@ class GraphicsView (QGraphicsView):
         # self._scene.addItem(self.tooltip)
         # self.tooltip.hide()
         
-        # self.menu = Menu(parent=self)
-        # self.Menu()
-
         self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
         self.canvas.mpl_connect('button_press_event', self.mpl_mousePress)
         self.canvas.mpl_connect('button_release_event', self.mpl_mouseRelease)
@@ -242,17 +239,26 @@ class GraphicsView (QGraphicsView):
         xp, yp, zp = None, None, None
         xs, ys = 0, 0
 
-        bbox_props = dict(boxstyle="round,pad=0.3", fc="lightblue", ec="black", lw=2)
-        self.tooltip = self.canvas.figure.text(x=0, y=0, s="", bbox=bbox_props)
-
         for obj in reversed(stack): # the object on top will be picked
             if obj.contains(event)[0]:
                 # save the original properties of the picked artist
                 _lw = obj.get_linewidth()
                 _alp = obj.get_alpha() if obj.get_alpha() else 1
                 _c = np.array(matplotlib.colors.to_rgba(get_color(obj)))
+                # create tooltip
+                bbox_props = dict(
+                    boxstyle="round,pad=0.3", 
+                    fc="white", 
+                    ec=_c, 
+                    lw=2
+                )
+                self.tooltip = self.canvas.figure.text(
+                    x=0, y=0, s="", 
+                    bbox=bbox_props,
+                    horizontalalignment="center",
+                )
                 # decorate the artist when it is hovered
-                obj.set(alpha=_alp*0.5)
+                obj.set(alpha=_alp*0.3)
                 obj.axes.draw_artist(obj)
 
                 if isinstance(obj, (Line2D)):
@@ -342,15 +348,19 @@ class GraphicsView (QGraphicsView):
                 self.tooltip.remove() 
 
                 break
+        
     
     def save_mpl_bg(self, event=None):
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
         
     def mpl_enterFigure(self, event:MouseEvent):
+        """ save original figure when mouse enters the figure """
         self.save_mpl_bg(event)
     
     def mpl_leaveFigure(self, event:MouseEvent):
-        self.save_mpl_bg(event)
+        """ restore original figure when mouse leaves the figure """
+        self.canvas.restore_region(self.mpl_background)
+        self.canvas.draw_idle()
     
     def mpl_mouseMove(self, event:MouseEvent):
 
@@ -364,7 +374,7 @@ class GraphicsView (QGraphicsView):
             
         self.canvas.blit(self.canvas.fig.bbox)
         #self.canvas.flush_events()
-        
+
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(figure=self.canvas.fig,
                                 match=[Artist])
