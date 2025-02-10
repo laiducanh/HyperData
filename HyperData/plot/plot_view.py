@@ -1,5 +1,6 @@
 ### Import libraries from Python
 import matplotlib
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 ### Import libraries from PySide6
 from PySide6.QtCore import Qt, Signal
@@ -30,7 +31,7 @@ DEBUG = False
 
 class PlotView (QMainWindow):
     sig_back_to_grScene = Signal()
-    def __init__(self, node:Node, canvas:Canvas, plot3d=False, parent=None):
+    def __init__(self, node:Node, canvas:Canvas, parent=None):
         super().__init__(parent)
         
         ### 
@@ -39,13 +40,13 @@ class PlotView (QMainWindow):
         self.canvas = canvas
         self.num_plot = 0
         self.current_plot = 0
-        self.plot3d = plot3d
         self.curvelist = list()
+        self.plot3d = isinstance(self.canvas.axes, Axes3D)
         self.main_layout = QHBoxLayout()
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
-
+        
         if self.plot3d:
             self.treeview_data = {
                 "Graph":["Manage graph"],
@@ -83,7 +84,7 @@ class PlotView (QMainWindow):
         self.plot_visual = GraphicsView(self.canvas,parent=self.parent())
         self.plot_visual.mpl_pressed.connect(self.update_sidebar)
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
-        self.plot_visual.mouse_released.connect(self.treeview_func)
+        self.plot_visual.mouse_released.connect(self.update_sidebar)
         self.plot_visual.save_figure.connect(self.save_figure)
         self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)

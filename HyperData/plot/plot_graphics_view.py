@@ -18,6 +18,7 @@ from plot.canvas import Canvas
 import matplotlib, math
 import numpy as np
 from matplotlib.backend_bases import MouseEvent
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 from ui.base_widgets.spinbox import _Slider
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
@@ -129,8 +130,8 @@ class GraphicsView (QGraphicsView):
         # self._scene.addItem(self.tooltip)
         # self.tooltip.hide()
         
-        self.menu = Menu(parent=self)
-        self.Menu()
+        # self.menu = Menu(parent=self)
+        # self.Menu()
 
         self.canvas.mpl_connect('motion_notify_event', self.mpl_mouseMove)
         self.canvas.mpl_connect('button_press_event', self.mpl_mousePress)
@@ -145,9 +146,9 @@ class GraphicsView (QGraphicsView):
         self.zoom_item = WidgetItem(self.zoom_slider)
         self._scene.addItem(self.zoom_item)
 
-    def Menu(self, graph_list=list()):
+    def Menu(self):
         self.menu.clear()
-
+  
         nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
         nodeview.triggered.connect(self.backtoScene.emit)
         self.menu.addAction(nodeview)
@@ -164,7 +165,10 @@ class GraphicsView (QGraphicsView):
 
         graph = Menu(text="&Graph", parent=self.menu)
         self.menu.addMenu(graph)
-        _graph_list = [i.title() for i in graph_list]
+        plot_list = [s for s in find_mpl_object(self.canvas.fig,gid="graph ")]
+        _graph_list = list()
+        for gid in set([s.get_gid() for s in plot_list]):
+            _graph_list.append(gid.split("/")[0].title())
         for text in ["Manage Graph"] + _graph_list:
             action = Action(text=text, parent=graph)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
@@ -172,14 +176,22 @@ class GraphicsView (QGraphicsView):
         
         tick = Menu(text="&Tick", parent=self.menu)
         self.menu.addMenu(tick)
-        for text in ["Tick &Bottom", "Tick &Left", "Tick &Top", "Tick &Right"]:
+        if isinstance(self.canvas.axes, Axes3D): 
+            tick_list = ["Tick &X3D", "Tick &Y3D", "Tick &Z3D"]
+        else:
+            tick_list = ["Tick &Bottom", "Tick &Left", "Tick &Top", "Tick &Right"]
+        for text in tick_list:
             action = Action(text=text, parent=tick)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text.replace("&","")))
             tick.addAction(action)
 
         spine = Menu(text="&Spine", parent=self.menu)
         self.menu.addMenu(spine)
-        for text in ["Spine &Bottom", "Spine &Left", "Spine &Top", "Spine &Right"]:
+        if isinstance(self.canvas.axes, Axes3D):
+            spine_list = ["Spine &X3D", "Spine &Y3D", "Spine &Z3D"]
+        else: 
+            spine_list = ["Spine &Bottom", "Spine &Left", "Spine &Top", "Spine &Right"]
+        for text in spine_list:
             action = Action(text=text, parent=spine)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text.replace("&","")))
             spine.addAction(action)
@@ -358,13 +370,16 @@ class GraphicsView (QGraphicsView):
                                 match=[Artist])
         
         self.legend_picked = legend_onPress(event, self.canvas)
-
+        
         if not self.legend_picked:
             if event.button == 1:
                 for obj in stack:
                     if obj.contains(event)[0]:
                         self.mpl_pressed.emit(obj.get_gid())
                         break # emit when one and only one object is selected
+        
+        if isinstance(self.canvas.axes, Axes3D) and event.button == 3:
+            self.ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
     
     def mpl_mouseRelease(self, event: MouseEvent):
         self.save_mpl_bg(event)
@@ -387,8 +402,16 @@ class GraphicsView (QGraphicsView):
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonRelease(self, event:QMouseEvent):
-        pos = self.mapToGlobal(event.pos())
-        self.menu.exec(pos)       
+        if isinstance(self.canvas.axes, Axes3D):
+            ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
+            exec_menu = self.ax_limit == ax_limit
+        else: exec_menu = True
+        
+        if exec_menu: 
+            pos = self.mapToGlobal(event.pos())
+            self.menu = Menu(parent=self)
+            self.Menu()
+            self.menu.exec(pos)       
         super().mouseReleaseEvent(event)
                 
                 
