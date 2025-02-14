@@ -27,7 +27,7 @@ class ArtistConfigBase(QWidget):
     
     def find_object (self) -> list[Artist]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[Artist],
             gid=self.gid
         )

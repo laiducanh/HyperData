@@ -83,7 +83,7 @@ class GraphTitle (QScrollArea):
         # #self.layout.addStretch()
 
     def set_title (self):
-        self.obj = self.canvas.axes.set_title(label=self.title.toPlainText())   
+        self.obj = self.canvas.axes.set_title(label=self.title.toPlainText()) 
         self.canvas.draw_idle()
     
     def get_title(self):

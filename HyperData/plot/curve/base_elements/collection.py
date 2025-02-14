@@ -54,7 +54,7 @@ class SingleColorCollection (ArtistConfigBase):
     
     def find_object (self) -> List[Collection | PolyCollection]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[Collection, PolyCollection],
             gid=self.gid
         )
@@ -197,7 +197,7 @@ class CmapCollection (ArtistConfigBase):
     
     def find_object (self) -> list[Collection]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[Collection],
             gid=self.gid
         )
@@ -376,7 +376,7 @@ class QuadMesh(ArtistConfigBase):
         self._layout.addStretch()
     
     def find_object (self) -> list[Mesh]:
-        return find_mpl_object(figure=self.canvas.fig,
+        return find_mpl_object(source=self.canvas.fig,
                                match=[Mesh],
                                gid=self.gid)
     
@@ -491,7 +491,7 @@ class Poly3DCollection (ArtistConfigBase):
 
     def find_object(self) -> List[art3d.Poly3DCollection]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[art3d.Poly3DCollection],
             gid=self.gid
         )

@@ -351,7 +351,7 @@ class LineCollection(ArtistConfigBase):
     
     def find_object(self) -> list[collections.LineCollection]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[collections.LineCollection],
             gid=self.gid,
         )

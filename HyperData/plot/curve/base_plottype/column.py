@@ -51,7 +51,7 @@ class Column (PlotConfigBase):
 
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[patches.Rectangle],
             gid=self.gid
         )
@@ -141,7 +141,7 @@ class Column3D (PlotConfigBase):
 
     def find_object (self) -> list[Poly3D]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[Poly3D],
             gid=self.gid
         )
@@ -388,7 +388,7 @@ class Marimekko (PlotConfigBase):
     
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[patches.Rectangle],
             gid=self.gid
         )
@@ -443,7 +443,7 @@ class Treemap(PlotConfigBase):
         self._layout.addStretch()
     def find_object(self) -> list[patches.FancyBboxPatch]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[patches.FancyBboxPatch],
             gid=self.gid,
         )

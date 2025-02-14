@@ -34,7 +34,7 @@ class Scatter(PlotConfigBase):
     
     def find_obj (self) -> list[PathCollection]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[PathCollection],
             gid=self.gid
         )

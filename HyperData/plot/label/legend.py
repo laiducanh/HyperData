@@ -44,7 +44,7 @@ class LegendBase(QScrollArea):
     def find_legend(self):
         self.legend = get_legend(self.canvas)
         if self.legend:
-            self.handles = self.legend.legendHandles
+            self.handles = self.legend.legend_handles
             self.text = self.legend.get_title()
     
     def showEvent(self, a0):
@@ -106,7 +106,7 @@ class LegendEntries (LegendBase):
             set_legend(self.canvas)
     
     def get_fontname(self) -> str:
-        if self.legend: return self.texts[0].get_fontname()
+        if self.legend: return self.text.get_fontname()
         return plt.rcParams["font.family"][0]
     
     def set_fontsize(self, value:float):
@@ -118,7 +118,7 @@ class LegendEntries (LegendBase):
             set_legend(self.canvas)
     
     def get_fontsize(self):
-        if self.legend: return self.texts[0].get_fontsize()
+        if self.legend: return self.text.get_fontsize()
         return plt.rcParams["font.size"]
     
     def set_color (self, color):

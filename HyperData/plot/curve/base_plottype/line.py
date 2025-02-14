@@ -32,7 +32,7 @@ class Line (PlotConfigBase):
     
     def find_object (self) -> list[lines.Line2D]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[lines.Line2D],
             gid=self.gid
         )
@@ -57,7 +57,7 @@ class Step (PlotConfigBase):
     
     def find_object (self) -> list[lines.Line2D]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[lines.Line2D],
             gid=self.gid,
         )
@@ -124,7 +124,7 @@ class Stem(PlotConfigBase):
 
     def find_object(self):
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[lines.Line2D, collections.LineCollection],
             gid=self.gid
         )
@@ -192,7 +192,7 @@ class Area (PlotConfigBase):
 
     def find_obj (self) -> list[Collection]:
         return find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[Collection],
             gid=self.gid
         )

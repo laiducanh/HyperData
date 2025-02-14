@@ -135,6 +135,7 @@ class AxesLabelBase (QScrollArea):
         return 100
 
     def showEvent(self, a0):
+        self.ax = self.find_axis()
         if self.first_show:
             self.initUI()
             self.first_show = False

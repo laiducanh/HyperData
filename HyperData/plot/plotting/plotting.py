@@ -25,7 +25,7 @@ legend_picked = False
 def remove_artist (ax:Axes, gid:str) -> list[Artist]:
     artist_removed = list()
     
-    for artist in find_mpl_object(figure=ax.figure,match=[Artist],gid=gid,rule="exact"):
+    for artist in find_mpl_object(source=ax.figure,match=[Artist],gid=gid,rule="exact"):
         artist_removed.append(artist)
         artist.remove()
         if GLOBAL_DEBUG or DEBUG:
