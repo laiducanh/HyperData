@@ -140,5 +140,18 @@ class MultiFigureCanvas(Canvas):
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
 
+        for ax in self.fig.axes:
+            # Turn off spines
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['bottom'].set_visible(False)
+            ax.spines['left'].set_visible(False)
 
+            # Turn off ticks
+            ax.xaxis.set_ticks_position('none')
+            ax.yaxis.set_ticks_position('none')
+
+            # Turn off tick labels
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
 
