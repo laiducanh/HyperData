@@ -4,9 +4,9 @@ from PySide6.QtCore import QThreadPool, Qt, QDir
 from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
 from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPalette)
 
-from plot.plot_view import PlotView
+from plot.plot_view import PlotView, PlotViewMultiFig
 from node_editor.node_view import NodeView, NodeUserDefine
-from node_editor.node_node import Node, Figure2D, Figure3D, UserDefine
+from node_editor.node_node import Node, Figure2D, Figure3D, MultiFigure, UserDefine
 from window.menu_bar import MenuBar
 from config.settings import GLOBAL_DEBUG, config, logger
 from ui.utils import get_path
@@ -55,7 +55,7 @@ class Main(QMainWindow):
         self.mainlayout.setCurrentIndex(0)
     
     def node_signal (self, node:Node):
-        if isinstance(node.content, (Figure2D, Figure3D)):
+        if isinstance(node.content, (Figure2D)):
             self.to_plot_view(node)
         elif isinstance(node.content, UserDefine):
             self.to_graphics_view(node)
@@ -64,8 +64,8 @@ class Main(QMainWindow):
         if node.id in self.stack_scene:
             self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
         else:
-            if isinstance(node.content, Figure3D):
-                plot_view = PlotView(node, node.content.canvas, self)
+            if isinstance(node.content, MultiFigure):
+                plot_view = PlotViewMultiFig(node, node.content.canvas, self)
             elif isinstance(node.content, Figure2D):
                 plot_view = PlotView(node, node.content.canvas, self)
             self.stack_scene.append(node.id)

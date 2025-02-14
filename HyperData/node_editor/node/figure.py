@@ -1,7 +1,9 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
-from plot.canvas import Canvas, Canvas3D
+from plot.canvas import Canvas, Canvas3D, MultiFigureCanvas
 import pandas as pd
 from ui.base_widgets.menu import Action
+from config.settings import logger
+
 class Figure2D (NodeContentWidget):
     def __init__(self, node,parent=None):
         super().__init__(node,parent)
@@ -44,3 +46,24 @@ class Figure3D (Figure2D):
             
     def deserialize(self, data, hashmap={}):
         pass
+
+class MultiFigure(Figure2D):
+    def __init__(self, node,parent=None):
+        super().__init__(node,parent)
+
+        self.label.hide()
+        self.node.input_sockets[0].socket_data = list()
+    
+    def initCanvas(self):
+        self.canvas = MultiFigureCanvas()
+    
+    def eval (self):
+        self.resetStatus()
+        self.node.input_sockets[0].socket_data = list()
+        for edge in self.node.input_sockets[0].edges:
+            try: 
+                self.node.input_sockets[0].socket_data.append(edge.start_socket.node.content.canvas)
+            except Exception as e:
+                logger.exception(e)
+                print(e)
+                    

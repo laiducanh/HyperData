@@ -25,11 +25,14 @@ class Node(NodeGraphicsNode):
                 super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[SINGLE_OUT, MULTI_OUT, SINGLE_OUT, SINGLE_OUT])
                 self.content = NodeContentWidget(self,parent)
             case 'Figure 2D':
-                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[])
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = Figure2D(self,parent)
             case 'Figure 3D':
-                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[])
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = Figure3D(self,parent)
+            case 'Multi-Figure':
+                super().__init__(title=title, inputs=[MULTI_IN], outputs=[MULTI_OUT])
+                self.content = MultiFigure(self,parent)
             case 'Data Reader':
                 super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
                 self.content = DataReader(self,parent)

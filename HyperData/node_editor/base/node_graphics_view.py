@@ -80,7 +80,7 @@ class NodeGraphicsView(QGraphicsView):
             machine_learning.addAction(action)
         visualization = Menu(text="Visualization")
         self.menu.addMenu(visualization)
-        for text in ["Figure 2D", "Figure 3D"]:
+        for text in ["Figure 2D", "Figure 3D","Multi-Figure"]:
             action = Action(text=text, parent=visualization)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             visualization.addAction(action)

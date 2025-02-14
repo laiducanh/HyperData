@@ -125,3 +125,20 @@ class Canvas3D (Canvas):
         self.axes.xaxis.set_gid("x3d")
         self.axes.yaxis.set_gid("y3d")
         self.axes.zaxis.set_gid("z3d")
+
+class MultiFigureCanvas(Canvas):
+    def __init__(self):
+        super().__init__()
+
+    def initAxes(self):
+        self.axes = self.fig.add_subplot()
+        self.axesy2 = self.axes.twinx()
+        self.axesx2 = self.axes.twiny()
+
+        self.axes.xaxis.set_gid("bottom")
+        self.axes.yaxis.set_gid("left")
+        self.axesy2.yaxis.set_gid("right")
+        self.axesx2.xaxis.set_gid("top")
+
+
+

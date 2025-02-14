@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QStyleOptionGraphi
 from PySide6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, 
                          QBrush, QTextOption, QCursor)
 from PySide6.QtCore import QRectF, Signal, Qt
-import matplotlib.axes
+from matplotlib.axes import Axes
 import matplotlib.axis
 import matplotlib.backend_tools
 import matplotlib.collections
@@ -234,7 +234,7 @@ class GraphicsView (QGraphicsView):
     
     def tooltip_onShow(self, event: MouseEvent):
         stack = find_mpl_object(
-            figure=self.canvas.fig,
+            source=self.canvas.fig,
             match=[Line2D,Collection,Rectangle,Wedge,PathPatch,FancyBboxPatch])
         xp, yp, zp = None, None, None
         xs, ys = 0, 0
@@ -376,7 +376,7 @@ class GraphicsView (QGraphicsView):
         #self.canvas.flush_events()
 
     def mpl_mousePress(self, event: MouseEvent):
-        stack = find_mpl_object(figure=self.canvas.fig,
+        stack = find_mpl_object(source=self.canvas.fig,
                                 match=[Artist])
         
         self.legend_picked = legend_onPress(event, self.canvas)
@@ -444,4 +444,44 @@ class GraphicsView (QGraphicsView):
         #self.key_pressed.emit(event)
         return super().keyPressEvent(event)
     
+class GraphicsViewMultiFig(GraphicsView):
+    def __init__(self, canvas, parent=None):
+        super().__init__(canvas, parent)
+
+    def Menu(self):
+        self.menu.clear()
+  
+        nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
+        nodeview.triggered.connect(self.backtoScene.emit)
+        self.menu.addAction(nodeview)
+        home = Action(text="&Home", shortcut="Ctrl+H", parent=self.menu)
+        home.triggered.connect(self.backtoHome.emit)
+        self.menu.addAction(home)
+        self.menu.addSeparator()
+
+        save = Action(text="Save Figure", shortcut="Ctrl+F", parent=self.menu)
+        save.triggered.connect(self.save_figure.emit)
+        self.menu.addAction(save)
+
+        self.menu.addSeparator()
     
+    def tooltip_onShow(self, event: MouseEvent):
+        pass
+        
+    def mpl_enterFigure(self, event:MouseEvent):
+        pass
+
+    def mpl_leaveFigure(self, event:MouseEvent):
+        pass
+    
+    def mpl_mouseMove(self, event:MouseEvent):
+        pass
+
+    def mpl_mousePress(self, event: MouseEvent):
+        if event.inaxes:
+            ax = event.inaxes
+            print(ax)
+    
+    def mpl_mouseRelease(self, event: MouseEvent):
+        pass
+                
