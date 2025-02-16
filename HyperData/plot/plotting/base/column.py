@@ -12,12 +12,35 @@ from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
 DEBUG = True
 
-def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
-    
+def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle, LineCollection]:
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([2,4,7])
+
+    segments = list()
+    artist = list()
+
     if orientation == "vertical":
-        artist = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
+        bars = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
+        for idx in range(len(bars.patches)):
+            if idx < len(bars.patches)-1:
+                rect1 = bars.patches[idx]
+                rect2 = bars.patches[idx+1]
+                segments.append([
+                    (rect1.get_x()+rect1.get_width(), rect1.get_y()+rect1.get_height()),
+                    (rect2.get_x(), rect2.get_y()+rect2.get_height())
+                ])
     elif orientation == "horizontal":
-        artist = ax.barh(X, Y, gid=gid, height=width, left=bottom, align=align, *args, **kwargs)
+        bars = ax.barh(X, Y, gid=gid, height=width, left=bottom, align=align, *args, **kwargs)
+        for idx in range(len(bars.patches)):
+            if idx < len(bars.patches)-1:
+                rect1 = bars.patches[idx]
+                rect2 = bars.patches[idx+1]
+                segments.append([
+                    (rect1.get_x()+rect1.get_width(), rect1.get_y()+rect1.get_height()),
+                    (rect2.get_x()+rect2.get_width(), rect2.get_y())
+                ])
+    artist += bars.patches
   
     # set edge_color
     for art in artist:
@@ -32,6 +55,19 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, a
         art.Ydata = Y[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
+    
+    art = LineCollection(
+        segments, 
+        gid=f"_{gid}",
+        color='black',
+    )
+    art.set_visible(False)
+    ax.add_artist(art)
+    artist.append(art)
+    art.Xdata = None
+    art.Ydata = None
+    art.Xshow = None
+    art.Yshow = None
 
     return artist
 
@@ -273,7 +309,7 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         elif orientation == "horizontal":
             bars = ax.barh([a+offset for a in X], y, gid = f"{gid}.{idx+1}",
                            height=width, left=bottom, *args, **kwargs)
-
+        
         artist += bars.patches
     
     # set edge_color
@@ -334,8 +370,8 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
     
     return artist
 
-def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                     width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
+def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, 
+                     bottom=0, *args, **kwargs) -> list[Rectangle, LineCollection]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -346,19 +382,35 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
 
     artist = list()
     _bottom = bottom
+    segments = list()
     
     for idx, y in enumerate(Y):
         if orientation == "vertical":
             bars = ax.bar(X, y, gid=f"{gid}.{idx+1}", 
                           bottom=bottom, width=width, *args, **kwargs)
+            for idx in range(len(bars.patches)):
+                if idx < len(bars.patches)-1:
+                    rect1 = bars.patches[idx]
+                    rect2 = bars.patches[idx+1]
+                    segments.append([
+                        (rect1.get_x()+rect1.get_width(), rect1.get_y()+rect1.get_height()),
+                        (rect2.get_x(), rect2.get_y()+rect2.get_height())
+                    ])
         elif orientation == "horizontal":
             bars = ax.barh(X, y,gid=f"{gid}.{idx+1}", 
                            left=bottom, height=width, *args, **kwargs)
+            for idx in range(len(bars.patches)):
+                if idx < len(bars.patches)-1:
+                    rect1 = bars.patches[idx]
+                    rect2 = bars.patches[idx+1]
+                    segments.append([
+                        (rect1.get_x()+rect1.get_width(), rect1.get_y()+rect1.get_height()),
+                        (rect2.get_x()+rect2.get_width(), rect2.get_y())
+                    ])
         
         bottom += y
-
         artist += bars.patches
-    
+        
     # set edge_color
     for art in artist:
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
@@ -371,6 +423,19 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
+    
+    art = LineCollection(
+        segments, 
+        gid=f"_{gid}",
+        color='black',
+    )
+    art.set_visible(False)
+    ax.add_artist(art)
+    artist.append(art)
+    art.Xdata = None
+    art.Ydata = None
+    art.Xshow = None
+    art.Yshow = None
 
     return artist
 
@@ -417,7 +482,7 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
         
     return artist
 
-def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle]:
+def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle, LineCollection]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -429,15 +494,32 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, b
 
     artist = list()
     _bottom = bottom
+    segments = list()
 
     for idx, y in enumerate(Y):
     #for index, values in df.items():   
         if orientation == "vertical":
             bars = ax.bar(X, y, gid=f"{gid}.{idx+1}", 
                           bottom=bottom, width=width, *args, **kwargs)
+            for idx in range(len(bars.patches)):
+                if idx < len(bars.patches)-1:
+                    rect1 = bars.patches[idx]
+                    rect2 = bars.patches[idx+1]
+                    segments.append([
+                        (rect1.get_x()+rect1.get_width(), rect1.get_y()+rect1.get_height()),
+                        (rect2.get_x(), rect2.get_y()+rect2.get_height())
+                    ])
         elif orientation == "horizontal":
             bars = ax.barh(X, y,gid=f"{gid}.{idx+1}", 
                            left=bottom, height=width, *args, **kwargs)
+            for idx in range(len(bars.patches)):
+                if idx < len(bars.patches)-1:
+                    rect1 = bars.patches[idx]
+                    rect2 = bars.patches[idx+1]
+                    segments.append([
+                        (rect1.get_x()+rect1.get_width(), rect1.get_y()+rect1.get_height()),
+                        (rect2.get_x()+rect2.get_width(), rect2.get_y())
+                    ])
         
         bottom += y
 
@@ -455,6 +537,19 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, b
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
+    
+    art = LineCollection(
+        segments, 
+        gid=f"_{gid}",
+        color='black',
+    )
+    art.set_visible(False)
+    ax.add_artist(art)
+    artist.append(art)
+    art.Xdata = None
+    art.Ydata = None
+    art.Xshow = None
+    art.Yshow = None
 
     return artist
 

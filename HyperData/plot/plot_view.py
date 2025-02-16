@@ -222,8 +222,11 @@ class PlotView (QMainWindow):
     def update_plotlist(self):
         try:
             self.treeview_data["Graph"] = ["Manage graph"]
-            plot_list = [s for s in find_mpl_object(self.canvas.fig,gid="graph ")]
-            for gid in set([s.get_gid().split("/")[0] for s in plot_list]):
+            plot_list = list()
+            for obj in find_mpl_object(self.canvas.fig,gid="graph "):
+                if not obj.get_gid().startswith("_"):
+                    plot_list.append(obj.get_gid().split("/")[0])
+            for gid in set(plot_list):
                 _gid = gid.title()
                 self.treeview_data["Graph"].insert(-1,_gid)
             self.treeview.setData(self.treeview_data)

@@ -387,12 +387,11 @@ class GraphicsView (QGraphicsView):
         
         self.legend_picked = legend_onPress(event, self.canvas)
         
-        if not self.legend_picked:
-            if event.button == 1:
-                for obj in stack:
-                    if obj.contains(event)[0]:
-                        self.mpl_pressed.emit(obj.get_gid())
-                        break # emit when one and only one object is selected
+        if not self.legend_picked and event.button == 1:
+            for obj in stack:
+                if obj.contains(event)[0] and not obj.get_gid().startswith("_"):
+                    self.mpl_pressed.emit(obj.get_gid())
+                    break # emit when one and only one object is selected
         
         if isinstance(self.canvas.axes, Axes3D) and event.button == 3:
             self.ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()

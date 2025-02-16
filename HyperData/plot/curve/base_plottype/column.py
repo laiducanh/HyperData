@@ -46,6 +46,10 @@ class Column (PlotConfigBase):
         self.barwidth.button.valueChanged.connect(self.set_barwidth)
         self._layout.addWidget(self.barwidth)
 
+        self.connected_lines = LineCollection(f"_{self.gid.split(".")[0]}", self.canvas)
+        self.connected_lines.onChange.connect(self.sig.emit)
+        self._layout.addWidget(self.connected_lines)
+
         self.column = Rectangle(self.gid, self.canvas, self.parent())
         self.column.onChange.connect(self.sig.emit)
         self._layout.addWidget(self.column)
