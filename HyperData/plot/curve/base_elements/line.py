@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
@@ -328,11 +328,15 @@ class LineCollection(ArtistConfigBase):
 
     def initUI(self):
         super().initUI()
-
         # self.linestyle = ComboBox(text='Line Style',items=linestyle_lib.values())
         # self.linestyle.button.setCurrentText(self.get_linestyle())
         # self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
         # self._layout.addWidget(self.linestyle)
+
+        self.visible = Toggle(text="Visible")
+        self.visible.button.setChecked(self.get_visible())
+        self.visible.button.checkedChanged.connect(self.set_visible)
+        self._layout.addWidget(self.visible)
 
         self.linewidth = DoubleSpinBox(text='Line Width',min=0,max=10,step=0.5)
         self.linewidth.button.setValue(self.get_linewidth())
@@ -361,6 +365,17 @@ class LineCollection(ArtistConfigBase):
         self.linewidth.button.setValue(self.get_linewidth())
         self.color.button.setColor(self.get_color())
         self.alpha.button.setValue(self.get_alpha())
+    
+    def set_visible(self, value:bool):
+        try:
+            for obj in self.obj:
+                obj.set_visible(value)
+            self.prepare_update()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_visible(self) -> bool:
+        return self.obj[0].get_visible()
     
     def set_linestyle(self, value:str):
         try:

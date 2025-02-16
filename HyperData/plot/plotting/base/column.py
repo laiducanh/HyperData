@@ -1,7 +1,7 @@
 from matplotlib.axes import Axes
 from matplotlib.patches import Rectangle, FancyBboxPatch
 from matplotlib.lines import Line2D
-from matplotlib.collections import PathCollection
+from matplotlib.collections import PathCollection, LineCollection
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import colors
@@ -10,7 +10,7 @@ import numpy as np
 import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG, color_cycle
 
-DEBUG = False
+DEBUG = True
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle]:
     
@@ -31,7 +31,7 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, a
         art.Xdata = X[ind]
         art.Ydata = Y[ind]
         art.Xshow = art.get_center()[0]
-        art.Yshow = Y[ind]
+        art.Yshow = art.get_center()[1]
 
     return artist
 
@@ -288,7 +288,7 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
-        art.Yshow = np.asarray(Y).flatten()[ind]
+        art.Yshow = art.get_center()[1]
 
     return artist
 
@@ -580,4 +580,90 @@ def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=
     ax.set_ylim(0,100)
     ax.set_aspect('auto')
         
+    return artist
+
+def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle, LineCollection]:
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(5)
+        Y = np.array([3,-1,2,-3,5])
+    
+    artist = list()
+    _bottom = bottom
+    segments = list() # for linecollection plot
+    idx = 0
+
+    if orientation == "vertical":
+        for x, y in zip(X, Y):
+            if _bottom+y < _bottom: # draw negative bars
+                rect = Rectangle(
+                    xy=(x-width/2,_bottom+y),
+                    width=width,
+                    height=abs(y),
+                    color='red',
+                    gid=f"{gid}/negative",
+                )
+            else: # draw positive bars
+                rect = Rectangle(
+                    xy=(x-width/2,_bottom),
+                    width=width,
+                    height=y,
+                    color='blue',
+                    gid=f"{gid}/positive",
+                )
+            _bottom += y
+            if idx < len(X)-1:
+                segments.append([(X[idx]-width/2,_bottom),(X[idx+1]+width/2,_bottom)])
+            idx += 1
+            ax.add_artist(rect)
+            artist.append(rect)
+    
+    elif orientation == "horizontal":
+        for x, y in zip(X, Y):
+            if _bottom+y < _bottom:
+                rect = Rectangle(
+                    xy=(_bottom+y,x-width/2),
+                    width=abs(y),
+                    height=width,
+                    color='red',
+                    gid=f"{gid}/negative",
+                )
+            else:
+                rect = Rectangle(
+                    xy=(_bottom,x-width/2),
+                    width=y,
+                    height=width,
+                    color='blue',
+                    gid=f"{gid}/positive",
+                )
+            _bottom += y
+            if idx < len(X)-1:
+                segments.append([(_bottom,X[idx]-width/2),(_bottom,X[idx+1]+width/2)])
+            idx += 1
+            ax.add_artist(rect)
+            artist.append(rect)
+    
+    for ind, art in enumerate(artist):
+        art.orientation = orientation
+        art.bottom = bottom
+        art.width = width
+        art.Xdata = X[ind]
+        art.Ydata = Y[ind]
+        art.Xshow = art.get_center()[0]
+        art.Yshow = art.get_center()[1]
+
+    lines = LineCollection(
+        segments,
+        gid=f"{gid}/line",
+    )
+    lines.Xdata = None
+    lines.Ydata = None
+    lines.Xshow = None
+    lines.Yshow = None
+
+    ax.add_artist(lines)
+    artist.append(lines)
+    
+    ax.relim()
+    
+    #print(artist)
     return artist

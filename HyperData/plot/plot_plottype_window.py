@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget, QLabel, QMainWindow
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget, QDockWidget, QMainWindow
 from PySide6.QtCore import Signal, QSize, Qt
 from PySide6.QtGui import QIcon, QPixmap
 import os
@@ -22,43 +22,6 @@ class Plottype_Button (_PrimaryPushButton):
         #self.setFixedSize(QSize(icon_size,icon_size))
         self.setMaximumWidth(200)
         self.clicked.connect(lambda: self.sig.emit(self.type))
-        
-
-
-class SideBar (ListWidget):
-    sig = Signal()
-    def __init__(self, parent):
-        super().__init__(parent)
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        self.setFixedWidth(150)
-        self.addItems(['Line Graphs','Column Graphs','Scatter Graphs','Pie Graphs','Statistics Graphs','Surface Graphs'])
-        self.setCurrentRow(0)
-
-        self.setStyleSheet(
-            """
-            ListWidget, TreeWidget {
-                background-color: transparent;
-                border: none;
-                border-radius: 6px;
-                padding-right: 5px;
-                padding-left: 5px;
-            }
-
-            ListWidget::item, TreeWidget::item {
-                padding: 4px;
-                margin-top: 2px;
-                margin-bottom: 2px;
-                padding-left: 20px;
-                color: black;
-            }
-
-            ListWidget::item:hover, TreeWidget::item:hover {
-                background-color: rgba(222, 222, 222, 1);
-            }"""
-        )
-    
 
 class Line2d (QWidget):
     sig = Signal(str)
@@ -174,10 +137,17 @@ class Bar (QWidget):
         layout_column2d_2 = QHBoxLayout()
         layout_column2d_2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_column2d_2)
-        for i in ['2d 100% stacked column','marimekko','treemap']:
+        for i in ['2d 100% stacked column','2d waterfall column']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_column2d_2.addWidget(button)
+        layout_column2d_3 = QHBoxLayout()
+        layout_column2d_3.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(layout_column2d_3)
+        for i in ['marimekko','treemap']:
+            button = Plottype_Button(i,50,f"{i.title()}")
+            button.sig.connect(lambda type: self.sig.emit(type))
+            layout_column2d_3.addWidget(button)
         layout.addWidget(SeparateHLine())
         layout.addWidget(TitleLabel('Dot'))
         layout_dot = QHBoxLayout()
@@ -431,24 +401,27 @@ class Plottype_Window (QMainWindow):
     sig = Signal(str)
     def __init__(self, plot3d:bool, parent=None):
         super().__init__(parent)
-        #self.setStyleSheet('QWidget { background:#BDC3C7;}')
-        #self.setWindowOpacity(0.97)
+
         self.setFixedSize(QSize(700,500))
         self.setWindowIcon(QIcon(os.path.join(get_path(),"ui", "icons", "app-icon.png")))
         self.setWindowTitle('Plot Types')
 
-        layout = QHBoxLayout()
-
+        self.stackedlayout = QStackedLayout()
         self.central_widget = QWidget()
-        self.central_widget.setLayout(layout)
+        self.central_widget.setLayout(self.stackedlayout)
         self.setCentralWidget(self.central_widget)
         
-        listview = SideBar(parent)
-        layout.addWidget(listview)
+        listview = ListWidget()
+        listview.addItems(['Line Graphs','Column Graphs','Scatter Graphs',
+                           'Pie Graphs','Statistics Graphs','Surface Graphs'])
+        listview.setCurrentRow(0)
         listview.currentTextChanged.connect(self.func)
 
-        self.stackedlayout = QStackedLayout()
-        layout.addLayout(self.stackedlayout)
+        self.dock = QDockWidget('sidebar')
+        self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
+        self.dock.setWidget(listview)
+        self.dock.setTitleBarWidget(QWidget())
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dock)
 
         if plot3d: line = Line3d()
         else: line = Line2d()

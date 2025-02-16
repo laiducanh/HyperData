@@ -11,7 +11,7 @@ from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
 from plot.curve.base_elements.collection import Poly3DCollection
-from plot.curve.base_elements.line import Marker, Line
+from plot.curve.base_elements.line import Marker, Line, LineCollection
 from plot.utilis import find_mpl_object
 from plot.curve.base_plottype.base import PlotConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
@@ -31,15 +31,18 @@ class Column (PlotConfigBase):
         super().initUI()
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
         self._layout.addWidget(self.orientation)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
+        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
         self._layout.addWidget(self.bottom)
 
         self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
+        self.barwidth.button.setValue(self.get_barwidth())
         self.barwidth.button.valueChanged.connect(self.set_barwidth)
         self._layout.addWidget(self.barwidth)
 
@@ -95,7 +98,7 @@ class Column (PlotConfigBase):
 class Column3D (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -214,7 +217,7 @@ class Column3D (PlotConfigBase):
 class Dot(PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
         
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -314,7 +317,7 @@ class ClusteredDot(Dot):
 class Dumbbell(PlotConfigBase):
     sig = Signal()
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
         
         if "." in gid:
             self.gid = gid.split(".")[0]
@@ -368,7 +371,7 @@ class Dumbbell(PlotConfigBase):
 class Marimekko (PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -377,6 +380,7 @@ class Marimekko (PlotConfigBase):
         self._layout.setContentsMargins(0,0,0,0)
 
         self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
         self._layout.addWidget(self.orientation)
 
@@ -409,7 +413,7 @@ class Marimekko (PlotConfigBase):
 class Treemap(PlotConfigBase):
     sig = Signal()
     def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
-        super().__init__(parent)
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
         self._layout = QVBoxLayout()
@@ -418,18 +422,22 @@ class Treemap(PlotConfigBase):
         self._layout.setContentsMargins(0,0,0,0)
 
         self.rounded = DoubleSpinBox(text="Rounded")
+        self.rounded.button.setValue(self.get_rounded())
         self.rounded.button.valueChanged.connect(self.set_rounded)
         self._layout.addWidget(self.rounded)
 
         self.pad = DoubleSpinBox(min=0,max=20,step=0.5,text="Padding")
+        self.pad.button.setValue(self.get_pad())
         self.pad.button.valueChanged.connect(self.set_pad)
         self._layout.addWidget(self.pad)
 
         self.cmap_on = Toggle(text="Use colormap")
+        self.cmap_on.button.setChecked(self.get_cmap_on())
         self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
         self._layout.addWidget(self.cmap_on)
 
         self.cmap = ComboBox(items=colormaps(), text="Colormap")
+        self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
         self._layout.addWidget(self.cmap)
 
@@ -496,5 +504,90 @@ class Treemap(PlotConfigBase):
     def get_cmap(self) -> str:
         return self.obj[0].cmap
 
+class WaterFall(PlotConfigBase):
+    sig = Signal()
+    def __init__(self, gid, canvas, plot = None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
 
+        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.orientation.button.currentTextChanged.connect(self.set_orientation)
+        self._layout.addWidget(self.orientation)
+
+        self.bottom = LineEdit(text="Bottom")
+        self.bottom.button.setFixedWidth(150)
+        self.bottom.button.setText(self.get_bottom())
+        self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
+        self._layout.addWidget(self.bottom)
+
+        self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
+        self.barwidth.button.setValue(self.get_barwidth())
+        self.barwidth.button.valueChanged.connect(self.set_barwidth)
+        self._layout.addWidget(self.barwidth)
+
+        self.choose_component = SegmentedWidget()
+        self._layout.addWidget(self.choose_component)
+
+        self.choose_component.addButton(text='Positive Bars', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_component.addButton(text='Negative Bars', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_component.addButton(text='Connected Lines', func=lambda: self.stackedlayout.setCurrentIndex(2))
+
+        self.stackedlayout = QStackedLayout()
+        self._layout.addLayout(self.stackedlayout)
+
+        self.choose_component.setCurrentWidget("Positive Bars")
+        self.stackedlayout.setCurrentIndex(0)
+    
+        pos_bars = Rectangle(f"{self.gid}/positive", self.canvas)
+        pos_bars.onChange.connect(self.sig.emit)
+        self.stackedlayout.addWidget(pos_bars)
+
+        neg_bars = Rectangle(f"{self.gid}/negative", self.canvas)
+        neg_bars.onChange.connect(self.sig.emit)
+        self.stackedlayout.addWidget(neg_bars)
+
+        line = LineCollection(f"{self.gid}/line", self.canvas)
+        line.onChange.connect(self.sig.emit)
+        self.stackedlayout.addWidget(line)
+
+    def update_props(self):
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.bottom.button.setText(self.get_bottom())
+        self.barwidth.button.setValue(self.get_barwidth())
+        
+    def set_orientation(self, value:str):
+        try:
+            self.props.update(orientation = value.lower())
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+            self.plot.progressbar.changeColor()
+    
+    def get_orientation(self) -> str:
+        return self.obj[0].orientation
+    
+    def set_bottom (self, value:str):
+        try:
+            self.props.update(bottom = float(value))
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_bottom (self) -> str:
+        return str(self.obj[0].bottom)
+
+    def set_barwidth (self, value:float):
+        try: 
+            self.props.update(width = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_barwidth (self) -> float:
+        return self.obj[0].width

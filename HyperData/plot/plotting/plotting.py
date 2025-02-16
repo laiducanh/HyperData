@@ -25,7 +25,7 @@ legend_picked = False
 def remove_artist (ax:Axes, gid:str) -> list[Artist]:
     artist_removed = list()
     
-    for artist in find_mpl_object(source=ax.figure,match=[Artist],gid=gid,rule="exact"):
+    for artist in find_mpl_object(source=ax.figure,match=[Artist],gid=gid,rule="contain"):
         artist_removed.append(artist)
         artist.remove()
         if GLOBAL_DEBUG or DEBUG:
@@ -203,6 +203,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
         case "stacked dot":             artist = stackeddot(X, Y, ax, gid, *args, **kwargs)
         case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
+        case "2d waterfall column":     artist = waterfall_bar(X, Y, ax,gid, *args, **kwargs)
         case "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
         case "treemap":                 artist = treemap(X, ax, gid, artist_old, *args, **kwargs)
         case "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
