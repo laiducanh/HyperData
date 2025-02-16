@@ -42,12 +42,17 @@ class PlotConfigBase(QWidget):
     
     def paintEvent(self, a0: QPaintEvent) -> None:
         self.obj = self.find_object()
-        for obj in self.obj:
-            if obj.stale:
-                self.update_props()
-                for widget in self.findChildren(ArtistConfigBase):
-                    widget.update_props()
-                self.canvas.draw_idle()   
-                break 
         return super().paintEvent(a0)
+    
+    def showEvent(self, event):
+        for widget in self.findChildren(ArtistConfigBase):
+            widget.update_props()
+        # for obj in self.obj:
+        #     if obj.stale:
+        #         self.update_props()
+        #         for widget in self.findChildren(ArtistConfigBase):
+        #             widget.update_props()
+        #         self.canvas.draw_idle()   
+        #         break 
+        return super().showEvent(event)
 
