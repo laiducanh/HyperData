@@ -192,6 +192,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
         case "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
         case "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
+        case "2d spline":               artist = spline2d(X, Y, ax, gid, *args, **kwargs)
         case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
         case "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
         case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)

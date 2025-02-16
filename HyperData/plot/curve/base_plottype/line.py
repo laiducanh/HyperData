@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
 from plot.curve.base_elements.line import Line2D, LineCollection, Marker
 from plot.curve.base_elements.line import Line as LineBase
 from ui.base_widgets.button import Toggle, ComboBox, SegmentedWidget
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from matplotlib.collections import Collection
 from matplotlib import lines, collections
 from plot.insert_plot.insert_plot import NewPlot
@@ -163,6 +163,70 @@ class Stem3d (Stem):
         self.orientation.button.addItems(["x","y","z"])
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.blockSignals(False)
+
+class Spline2d(PlotConfigBase):
+    sig = Signal()
+    def __init__(self, gid, canvas, plot = None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+    
+    def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
+
+        num = SpinBox(min=10, max=10000, step=100, text="Number of points")
+        num.button.setValue(self.get_num())
+        num.button.valueChanged.connect(self.set_num)
+        self._layout.addWidget(num)
+
+        order = SpinBox(min=1, text="B-spline degree")
+        order.button.setValue(self.get_order())
+        order.button.valueChanged.connect(self.set_order)
+        self._layout.addWidget(order)
+
+        bc_type = ComboBox(items=["clamped","natural","not-a-knot","periodic"], text="Boundary condition")
+        bc_type.button.setCurrentText(self.get_bctype())
+        bc_type.button.currentTextChanged.connect(self.set_bctype)
+        self._layout.addWidget(bc_type)
+
+        line = LineBase(f"{self.gid}/interp", self.canvas)
+        line.onChange.connect(self.sig.emit)
+        self._layout.addWidget(line)
+
+        marker = Marker(f"{self.gid}/points", self.canvas)
+        marker.onChange.connect(self.sig.emit)
+        self._layout.addWidget(marker)
+    
+    def set_num(self, value:int):
+        try:
+            self.props.update(num = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_num(self) -> int:
+        return self.obj[0].num
+
+    def set_order(self, value:int):
+        try:
+            self.props.update(order = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_order(self):
+        return self.obj[0].order
+    
+    def set_bctype(self, value:str):
+        try:
+            self.props.update(bc_type = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_bctype(self) -> str:
+        return self.obj[0].bc_type
 
 class Area (PlotConfigBase):
     sig = Signal()

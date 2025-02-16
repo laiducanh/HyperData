@@ -1,10 +1,14 @@
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
-from matplotlib.collections import PolyCollection
+from matplotlib.collections import PolyCollection, PathCollection
 from typing import List
 import pandas as pd
 import numpy as np
-from config.settings import color_cycle
+from scipy import interpolate
+import random
+from config.settings import color_cycle, GLOBAL_DEBUG
+
+DEBUG = True
 
 def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> List[Line2D]:
 
@@ -114,6 +118,35 @@ def stem3d (X, Y, Z, ax:Axes, gid, orientation="z",bottom=0, *args, **kwargs) ->
         art.bottom = bottom
     
     return artist
+
+def spline2d(X, Y, ax:Axes, gid, num:int=1000, order:int=3, bc_type="not-a-knot", *args, **kwargs) -> list[Line2D]:
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(5)
+        Y = random.sample(range(1,100), len(X))
+    
+    xs = np.linspace(X[0], X[-1], num=num)
+    interp = interpolate.make_interp_spline(
+        X,
+        Y,
+        k=order,
+        bc_type=bc_type
+    )
+    ys = interp(xs)
+    artist = list()
+ 
+    art = ax.plot(X, Y, gid=f"{gid}/points", lw=0, marker='o')
+    artist += art
+
+    art = ax.plot(xs, ys, gid=f"{gid}/interp")
+    artist += art
+
+    for art in artist:
+        art.num = num
+        art.order = order
+        art.bc_type = bc_type
+
+    return artist
+    
 
 def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *args, **kwargs) -> List[PolyCollection]:
 

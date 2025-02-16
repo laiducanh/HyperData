@@ -49,7 +49,7 @@ class Line2d (QWidget):
         layout_line2d = QHBoxLayout()
         layout_line2d.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_line2d)
-        for i in ['2d line','2d step','2d stem']:
+        for i in ['2d line','2d step','2d stem','2d spline']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_line2d.addWidget(button)

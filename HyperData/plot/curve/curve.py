@@ -5,7 +5,8 @@ from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.line_edit import TextEdit
 from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.window import ProgressBar
-from plot.curve.base_plottype.line import Line, Step, Stem, Stem3d, Area, StackedArea, StackedArea100
+from plot.curve.base_plottype.line import (Line, Step, Stem, Stem3d, Spline2d,
+                                            Area, StackedArea, StackedArea100)
 from plot.curve.base_plottype.scatter import Scatter, Scatter3D
 from plot.curve.base_plottype.column import (Column, Dot, Dumbbell, Column3D, ClusteredColumn, ClusteredDot, 
                                              WaterFall, Marimekko, Treemap)
@@ -129,6 +130,7 @@ class Curve (QWidget):
                 case "2d line":                widget = Line(*args)
                 case "2d step":                widget = Step(*args)
                 case "2d stem":                widget = Stem(*args)
+                case "2d spline":              widget = Spline2d(*args)
                 case "2d area":                widget = Area(*args)
                 case "fill between":           widget = Area(*args)
                 case "2d stacked area":        widget = StackedArea(*args)
