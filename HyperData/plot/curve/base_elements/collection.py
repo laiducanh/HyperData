@@ -397,7 +397,8 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
     
     def get_edgewidth (self):
-        return self.obj[0].get_linewidth()
+        try: return self.obj[0].get_linewidth()
+        except: return 1 
     
     def set_edgestyle (self, value:str):
         try: 
@@ -408,15 +409,17 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
     
     def get_edgestyle (self):
-        ls = self.obj[0].get_linestyle()
-        if ls[0][1] == [3.7, 1.6]:
-            return "dashed"
-        elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
-            return "dashdot"
-        elif ls[0][1] == [1.0, 1.65]:
-            return "dotted"
-        else:
-            return "solid"
+        try: 
+            ls = self.obj[0].get_linestyle()
+            if ls[0][1] == [3.7, 1.6]:
+                return "dashed"
+            elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
+                return "dashdot"
+            elif ls[0][1] == [1.0, 1.65]:
+                return "dotted"
+            else:
+                return "solid"
+        except: return "solid"
     
     def set_edgecolor (self, value):
         try: 
@@ -427,9 +430,11 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
     
     def get_edgecolor (self):
-        if len(self.obj[0].get_edgecolor()) > 1:
-            return colors.to_hex(self.obj[0].get_edgecolor()[0])
-        return colors.to_hex(self.obj[0].get_facecolor()[0])
+        try:
+            if len(self.obj[0].get_edgecolor()) > 1:
+                return colors.to_hex(self.obj[0].get_edgecolor()[0])
+            return colors.to_hex(self.obj[0].get_facecolor()[0])
+        except: "black"
     
     def set_cmap(self, value:str):
         try:
@@ -440,7 +445,8 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
     
     def get_cmap(self) -> str:
-        return self.obj[0].get_cmap().name
+        try: return self.obj[0].get_cmap().name
+        except: return matplotlib.rcParams["image.cmap"]
 
     def set_norm (self, value:str):
         try:
@@ -451,11 +457,13 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
 
     def get_norm(self) -> str:
-        _scale_mapping = scale._scale_mapping
-        for key, value in _scale_mapping.items():
-            if type(self.obj[0].norm._scale) == value:
-                return key
-        return "linear"
+        try:
+            _scale_mapping = scale._scale_mapping
+            for key, value in _scale_mapping.items():
+                if type(self.obj[0].norm._scale) == value:
+                    return key
+            return "linear"
+        except: return "linear"
 
     def set_alpha (self, value):
         try: 
@@ -466,9 +474,11 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
 
     def get_alpha (self):
-        if self.obj[0].get_alpha() != None:
-            return int(self.obj[0].get_alpha()*100)
-        return 100
+        try:
+            if self.obj[0].get_alpha() != None:
+                return int(self.obj[0].get_alpha()*100)
+            return 100
+        except: return 100
 
 class Poly3DCollection (ArtistConfigBase):
     def __init__(self, gid, canvas: Canvas, parent=None):

@@ -7,6 +7,7 @@ from matplotlib.figure import Figure
 from matplotlib.legend import Legend
 from matplotlib.text import Text
 from matplotlib.axes import Axes
+from matplotlib.image import AxesImage
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import List, Literal
 import numpy as np
@@ -38,7 +39,7 @@ def find_mpl_object(source:Figure|Axes|Axes3D, match:list=None, gid:str=None, ru
 
     obj_found = list()
     if not match:
-        match = [Line2D,Collection,Patch,Legend,Text]
+        match = [Line2D,Collection,Patch,AxesImage,Legend,Text]
     
     for artist_class in match:
         _found: list[Artist] = source.findobj(match=artist_class)

@@ -390,7 +390,7 @@ class Surface (QWidget):
         layout_mesh = QHBoxLayout()
         layout_mesh.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(layout_mesh)
-        for i in ['heatmap']:
+        for i in ['heatmap','contour']:
             button = Plottype_Button(i,50,f"{i.title()}")
             button.sig.connect(lambda type: self.sig.emit(type))
             layout_mesh.addWidget(button)

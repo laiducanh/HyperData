@@ -11,6 +11,7 @@ from plot.curve.base_plottype.column import (Column, Dot, Dumbbell, Column3D, Cl
                                              WaterFall, Marimekko, Treemap)
 from plot.curve.base_plottype.pie import Pie, Coxcomb, Doughnut, MultilevelDoughnut, SemicircleDoughnut
 from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d
+from plot.curve.base_plottype.grid import Heatmap, Contour
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
 from plot.utilis import find_mpl_object
@@ -156,6 +157,8 @@ class Curve (QWidget):
                 case "violinplot":             widget = Violinplot(*args)
                 case "eventplot":              widget = Eventplot(*args)
                 case "hist2d":                 widget = Hist2d(*args)
+                case "heatmap":                widget = Heatmap(*args)
+                case "contour":                widget = Contour(*args)
 
                 case "3d line":                widget = Line(*args)
                 case "3d step":                widget = Step(*args)

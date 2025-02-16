@@ -7,7 +7,7 @@ class Menu_type_2D (Menu):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        from plot.insert_plot.utilis import (icon_line, icon_bar, icon_scatter, icon_pie, 
+        from plot.insert_plot.utilis import (icon_line, icon_bar, icon_scatter, icon_pie, icon_mesh,
                                             icon_statistics,icon_surface, icon_none, icon_function)
 
         line = Menu("Line", self)
@@ -77,9 +77,9 @@ class Menu_type_2D (Menu):
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             stats.addAction(action)
 
-        surface = Menu('Surface', self)
-        surface.setIcon(icon_surface)
-        for i in ['heatmap']:
+        surface = Menu('Mesh', self)
+        surface.setIcon(icon_mesh)
+        for i in ['heatmap','contour']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             surface.addAction(action)
@@ -164,10 +164,6 @@ class Menu_type_3D (Menu):
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             surface.addAction(action)
         surface.addSeparator()
-        for i in ['heatmap']:
-            action = Action(text=i.title(), parent=self)
-            action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
-            surface.addAction(action)
 
         func = Menu('Function', self)
         func.setIcon(icon_function)

@@ -3,6 +3,7 @@ from plot.plotting.base.column import *
 from plot.plotting.base.scatter import *
 from plot.plotting.base.pie import *
 from plot.plotting.base.stats import *
+from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
 from plot.utilis import find_mpl_object
 from plot.canvas import Canvas
@@ -219,6 +220,8 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
         case "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
         case "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
+        case "heatmap":                 artist = heatmap(X, ax, gid, *args, **kwargs)
+        case "contour":                 artist = contour(X, ax, gid, *args, **kwargs)
 
         case "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
         case "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
@@ -228,7 +231,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
   
     # some plot types cannot generally update props from old artists
-    if plot_type not in ["treemap"]:
+    if plot_type not in ["treemap","contour"]:
         if artist_old != []:
             for art in artist:
                 for art_old in artist_old:

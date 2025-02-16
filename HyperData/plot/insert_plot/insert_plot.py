@@ -92,7 +92,7 @@ class NewPlot (Frame):
         self.plot3d = plot3d
         self.plot_1input = ["pie","coxcomb",
                             "doughnut","multilevel doughnut","semicircle doughnut",
-                            "treemap","marimekko",
+                            "treemap","marimekko","heatmap","contour",
                             "histogram","stacked histogram",
                             "boxplot","violinplot","eventplot"]
         self.plot_3input = ["fill between","2d bubble","dumbbell"]

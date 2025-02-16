@@ -2,12 +2,13 @@ from ui.utils import icon
 
 def load_MenuIcon():
     """ this function will preload icons used for Menu to avoid delays """
-    global icon_line, icon_bar, icon_scatter, icon_pie, icon_statistics, icon_surface, icon_function, icon_none
+    global icon_line, icon_bar, icon_scatter, icon_pie, icon_statistics, icon_mesh, icon_surface, icon_function, icon_none
     icon_line = icon("line.png")
     icon_bar = icon("bar.png")
     icon_scatter = icon("scatter.png")
     icon_pie = icon("pie.png")
     icon_statistics = icon("statistics.png")
+    icon_mesh = icon("mesh.png")
     icon_surface = icon("surface.png")
     icon_function = icon("function.png")
     icon_none = icon("delete.png")

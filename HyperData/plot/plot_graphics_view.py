@@ -10,10 +10,11 @@ import matplotlib.collections
 import matplotlib.container
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
-from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection, EventCollection
+from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection, EventCollection, QuadMesh
 from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
 from matplotlib.text import Text
+from matplotlib.image import AxesImage
 from plot.canvas import Canvas
 import matplotlib, math
 import numpy as np
@@ -235,14 +236,15 @@ class GraphicsView (QGraphicsView):
     def tooltip_onShow(self, event: MouseEvent):
         stack = find_mpl_object(
             source=self.canvas.fig,
-            match=[Line2D,Collection,Rectangle,Wedge,PathPatch,FancyBboxPatch])
+            match=[Line2D,Collection,Rectangle,Wedge,
+                   PathPatch,FancyBboxPatch]
+        )
         xp, yp, zp = None, None, None
         xs, ys = 0, 0
 
         for obj in reversed(stack): # the object on top will be picked
             if obj.contains(event)[0]:
                 # save the original properties of the picked artist
-                _lw = obj.get_linewidth()
                 _alp = obj.get_alpha() if obj.get_alpha() else 1
                 _c = np.array(matplotlib.colors.to_rgba(get_color(obj)))
                 # create tooltip
@@ -262,6 +264,8 @@ class GraphicsView (QGraphicsView):
                 obj.axes.draw_artist(obj)
 
                 if isinstance(obj, (Line2D)):
+                    # save the original properties of the picked artist
+                    _lw = obj.get_linewidth()
                     # determine the closest data point to the cursor
                     dist = list()
                     for x, y in zip(obj.get_xdata(), obj.get_ydata()):
@@ -286,6 +290,8 @@ class GraphicsView (QGraphicsView):
                     obj.set(facecolor=_c)
                 
                 elif isinstance(obj, (LineCollection)):
+                    # save the original properties of the picked artist
+                    _lw = obj.get_linewidth()
                     xp, yp = obj.Xdata, obj.Ydata
                     xs, ys = obj.Xshow, obj.Yshow
                     # decorate line by darken its color
