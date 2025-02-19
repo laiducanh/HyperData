@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from scipy import interpolate
 import random
-from config.settings import color_cycle, GLOBAL_DEBUG
+from config.settings import GLOBAL_DEBUG, config
 
 DEBUG = True
 
@@ -15,14 +15,14 @@ def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> List[Line2D]:
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
-    
+
     if _Y.ndim > 1:
         for ind, y in enumerate(_Y):
-            _line = ax.plot(_X, y, color=next(color_cycle), 
+            _line = ax.plot(_X, y,  
                             gid=f"{gid}.{ind+1}", *args, **kwargs)
             artist += _line
     else:
-        _line = ax.plot(_X, _Y, color=next(color_cycle),
+        _line = ax.plot(_X, _Y,
                         gid=gid, *args, **kwargs)
         artist += _line
 
@@ -48,11 +48,11 @@ def step2d (X, Y, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
 
     if _Y.ndim > 1:
         for ind, y in enumerate(_Y):
-            _step = ax.step(_X, y, where=where, color=next(color_cycle),
+            _step = ax.step(_X, y, where=where,
                             gid=f"{gid}.{ind+1}", *args, **kwargs)
             artist += _step
     else:
-        _step = ax.step(_X, _Y, where=where, color=next(color_cycle),
+        _step = ax.step(_X, _Y, where=where, 
                         gid=gid, *args, **kwargs)
         artist += _step
     

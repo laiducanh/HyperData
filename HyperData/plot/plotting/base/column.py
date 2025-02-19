@@ -8,7 +8,7 @@ from matplotlib import colors
 import matplotlib.pyplot
 import numpy as np
 import squarify, matplotlib, fractions, math
-from config.settings import logger, GLOBAL_DEBUG, color_cycle
+from config.settings import logger, GLOBAL_DEBUG, config
 
 DEBUG = True
 
@@ -120,7 +120,6 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
     
     step = _dotstep(Y)
     artist = list()
-    color = next(color_cycle)
     for _x, _y in zip(X, Y):
         if orientation == "vertical":
             x = np.repeat(_x, int(_y*(1/step)*0.5))
@@ -134,7 +133,6 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
             gid=gid,
             marker=".",
             linewidth=0,
-            color=color,
             markersize=14,
             *args, **kwargs
         )
@@ -158,7 +156,6 @@ def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=2
     
     step = _dotstep(Y)
     artist = list()
-    color = next(color_cycle)
     max_npoints = math.ceil(np.max(Y)*(1/step)*(1/cols))
     max_npoints = max_npoints if max_npoints > rows else rows
 
@@ -174,11 +171,10 @@ def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=2
             x = np.linspace(step, np.max(Y), max_npoints)
             x = np.repeat(x, cols)
         colors = np.repeat('lightgray', cols*max_npoints)
-        colors[:int(_y*(1/step))] = color
         print(x, y)
-        for _xx, _yy, _c in zip(x, y, colors):
+        for _xx, _yy in zip(x, y):
             print(_xx, _yy)
-            r = Rectangle((_xx, _yy), sizes, sizes, color=_c,
+            r = Rectangle((_xx, _yy), sizes, sizes,
                 transform = ax.transAxes)
             ax.add_artist(r)
         ax.set_xlim(x[0],x[-1])
@@ -344,7 +340,6 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
     for idx, _Y in enumerate(Y):
         offset = multiplier
         multiplier += distance
-        color = next(color_cycle)
         for _x, _y in zip(X, _Y):
             if orientation == "vertical":
                 x = np.repeat(_x+offset, int(_y*(1/step)))
@@ -355,7 +350,6 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
             _lines = ax.plot(
                 x, y,
                 gid = f"{gid}.{idx+1}",
-                color = color,
                 marker=".",
                 linewidth=0,
                 markersize=14,
@@ -453,7 +447,6 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
     bottom = np.repeat([bottom], X.size)
 
     for idx, _Y in enumerate(Y):
-        color = next(color_cycle)
         bottom_idx = 0
         for _x, _y in zip(X, _Y):
             b = bottom[bottom_idx]
@@ -466,7 +459,6 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
             _lines = ax.plot(
                 x, y,
                 gid = f"{gid}.{idx+1}",
-                color = color,
                 marker=".",
                 linewidth=0,
                 markersize=14,

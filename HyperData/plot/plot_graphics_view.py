@@ -115,7 +115,7 @@ class GraphicsView (QGraphicsView):
     def __init__(self, canvas:Canvas,parent=None):
         super().__init__(parent)
 
-        self._scene = QGraphicsScene()
+        self._scene = QGraphicsScene(parent)
         self.setScene(self._scene)
         self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.LosslessImageRendering | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
         self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)

@@ -15,7 +15,7 @@ from data_processing.utlis import split_input
 from plot.plotting.plotting import rescale_plot, plotting
 from plot.insert_plot.utilis import load_MenuIcon, load_InputIcon
 from node_editor.node_node import Node
-from config.settings import GLOBAL_DEBUG, logger, color_cycle
+from config.settings import GLOBAL_DEBUG, logger
 from typing import List
 
 DEBUG = False

@@ -118,7 +118,7 @@ class Main(QMainWindow):
         return super().paintEvent(a0)
     
     def closeEvent(self, a0: QCloseEvent) -> None:
-        with open("config.json.txt", "w") as file:
+        with open(config["config_path"], "w") as file:
             file.write( json.dumps(config, indent=4))
         return super().closeEvent(a0)
 

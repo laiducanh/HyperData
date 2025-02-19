@@ -1,4 +1,5 @@
-import string, itertools, matplotlib, os, logging, json
+import matplotlib.pyplot
+import string, itertools, matplotlib, os, logging, json, cycler, numpy
 from PySide6.QtCore import QStandardPaths, QDir
 
 GLOBAL_DEBUG = False
@@ -18,10 +19,6 @@ font_lib.append('sans-serif')
 from matplotlib import lines
 marker_lib = lines.Line2D.markers
 
-matplotlib.rcParams['font.family'] = 'DejaVu Sans'
-
-color_lib = matplotlib.rcParams["axes.prop_cycle"].by_key()["color"]
-color_cycle = itertools.cycle(color_lib)
 # linestyle_lib = dict()
 # for ls in ["solid","dashed","dotted","dashdot"]:
 #     linestyle_lib[matplotlib.lines._get_dash_pattern(ls)] = ls
@@ -138,14 +135,17 @@ if not dataPathDir.exists():
 
 appName = 'HyperData'
 configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
-# configFile = "config.json.txt"
+configFile = "config.json.txt"
 if os.path.exists(configFile):
     with open(configFile, "r") as file:
         raw_data = file.read()
         config = json.loads(raw_data)
-else: config = {"theme":"Light", "dock area":"Left",  
-                "plot_tooltip":True, "plot_dpi":300}
-    
+else: 
+    config = {"config_path":configFile, "theme":"Light", "dock area":"Left",  
+              "plot_tooltip":True, "plot_dpi":300, "plot_style":"default",
+              "plot_palette":["#1a1a2e","#16213e","#0f3460","#e94560","#f6d55c"],
+              }
+
 config["version"] = "0.9.31"
 logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
 logFile = "debug.txt"

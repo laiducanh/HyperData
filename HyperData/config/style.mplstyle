@@ -1,0 +1,18 @@
+lines.dash_capstyle : "round"
+lines.dash_joinstyle : "round"
+lines.solid_capstyle : "round"
+lines.solid_joinstyle : "round"
+lines.linewidth : 3
+lines.marker : "o"
+lines.markeredgecolor : "white"
+
+font.family : "sans-serif"
+
+axes.edgecolor : "#454545"
+
+xtick.color : "#454545"
+ytick.color : "#454545"
+xtick.major.size : 6
+xtick.minor.size : 4.5
+ytick.major.size : 6
+ytick.minor.size: 4.5
