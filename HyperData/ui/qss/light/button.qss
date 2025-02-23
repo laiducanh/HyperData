@@ -37,7 +37,6 @@ _TransparentPushButton, _DropDownTransparentPushButton, _TransparentToolButton {
 }
 
 _CheckBox {
-    background-color: rgba(160, 160, 160, 0.8);
     text-align: left;
 }
 

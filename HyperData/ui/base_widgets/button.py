@@ -6,6 +6,7 @@ from PySide6.QtSvg import QSvgRenderer
 from typing import Iterable
 from ui.base_widgets.text import BodyLabel, InfoLabel
 from ui.base_widgets.menu import Menu
+from ui.base_widgets.frame import SeparateHLine
 from ui.utils import icon as Icon
 import os
 
@@ -419,14 +420,17 @@ class SegmentedWidget (QWidget):
         painter.drawRoundedRect(x, y+h+2, w, 3, 1.5, 1.5)
 
 class ListCheckBox(QWidget):
-    def __init__(self, list_btn=list(), parent=None):
+    def __init__(self, list_btn=list(), states=list(), text:str=None, parent=None):
         super().__init__(parent)
 
-        self.states = [False]*len(list_btn)
+        self.states = states
         self.list_btn = list_btn
 
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setContentsMargins(0,0,0,0)
+
+        self.vlayout.addWidget(BodyLabel(text))
+        self.vlayout.addWidget(SeparateHLine())
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -439,15 +443,19 @@ class ListCheckBox(QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setMaximumHeight(150)
 
-        self.setButtons(list_btn)
+        self.setButtons(list_btn, states)
 
-    def setButtons(self, list_btn):
+    def setButtons(self, list_btn=list(), states=list()):
+        self.list_btn = list_btn
+        self.states = states
         for btn in self.findChildren(_CheckBox):
+            self.btn_layout.removeWidget(btn)
             btn.deleteLater()
         
         for idx, btn in enumerate(list_btn):
             btn = _CheckBox(text=btn)
             btn.pressed.connect(lambda i=idx, b=btn: self.changeState(i, b.isChecked()))
+            btn.setChecked(self.states[idx])
             self.btn_layout.addWidget(btn)
     
     def changeState(self, idx:int, state:bool):
