@@ -32,45 +32,55 @@ _PushButton:disabled, _ToolButton:disabled, _TogglePushButton:disabled, _ToggleT
 _TransparentPushButton, _DropDownTransparentPushButton, _TransparentToolButton {
     background-color: transparent;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     margin: 0;
 }
 
-_TransparentPushButton:hover, _DropDownTransparentPushButton:hover, _TransparentToolButton:hover {
+_CheckBox {
+    background-color: rgba(160, 160, 160, 0.8);
+    text-align: left;
+}
+
+_TransparentPushButton:hover, _DropDownTransparentPushButton:hover, _TransparentToolButton:hover,
+_CheckBox:hover {
     background: rgba(220, 220, 220, 0.8);
     border: none;
 }
 
-_TransparentPushButton:pressed, _TransparentToolButton:pressed {
+_TransparentPushButton:pressed, _TransparentToolButton:pressed, _CheckBox:pressed {
     color: rgba(0, 0, 0, 0.63);
     background: rgba(220, 220, 220, 0.4);
     border: none;
 }
 
-_TransparentPushButton:disabled, _DropDownTransparentPushButton:disabled, _TransparentToolButton:disabled {
+_TransparentPushButton:disabled, _DropDownTransparentPushButton:disabled, 
+_TransparentToolButton:disabled, _CheckBox:disabled {
     background: transparent;
     border: none;
 }
 
 _PrimaryPushButton, _DropDownPrimaryPushButton, _PrimaryToolButton,
-_TogglePushButton:checked, _ToggleToolButton:checked {
+_TogglePushButton:checked, _ToggleToolButton:checked, _CheckBox:checked {
     color: white;
     background-color: rgba(0, 120, 215, 1);
 }
 
 _PrimaryPushButton:hover, _DropDownPrimaryPushButton:hover, _PrimaryToolButton:hover,
-_TogglePushButton:checked:hover, _ToggleToolButton:checked:hover {
+_TogglePushButton:checked:hover, _ToggleToolButton:checked:hover, 
+_CheckBox:checked:hover {
     background-color: rgba(0, 120, 215, 0.9);
     border: 2px solid rgba(0, 120, 215, 1);
 }
 
 _PrimaryPushButton:pressed, _PrimaryToolButton:pressed,
-_TogglePushButton:checked:pressed, _ToggleToolButton:checked:pressed {
+_TogglePushButton:checked:pressed, _ToggleToolButton:checked:pressed, 
+_CheckBox:checked:pressed {
     color: rgba(255, 255, 255, 0.63);
 }
 
 _PrimaryPushButton:disabled, _DropDownPrimaryPushButton:disabled, _PrimaryToolButton:disabled,
-_TogglePushButton:checked:disabled, _ToggleToolButton:checked:pressed {
+_TogglePushButton:checked:disabled, _ToggleToolButton:checked:pressed,
+_CheckBox:checked:disabled {
     color: rgba(255, 255, 255, 0.63);
     background-color: rgba(0, 120, 215, 0.3);
 }

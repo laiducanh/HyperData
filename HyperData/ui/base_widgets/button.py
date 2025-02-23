@@ -1,6 +1,6 @@
 from PySide6.QtCore import QObject, Qt, Signal, QEvent, QPoint, QRectF
 from PySide6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
-                             QSizePolicy, QGridLayout, QToolButton, QFileIconProvider, QVBoxLayout)
+                             QSizePolicy, QGridLayout, QToolButton, QScrollArea, QVBoxLayout)
 from PySide6.QtGui import QCursor, QPainter, QColor, QIcon
 from PySide6.QtSvg import QSvgRenderer
 from typing import Iterable
@@ -74,6 +74,14 @@ class _TogglePushButton (_PushButton):
         if self.isChecked(): self.setText(self.textOn)
         else: self.setText(self.textOff)
         return super().paintEvent(a0)
+
+class _CheckBox(_TransparentPushButton):
+    """ checkable button, the same as _TogglePushButton,
+    but behaves as transparent button when uncheck """
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+
+        self.setCheckable(True)
     
 class _ToolButton (QToolButton):
     def __init__(self, parent=None):
@@ -410,6 +418,40 @@ class SegmentedWidget (QWidget):
        
         painter.drawRoundedRect(x, y+h+2, w, 3, 1.5, 1.5)
 
+class ListCheckBox(QWidget):
+    def __init__(self, list_btn=list(), parent=None):
+        super().__init__(parent)
+
+        self.states = [False]*len(list_btn)
+        self.list_btn = list_btn
+
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0,0,0,0)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+        btn_widget = QWidget()
+        self.btn_layout = QVBoxLayout(btn_widget) 
+        self.btn_layout.setContentsMargins(0,0,20,0)
+        self.vlayout.addWidget(self.scroll_area)
+        self.scroll_area.setWidget(btn_widget)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setMaximumHeight(150)
+
+        self.setButtons(list_btn)
+
+    def setButtons(self, list_btn):
+        for btn in self.findChildren(_CheckBox):
+            btn.deleteLater()
         
+        for idx, btn in enumerate(list_btn):
+            btn = _CheckBox(text=btn)
+            btn.pressed.connect(lambda i=idx, b=btn: self.changeState(i, b.isChecked()))
+            self.btn_layout.addWidget(btn)
+    
+    def changeState(self, idx:int, state:bool):
+        self.states[idx] = not state
+       
     
 
