@@ -15,4 +15,5 @@ from node_editor.node.data.normalizer import DataNormalizer
 from node_editor.node.data.feature_expander import FeatureExpander
 from node_editor.node.data.pairwise import PairwiseMeasurer
 from node_editor.node.data.feature_selector import FeatureSelector
-from node_editor.node.data.pivot import DataPivot
+from node_editor.node.data.pivot import DataPivot, DataUnpivot
+from node_editor.node.data.stack import DataStack, DataUnstack

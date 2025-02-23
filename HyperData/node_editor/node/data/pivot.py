@@ -6,7 +6,7 @@ from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import ComboBox, Toggle, ListCheckBox
 from ui.base_widgets.window import Dialog
 
-DEBUG = True
+DEBUG = False
 
 class DataPivot (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -98,4 +98,73 @@ class DataPivot (NodeContentWidget):
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+
+class DataUnpivot(NodeContentWidget):
+    def __init__(self, node: NodeGraphicsNode, parent=None):
+        super().__init__(node, parent)
+
+        self._config = dict(
+            id_vars = [],
+            value_vars = [],
+            col_level = -1,
+            ignore_index = True
+        )
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+    
+    def config(self):
+        data = self.node.input_sockets[0].socket_data
+        dialog = Dialog(title="configuration", parent=self.parent)
+        col_level = ComboBox(items=[str(i) for i in range(-1,data.columns.nlevels)], text="Level")
+        col_level.button.setCurrentText(str(self._config["col_level"]))
+        dialog.main_layout.addWidget(col_level)
+        ignore_index = Toggle(text="Ignore index")
+        ignore_index.button.setChecked(self._config["ignore_index"])
+        dialog.main_layout.addWidget(ignore_index)
+        id_vars = ListCheckBox(data.columns, text="Columns",
+                               states=[i in self._config["id_vars"] for i in data.columns])
+        dialog.main_layout.addWidget(id_vars)
+        value_vars = ListCheckBox(data.columns, text="Values",
+                                  states=[i in self._config["value_vars"] for i in data.columns])
+        dialog.main_layout.addWidget(value_vars)
+
+        if dialog.exec():
+            self._config.update(
+                id_vars = list(compress(data.columns, id_vars.states)),
+                value_vars = list(compress(data.columns, value_vars.states)),
+                col_level = int(col_level.button.currentText()),
+                ignore_index = ignore_index.button.isChecked()
+            )
+            self.exec()
+    
+    def func(self):
+        if DEBUG or GLOBAL_DEBUG:
+            df = pd.DataFrame({'A': {0: 'a', 1: 'b', 2: 'c'},
+                   'B': {0: 1, 1: 3, 2: 5},
+                   'C': {0: 2, 1: 4, 2: 6}})
+            self.node.input_sockets[0].socket_data = df
+            print('data in', self.node.input_sockets[0].socket_data)
+
+        try:
+            data = self.node.input_sockets[0].socket_data
+            data = pd.melt(data,**self._config)
+            # change progressbar's color
+            self.progress.changeColor('success')
+            # write log
+            logger.info(f"{self.name} {self.node.id}: run successfully.")
+
+        except Exception as e:
+            data = self.node.input_sockets[0].socket_data
+            # change progressbar's color
+            self.progress.changeColor('fail')
+            # write log
+            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.exception(e)
         
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
+    
+    def eval(self):
+        self.resetStatus()
+        self.node.input_sockets[0].socket_data = pd.DataFrame()
+        for edge in self.node.input_sockets[0].edges:
+            self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

@@ -78,6 +78,15 @@ class Node(NodeGraphicsNode):
             case "Data Pivot":
                 super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = DataPivot(self,parent)
+            case "Data Unpivot":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = DataUnpivot(self,parent)
+            case "Data Stack":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = DataStack(self,parent)
+            case "Data Unstack":
+                super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+                self.content = DataUnstack(self,parent)
             case "Pairwise Measurer":
                 super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
                 self.content = PairwiseMeasurer(self,parent)
