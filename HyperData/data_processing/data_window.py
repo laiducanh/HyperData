@@ -445,6 +445,10 @@ class ExploreView (QWidget):
 
     def update_selection(self):
         try:
+            # save current text for later
+            _varx = self.varx.button.currentText()
+            _vary = self.vary.button.currentText()
+
             # update x and y variables for plot
             self.varx.button.clear()
             self.vary.button.clear()
@@ -453,6 +457,10 @@ class ExploreView (QWidget):
 
             self.varx.button.addItems(self.data.columns)
             self.vary.button.addItems(self.data.columns)
+
+            # set previous text if possible
+            self.varx.button.setCurrentText(_varx)
+            self.vary.button.setCurrentText(_vary)
             
             # self.varx.button.currentTextChanged.connect(self.update_plot)
             # self.vary.button.currentTextChanged.connect(self.update_plot)
@@ -524,11 +532,10 @@ class ExploreView (QWidget):
             #             xticks.append("")
             #         else: xticks.append(label)
             #     ax.set_xticks(ax.get_xticks(), xticks)
-
+                
             self.canvas.draw_idle() 
             
         except Exception as e:
-            print(e)
             logger.exception(e)
         
 class DataView (QWidget):
