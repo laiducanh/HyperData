@@ -15,6 +15,7 @@ from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import patches, lines, collections
+from typing import Union
 
 DEBUG = False
 
@@ -342,21 +343,20 @@ class Boxplot (PlotConfigBase):
         self._initMedians = True
 
     def changeComponent(self, component:str):
-        match component:
-            case "boxes":
-                if self._initBoxes: self.stackedlayout.setCurrentIndex(0)
-                else: self.initBoxes()
-            case "whiskers":
-                if self._initWhiskers: self.stackedlayout.setCurrentIndex(1)
-                else: self.initWhiskers()
-            case "fliers":
-                if self._initFliers: self.stackedlayout.setCurrentIndex(2)
-                else: self.initFliers()
-            case "medians":
-                if self._initMedians: self.stackedlayout.setCurrentIndex(3)
-                else: self.initMedians()
+        if component == "boxes":
+            if self._initBoxes: self.stackedlayout.setCurrentIndex(0)
+            else: self.initBoxes()
+        elif component == "whiskers":
+            if self._initWhiskers: self.stackedlayout.setCurrentIndex(1)
+            else: self.initWhiskers()
+        elif component == "fliers":
+            if self._initFliers: self.stackedlayout.setCurrentIndex(2)
+            else: self.initFliers()
+        elif component == "medians":
+            if self._initMedians: self.stackedlayout.setCurrentIndex(3)
+            else: self.initMedians()
 
-    def find_object(self) -> list[lines.Line2D | patches.PathPatch]:
+    def find_object(self) -> list[Union[lines.Line2D, patches.PathPatch]]:
         return find_mpl_object(
             source=self.canvas.fig,
             match=[lines.Line2D, patches.PathPatch],
@@ -617,7 +617,7 @@ class Violinplot (PlotConfigBase):
         self.cquantiles.onChange.connect(self.sig.emit)
         layout_cquantiles.addWidget(self.cquantiles)
     
-    def find_object(self) -> list[collections.PolyCollection, collections.LineCollection]:
+    def find_object(self) -> list[Union[collections.PolyCollection, collections.LineCollection]]:
         return find_mpl_object(
             source=self.canvas.fig,
             match=[collections.PolyCollection, collections.LineCollection],

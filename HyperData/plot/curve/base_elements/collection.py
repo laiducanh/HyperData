@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import art3d
 from matplotlib import colors, scale
 from matplotlib.pyplot import colormaps
 import matplotlib, numpy
-from typing import List
+from typing import List, Union
 
 DEBUG = False
 
@@ -52,7 +52,7 @@ class SingleColorCollection (ArtistConfigBase):
 
         self._layout.addStretch()
     
-    def find_object (self) -> List[Collection | PolyCollection]:
+    def find_object (self) -> List[Union[Collection, PolyCollection]]:
         return find_mpl_object(
             source=self.canvas.fig,
             match=[Collection, PolyCollection],
@@ -257,7 +257,7 @@ class CmapCollection (ArtistConfigBase):
         else:
             return "solid"
     
-    def set_cmap(self, value:str|None):
+    def set_cmap(self, value:Union[str,None]):
         try:
             if value:
                 for obj in self.obj:
@@ -277,7 +277,7 @@ class CmapCollection (ArtistConfigBase):
     def get_cmap(self) -> str:
         return self.obj[0].get_cmap().name
 
-    def set_norm (self, value:str|None):
+    def set_norm (self, value:Union[str,None]):
         try:
             if value: 
                 value = value.lower()

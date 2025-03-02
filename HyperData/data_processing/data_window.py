@@ -1,5 +1,4 @@
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication, QLabel, QAbstractItemView,
-                             QTreeView, QMainWindow, QScrollBar)
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication)
 from PySide6.QtGui import QIcon, QGuiApplication, QBrush, QColor
 from PySide6.QtCore import QModelIndex, Signal, Qt, QAbstractTableModel
 import os, missingno, squarify
@@ -15,7 +14,6 @@ from ui.base_widgets.window import Dialog
 from ui.utils import get_path, isDark
 from plot.canvas import ExplorerCanvas
 from data_processing.utlis import check_float, check_integer
-import seaborn as sns
 
 DEBUG = False
 
@@ -498,21 +496,20 @@ class ExploreView (QWidget):
                 self.canvas.fig.clear()
                 ax = self.canvas.fig.add_subplot()
                 
-                match plottype:
-                    case "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
-                    case "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
-                    case "histogram": self.data.hist(varx, ax=ax)
-                    case "boxplot": self.data.boxplot(varx, ax=ax)
-                    case "density": self.data[varx].plot.density(ax=ax)
-                    case "kde": self.data[varx].plot.kde(ax=ax)
-                    case "line": self.data.plot.line(varx, vary, ax=ax)
-                    case "scatter": self.data.plot.scatter(varx, vary, ax=ax)
-                    case "bar": self.data.plot.bar(varx, vary, ax=ax)
-                    case "area": self.data.plot.area(varx, vary, ax=ax)
-                    case "hexbin": self.data.plot.hexbin(varx, vary, ax=ax)
-                    case "heatmap": ax.imshow(self.data.select_dtypes(include="number"), aspect="auto")
-                    case "correlation": ax.imshow(self.data.corr(numeric_only=True), aspect="auto")
-                    case "covariance": ax.imshow(self.data.cov(numeric_only=True), aspect="auto")
+                if plottype == "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
+                elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
+                elif plottype == "histogram": self.data.hist(varx, ax=ax)
+                elif plottype == "boxplot": self.data.boxplot(varx, ax=ax)
+                elif plottype == "density": self.data[varx].plot.density(ax=ax)
+                elif plottype == "kde": self.data[varx].plot.kde(ax=ax)
+                elif plottype == "line": self.data.plot.line(varx, vary, ax=ax)
+                elif plottype == "scatter": self.data.plot.scatter(varx, vary, ax=ax)
+                elif plottype == "bar": self.data.plot.bar(varx, vary, ax=ax)
+                elif plottype == "area": self.data.plot.area(varx, vary, ax=ax)
+                elif plottype == "hexbin": self.data.plot.hexbin(varx, vary, ax=ax)
+                elif plottype == "heatmap": ax.imshow(self.data.select_dtypes(include="number"), aspect="auto")
+                elif plottype == "correlation": ax.imshow(self.data.corr(numeric_only=True), aspect="auto")
+                elif plottype == "covariance": ax.imshow(self.data.cov(numeric_only=True), aspect="auto")
             
             #     xticks = []
             #     for ind, label in enumerate(ax.get_xticklabels()):

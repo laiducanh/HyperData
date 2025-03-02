@@ -60,6 +60,7 @@ class NodeView (QMainWindow):
                                                              "Regressor", "Clustering","Decomposition",
                                                              "Train/Test Splitter","Predictor","Feature Expander","Feature Selector",
                                                              "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
+                                        "Deep Learning": ["Input Layer","Dense Layer","DL Model"],
                                         "Visualization": ["Figure 2D", "Figure 3D","Multi-Figure"],
                                         "Misc": ["Executor", "Looper", "Undefined Node"]})
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)

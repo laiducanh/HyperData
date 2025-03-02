@@ -9,6 +9,7 @@ from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_c
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.inspection import DecisionBoundaryDisplay
+from typing import Union
 
 class ConfusionMatrix (QWidget):
     def __init__(self, Y_test, Y_pred, parent=None):
@@ -103,7 +104,7 @@ class ConfusionMatrix (QWidget):
 
 
 class ROC(QWidget):
-    def __init__(self, model:OneVsOneClassifier|OneVsRestClassifier, 
+    def __init__(self, model:Union[OneVsOneClassifier,OneVsRestClassifier], 
                  X_test, Y_test, parent=None):
         """ X_test, and Y_test are nested lists """
         super().__init__(parent=parent)
@@ -164,19 +165,18 @@ class ROC(QWidget):
     
     def methodChange(self, method:str):
         
-        match method:
-            case "By Class": 
-                self.class_.button.clear()
-                self.class_.button.addItems([f"{s} vs Rest" for s in self.classes])
-            case "Micro-averaged OvR":
-                self.method = method
-                self.class_.button.clear()
-            case "Macro-averaged OvR":
-                self.method = method
-                self.class_.button.clear()
-            case "Macro-averaged OvO":
-                self.class_.button.clear()
-                self.class_.button.addItems([str(s) for s in list(itertools.combinations(self.classes, 2))])
+        if method == "By Class":
+            self.class_.button.clear()
+            self.class_.button.addItems([f"{s} vs Rest" for s in self.classes])
+        elif method == "Micro-averaged OvR":
+            self.method = method
+            self.class_.button.clear()
+        elif method == "Macro-averaged OvR":
+            self.method = method
+            self.class_.button.clear()
+        elif method == "Macro-averaged OvO":
+            self.class_.button.clear()
+            self.class_.button.addItems([str(s) for s in list(itertools.combinations(self.classes, 2))])
 
         self.draw_plot()
 
@@ -326,7 +326,7 @@ class ROC(QWidget):
         self.canvas.draw_idle()
 
 class PrecisionRecall(ROC):
-    def __init__(self, model:OneVsOneClassifier|OneVsRestClassifier,
+    def __init__(self, model:Union[OneVsOneClassifier,OneVsRestClassifier],
                  X_test, Y_test, parent=None):
         super().__init__(model, X_test, Y_test, parent)
 
@@ -391,7 +391,7 @@ class PrecisionRecall(ROC):
         self.canvas.draw_idle()
 
 class DET(ROC):
-    def __init__(self, model:OneVsOneClassifier|OneVsRestClassifier,
+    def __init__(self, model:Union[OneVsOneClassifier,OneVsRestClassifier],
                  X_test, Y_test, parent=None):
         super().__init__(model, X_test, Y_test, parent)
 

@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QMenu
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QKeySequence, QCursor, QIcon
 from ui.utils import icon as Icon
+from typing import Union
 
 class Menu (QMenu):
     def __init__(self, text:str=None, parent=None):
@@ -14,7 +15,7 @@ class Menu (QMenu):
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self._icon = None
     
-    def setIcon(self, icon: QIcon|str) -> None:
+    def setIcon(self, icon: Union[QIcon,str]) -> None:
         if isinstance(icon, QIcon):
             self._icon = icon
         else: self._icon = Icon(icon)
@@ -38,7 +39,7 @@ class Action (QAction):
 
         if icon: self.setIcon(icon)
 
-    def setIcon(self, icon: QIcon|str) -> None:
+    def setIcon(self, icon: Union[QIcon,str]) -> None:
         if isinstance(icon, QIcon):
             self._icon = icon
         else: self._icon = Icon(icon)

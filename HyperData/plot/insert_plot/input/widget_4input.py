@@ -94,11 +94,10 @@ class Widget3D_4input (QWidget):
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
-        match which_input:
-            case "input 1": self.input1.setCurrentText(text)
-            case "input 2": self.input2.setCurrentText(text)
-            case "input 3": self.input3.setCurrentText(text)
-            case "input 4": self.input4.setCurrentText(text)
+        if which_input == "input 1": self.input1.setCurrentText(text)
+        elif which_input == "input 2": self.input2.setCurrentText(text)
+        elif which_input == "input 3": self.input3.setCurrentText(text)
+        elif which_input == "input 4": self.input4.setCurrentText(text)
 
         self.input_func()
         self.dataview.close()

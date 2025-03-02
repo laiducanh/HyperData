@@ -161,28 +161,27 @@ class DataReader (NodeContentWidget):
     def func (self):
         data = pd.DataFrame()
         if self.isReadable:
-            match self.filetype:
-                case "csv":
-                    data = pd.read_csv(
-                        self.selectedFiles, 
-                        nrows=self._config["nrows"],
-                        header=self._config["header"],
-                        delimiter=self._config["delimiter"],
-                        skip_blank_lines=self._config["skip_blank_lines"],
-                        encoding=self._config["encoding"]
-                    )
-                    # write log
-                    logger.info(f"DataReader {self.node.id}: Loaded a csv file.")
+            if self.filetype == "csv":
+                data = pd.read_csv(
+                    self.selectedFiles, 
+                    nrows=self._config["nrows"],
+                    header=self._config["header"],
+                    delimiter=self._config["delimiter"],
+                    skip_blank_lines=self._config["skip_blank_lines"],
+                    encoding=self._config["encoding"]
+                )
+                # write log
+                logger.info(f"DataReader {self.node.id}: Loaded a csv file.")
 
-                case "excel":
-                    data = pd.read_excel(
-                        self.selectedFiles, 
-                        nrows=self._config["nrows"],
-                        header=self._config["header"],
-                        sheet_name=self._config["sheet_name"] if self._config["sheet_name"] else 0
-                    )
-                    # write log
-                    logger.info(f"DataReader {self.node.id}: Loaded an excel file.")
+            elif self.filetype == "excel":
+                data = pd.read_excel(
+                    self.selectedFiles, 
+                    nrows=self._config["nrows"],
+                    header=self._config["header"],
+                    sheet_name=self._config["sheet_name"] if self._config["sheet_name"] else 0
+                )
+                # write log
+                logger.info(f"DataReader {self.node.id}: Loaded an excel file.")
             
             # change progressbar's color
             self.progress.changeColor('success')

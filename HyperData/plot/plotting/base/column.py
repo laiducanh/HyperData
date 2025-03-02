@@ -8,11 +8,12 @@ from matplotlib import colors
 import matplotlib.pyplot
 import numpy as np
 import squarify, matplotlib, fractions, math
-from config.settings import logger, GLOBAL_DEBUG, config
+from config.settings import logger, GLOBAL_DEBUG
+from typing import Union
 
 DEBUG = True
 
-def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Rectangle, LineCollection]:
+def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
         Y = np.array([2,4,7])
@@ -74,10 +75,9 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, a
 def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
               orientation="z", zsort="average", shade=True, *args, **kwargs) -> list[Poly3DCollection]:
 
-    match orientation:
-        case "x":   x, y, z, dx, dy, dz = bottom, X, Y, Z, Dx, Dy
-        case "y":   x, y, z, dx, dy, dz = X, bottom, Y, Dx, Z, Dy
-        case "z":   x, y, z, dx, dy, dz = X, Y, bottom, Dx, Dy, Z
+    if orientation == "x": x, y, z, dx, dy, dz = bottom, X, Y, Z, Dx, Dy
+    elif orientation == "y":   x, y, z, dx, dy, dz = X, bottom, Y, Dx, Z, Dy
+    elif orientation == "z":   x, y, z, dx, dy, dz = X, Y, bottom, Dx, Dy, Z
    
     artist = ax.bar3d(x, y, z, dx, dy, dz, gid=gid,
                       zsort=zsort, shade=shade, color=color, *args, **kwargs)
@@ -92,7 +92,7 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
 
     return [artist]
 
-def _dotstep(arr) -> float|int:
+def _dotstep(arr) -> Union[float,int]:
     """ thif function auto calculates the step between dots to draw on Canvas,  
         the step will be computed from the greatest division in the array
         of the greatest division of the closest denominator of each element in array
@@ -202,7 +202,7 @@ def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=2
     
     return artist
 
-def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> list[Line2D,PathCollection]:
+def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> list[Union[Line2D,PathCollection]]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -365,7 +365,7 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
     return artist
 
 def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, 
-                     bottom=0, *args, **kwargs) -> list[Rectangle, LineCollection]:
+                     bottom=0, *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -474,7 +474,7 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
         
     return artist
 
-def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle, LineCollection]:
+def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -669,7 +669,7 @@ def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=
         
     return artist
 
-def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Rectangle, LineCollection]:
+def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(5)
         Y = np.array([3,-1,2,-3,5])

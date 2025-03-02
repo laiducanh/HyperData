@@ -103,12 +103,16 @@ class SelectKBest(MethodBase):
         self.vlayout.addWidget(self.k)
     
     def set_estimator(self):
-        match self.score_func.button.currentText():
-            case "ANOVA F-value": score_func = f_classif
-            case "Mutual information classification": score_func = mutual_info_classif
-            case "Chi-squared": score_func = chi2
-            case "F-value": score_func = f_regression
-            case "Mutual information regression": score_func = mutual_info_regression
+        if self.score_func.button.currentText() == "ANOVA F-value": 
+            score_func = f_classif
+        elif self.score_func.button.currentText() == "Mutual information classification": 
+            score_func = mutual_info_classif
+        elif self.score_func.button.currentText() == "Chi-squared": 
+            score_func = chi2
+        elif self.score_func.button.currentText() == "F-value": 
+            score_func = f_regression
+        elif self.score_func.button.currentText() == "Mutual information regression": 
+            score_func = mutual_info_regression
 
         self._config.update(
             score_func = score_func,
@@ -149,12 +153,16 @@ class SelectFpr(MethodBase):
         self.vlayout.addWidget(self.alpha)
     
     def set_estimator(self):
-        match self.score_func.button.currentText():
-            case "ANOVA F-value": score_func = f_classif
-            case "Mutual information classification": score_func = mutual_info_classif
-            case "Chi-squared": score_func = chi2
-            case "F-value": score_func = f_regression
-            case "Mutual information regression": score_func = mutual_info_regression
+        if self.score_func.button.currentText() == "ANOVA F-value": 
+            score_func = f_classif
+        elif self.score_func.button.currentText() == "Mutual information classification": 
+            score_func = mutual_info_classif
+        elif self.score_func.button.currentText() == "Chi-squared": 
+            score_func = chi2
+        elif self.score_func.button.currentText() == "F-value": 
+            score_func = f_regression
+        elif self.score_func.button.currentText() == "Mutual information regression": 
+            score_func = mutual_info_regression
 
         self._config.update(
             score_func = score_func,
@@ -195,12 +203,16 @@ class SelectFdr(MethodBase):
         self.vlayout.addWidget(self.alpha)
     
     def set_estimator(self):
-        match self.score_func.button.currentText():
-            case "ANOVA F-value": score_func = f_classif
-            case "Mutual information classification": score_func = mutual_info_classif
-            case "Chi-squared": score_func = chi2
-            case "F-value": score_func = f_regression
-            case "Mutual information regression": score_func = mutual_info_regression
+        if self.score_func.button.currentText() == "ANOVA F-value": 
+            score_func = f_classif
+        elif self.score_func.button.currentText() == "Mutual information classification": 
+            score_func = mutual_info_classif
+        elif self.score_func.button.currentText() == "Chi-squared": 
+            score_func = chi2
+        elif self.score_func.button.currentText() == "F-value": 
+            score_func = f_regression
+        elif self.score_func.button.currentText() == "Mutual information regression": 
+            score_func = mutual_info_regression
 
         self._config.update(
             score_func = score_func,
@@ -241,12 +253,16 @@ class SelectFwe(MethodBase):
         self.vlayout.addWidget(self.alpha)
     
     def set_estimator(self):
-        match self.score_func.button.currentText():
-            case "ANOVA F-value": score_func = f_classif
-            case "Mutual information classification": score_func = mutual_info_classif
-            case "Chi-squared": score_func = chi2
-            case "F-value": score_func = f_regression
-            case "Mutual information regression": score_func = mutual_info_regression
+        if self.score_func.button.currentText() == "ANOVA F-value": 
+            score_func = f_classif
+        elif self.score_func.button.currentText() == "Mutual information classification": 
+            score_func = mutual_info_classif
+        elif self.score_func.button.currentText() == "Chi-squared": 
+            score_func = chi2
+        elif self.score_func.button.currentText() == "F-value": 
+            score_func = f_regression
+        elif self.score_func.button.currentText() == "Mutual information regression": 
+            score_func = mutual_info_regression
 
         self._config.update(
             score_func = score_func,

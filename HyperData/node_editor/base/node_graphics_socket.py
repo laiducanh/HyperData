@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent
 from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
 import pandas as pd
+from typing import Union
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -13,7 +14,7 @@ CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsSocket (GraphicsSocket):
-    def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data:pd.DataFrame|list=None, parent=None):
+    def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data:Union[pd.DataFrame,list]=None, parent=None):
         super().__init__(node, socket_type, parent)
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
@@ -24,13 +25,13 @@ class NodeGraphicsSocket (GraphicsSocket):
         self.edges: list[GraphicsEdge] = list() # assigns a list of edges connected to (self) socket, init with an empty list, has type of list[GraphicsEdge]
         self.socket_data = data
 
-    def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
+    def hoverEnterEvent(self, event: QGraphicsSceneHoverEvent) -> None:
         self._text.show()
         if self.node.content: self.node.content.hide()
         self.hovered = True
         self.update()
     
-    def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent | None) -> None:
+    def hoverLeaveEvent(self, event: QGraphicsSceneHoverEvent) -> None:
         self._text.hide()
         if self.node.content: self.node.content.show()
         self.hovered = False

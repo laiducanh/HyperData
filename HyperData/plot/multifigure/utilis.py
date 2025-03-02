@@ -3,8 +3,9 @@ from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import lines, patches, collections, text, legend
 from plot.plotting.plotting import update_props, find_mpl_object
+from typing import Union
 
-def copy_objects(source_ax:Axes|Axes3D, destination_ax:Axes|Axes3D):
+def copy_objects(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
     
     for artist in find_mpl_object(source_ax):
         #print(artist, artist.get_gid())

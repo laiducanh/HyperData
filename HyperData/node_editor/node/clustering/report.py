@@ -14,6 +14,7 @@ from sklearn.metrics import (rand_score, adjusted_rand_score, mutual_info_score,
                              adjusted_mutual_info_score, homogeneity_score, completeness_score,
                              silhouette_score,calinski_harabasz_score, davies_bouldin_score)
 import matplotlib.pyplot as plt
+from typing import Union
 
 def scoring(X, labels_true, labels_pred):
     return {
@@ -30,9 +31,9 @@ def scoring(X, labels_true, labels_pred):
         }
 
 class Visualization(QWidget):
-    def __init__(self, model:KMeans|MiniBatchKMeans|AffinityPropagation|MeanShift|
-                 SpectralClustering|BisectingKMeans|AgglomerativeClustering|DBSCAN|
-                 HDBSCAN|OPTICS|Birch, 
+    def __init__(self, model:Union[KMeans,MiniBatchKMeans,AffinityPropagation,MeanShift,
+                 SpectralClustering,BisectingKMeans,AgglomerativeClustering,DBSCAN,
+                 HDBSCAN,OPTICS,Birch], 
                  X:pd.DataFrame, parent=None):
         super().__init__(parent)
 
@@ -130,9 +131,9 @@ class Visualization(QWidget):
         self.canvas.draw_idle()
     
 class Metrics(QWidget):
-    def __init__(self, model:KMeans|MiniBatchKMeans|AffinityPropagation|MeanShift|
-                 SpectralClustering|BisectingKMeans|AgglomerativeClustering|DBSCAN|
-                 HDBSCAN|OPTICS|Birch,
+    def __init__(self, model:Union[KMeans,MiniBatchKMeans,AffinityPropagation,MeanShift,
+                 SpectralClustering,BisectingKMeans,AgglomerativeClustering,DBSCAN,
+                 HDBSCAN,OPTICS,Birch],
                  X:pd.DataFrame, labels_true, parent=None):
         super().__init__(parent)
 

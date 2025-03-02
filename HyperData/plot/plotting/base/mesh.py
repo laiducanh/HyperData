@@ -1,12 +1,12 @@
 from matplotlib.axes import Axes
-from matplotlib.patches import Rectangle, PathPatch
 from matplotlib.lines import Line2D
-from matplotlib.collections import PolyCollection, LineCollection, EventCollection, QuadMesh
+from matplotlib.collections import QuadMesh
 from matplotlib.contour import QuadContourSet
 import numpy as np
 import matplotlib
 from skimage import measure
 from config.settings import logger, GLOBAL_DEBUG
+from typing import Union
 
 DEBUG = True
 
@@ -29,7 +29,7 @@ def heatmap(X, ax:Axes, gid, *args, **kwargs) -> list[QuadMesh]:
     return [artist]
 
 def contour(X, ax:Axes, gid, fill=False, cmap=matplotlib.rcParams["image.cmap"], 
-            norm="linear", *args, **kwargs) -> list[QuadMesh, Line2D]:
+            norm="linear", *args, **kwargs) -> list[Union[QuadMesh, Line2D]]:
     
     if DEBUG or GLOBAL_DEBUG:
         X, Y = np.meshgrid(np.linspace(-3, 3, 256), np.linspace(-3, 3, 256))

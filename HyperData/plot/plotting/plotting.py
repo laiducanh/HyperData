@@ -16,7 +16,7 @@ from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.legend import Legend, DraggableLegend
 from matplotlib.font_manager import FontProperties
 from matplotlib.backend_bases import MouseEvent
-from typing import List, Union, Literal
+from typing import Union, Literal
 
 DEBUG = False
 
@@ -173,7 +173,7 @@ def rescale_plot(figure:Figure) -> None:
         _ax.relim()
         _ax.autoscale()    
 
-def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> List[Artist]:
+def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> list[Artist]:
    
     # get old artist that will be replaced
     # but its properties will apply to the new ones
@@ -188,48 +188,47 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     # rescale all axes while remove old artists and add new artists
     rescale_plot(ax.figure)
     
-    match plot_type:
-        case "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
-        case "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
-        case "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
-        case "2d spline":               artist = spline2d(X, Y, ax, gid, *args, **kwargs)
-        case "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
-        case "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
-        case "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
-        case "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
-        case "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
-        case "dot":                     artist = dot(X, Y, ax, gid, *args, **kwargs)
-        case "dumbbell":                artist = dumbbell(X, Y, Z, ax, gid, *args, **kwargs)
-        case "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
-        case "clustered dot":           artist = clustereddot(X, Y, ax, gid, *args, **kwargs)
-        case "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
-        case "stacked dot":             artist = stackeddot(X, Y, ax, gid, *args, **kwargs)
-        case "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
-        case "2d waterfall column":     artist = waterfall_bar(X, Y, ax,gid, *args, **kwargs)
-        case "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
-        case "treemap":                 artist = treemap(X, ax, gid, artist_old, *args, **kwargs)
-        case "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
-        case "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
-        case "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
-        case "coxcomb":                 artist = coxcomb(X, ax, gid, *args, **kwargs)
-        case "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
-        case "multilevel doughnut":     artist = multilevel_doughnut(X, ax, gid, *args, **kwargs)
-        case "semicircle doughnut":     artist = semicircle_doughnut(X, ax, gid, *args, **kwargs)
-        case "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
-        case "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
-        case "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)
-        case "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
-        case "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
-        case "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
-        case "heatmap":                 artist = heatmap(X, ax, gid, *args, **kwargs)
-        case "contour":                 artist = contour(X, ax, gid, *args, **kwargs)
+    if plot_type == "2d line":                   artist = line2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d spline":               artist = spline2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d area":                 artist = fill_between(X, Y, 0, ax, gid, *args, **kwargs)
+    elif plot_type == "fill between":            artist = fill_between(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "2d stacked area":         artist = stackedarea(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d 100% stacked area":    artist = stackedarea100(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d column":               artist = column2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "dot":                     artist = dot(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "dumbbell":                artist = dumbbell(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "2d clustered column":     artist = clusteredcolumn2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "clustered dot":           artist = clustereddot(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d stacked column":       artist = stackedcolumn2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "stacked dot":             artist = stackeddot(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d 100% stacked column":  artist = stackedcolumn2d100(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d waterfall column":     artist = waterfall_bar(X, Y, ax,gid, *args, **kwargs)
+    elif plot_type == "marimekko":               artist = marimekko(X, ax, gid, *args, **kwargs)
+    elif plot_type == "treemap":                 artist = treemap(X, ax, gid, artist_old, *args, **kwargs)
+    elif plot_type == "2d scatter":              artist = scatter2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d bubble":               artist = bubble2d(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "pie":                     artist = pie(X, ax, gid, *args, **kwargs)
+    elif plot_type == "coxcomb":                 artist = coxcomb(X, ax, gid, *args, **kwargs)
+    elif plot_type == "doughnut":                artist = doughnut(X, ax, gid, *args, **kwargs)
+    elif plot_type == "multilevel doughnut":     artist = multilevel_doughnut(X, ax, gid, *args, **kwargs)
+    elif plot_type == "semicircle doughnut":     artist = semicircle_doughnut(X, ax, gid, *args, **kwargs)
+    elif plot_type == "histogram":               artist = histogram(X, ax, gid, *args, **kwargs)
+    elif plot_type == "stacked histogram":       artist = stacked_histogram(X, ax, gid, *args, **kwargs)
+    elif plot_type == "boxplot":                 artist = boxplot(X, ax, gid, *args, **kwargs)
+    elif plot_type == "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
+    elif plot_type == "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
+    elif plot_type == "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "heatmap":                 artist = heatmap(X, ax, gid, *args, **kwargs)
+    elif plot_type == "contour":                 artist = contour(X, ax, gid, *args, **kwargs)
 
-        case "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
-        case "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
-        case "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, *args, **kwargs)
-        case "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
-        case "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
-        case "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
+    elif plot_type == "3d line":                 artist = line3d(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "3d step":                 artist = step3d(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "3d stem":                 artist = stem3d(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "3d column":               artist = column3d(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "3d scatter":              artist = scatter3d(X, Y, Z, ax, gid, *args, **kwargs)
+    elif plot_type == "3d bubble":               artist = bubble3d(X, Y, Z, T, ax, gid, *args, **kwargs)
   
     # some plot types cannot generally update props from old artists
     if plot_type not in ["treemap","contour"]:

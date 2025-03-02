@@ -4,6 +4,7 @@ from matplotlib.lines import Line2D
 from matplotlib.collections import PolyCollection, LineCollection, EventCollection, QuadMesh
 import numpy as np
 from config.settings import logger, GLOBAL_DEBUG
+from typing import Union
 
 DEBUG = True
 
@@ -142,7 +143,7 @@ def stacked_histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=Fa
 def boxplot(X, ax:Axes, gid:str, showbox = True, notch = False,
             vert = True, widths = 0.5, whis = 1.5, autorange = False,
             showcaps = True, capwidths = 0, showfliers = True,
-            bootstrap = 1000, showmeans = False, meanline = False, *args, **kwargs) -> list[Line2D|PathPatch]:
+            bootstrap = 1000, showmeans = False, meanline = False, *args, **kwargs) -> list[Union[Line2D,PathPatch]]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(1000, 1)
@@ -213,7 +214,7 @@ def boxplot(X, ax:Axes, gid:str, showbox = True, notch = False,
 
 def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
                showmeans=False, showextrema=True, showmedians=False,
-               points=100, bw_method="scott", quantiles=None, *args, **kwargs) -> list[PolyCollection | LineCollection]:
+               points=100, bw_method="scott", quantiles=None, *args, **kwargs) -> list[Union[PolyCollection, LineCollection]]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(1000, 3)

@@ -1,6 +1,5 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 
-
 class ListWidget (QtWidgets.QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -88,7 +87,7 @@ class TreeWidget (QtWidgets.QTreeWidget):
 
         super().mousePressEvent(event) 
     
-    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent | None) -> None:
+    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
         item = self.itemAt(event.pos())
         if isinstance(item, QtWidgets.QTreeWidgetItem): 
             self.sig_doubleClick.emit(str(item.data(0,0)))

@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButt
                              QSizePolicy, QGridLayout, QToolButton, QScrollArea, QVBoxLayout)
 from PySide6.QtGui import QCursor, QPainter, QColor, QIcon
 from PySide6.QtSvg import QSvgRenderer
-from typing import Iterable
+from typing import Iterable, Union
 from ui.base_widgets.text import BodyLabel, InfoLabel
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine
@@ -17,7 +17,7 @@ class _PushButton (QPushButton):
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self._icon = None
     
-    def setIcon(self, icon:QIcon|str) -> None:
+    def setIcon(self, icon: Union[QIcon,str]) -> None:
         if isinstance(icon, QIcon):
             self._icon = icon
         else: self._icon = Icon(icon)
@@ -101,7 +101,7 @@ class _ToolButton (QToolButton):
         self.pressed.emit()
         self.clicked.emit()
 
-    def setIcon(self, icon:QIcon|str) -> None:
+    def setIcon(self, icon: Union[QIcon,str]) -> None:
         if isinstance(icon, QIcon):
             self._icon = icon
         else: self._icon = Icon(icon)
@@ -205,15 +205,14 @@ class _Toggle(QFrame):
     
     def checkChange (self):
         
-        match self.toggle_on:
-            case True:
-                self.button_1.setStyleSheet("border-radius : %d; border : none; background-color: rgb(0, 120, 215)"%((self.height - 20)//2))
-                self.button_2.setVisible(False)
-                self.button_3.setVisible(True)
-            case False:
-                self.button_1.setStyleSheet("border-radius : %d; border : 1px solid black; background-color: rgb(255, 255, 255)"%((self.height - 20)//2))
-                self.button_2.setVisible(True)
-                self.button_3.setVisible(False)
+        if self.toggle_on:
+            self.button_1.setStyleSheet("border-radius : %d; border : none; background-color: rgb(0, 120, 215)"%((self.height - 20)//2))
+            self.button_2.setVisible(False)
+            self.button_3.setVisible(True)
+        else:
+            self.button_1.setStyleSheet("border-radius : %d; border : 1px solid black; background-color: rgb(255, 255, 255)"%((self.height - 20)//2))
+            self.button_2.setVisible(True)
+            self.button_3.setVisible(False)
         
         self.checkedChanged.emit(self.toggle_on)
 

@@ -39,7 +39,7 @@ class WidgetItem (QGraphicsItem):
         self.width = 100
         self.height = 100
     
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = ...) -> None:
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
         pass
 
     def boundingRect(self) -> QRectF:

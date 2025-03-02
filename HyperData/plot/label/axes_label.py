@@ -12,6 +12,7 @@ from plot.label.base import FontStyle
 from config.settings import font_lib
 from matplotlib.axis import XAxis, YAxis
 from matplotlib.text import Text
+from typing import Union
 
 class AxesLabelBase (QScrollArea):
     def __init__(self, axis, canvas:Canvas, parent=None):
@@ -75,7 +76,7 @@ class AxesLabelBase (QScrollArea):
         alpha.button.setValue(self.get_alpha())
         self.vlayout.addWidget(alpha)
       
-    def find_axis(self) -> XAxis | YAxis:
+    def find_axis(self) -> Union[XAxis, YAxis]:
         return find_mpl_object(self.canvas.fig,[XAxis, YAxis], self.axis)[0]
 
     def set_label(self):

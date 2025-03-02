@@ -9,7 +9,7 @@ from matplotlib.text import Text
 from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from typing import List, Literal
+from typing import Literal, Union
 import numpy as np
 
 def get_color(artist:Artist):
@@ -32,7 +32,7 @@ def get_color(artist:Artist):
 
     return "white"
 
-def find_mpl_object(source:Figure|Axes|Axes3D, match:list=None, gid:str=None, rule:Literal["exact","contain"]="contain") -> List[Artist]:
+def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list=None, gid:str=None, rule:Literal["exact","contain"]="contain") -> list[Artist]:
 
     """ This function is used to find artist plot (having gid) in matplotlib,
         for other objects such as text, use matplotlib function findobj() instead """

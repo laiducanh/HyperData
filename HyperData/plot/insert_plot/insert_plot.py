@@ -16,7 +16,6 @@ from plot.plotting.plotting import rescale_plot, plotting
 from plot.insert_plot.utilis import load_MenuIcon, load_InputIcon
 from node_editor.node_node import Node
 from config.settings import GLOBAL_DEBUG, logger
-from typing import List
 
 DEBUG = False
 
@@ -208,15 +207,14 @@ class NewPlot (Frame):
             self.canvas.axesy2.set_axis_on()
             self.canvas.axespie.set_axis_off()
             
-            match _ax:
-                case ["axis bottom", "axis left"]:  ax = self.canvas.axes
-                case ["axis bottom", "axis right"]: ax = self.canvas.axesy2
-                case ["axis top", "axis left"]:     ax = self.canvas.axesx2
-                case "pie": 
-                    ax = self.canvas.axespie
-                    self.canvas.axes.set_axis_off()
-                    self.canvas.axesx2.set_axis_off()
-                    self.canvas.axesy2.set_axis_off()
+            if _ax == ["axis bottom", "axis left"]:    ax = self.canvas.axes
+            elif _ax == ["axis bottom", "axis right"]: ax = self.canvas.axesy2
+            elif _ax == ["axis top", "axis left"]:     ax = self.canvas.axesx2
+            elif _ax == "pie": 
+                ax = self.canvas.axespie
+                self.canvas.axes.set_axis_off()
+                self.canvas.axesx2.set_axis_off()
+                self.canvas.axesy2.set_axis_off()
             
 
         X, Y, Z, T  = list(), list(), list(), list()
@@ -251,7 +249,7 @@ class InsertPlot (QWidget):
         self.canvas = canvas
         self.num_plot = 0 # keep track of the indexes of plots
         self.plotlist = list()
-        self.plotlist: List[NewPlot]
+        self.plotlist: list[NewPlot]
         self.node = node
         self.plot3d = plot3d
         load_MenuIcon()

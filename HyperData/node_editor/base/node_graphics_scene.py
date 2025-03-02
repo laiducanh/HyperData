@@ -53,7 +53,7 @@ class NodeGraphicsScene(QGraphicsScene):
 
         self.setBackgroundBrush(self._color_background)
 
-    def dragMoveEvent(self, event: QGraphicsSceneDragDropEvent | None) -> None:
+    def dragMoveEvent(self, event: QGraphicsSceneDragDropEvent) -> None:
         pass
 
     def keyPressEvent(self, event: QKeyEvent) -> None:

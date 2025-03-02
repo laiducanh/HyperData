@@ -138,31 +138,30 @@ class NAImputer (NodeContentWidget):
 
         try:
             imputer = None
-            match self._config["imputer"]:
-                case 'univariate':
-                    if self._config['u_strategy'] == 'next valid observation':
-                        data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
-                    elif self._config['u_strategy'] == 'last valid observation':
-                        data = self.node.input_sockets[0].socket_data.fillna(method='bfill')
-                    else:
-                        imputer = SimpleImputer(
-                            strategy=self._config['u_strategy'],
-                            fill_value=self._config['u_fill_value']
-                        )
-                case 'multivariate':
-                    imputer = IterativeImputer(
-                        max_iter=self._config['max_iter'],
-                        tol=self._config["tol"],
-                        initial_strategy=self._config["m_strategy"],
-                        fill_value=self._config["m_fill_value"],
-                        imputation_order=self._config['imputation_order'],
-                        skip_complete=self._config["skip complete"]
+            if self._config["imputer"] == 'univariate':
+                if self._config['u_strategy'] == 'next valid observation':
+                    data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
+                elif self._config['u_strategy'] == 'last valid observation':
+                    data = self.node.input_sockets[0].socket_data.fillna(method='bfill')
+                else:
+                    imputer = SimpleImputer(
+                        strategy=self._config['u_strategy'],
+                        fill_value=self._config['u_fill_value']
                     )
-                case "knn":
-                    imputer = KNNImputer(
-                        n_neighbors=self._config['n_neighbors'],
-                        weights=self._config["weights"]
-                    )
+            elif self._config["imputer"] == 'multivariate':
+                imputer = IterativeImputer(
+                    max_iter=self._config['max_iter'],
+                    tol=self._config["tol"],
+                    initial_strategy=self._config["m_strategy"],
+                    fill_value=self._config["m_fill_value"],
+                    imputation_order=self._config['imputation_order'],
+                    skip_complete=self._config["skip complete"]
+                )
+            elif self._config["imputer"] == "knn":
+                imputer = KNNImputer(
+                    n_neighbors=self._config['n_neighbors'],
+                    weights=self._config["weights"]
+                )
             if imputer:
                 columns = self.node.input_sockets[0].socket_data.columns
                 data = imputer.fit_transform(self.node.input_sockets[0].socket_data)
