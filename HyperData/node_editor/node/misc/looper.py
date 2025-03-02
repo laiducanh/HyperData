@@ -11,7 +11,7 @@ class Looper (NodeContentWidget):
             n=10,
             current_iter=0,
         )
-        self.label.setText(f"Iteration: {self._config["current_iter"]}")
+        self.label.setText(f"Iteration: {self._config['current_iter']}")
     
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
@@ -40,7 +40,7 @@ class Looper (NodeContentWidget):
     def timerStop(self, step = 10):
         if self._config["current_iter"] < self._config["n"]:
             self.pipeline()
-            self.label.setText(f"Iteration: {self._config["current_iter"]+1}")
+            self.label.setText(f"Iteration: {self._config['current_iter']+1}")
             self.progress.setValue(int((self._config["current_iter"]+1)/self._config["n"]*100))     
                 
     def resetStatus(self):

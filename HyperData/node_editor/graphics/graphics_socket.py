@@ -19,7 +19,7 @@ class SocketItem (QGraphicsItem):
         super().__init__(parent)
 
         self.radius = 6.0
-        self.outline_width = 2.5
+        self.outline_width = 1.5
         self._colors = [
             QColor("#FFA04D"),
             QColor("#FA6D6D"),

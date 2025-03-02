@@ -10,10 +10,10 @@ class NodeItem(QGraphicsItem):
     def __init__(self, title:str, parent=None):
         super().__init__(parent)
 
-        self._title_font = QFont("Arial", 11, 700)
+        self._title_font = QFont("Montserrat", 11, 700)
         self.title = title
         self.edge_size = 5.0
-        self.title_height = 24.0
+        self.title_height = 28.0
         self._padding = 4.0
         self.socket_spacing = 22
         self.width = 180
@@ -38,7 +38,7 @@ class NodeItem(QGraphicsItem):
         self._color_hovered = QColor("#FF37A6FF")
 
         self._pen_default = QPen(self._color)
-        self._pen_default.setWidthF(2.0)
+        self._pen_default.setWidthF(1.0)
         self._pen_selected = QPen(self._color_selected)
         self._pen_selected.setWidthF(2.0)
         self._pen_hovered = QPen(self._color_hovered)
@@ -89,15 +89,17 @@ class NodeItem(QGraphicsItem):
         self.setColor()
     
         # title
-        path_title = QPainterPath()
-        path_title.setFillRule(Qt.FillRule.WindingFill)
-        path_title.addRoundedRect(0,0, self.width, self.title_height, self.edge_size, self.edge_size)
-        path_title.addRect(0, self.title_height - self.edge_size, self.edge_size, self.edge_size)
-        path_title.addRect(self.width - self.edge_size, self.title_height - self.edge_size, self.edge_size, self.edge_size)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(self._brush_title)
-        painter.drawPath(path_title.simplified())
+        # path_title = QPainterPath()
+        # path_title.setFillRule(Qt.FillRule.WindingFill)
+        # path_title.addRoundedRect(0,0, self.width, self.title_height, self.edge_size, self.edge_size)
+        # path_title.addRect(0, self.title_height - self.edge_size, self.edge_size, self.edge_size)
+        # path_title.addRect(self.width - self.edge_size, self.title_height - self.edge_size, self.edge_size, self.edge_size)
+        # painter.setPen(Qt.PenStyle.NoPen)
+        # painter.setBrush(self._brush_title)
+        # painter.drawPath(path_title.simplified())
         self.title_item.setDefaultTextColor(self._title_color)
+        painter.setPen(self._pen_default)
+        painter.drawLine(10, self.title_height, self.width-10, self.title_height)
 
 
         # content

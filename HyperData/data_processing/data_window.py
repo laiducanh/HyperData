@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication, QLabel, QAbstractItemView,
-                             QCompleter, QPushButton, QMainWindow, QScrollBar)
+                             QTreeView, QMainWindow, QScrollBar)
 from PySide6.QtGui import QIcon, QGuiApplication, QBrush, QColor
-from PySide6.QtCore import QModelIndex, QSize, Signal, Qt, QAbstractTableModel, QMetaType
+from PySide6.QtCore import QModelIndex, Signal, Qt, QAbstractTableModel
 import os, missingno, squarify
-from time import gmtime, strftime
+from time import gmtime, strftime, time
 import pandas as pd
 import numpy as np
 from config.settings import list_name, GLOBAL_DEBUG, logger
@@ -20,17 +20,15 @@ import seaborn as sns
 DEBUG = False
 
 class TableModel(QAbstractTableModel):
-    def __init__(self, data, parent=None):
+    def __init__(self, data: pd.DataFrame, parent=None):
         super().__init__(parent)
-        self._data = data
-        self.numRows = 100    
+        self._data = data.astype(str)
+        self.numRows = 50
         self.numColumns = 100
         self.toggleDecor = False
+   
+    def data(self, index:QModelIndex, role=Qt.ItemDataRole.DisplayRole):
 
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        """
-        index=QModelIndex
-        """
         if not index.isValid():
             return
         
@@ -38,37 +36,33 @@ class TableModel(QAbstractTableModel):
             return 
         
         value = self._data.iloc[index.row(), index.column()]
+
+        if role == Qt.ItemDataRole.DisplayRole:
+            return value
         
         if self.toggleDecor:
-            value = str(value)
-            if check_integer(value):
-                background_color = QColor("#6C7EE1")
-            elif check_float(value):
-                background_color = QColor("#92B9E3")
-            elif value.lower() in ['true','false']:
+            if value.lower() in ['true','false']:
                 background_color = QColor("#FFC4A4")
             elif value == 'nan':
                 background_color = QColor("#FBA2D0")
+            elif check_integer(value):
+                background_color = QColor("#6C7EE1")
+            elif check_float(value):
+                background_color = QColor("#92B9E3")
             else:
                 background_color = QColor("#C688EB")
             
-        else:
-            if isDark(): background_color = QColor(32,32,32)
-            else: background_color = QColor("white")
+            brightness = 0.2126*background_color.getRgb()[0]+ \
+                         0.7152*background_color.getRgb()[1]+ \
+                         0.0722*background_color.getRgb()[2]
+            if brightness >= 128: text_color = QColor("black")
+            else: text_color = QColor("white")
 
-        brightness = 0.2126*background_color.getRgb()[0]+ \
-                     0.7152*background_color.getRgb()[1]+ \
-                     0.0722*background_color.getRgb()[2]
-        if brightness >= 128: text_color = QColor("black")
-        else: text_color = QColor("white")
-        
-        if role == Qt.ItemDataRole.DisplayRole:
-            return str(value)
-        elif role == Qt.ItemDataRole.ForegroundRole:
-            return QBrush(text_color)
-        elif role == Qt.ItemDataRole.BackgroundRole:
-            #return QGuiApplication.palette().base()
-            return QBrush(background_color)
+            if role == Qt.ItemDataRole.ForegroundRole:
+                return QBrush(text_color)
+            elif role == Qt.ItemDataRole.BackgroundRole:
+                #return QGuiApplication.palette().base()
+                return QBrush(background_color)
             
         return 
 
@@ -76,42 +70,37 @@ class TableModel(QAbstractTableModel):
         self.toggleDecor = toggle
         self.layoutChanged.emit()
       
-    def canFetchMore(self, index):
-        """
-        index=QModelIndex
-        """
+    def canFetchMore(self, index:QModelIndex):
+
         if self.numRows<self._data.shape[0] or self.numColumns<self._data.shape[1]:
             return True
-        else:
-            return False
-    def fetchMore(self, index):
-        """
-        Index=QModelIndex
-        """
+        return False
+    
+    def fetchMore(self, index:QModelIndex):
+
         maxFetch=20     #maximum number of rows/columns to grab at a time.
         
         remainderRows=self._data.shape[0]-self.numRows
         
-        
-        if maxFetch < remainderRows:
-            self.beginInsertRows(QModelIndex(), self.numRows, self.numRows+maxFetch-1)
-            self.endInsertRows()
-            self.numRows+=maxFetch
-        else:
-            self.beginResetModel()
-            self.numRows = self._data.shape[0]
-            self.endResetModel()
+        # if maxFetch < remainderRows:
+        #     self.beginInsertRows(QModelIndex(), self.numRows, self.numRows+maxFetch-1)
+        #     self.numRows += maxFetch
+        #     self.endInsertRows()
+        # else:
+        #     self.beginResetModel()
+        #     self.numRows = self._data.shape[0]
+        #     self.endResetModel()
 
-        remainderColumns=self._data.shape[1]-self.numColumns
+        # remainderColumns=self._data.shape[1]-self.numColumns
         
-        if maxFetch<remainderColumns:
-            self.beginInsertColumns(QModelIndex(), self.numColumns, self.numColumns+maxFetch-1)
-            self.endInsertColumns()
-            self.numColumns+=maxFetch
-        else:
-            self.beginResetModel()
-            self.numColumns = self._data.shape[1]
-            self.endResetModel()
+        # if maxFetch < remainderColumns:
+        #     self.beginInsertColumns(QModelIndex(), self.numColumns, self.numColumns+maxFetch-1)
+        #     self.numColumns += maxFetch
+        #     self.endInsertColumns()
+        # else:
+        #     self.beginResetModel()
+        #     self.numColumns = self._data.shape[1]
+        #     self.endResetModel()
         
 
     def rowCount(self, parent):
@@ -141,7 +130,7 @@ class TableModel(QAbstractTableModel):
                     return str(self._data.index[section]+1)
                 
                 return str(self._data.index[section])
-            
+           
 class TableView (QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
@@ -279,14 +268,14 @@ class TableView (QWidget):
         string = list()
         for value in self.selected_values:
             value = str(value)
-            if check_integer(value):
-                string.append('int')
-            elif check_float(value):
-                string.append("float")
-            elif value.lower() in ['true','false']:
+            if value.lower() in ['true','false']:
                 string.append('boolean')
             elif value == 'nan':
                 string.append('nan')
+            elif check_integer(value):
+                string.append('int')
+            elif check_float(value):
+                string.append("float")
             else:
                 string.append("string")
                 
@@ -546,7 +535,7 @@ class DataView (QWidget):
         layout = QHBoxLayout(self)
         self.setWindowIcon(QIcon(os.path.join(get_path(),"ui","icons","data-window.png")))
         screen = QGuiApplication.primaryScreen().geometry().getRect()
-        self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
+        #self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
         
         self.tableview = TableView(data, parent)
         layout.addWidget(self.tableview)
