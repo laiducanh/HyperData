@@ -1,14 +1,11 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.line_edit import CompleterLineEdit
-from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
 
-DEBUG = False
+DEBUG = True
 
 class DataLocator (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -22,7 +19,6 @@ class DataLocator (NodeContentWidget):
         if self.node.input_sockets[0].socket_data.empty:
             # reset _config if the input data is empty Dataframe
             self._config = dict(
-                type="columns",
                 column_from=None,
                 column_to=None,
                 row_from=None,
@@ -31,7 +27,6 @@ class DataLocator (NodeContentWidget):
         elif not self._data.equals(self.node.input_sockets[0].socket_data):
             # update _config according to the new input data
             self._config = dict(
-                type="columns",
                 column_from=self.node.input_sockets[0].socket_data.columns[0],
                 column_to=self.node.input_sockets[0].socket_data.columns[-1],
                 row_from=1,
@@ -43,39 +38,17 @@ class DataLocator (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        type = ComboBox(items=["columns","rows"], text="type")
-        type.button.setCurrentText(self._config["type"])
-        type.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(type.button.currentIndex()))
-        dialog.main_layout.addWidget(type)
+        col_from = CompleterLineEdit(text="From column")
+        dialog.main_layout.addWidget(col_from)
 
-        dialog.main_layout.addWidget(SeparateHLine())
+        col_to = CompleterLineEdit(text="To column")
+        dialog.main_layout.addWidget(col_to)
 
-        stacklayout = QStackedLayout()
-        dialog.main_layout.addLayout(stacklayout)
+        row_from = CompleterLineEdit(text="From row")
+        dialog.main_layout.addWidget(row_from)
 
-        col = QWidget()
-        col_layout = QVBoxLayout()
-        col_layout.setContentsMargins(0,0,0,0)
-        col.setLayout(col_layout)
-        stacklayout.addWidget(col)
-
-        col_from = CompleterLineEdit(text="from column")
-        col_layout.addWidget(col_from)
-
-        col_to = CompleterLineEdit(text="to column")
-        col_layout.addWidget(col_to)
-
-        row = QWidget()
-        row_layout = QVBoxLayout()
-        row_layout.setContentsMargins(0,0,0,0)
-        row.setLayout(row_layout)
-        stacklayout.addWidget(row)
-
-        row_from = CompleterLineEdit(text="from row")
-        row_layout.addWidget(row_from)
-
-        row_to = CompleterLineEdit(text="to row")
-        row_layout.addWidget(row_to)
+        row_to = CompleterLineEdit(text="To row")
+        dialog.main_layout.addWidget(row_to)
         
         if self.node.input_sockets[0].socket_data.shape[0] < 1000:
             try:
@@ -92,11 +65,8 @@ class DataLocator (NodeContentWidget):
         col_to.button.setCurrentText(str(self._config["column_to"]))
         row_from.button.setCurrentText(str(self._config["row_from"]))
         row_to.button.setCurrentText(str(self._config["row_to"]))
-
-        stacklayout.setCurrentIndex(type.button.currentIndex())
         
         if dialog.exec():
-            self._config["type"] = type.button.currentText()
             self._config["column_from"] = col_from.button.currentText()
             self._config["column_to"] = col_to.button.currentText()
             self._config["row_from"] = row_from.button.currentText()
@@ -114,15 +84,12 @@ class DataLocator (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            if self._config["type"] == "columns":
-                col_from = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_from"])
-                col_to = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_to"])+1
-                data = self.node.input_sockets[0].socket_data.iloc[:,col_from:col_to]
-
-            elif self._config["type"] == "rows":
-                row_from = int(self._config["row_from"])-1
-                row_to = int(self._config["row_to"])
-                data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,:]
+            col_from = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_from"])
+            col_to = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_to"])+1
+            row_from = int(self._config["row_from"])-1
+            row_to = int(self._config["row_to"])
+            data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,col_from:col_to]
+                
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
