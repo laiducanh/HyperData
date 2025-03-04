@@ -3,6 +3,7 @@ from node_editor.node.data.concator import DataConcator
 from node_editor.node.data.filter import DataFilter
 from node_editor.node.data.holder import DataHolder
 from node_editor.node.data.locator import DataLocator
+from node_editor.node.data.splitter import DataSplitter
 from node_editor.node.data.merge import DataMerge
 from node_editor.node.data.reader import DataReader
 from node_editor.node.data.sorter import DataSorter

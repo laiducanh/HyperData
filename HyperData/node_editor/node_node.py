@@ -61,6 +61,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Locator":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataLocator(self,parent)
+        elif title == "Data Splitter":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            self.content = DataSplitter(self,parent)
         elif title == "Data Filter":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataFilter(self,parent)

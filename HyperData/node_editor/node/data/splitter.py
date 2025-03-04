@@ -2,12 +2,15 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
+from ui.base_widgets.button import ComboBox
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.line_edit import CompleterLineEdit
+from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
 
 DEBUG = False
 
-class DataLocator (NodeContentWidget):
+class DataSplitter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
@@ -19,18 +22,16 @@ class DataLocator (NodeContentWidget):
         if self.node.input_sockets[0].socket_data.empty:
             # reset _config if the input data is empty Dataframe
             self._config = dict(
-                column_from=None,
-                column_to=None,
-                row_from=None,
-                row_to=None
+                type="columns",
+                row = -1,
+                col = -1
             )
         elif not self._data.equals(self.node.input_sockets[0].socket_data):
             # update _config according to the new input data
             self._config = dict(
-                column_from=self.node.input_sockets[0].socket_data.columns[0],
-                column_to=self.node.input_sockets[0].socket_data.columns[-1],
-                row_from=1,
-                row_to=self.node.input_sockets[0].socket_data.shape[0]
+                type="columns",
+                row = self.node.input_sockets[0].socket_data.shape[0],
+                col = self.node.input_sockets[0].socket_data.columns[-1]
             )
 
         self._data = self.node.input_sockets[0].socket_data.copy()
@@ -38,39 +39,38 @@ class DataLocator (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        col_from = CompleterLineEdit(text="From column")
-        dialog.main_layout.addWidget(col_from)
+        type = ComboBox(items=["columns","rows"], text="type")
+        type.button.setCurrentText(self._config["type"])
+        type.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(type.button.currentIndex()))
+        dialog.main_layout.addWidget(type)
 
-        col_to = CompleterLineEdit(text="To column")
-        dialog.main_layout.addWidget(col_to)
+        dialog.main_layout.addWidget(SeparateHLine())
 
-        row_from = CompleterLineEdit(text="From row")
-        dialog.main_layout.addWidget(row_from)
+        stacklayout = QStackedLayout()
+        dialog.main_layout.addLayout(stacklayout)
 
-        row_to = CompleterLineEdit(text="To row")
-        dialog.main_layout.addWidget(row_to)
+        col = CompleterLineEdit(text="Column")
+        stacklayout.addWidget(col)
+
+        row = CompleterLineEdit(text="Row")
+        stacklayout.addWidget(row)
         
         if self.node.input_sockets[0].socket_data.shape[0] < 1000:
-            try:
-                row_from.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
-                row_to.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
+            try: row.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
             except: pass
         if self.node.input_sockets[0].socket_data.shape[1] < 1000:
-            try:
-                col_from.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
-                col_to.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
+            try: col.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
             except: pass
 
-        col_from.button.setCurrentText(str(self._config["column_from"]))
-        col_to.button.setCurrentText(str(self._config["column_to"]))
-        row_from.button.setCurrentText(str(self._config["row_from"]))
-        row_to.button.setCurrentText(str(self._config["row_to"]))
+        col.button.setCurrentText(str(self._config["col"]))
+        row.button.setCurrentText(str(self._config["row"]))
+
+        stacklayout.setCurrentIndex(type.button.currentIndex())
         
         if dialog.exec():
-            self._config["column_from"] = col_from.button.currentText()
-            self._config["column_to"] = col_to.button.currentText()
-            self._config["row_from"] = row_from.button.currentText()
-            self._config["row_to"] = row_to.button.currentText()
+            self._config["type"] = type.button.currentText()
+            self._config["col"] = col.button.currentText()
+            self._config["row"] = row.button.currentText()
             self.exec()
 
     def func(self):
@@ -84,12 +84,17 @@ class DataLocator (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            col_from = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_from"])
-            col_to = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["column_to"])+1
-            row_from = int(self._config["row_from"])-1
-            row_to = int(self._config["row_to"])
-            data = self.node.input_sockets[0].socket_data.iloc[row_from:row_to,col_from:col_to]
-                
+
+            if self._config["type"] == "columns":
+                col = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["col"])+1
+                data1 = self.node.input_sockets[0].socket_data.iloc[:,:col]
+                data2 = self.node.input_sockets[0].socket_data.iloc[:,col:]
+
+            elif self._config["type"] == "rows":
+                row = int(self._config["row"])
+                data1 = self.node.input_sockets[0].socket_data.iloc[:row,:]
+                data2 = self.node.input_sockets[0].socket_data.iloc[row:,:]
+           
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
@@ -103,8 +108,9 @@ class DataLocator (NodeContentWidget):
             logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
             logger.exception(e)
         
-        self.node.output_sockets[0].socket_data = data.copy()
-        self.data_to_view = data.copy()
+        self.node.output_sockets[0].socket_data = data1.copy()
+        self.node.output_sockets[1].socket_data = data2.copy()
+        self.data_to_view = self.node.input_sockets[0].socket_data.copy()
     
     def eval(self):
         self.resetStatus()
