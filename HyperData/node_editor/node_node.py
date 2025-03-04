@@ -145,13 +145,16 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = Predictor(self,parent)
         elif title == "Input Layer":
-            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = InputLayer(self,parent)
         elif title == "Dense Layer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DenseLayer(self,parent)
-        elif title == "DL Model":
+        elif title == "Normalization Layer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = NormalizationLayer(self,parent)
+        elif title == "DL Model":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = DLModel(self,parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])

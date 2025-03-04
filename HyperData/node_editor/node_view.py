@@ -49,20 +49,22 @@ class NodeView (QMainWindow):
         self.static_layout.addWidget(self.search_box)
 
         self.nodesListWidget = Draggable_TreeWidget()
-        self.nodesListWidget.setData({"Data Processing": ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
-                                                          "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
-                                                          "Data Locator","Data Filter", "Data Holder","Data Sorter",
-                                                          "Data Pivot","Data Unpivot","Data Stack","Data Unstack",
-                                                          "Data Scaler","Data Normalizer","Pairwise Measurer",
-                                                          "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
-                                                          ],
-                                        "Machine Learning": ["Classifier","Bagging-Classifier","Voting-Classifier",
-                                                             "Regressor", "Clustering","Decomposition",
-                                                             "Train/Test Splitter","Predictor","Feature Expander","Feature Selector",
-                                                             "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
-                                        "Deep Learning": ["Input Layer","Dense Layer","DL Model"],
-                                        "Visualization": ["Figure 2D", "Figure 3D","Multi-Figure"],
-                                        "Misc": ["Executor", "Looper", "Undefined Node"]})
+        self.nodesListWidget.setData(
+            {"Data Processing": ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
+                                "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
+                                "Data Locator","Data Filter", "Data Holder","Data Sorter",
+                                "Data Pivot","Data Unpivot","Data Stack","Data Unstack",
+                                "Data Scaler","Data Normalizer","Pairwise Measurer",
+                                "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
+                                ],
+            "Machine Learning": ["Classifier","Bagging-Classifier","Voting-Classifier",
+                                "Regressor", "Clustering","Decomposition",
+                                "Train/Test Splitter","Predictor","Feature Expander","Feature Selector",
+                                "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",],
+            "Deep Learning": ["Input Layer","Dense Layer","Normalization Layer","DL Model"],
+            "Visualization": ["Figure 2D", "Figure 3D","Multi-Figure"],
+            "Misc": ["Executor", "Looper", "Undefined Node"]}
+        )
         self.nodesListWidget.sig_doubleClick.connect(self.addNode)
         self.list_widget_layout.addWidget(self.nodesListWidget)
         self.search_box.set_TreeView(self.nodesListWidget)

@@ -1,5 +1,5 @@
 import matplotlib.pyplot
-import string, itertools, matplotlib, os, logging, json, cycler, numpy
+import string, itertools, matplotlib, os, logging, json, tensorflow
 from PySide6.QtCore import QStandardPaths, QDir
 
 GLOBAL_DEBUG = False
@@ -11,6 +11,8 @@ for repeat in range(5):
     for j in [''.join(i) for i in itertools.product(string.ascii_lowercase, repeat = repeat)]:
         list_name.append(j)
 
+# disable GPU usage for tensorflow
+tensorflow.config.set_visible_devices([],"GPU")
 
 from matplotlib import font_manager
 font_lib = font_manager.get_font_names()

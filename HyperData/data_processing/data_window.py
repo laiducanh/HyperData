@@ -21,7 +21,7 @@ class TableModel(QAbstractTableModel):
     def __init__(self, data: pd.DataFrame, parent=None):
         super().__init__(parent)
         self._data = data.astype(str)
-        self.numRows = 50
+        self.numRows = 100
         self.numColumns = 100
         self.toggleDecor = False
    
@@ -80,25 +80,25 @@ class TableModel(QAbstractTableModel):
         
         remainderRows=self._data.shape[0]-self.numRows
         
-        # if maxFetch < remainderRows:
-        #     self.beginInsertRows(QModelIndex(), self.numRows, self.numRows+maxFetch-1)
-        #     self.numRows += maxFetch
-        #     self.endInsertRows()
-        # else:
-        #     self.beginResetModel()
-        #     self.numRows = self._data.shape[0]
-        #     self.endResetModel()
+        if maxFetch < remainderRows:
+            self.beginInsertRows(QModelIndex(), self.numRows, self.numRows+maxFetch-1)
+            self.numRows += maxFetch
+            self.endInsertRows()
+        else:
+            self.beginResetModel()
+            self.numRows = self._data.shape[0]
+            self.endResetModel()
 
-        # remainderColumns=self._data.shape[1]-self.numColumns
+        remainderColumns=self._data.shape[1]-self.numColumns
         
-        # if maxFetch < remainderColumns:
-        #     self.beginInsertColumns(QModelIndex(), self.numColumns, self.numColumns+maxFetch-1)
-        #     self.numColumns += maxFetch
-        #     self.endInsertColumns()
-        # else:
-        #     self.beginResetModel()
-        #     self.numColumns = self._data.shape[1]
-        #     self.endResetModel()
+        if maxFetch < remainderColumns:
+            self.beginInsertColumns(QModelIndex(), self.numColumns, self.numColumns+maxFetch-1)
+            self.numColumns += maxFetch
+            self.endInsertColumns()
+        else:
+            self.beginResetModel()
+            self.numColumns = self._data.shape[1]
+            self.endResetModel()
         
 
     def rowCount(self, parent):
