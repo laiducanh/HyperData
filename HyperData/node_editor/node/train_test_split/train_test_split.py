@@ -7,7 +7,7 @@ from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.button import Toggle
 from config.settings import logger, GLOBAL_DEBUG
 
-DEBUG = True
+DEBUG = False
 
 class TrainTestSplitter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

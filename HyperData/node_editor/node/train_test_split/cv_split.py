@@ -23,7 +23,7 @@ from node_editor.node.train_test_split.stratified_shuffle import StratifiedShuff
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QVBoxLayout, QStackedLayout
 
-DEBUG = True
+DEBUG = False
 
 class CVSplitter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

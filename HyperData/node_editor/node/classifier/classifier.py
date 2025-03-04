@@ -31,7 +31,7 @@ from node_editor.node.classifier.extra_trees import ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
 
-DEBUG = True
+DEBUG = False
 
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -163,7 +163,7 @@ class Classifier (NodeContentWidget):
                 Y = self.Y.to_numpy()
                 
                 for fold, (train_idx, test_idx) in enumerate(cv):
-                    print("fold", fold)
+
                     X_train, X_test = X[train_idx], X[test_idx]
                     Y_train, Y_test = Y[train_idx], Y[test_idx]
 

@@ -6,7 +6,7 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import Toggle, ComboBox
 from ui.base_widgets.spinbox import SpinBox
 
-DEBUG = True
+DEBUG = False
 
 class DataComputation (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
