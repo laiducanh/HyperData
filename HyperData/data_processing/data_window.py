@@ -20,8 +20,8 @@ DEBUG = False
 class TableModel(QAbstractTableModel):
     def __init__(self, data: pd.DataFrame, parent=None):
         super().__init__(parent)
-        self._data = data
-        self.arrays = data.to_numpy()
+        self._data = data.astype('object')
+        self.arrays = self._data.to_numpy()
         self.numRows = 100
         self.numColumns = 100
         self.toggleDecor = False
@@ -449,7 +449,7 @@ class ExploreView (QWidget):
             describe = self.data.groupby(self.grouplist).describe()
         else:
             describe = self.data.describe()
-        describe = describe.astype('object')
+        
         self.model = TableModel(describe, self.parent())
         self.view.setModel(self.model)
     

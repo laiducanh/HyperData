@@ -148,6 +148,7 @@ class Classifier (NodeContentWidget):
                 cv = self.node.input_sockets[0].socket_data[0]
                 self.X = self.node.input_sockets[0].socket_data[1]
                 self.Y = self.node.input_sockets[0].socket_data[2]
+                self.X_test, self.Y_test, self.Y_pred = list(), list(), list()
                
                 data = self.node.input_sockets[0].socket_data[1].copy()
                 n_classes = self.Y.shape[1]   

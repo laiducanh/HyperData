@@ -515,9 +515,10 @@ class DecisionBoundary(QWidget):
             xlabel=self.x_btn.button.currentText(),
             ylabel=self.y_btn.button.currentText()
         )
+        print(self.Y)
         self.ax.scatter(
             x, y,
-            c=self.Y,
+            c=self.Y.values,
             edgecolors="k"
         )
 

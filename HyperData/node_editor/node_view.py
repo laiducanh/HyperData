@@ -32,6 +32,7 @@ class NodeView (QMainWindow):
                                 "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
                                 "Data Locator","Data Splitter","Data Filter", "Data Holder","Data Sorter",
                                 "Data Pivot","Data Unpivot","Data Stack","Data Unstack","Data Computation",
+                                "Data Overwriter",
                                 "Data Scaler","Data Normalizer","Pairwise Measurer",
                                 "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
                                 ],
