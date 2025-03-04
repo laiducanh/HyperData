@@ -32,10 +32,10 @@ from node_editor.node.regressor.kneighbors import KNeighborsRegression
 from node_editor.node.regressor.radius_neighbors import RadiusNeighborsRegression
 from node_editor.node.regressor.gaussian_process import GaussianProcessRegression
 from PySide6.QtWidgets import QStackedLayout
-from sklearn import linear_model
+from sklearn import linear_model, base
 import pandas as pd
 
-DEBUG = False
+DEBUG = True
 
 class Regressor(NodeContentWidget):
     def __init__(self, node, parent=None):
@@ -44,9 +44,10 @@ class Regressor(NodeContentWidget):
         self.X, self.Y = list(), list()
         self.Y_test_score, self.Y_pred_score = list(), list()
 
-        self.node.input_sockets[0].setSocketLabel("Train/Test")
+        self.node.input_sockets[0].setSocketLabel("Splitter")
         self.node.output_sockets[0].setSocketLabel("Model")
-        self.node.output_sockets[1].setSocketLabel("Data out")
+        self.node.output_sockets[1].setSocketLabel("Estimator")
+        self.node.output_sockets[2].setSocketLabel("Data out")
 
         self.score_btn = _TransparentPushButton()
         self.score_btn.setText(f"Score: --")
@@ -72,6 +73,11 @@ class Regressor(NodeContentWidget):
 
     def currentWidget(self) -> RegressorBase:
         return self.stackedlayout.currentWidget()
+
+    def create_model(self):
+        """ construct a new unfitted estimator with the same parameters """
+        """ only self.model is fitted, self.estimator is always the unfitted estimator"""
+        self.model = base.clone(self.estimator)
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
@@ -119,13 +125,15 @@ class Regressor(NodeContentWidget):
 
         if DEBUG or GLOBAL_DEBUG:
             from sklearn import datasets, model_selection, preprocessing
+            from sklearn.utils.validation import check_is_fitted
+            from sklearn.exceptions import NotFittedError
             data = datasets.load_iris()
             df = pd.DataFrame(data=data.data, columns=data.feature_names)
             df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
             X = df.iloc[:,:4]
             Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
             Y = pd.DataFrame(data=Y)
-            split = model_selection.ShuffleSplit(n_splits=2, test_size=0.2).split(X, Y)
+            split = model_selection.ShuffleSplit(n_splits=5, test_size=0.2).split(X, Y)
             result = list()
             for fold, (train_idx, test_idx) in enumerate(split):
                 result.append((train_idx, test_idx))
@@ -149,11 +157,10 @@ class Regressor(NodeContentWidget):
                     X_train, X_test = self.X[train_idx], self.X[test_idx]
                     Y_train, Y_test = self.Y[train_idx], self.Y[test_idx]
 
-                    model = self.estimator
-                    model.fit(X_train, Y_train)
-                    
-                    Y_pred = model.predict(X_test)
-                    Y_pred_all = model.predict(self.X)
+                    self.create_model()                   
+                    self.model.fit(X_train, Y_train)
+                    Y_pred = self.model.predict(X_test)
+                    Y_pred_all = self.model.predict(self.X)
 
                     self.Y_test_score.append(Y_test)
                     self.Y_pred_score.append(Y_pred)
@@ -165,7 +172,6 @@ class Regressor(NodeContentWidget):
                 # change progressbar's color   
                 self.progress.changeColor('success')
                 # write log
-                if DEBUG or GLOBAL_DEBUG: print('data out', data)
                 logger.info(f"{self.name} {self.node.id}: {self.estimator} run successfully.")
             else:
                 data = pd.DataFrame()
@@ -187,8 +193,9 @@ class Regressor(NodeContentWidget):
 
         
         
-        self.node.output_sockets[0].socket_data = self.estimator
-        self.node.output_sockets[1].socket_data = data.copy()
+        self.node.output_sockets[0].socket_data = self.model
+        self.node.output_sockets[1].socket_data = self.estimator
+        self.node.output_sockets[2].socket_data = data.copy()
         self.data_to_view = data.copy()
     
     def score_dialog(self):

@@ -22,7 +22,7 @@ class BaggingClassifier(NodeContentWidget):
         self.X_test, self.Y_test, self.Y_pred = list(), list(), list()
 
         self.node.input_sockets[0].setSocketLabel("Estimator")
-        self.node.input_sockets[1].setSocketLabel("Train/Test")
+        self.node.input_sockets[1].setSocketLabel("Splitter")
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Data out")
 

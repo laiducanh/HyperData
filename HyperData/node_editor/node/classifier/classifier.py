@@ -8,6 +8,7 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import DropDownPrimaryPushButton, _TransparentPushButton, PrimaryComboBox
 from ui.base_widgets.frame import SeparateHLine
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
+from node_editor.node.train_test_split.cv_split import CVSplitter
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout
 from node_editor.node.classifier.menu import AlgorithmMenu
@@ -30,7 +31,7 @@ from node_editor.node.classifier.extra_trees import ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
 
-DEBUG = False
+DEBUG = True
 
 class Classifier (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -39,7 +40,7 @@ class Classifier (NodeContentWidget):
         self.X, self.Y = list(), list()
         self.X_test, self.Y_test, self.Y_pred = list(), list(), list()
 
-        self.node.input_sockets[0].setSocketLabel("Train/Test")
+        self.node.input_sockets[0].setSocketLabel("Splitter")
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Estimator")
         self.node.output_sockets[2].setSocketLabel("Data out")
@@ -73,7 +74,7 @@ class Classifier (NodeContentWidget):
         if self.multiclass_strategy == "One vs. Rest":
             self.model = OneVsRestClassifier(self.estimator)
         elif self.multiclass_strategy == "One vs. One":
-            self.model = OneVsOneClassifier(self.estimator)    
+            self.model = OneVsOneClassifier(self.estimator) 
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
@@ -141,11 +142,13 @@ class Classifier (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            if DEBUG or (self.node.input_sockets[0].edges and isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter)):
+            if DEBUG or (self.node.input_sockets[0].edges and 
+                         isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, 
+                                    (TrainTestSplitter, CVSplitter))):
                 cv = self.node.input_sockets[0].socket_data[0]
                 self.X = self.node.input_sockets[0].socket_data[1]
                 self.Y = self.node.input_sockets[0].socket_data[2]
-                
+               
                 data = self.node.input_sockets[0].socket_data[1].copy()
                 n_classes = self.Y.shape[1]   
                 n_samples = self.Y.shape[0]
@@ -160,10 +163,10 @@ class Classifier (NodeContentWidget):
                 Y = self.Y.to_numpy()
                 
                 for fold, (train_idx, test_idx) in enumerate(cv):
-
+                    print("fold", fold)
                     X_train, X_test = X[train_idx], X[test_idx]
                     Y_train, Y_test = Y[train_idx], Y[test_idx]
-                    
+
                     self.create_model()
                     self.model.fit(X_train, Y_train.ravel())
                     Y_pred = self.model.predict(X_test)
@@ -185,7 +188,6 @@ class Classifier (NodeContentWidget):
                 # change progressbar's color   
                 self.progress.changeColor('success')
                 # write log
-                if DEBUG or GLOBAL_DEBUG: print('data out', data)
                 logger.info(f"{self.name} {self.node.id}: {self.model} run successfully.")
 
             else:

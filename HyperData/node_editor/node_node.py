@@ -9,6 +9,7 @@ from node_editor.node.regressor.regressor import Regressor
 from node_editor.node.clustering.clustering import Clustering
 from node_editor.node.decomposition.decomposition import Decomposition
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
+from node_editor.node.train_test_split.cv_split import CVSplitter
 from node_editor.node.figure import *
 from node_editor.node.predictor import Predictor
 from node_editor.node.misc.misc import *
@@ -112,8 +113,11 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = OneHotEncoder(self,parent)
         elif title == "Train/Test Splitter":
-            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = TrainTestSplitter(self,parent)
+        elif title == "CV Splitter":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            self.content = CVSplitter(self,parent)
         elif title == "Feature Expander":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = FeatureExpander(self,parent)
@@ -130,7 +134,7 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[MULTI_OUT, MULTI_OUT])
             self.content = MetaClassifier(self,parent)
         elif title == "Regressor":
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = Regressor(self,parent)
         elif title == "Clustering":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])

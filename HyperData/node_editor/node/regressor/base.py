@@ -1,6 +1,7 @@
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea
+from sklearn.linear_model import LinearRegression
 
 DEBUG = False
        
@@ -9,7 +10,7 @@ class RegressorBase(QWidget):
         super().__init__(parent)
         
         self._config = dict()
-        self.estimator = None
+        self.estimator = LinearRegression()
         self.initUI()
         self.setConfig()
         self.setEstimator()

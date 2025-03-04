@@ -1,29 +1,13 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-from typing import Union
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import model_selection
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.frame import SeparateHLine
-from node_editor.node.train_test_split.base import SplitterBase
-from node_editor.node.train_test_split.group_kfold import GroupKFold
-from node_editor.node.train_test_split.group_shuffle import GroupShuffleSplit
-from node_editor.node.train_test_split.kfold import Kfold
-from node_editor.node.train_test_split.logo import LeaveOneGroupOut
-from node_editor.node.train_test_split.loo import LeaveOneOut
-from node_editor.node.train_test_split.lpgo import LeavePGroupOut
-from node_editor.node.train_test_split.lpo import LeavePOut
-from node_editor.node.train_test_split.repeated_kfold import RepeatedKFold
-from node_editor.node.train_test_split.repeated_stratified_kfold import RepeatedStratifiedKFold
-from node_editor.node.train_test_split.shuffle import ShuffleSplit
-from node_editor.node.train_test_split.stratified_group_kfold import StratifiedGroupKFold
-from node_editor.node.train_test_split.stratified_kfold import StratifiedKFold
-from node_editor.node.train_test_split.stratified_shuffle import StratifiedShuffleSplit
+from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import Toggle
 from config.settings import logger, GLOBAL_DEBUG
-from PySide6.QtWidgets import QVBoxLayout, QStackedLayout
 
-DEBUG = False
+DEBUG = True
 
 class TrainTestSplitter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -31,54 +15,30 @@ class TrainTestSplitter (NodeContentWidget):
 
         self.node.input_sockets[0].setSocketLabel("Feature (X)")
         self.node.input_sockets[1].setSocketLabel("Label (Y)")
-        self.node.output_sockets[0].setSocketLabel("Train/Test")
-        self.node.output_sockets[1].setSocketLabel("Data")
+        self.node.output_sockets[0].setSocketLabel("Splitter")
+        self.node.output_sockets[1].setSocketLabel("Train")
+        self.node.output_sockets[2].setSocketLabel("Test")
         self.data_to_view = pd.DataFrame()
         self._config = dict(
-            splitter = "K Fold",
-            config = None,
+            test_size = 0.25,
+            shuffle = True,
         )
-        self.splitter = model_selection.KFold()
-    
-    def currentWidget(self) -> SplitterBase:
-        return self.stackedlayout.currentWidget()
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        dialog.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
-        splitter = ComboBox(items=["Group K Fold","Group Shuffle Split","K Fold",
-                                   "Leave One Group Out", "Leave p Group Out",
-                                   "Geave One Out", "Leave p Out","Repeated K Fold",
-                                   "Repeated Stratified K Fold","Shuffle Split",
-                                   "Stratified K Fold","Stratified Shuffle Split",
-                                   "Stratified Group K Fold"], text="Splitter")
-        splitter.button.setCurrentText(self._config["splitter"])
-        splitter.button.setMinimumWidth(200)
-        splitter.button.currentTextChanged.connect(lambda: self.stackedlayout.setCurrentIndex(splitter.button.currentIndex()))
-        dialog.main_layout.addWidget(splitter)
-        dialog.main_layout.addWidget(SeparateHLine())
-        self.stackedlayout = QStackedLayout()
-        dialog.main_layout.addLayout(self.stackedlayout)
-        self.stackedlayout.addWidget(GroupKFold())
-        self.stackedlayout.addWidget(GroupShuffleSplit())
-        self.stackedlayout.addWidget(Kfold())
-        self.stackedlayout.addWidget(LeaveOneGroupOut())
-        self.stackedlayout.addWidget(LeavePGroupOut())
-        self.stackedlayout.addWidget(LeaveOneOut())
-        self.stackedlayout.addWidget(LeavePOut())
-        self.stackedlayout.addWidget(RepeatedKFold())
-        self.stackedlayout.addWidget(RepeatedStratifiedKFold())
-        self.stackedlayout.addWidget(ShuffleSplit())
-        self.stackedlayout.addWidget(StratifiedKFold())
-        self.stackedlayout.addWidget(StratifiedShuffleSplit())
-        self.stackedlayout.addWidget(StratifiedGroupKFold())
-        self.stackedlayout.setCurrentIndex(splitter.button.currentIndex())
+
+        test_size = DoubleSpinBox(min=0, max=1, step=0.01, text="Test size")
+        test_size.button.setValue(self._config["test_size"])
+        dialog.main_layout.addWidget(test_size)
+
+        shuffle = Toggle(text="Shuffle")
+        shuffle.button.setChecked(self._config["shuffle"])
+        dialog.main_layout.addWidget(shuffle)
+        
 
         if dialog.exec():
-            self.splitter = self.currentWidget().splitter
-            self.splitter: Union[model_selection.BaseCrossValidator, model_selection.BaseShuffleSplit]
-            self._config["splitter"] = splitter.button.currentText()
-            self._config["config"] = self.currentWidget()._config
+            self._config["test_size"] = test_size.button.value()
+            self._config["shuffle"] = shuffle.button.isChecked()
             self.exec()
 
     def func(self):
@@ -109,17 +69,17 @@ class TrainTestSplitter (NodeContentWidget):
                 for i in range(n_samples):
                     for j in range(n_classes):
                         data.iloc[i,-1] += str(Y.iloc[i,j])
+                
+                X_train, X_test = model_selection.train_test_split(X, **self._config)
+                result.append((X_train.index.tolist(), X_test.index.tolist())) 
 
-                for fold, (train_idx, test_idx) in enumerate(self.splitter.split(X, Y)):
+                data.loc[X_train.index.tolist(),"Fold 1"] = "Train"
+                data.loc[X_test.index.tolist(),"Fold 1"] = "Test"   
 
-                    data.loc[train_idx.tolist(),f"Fold{fold+1}"] = "Train"
-                    data.loc[test_idx.tolist(),f"Fold{fold+1}"] = "Test"     
-                    result.append((train_idx, test_idx))  
                 # change progressbar's color                     
                 self.progress.changeColor("success")
                 # write log
-                if DEBUG or GLOBAL_DEBUG: print('data out', data)
-                else: logger.info(f"{self.name} {self.node.id}: splitted data successfully.")
+                logger.info(f"{self.name} {self.node.id}: splitted data successfully.")
             else:
                 X, Y = pd.DataFrame(), pd.DataFrame()
                 data = pd.DataFrame()
@@ -138,7 +98,8 @@ class TrainTestSplitter (NodeContentWidget):
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = [result, X, Y]
-        self.node.output_sockets[1].socket_data = data.copy()
+        self.node.output_sockets[1].socket_data = data[data["Fold 1"] == "Train"].drop(columns="Fold 1")
+        self.node.output_sockets[2].socket_data = data[data["Fold 1"] == "Test"].drop(columns="Fold 1")
         self.data_to_view = data.copy()
      
     def eval(self):

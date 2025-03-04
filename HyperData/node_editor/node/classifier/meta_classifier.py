@@ -18,7 +18,7 @@ class MetaClassifier(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].setSocketLabel("Train/Test")
+        self.node.input_sockets[0].setSocketLabel("Splitter")
         self.node.input_sockets[1].setSocketLabel("Classifier")
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Data out")
