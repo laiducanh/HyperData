@@ -38,7 +38,7 @@ class TableModel(QAbstractTableModel):
         
         if role == Qt.ItemDataRole.DisplayRole:
             return value
-        
+    
         if self.toggleDecor:
             value = str(value)
             if value.lower() in ['true','false']:
@@ -449,7 +449,7 @@ class ExploreView (QWidget):
             describe = self.data.groupby(self.grouplist).describe()
         else:
             describe = self.data.describe()
-        
+        describe = describe.astype('object')
         self.model = TableModel(describe, self.parent())
         self.view.setModel(self.model)
     
