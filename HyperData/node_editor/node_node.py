@@ -73,6 +73,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Inserter":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataInserter(self,parent)
+        elif title == "Data Computation":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DataComputation(self,parent)
         elif title == "Data Normalizer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataNormalizer(self,parent)
