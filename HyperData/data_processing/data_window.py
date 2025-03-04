@@ -20,7 +20,8 @@ DEBUG = False
 class TableModel(QAbstractTableModel):
     def __init__(self, data: pd.DataFrame, parent=None):
         super().__init__(parent)
-        self._data = data.astype(str)
+        self._data = data
+        self.arrays = data.to_numpy()
         self.numRows = 100
         self.numColumns = 100
         self.toggleDecor = False
@@ -33,12 +34,13 @@ class TableModel(QAbstractTableModel):
         if index.row()>=self.numRows or index.row()<0 or index.column()>=self.numColumns or index.column()<0:
             return 
         
-        value = self._data.iloc[index.row(), index.column()]
-
+        value = self.arrays[index.row(), index.column()]
+        
         if role == Qt.ItemDataRole.DisplayRole:
             return value
         
         if self.toggleDecor:
+            value = str(value)
             if value.lower() in ['true','false']:
                 background_color = QColor("#FFC4A4")
             elif value == 'nan':
@@ -128,21 +130,23 @@ class TableModel(QAbstractTableModel):
                     return str(self._data.index[section]+1)
                 
                 return str(self._data.index[section])
+    
+    def getArray(self) -> np.ndarray:
+        return self.arrays
            
 class TableView (QWidget):
-    def __init__(self, data, parent=None):
+    def __init__(self, data: pd.DataFrame, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Data")
-        self.data = data
         self.model = TableModel(data, self.parent())
         
         self.clipboard = QApplication.clipboard()
         self.selected_values = list()
 
-        self.initUI()
+        self.initUI(data)
     
-    def initUI (self):
+    def initUI (self, data:pd.DataFrame):
 
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -160,7 +164,7 @@ class TableView (QWidget):
         self.hlayout.addWidget(self.time_update)
         
         self.view = QTableView(self.parent())
-        self.update_data(self.data)
+        self.update_data(data)
         self.vlayout.addWidget(self.view)
         #view.setVerticalScrollBar(widget)
         
@@ -205,67 +209,34 @@ class TableView (QWidget):
 
     def on_selection (self):
 
+        self.data = self.model.getArray()
+
         # selected cell values
-        _selectedRows = self.view.selectionModel().selectedRows()
-        _selectedColumns = self.view.selectionModel().selectedColumns()
-        _selectedIndexes=self.view.selectionModel().selectedIndexes()
+        selectedIndexes=self.view.selectionModel().selectedIndexes()
         
-        # filter the selectedRows and selectedColumns so they do not overlap
         selectedAll = False
-        selectedRows = list()
-        for i in _selectedRows:
-            selectedRows.append(i.row())
-        selectedColumns = list()
-        for i in _selectedColumns:
-            selectedColumns.append(i.column())
-        selectedIndexes = list()
-        for i in _selectedIndexes:
-            try:
-                if not i.row() in selectedRows and not i.column() in selectedColumns:
-                    selectedIndexes.append(i)
-            except:pass
-        
         # check if all cells are selected
-        if len(selectedRows) == self.data.shape[0] or len(selectedColumns) == self.data.shape[1]:
+        if len(selectedIndexes) == self.data.size: 
             selectedAll = True
         
         _datapoints = 0
         _missing = 0
-        self.selected_values = list()
-        
-        for i in selectedRows:
-            _datapoints += self.data.iloc[i].shape[0]
-            _missing += self.data.iloc[i].isna().sum()
-            if self.data.shape[0]*self.data.shape[1] < 1000*20000:
-                for j in self.data.iloc[i]:
-                    self.selected_values.append(j)
-        for i in selectedColumns:
-            _datapoints += self.data.iloc[:,i].shape[0]
-            _missing += self.data.iloc[:,i].isna().sum()
-            if self.data.shape[0]*self.data.shape[1] < 1000*20000:
-                for j in self.data.iloc[:,i]:
-                    self.selected_values.append(j)
-        for i in selectedIndexes:
-            _datapoints += 1
-            try: _missing += 1 if pd.isna(float(i.data())) else 0
-            except:pass
-            if self.data.shape[0]*self.data.shape[1] < 1000*20000:
-                self.selected_values.append(i.data())
+        self.selected_values = np.array([])
         
         if selectedAll:
-            _datapoints = self.data.shape[0]*self.data.shape[1]
-            _missing = pd.isnull(self.data).sum().sum()
+            _datapoints = self.data.size
+            self.selected_values = self.data.copy()
+        elif selectedIndexes:
+            _datapoints = len(selectedIndexes)
+            for i in selectedIndexes:
+                self.selected_values = np.append(self.selected_values, i.data())
         
-        _unique_values = list()
-        for i in self.selected_values:
-            if i not in _unique_values:
-                _unique_values.append(i)
-            else:
-                _unique_values.remove(i)
+        self.selected_values = self.selected_values.astype(str)
+        _values, _count = np.unique(self.selected_values, return_counts=True)
+        _unique_values = _values[_count == 1]
 
         string = list()
         for value in self.selected_values:
-            value = str(value)
             if value.lower() in ['true','false']:
                 string.append('boolean')
             elif value == 'nan':
@@ -276,7 +247,8 @@ class TableView (QWidget):
                 string.append("float")
             else:
                 string.append("string")
-                
+
+        _missing = string.count("nan")
         data_type = ", ".join(list(set(string)))
         
         self.data_type.setText(data_type)
@@ -285,13 +257,11 @@ class TableView (QWidget):
         self.data_point.setText(str(_datapoints))
         self.missing.setText(str(_missing))
        
-    
     def copy_func (self):
         string = [str(i) for i in self.selected_values]
         self.clipboard.setText(', '.join(string))
     
-    def update_data (self, data):
-        self.data = data
+    def update_data (self, data: pd.DataFrame):
         self.model = TableModel(data, self.parent())
         self.view.setModel(self.model)
         self.view.selectionModel().selectionChanged.connect(self.on_selection)
