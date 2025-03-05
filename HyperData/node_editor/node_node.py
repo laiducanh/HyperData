@@ -170,9 +170,9 @@ class Node(NodeGraphicsNode):
         elif title == "Normalization Layer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = NormalizationLayer(self,parent)
-        elif title == "DL Model":
+        elif title == "Model Compiler":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
-            self.content = DLModel(self,parent)
+            self.content = ModelCompiler(self,parent)
         elif title == "One Sample Tester":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = OneSampleTest(self,parent)

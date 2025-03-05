@@ -7,7 +7,7 @@ from config.settings import logger, GLOBAL_DEBUG
 
 DEBUG = True
 
-class DLModel (DLBase):
+class ModelCompiler (DLBase):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
