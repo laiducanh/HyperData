@@ -101,6 +101,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Unstack":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataUnstack(self,parent)
+        elif title == "Data Creator":
+            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
+            self.content = DataCreator(self,parent)
         elif title == "Pairwise Measurer":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = PairwiseMeasurer(self,parent)

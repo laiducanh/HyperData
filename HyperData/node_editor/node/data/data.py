@@ -21,3 +21,4 @@ from node_editor.node.data.feature_selector import FeatureSelector
 from node_editor.node.data.pivot import DataPivot, DataUnpivot
 from node_editor.node.data.stack import DataStack, DataUnstack
 from node_editor.node.data.curve_fitter import CurveFitter
+from node_editor.node.data.creator import DataCreator
