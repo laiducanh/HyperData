@@ -37,7 +37,7 @@ class DLModel (DLBase):
             
             model = Model(input_layer, output_layer)
             estimator = Model(input_layer, output_layer)
-            print(model.summary())
+            
             model.compile(
                 optimizer=self._config["optimizer"],
                 loss=self._config["loss"],

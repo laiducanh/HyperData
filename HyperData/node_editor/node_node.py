@@ -79,6 +79,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Overwriter":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataOverwriter(self,parent)
+        elif title == "Curve Fitter":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = CurveFitter(self,parent)
         elif title == "Data Normalizer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataNormalizer(self,parent)
