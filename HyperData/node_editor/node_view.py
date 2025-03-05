@@ -43,6 +43,7 @@ class NodeView (QMainWindow):
                                 "Label Encoder","Label Binarizer","Ordinal Encoder","One-Hot Encoder",
                                 ],
             "Deep Learning": ["Input Layer","Dense Layer","Normalization Layer","DL Model"],
+            "Statistics": ["One Sample Tester"],
             "Visualization": ["Figure 2D", "Figure 3D","Multi-Figure"],
             "Misc": ["Executor", "Looper", "Undefined Node"]
         }

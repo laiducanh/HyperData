@@ -14,6 +14,7 @@ from node_editor.node.figure import *
 from node_editor.node.predictor import Predictor
 from node_editor.node.misc.misc import *
 from node_editor.node.deep_learning.deep_learning import *
+from node_editor.node.statistics.stats import *
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -172,6 +173,9 @@ class Node(NodeGraphicsNode):
         elif title == "DL Model":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = DLModel(self,parent)
+        elif title == "One Sample Tester":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = OneSampleTest(self,parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)

@@ -87,6 +87,12 @@ class NodeGraphicsView(QGraphicsView):
             action = Action(text=text, parent=deep_learning)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             deep_learning.addAction(action)
+        stats = Menu(text="Statistics")
+        self.menu.addMenu(stats)
+        for text in ["One Sample Tester"]:
+            action = Action(text=text, parent=deep_learning)
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
+            stats.addAction(action)
         visualization = Menu(text="Visualization")
         self.menu.addMenu(visualization)
         for text in ["Figure 2D", "Figure 3D","Multi-Figure"]:
