@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QColorDialog
 from PySide6.QtCore import Signal, Qt, QTimer
 from PySide6.QtGui import QAction
 import pandas, os
@@ -87,6 +87,10 @@ class ContentItem(QWidget):
         action.triggered.connect(self.comment.hide)
         self.menu.addAction(action)
         self.menu.addSeparator()
+        action = QAction("Change Color", self.menu)
+        action.triggered.connect(self.showColorDialog)
+        self.menu.addAction(action)
+        self.menu.addSeparator()
         action = QAction("Save Data", self.menu)
         action.triggered.connect(self.saveData)
         self.menu.addAction(action)
@@ -148,6 +152,9 @@ class ContentItem(QWidget):
             else:
                 self.data_to_view.to_csv(f"{path}.csv")
     
+    def showColorDialog(self):
+        pass
+
     def resetStatus(self):
         self.progress.setValue(0)
         self.progress.changeColor("success")

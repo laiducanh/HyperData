@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Signal, QThreadPool
+from PySide6.QtWidgets import QColorDialog
+from PySide6.QtCore import Signal, QThreadPool, Qt
+from PySide6.QtGui import QBrush
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.graphics.graphics_content import ContentItem
 from config.threadpool import Worker
@@ -69,6 +70,14 @@ class NodeContentWidget(ContentItem):
         self.num_signal_pipeline += 1
         if self.num_signal_pipeline >= len(self.node.socket_pipeline_in.edges):
             self.exec()
+    
+    def showColorDialog(self):
+        dialog = QColorDialog(self.node._brush_background.color(), self.parent)
+        dialog.colorSelected.connect(self.onColorChanged)
+        dialog.exec()
+    
+    def onColorChanged(self, color):
+        self.node._brush_background = QBrush(color)
 
 
 

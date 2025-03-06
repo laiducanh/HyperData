@@ -83,8 +83,6 @@ class NodeItem(QGraphicsItem):
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         
-        self.setColor()
-    
         # title
         path_title = QPainterPath()
         path_title.setFillRule(Qt.FillRule.WindingFill)
