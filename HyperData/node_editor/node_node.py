@@ -3,6 +3,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.node.data.data import *
 from node_editor.node.data_cleaning.data_cleaning import *
 from node_editor.node.data_encoder.data_encoder import *
+from node_editor.node.interpolation.curve_fitter import CurveFitter
 from node_editor.node.classifier.classifier import Classifier
 from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingClassifier, VotingClassifier
 from node_editor.node.regressor.regressor import Regressor
@@ -81,7 +82,7 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataOverwriter(self,parent)
         elif title == "Curve Fitter":
-            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
             self.content = CurveFitter(self,parent)
         elif title == "Data Normalizer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
