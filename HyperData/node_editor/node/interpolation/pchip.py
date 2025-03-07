@@ -7,32 +7,48 @@ from ui.base_widgets.text import BodyLabel
 from node_editor.node.interpolation.base import FitBase
 from plot.canvas import Canvas
 from scipy.interpolate import PchipInterpolator
+import numpy as np
 
 DEBUG = False
 
 class ResultDialog(Dialog):
     def __init__(self, xdata, ydata, interpolator: PchipInterpolator,  parent=None):
         super().__init__(parent)
+        self.xdata = xdata
+        self.xi = xdata
+        self.ydata = ydata
+        self.interpolator = interpolator
+
         if not interpolator:
-            self.main_layout.addWidget(BodyLabel("Could not determine Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)."))
-        else:            
+            self.main_layout.addWidget(BodyLabel("Could not determine Piecewise Cubic Hermite Interpolating Polynomial."))
+        else:  
+            smooth = ComboBox(items=[str(i) for i in np.arange(0,10000,50)], text="Smoothness")
+            smooth.button.setCurrentText(str(len(xdata)))
+            smooth.button.currentTextChanged.connect(self.onSmoothChange)
+            self.main_layout.addWidget(smooth)
+
             self.canvas = Canvas()
             for _ax in self.canvas.fig.axes: _ax.remove()
-            self.plot(xdata, ydata, interpolator)
+            self.plot()
             self.main_layout.addWidget(self.canvas)
 
-    def plot(self, xdata, ydata, interpolator: PchipInterpolator):
+    def onSmoothChange(self, value):
+        self.xi = np.linspace(min(self.xdata), max(self.xdata), int(value))
+        self.plot()
+
+    def plot(self):
         # clear plot
         self.canvas.fig.clear()
 
         # add axis
         ax = self.canvas.fig.add_subplot()
 
-        ax.scatter(xdata, ydata, label="data", color="b")
-        ax.plot(xdata, interpolator.__call__(xdata),label="fit",color="r",marker=None)
+        ax.plot(self.xi, self.interpolator.__call__(self.xi),label="fit",color="r",marker='',lw=2)
+        ax.plot(self.xdata, self.ydata, label="data", color="b", lw=0)
         ax.legend()
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
+        ax.set_title("PCHIP Interpolation")
         self.canvas.draw_idle()
 
 class PCHIP1D (FitBase):

@@ -7,36 +7,52 @@ from ui.base_widgets.text import BodyLabel
 from node_editor.node.interpolation.base import FitBase
 from plot.canvas import Canvas
 from scipy.interpolate import make_interp_spline
+import numpy as np
 
 DEBUG = False
 
 class ResultDialog(Dialog):
     def __init__(self, xdata, ydata, spline,  parent=None):
         super().__init__(parent)
+        self.xdata = xdata
+        self.xi = xdata
+        self.ydata = ydata
+        self.spline = spline
+
         if not spline:
             self.main_layout.addWidget(BodyLabel("Could not determine B-Spline."))
         else:
             self.main_layout.addWidget(BodyLabel(f"B-Spline degree: {spline.k}"))
             self.main_layout.addWidget(BodyLabel(f"B-Spline coefficients: {spline.c}"))
             self.main_layout.addWidget(BodyLabel(f"Knots {spline.t}"))
-            
+
+            smooth = ComboBox(items=[str(i) for i in np.arange(0,10000,50)], text="Smoothness")
+            smooth.button.setCurrentText(str(len(xdata)))
+            smooth.button.currentTextChanged.connect(self.onSmoothChange)
+            self.main_layout.addWidget(smooth)
+        
             self.canvas = Canvas()
             for _ax in self.canvas.fig.axes: _ax.remove()
-            self.plot(xdata, ydata, spline)
+            self.plot()
             self.main_layout.addWidget(self.canvas)
 
-    def plot(self, xdata, ydata, spline):
+    def onSmoothChange(self, value):
+        self.xi = np.linspace(min(self.xdata), max(self.xdata), int(value))
+        self.plot()
+
+    def plot(self):
         # clear plot
         self.canvas.fig.clear()
 
         # add axis
         ax = self.canvas.fig.add_subplot()
 
-        ax.scatter(xdata, ydata, label="data", color="b")
-        ax.plot(xdata, spline(xdata),label="fit",color="r",marker=None)
+        ax.plot(self.xi, self.spline(self.xi),label="fit",color="r",marker='', lw=2)
+        ax.plot(self.xdata, self.ydata, label="data", color="b",lw=0)
         ax.legend()
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
+        ax.set_title("B-Spline Interpolation")
         self.canvas.draw_idle()
 
 class BSpline (FitBase):
@@ -75,7 +91,7 @@ class BSpline (FitBase):
             self.X = X
             self.Y = Y
             self.spline = make_interp_spline(X, Y, **self._config)
-        
+       
         except Exception as e:
             self.spline = None
             logger.exception(e)
