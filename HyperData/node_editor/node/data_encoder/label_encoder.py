@@ -1,15 +1,32 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
-import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.preprocessing import LabelEncoder as sk_LabelEncoder
+from sklearn import preprocessing
 from config.settings import logger, GLOBAL_DEBUG
+from ui.base_widgets.window import Dialog
+from ui.base_widgets.button import ComboBox
+import pandas as pd
 
-DEBUG = False
+DEBUG = True
 
 class LabelEncoder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
+
+        self._config = dict(
+            method = "Ordinal Encoder"
+        )
+    
+    def config(self):
+        dialog = Dialog("Configuration", self.parent)
+
+        method = ComboBox(items=["Ordinal Encoder","Binarizer"], text="Type")
+        method.button.setCurrentText(self._config["method"])
+        dialog.main_layout.addWidget(method)
+
+        if dialog.exec():
+            self._config.update(method = method.button.currentText())
+            self.exec()
 
     def func(self):
         self.eval()
@@ -23,10 +40,15 @@ class LabelEncoder (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            encoder = sk_LabelEncoder()
-            transform = encoder.fit_transform(self.node.input_sockets[0].socket_data)
-            columns = self.node.input_sockets[0].socket_data.columns
-            data = pd.DataFrame(data=transform, columns=columns)
+            if self._config["method"] == "Ordinal Encoder":
+                encoder = preprocessing.LabelEncoder()
+                transform = encoder.fit_transform(self.node.input_sockets[0].socket_data)
+                columns = self.node.input_sockets[0].socket_data.columns
+                data = pd.DataFrame(data=transform, columns=columns)
+            elif self._config["method"] == "Binarizer":
+                encoder = preprocessing.LabelBinarizer()
+                transform = encoder.fit_transform(self.node.input_sockets[0].socket_data)
+                data = pd.DataFrame(data=transform, columns=encoder.classes_)
             # change progressbar's color
             self.progress.changeColor('success')
             # write log

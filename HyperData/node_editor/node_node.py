@@ -120,9 +120,6 @@ class Node(NodeGraphicsNode):
         elif title == "Label Encoder":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = LabelEncoder(self,parent)
-        elif title == "Label Binarizer":
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
-            self.content = LabelBinarizer(self,parent)
         elif title == "Ordinal Encoder":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = OrdinalEncoder(self,parent)
