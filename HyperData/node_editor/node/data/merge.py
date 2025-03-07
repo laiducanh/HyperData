@@ -1,7 +1,9 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
-import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
+from ui.base_widgets.window import Dialog
+from ui.base_widgets.button import ComboBox
+from config.settings import logger, GLOBAL_DEBUG
+import pandas as pd
 
 DEBUG = False
 
@@ -9,26 +11,49 @@ class DataMerge (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
+        self.node.input_sockets[0].setSocketLabel("Left Data")
+        self.node.input_sockets[1].setSocketLabel("Right Data")
+
+        self._config = dict(
+            how = "inner",
+        )
+    
+    def config(self):
+        dialog = Dialog("Configuration", self.parent)
+        how = ComboBox(text="Type",items=["inner","outer","left","right","cross"])
+        how.button.setCurrentText(self._config["how"])
+        dialog.main_layout.addWidget(how)
+        
+
+        if dialog.exec():
+            self._config["how"] = how.button.currentText()
+            self.exec()
+
     def func(self):
+        self.eval()
+
         if DEBUG or GLOBAL_DEBUG:
-            from sklearn import datasets
-            data = datasets.load_iris()
-            df = pd.DataFrame(data=data.data, columns=data.feature_names)
-            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            self.node.input_sockets[0].socket_data = df
-            self.node.input_sockets[1].socket_data = df
+            self.node.input_sockets[0].socket_data = pd.DataFrame(
+                {'lkey': ['foo', 'bar', 'baz', 'foo'],'value': [1, 2, 3, 5]}
+            )
+            self.node.input_sockets[1].socket_data = pd.DataFrame(
+                {'rkey': ['foo', 'bar', 'baz', 'foo'],'value': [5, 6, 7, 8]}
+            )
             print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
 
         try:
             data_left = self.node.input_sockets[0].socket_data
             data_right = self.node.input_sockets[1].socket_data
-            data = data_left.merge(data_right)
+
+            data = pd.merge(data_left, data_right, **self._config)
+
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            node1 = self.node.input_sockets[0].edges[0].start_socket.node
-            node2 = self.node.input_sockets[1].edges[0].start_socket.node
-            logger.info(f"{self.name} {self.node.id}: merged data from {node1} {node1.id} and {node2} {node2.id} successfully.")
+            if not DEBUG and not GLOBAL_DEBUG:
+                node1 = self.node.input_sockets[0].edges[0].start_socket.node
+                node2 = self.node.input_sockets[1].edges[0].start_socket.node
+                logger.info(f"{self.name} {self.node.id}: merged data from {node1} {node1.id} and {node2} {node2.id} successfully.")
 
         except Exception as e:
             data = pd.DataFrame()
