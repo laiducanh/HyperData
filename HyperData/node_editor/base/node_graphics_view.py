@@ -61,16 +61,34 @@ class NodeGraphicsView(QGraphicsView):
 
         data_processing = Menu(text="Data Processing")
         self.menu.addMenu(data_processing)
-        for text in ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
-                     "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
-                     "Data Locator","Data Splitter","Data Filter", "Data Holder","Data Sorter",
-                     "Data Pivot","Data Unpivot","Data Stack","Data Unstack","Data Computation",
-                     "Data Overwriter","Curve Fitter","Data Creator",
-                     "Data Scaler","Data Normalizer","Pairwise Measurer",
-                     "Nan Eliminator", "Nan Imputer", "Drop Duplicate",]:
-            action = Action(text=text, parent=data_processing)
+        data_prep = Menu("Data Preparation")
+        data_processing.addMenu(data_prep)
+        for text in ["Data Reader","Data Holder","Data Creator","Data Locator",
+                     "Data Splitter", "Data Sorter","Data Filter","Curve Fitter"]:
+            action = Action(text=text, parent=data_prep)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
-            data_processing.addAction(action)
+            data_prep.addAction(action)
+        data_aggre = Menu("Data Aggregation")
+        data_processing.addMenu(data_aggre)
+        for text in ["Data Concator","Data Merge","Data Overwriter","Data Compare",
+                     "Data Combiner","Data Inserter","Data Correlator","Pairwise Measurer"]:
+            action = Action(text=text, parent=data_aggre)
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
+            data_aggre.addAction(action)
+        data_manipulation = Menu("Data Manipulation")
+        data_processing.addMenu(data_manipulation)
+        for text in ["Data Transpose","Data Computation",
+                     "Data Pivot","Data Unpivot","Data Stack","Data Unstack",
+                     "Data Scaler","Data Normalizer"]:
+            action = Action(text=text, parent=data_manipulation)
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
+            data_manipulation.addAction(action)
+        data_cleaning = Menu("Data Cleaning")
+        data_processing.addMenu(data_cleaning)
+        for text in ["Nan Eliminator", "Nan Imputer", "Drop Duplicate",]:
+            action = Action(text=text, parent=data_cleaning)
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
+            data_cleaning.addAction(action)
         machine_learning = Menu(text="Machine Learning")
         self.menu.addMenu(machine_learning)
         for text in ["Classifier","Bagging-Classifier","Voting-Classifier",
