@@ -3,6 +3,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.node.data.data import *
 from node_editor.node.data_cleaning.data_cleaning import *
 from node_editor.node.data_encoder.data_encoder import *
+from node_editor.node.data_transformation.transformer import DataTransformer
 from node_editor.node.interpolation.curve_fitter import CurveFitter
 from node_editor.node.classifier.classifier import Classifier
 from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingClassifier, VotingClassifier
@@ -90,6 +91,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Scaler":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataScaler(self,parent)
+        elif title == "Data Transformer":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DataTransformer(self,parent)
         elif title == "Data Pivot":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataPivot(self,parent)

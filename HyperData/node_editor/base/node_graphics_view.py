@@ -79,7 +79,7 @@ class NodeGraphicsView(QGraphicsView):
         data_processing.addMenu(data_manipulation)
         for text in ["Data Transpose","Data Computation",
                      "Data Pivot","Data Unpivot","Data Stack","Data Unstack",
-                     "Data Scaler","Data Normalizer"]:
+                     "Data Scaler","Data Normalizer","Data Transformer"]:
             action = Action(text=text, parent=data_manipulation)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             data_manipulation.addAction(action)
