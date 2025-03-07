@@ -7,7 +7,7 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import ComboBox
 import pandas as pd
 
-DEBUG = True
+DEBUG = False
 
 class LabelEncoder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

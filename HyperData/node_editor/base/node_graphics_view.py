@@ -95,7 +95,7 @@ class NodeGraphicsView(QGraphicsView):
                      "Regressor","Clustering","Decomposition",
                      "CV Splitter","Train/Test Splitter",
                      "Predictor","Feature Expander","Feature Selector",
-                     "Label Encoder","Ordinal Encoder","One-Hot Encoder",]:
+                     "Label Encoder","Feature Encoder",]:
             action = Action(text=text, parent=machine_learning)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             machine_learning.addAction(action)

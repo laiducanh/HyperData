@@ -120,12 +120,9 @@ class Node(NodeGraphicsNode):
         elif title == "Label Encoder":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = LabelEncoder(self,parent)
-        elif title == "Ordinal Encoder":
+        elif title == "Feature Encoder":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
-            self.content = OrdinalEncoder(self,parent)
-        elif title == "One-Hot Encoder":
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
-            self.content = OneHotEncoder(self,parent)
+            self.content = FeatureEncoder(self,parent)
         elif title == "Train/Test Splitter":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = TrainTestSplitter(self,parent)

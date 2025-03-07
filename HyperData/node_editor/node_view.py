@@ -40,7 +40,7 @@ class NodeView (QMainWindow):
                                 "Regressor", "Clustering","Decomposition",
                                 "CV Splitter","Train/Test Splitter",
                                 "Predictor","Feature Expander","Feature Selector",
-                                "Label Encoder","Ordinal Encoder","One-Hot Encoder",
+                                "Label Encoder","Feature Encoder",
                                 ],
             "Deep Learning": ["Input Layer","Dense Layer","Normalization Layer","Model Compiler"],
             "Statistics": ["One Sample Tester"],
