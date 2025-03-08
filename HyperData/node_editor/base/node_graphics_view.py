@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsView
-from PySide6.QtCore import Qt, QEvent, QPoint, QTimeLine, Signal
-from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QCursor
+from PySide6.QtCore import Qt, QEvent, QRectF, QTimeLine, Signal
+from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QPainterPath, QColor
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode, NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
@@ -410,3 +410,5 @@ class NodeGraphicsView(QGraphicsView):
     def paintEvent(self, event: QPaintEvent) -> None:
         self.grScene.setBackgroundColor()
         return super().paintEvent(event)
+
+    
