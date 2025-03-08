@@ -12,7 +12,7 @@ class Menu_type_2D (Menu):
 
         line = Menu("Line", self)
         line.setIcon(icon_line)
-        for i in ['2d line', '2d step','2d stem','2d spline']:
+        for i in ['2d line', '2d step','2d stem']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             line.addAction(action)
