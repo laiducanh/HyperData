@@ -69,9 +69,9 @@ class ResultDialog(Dialog):
 
         # add axis
         ax = self.canvas.fig.add_subplot()
+        ax2 = ax.twinx()
         axleg = self.canvas.fig.add_subplot()
         axleg.set_axis_off()
-        ax2 = ax.twinx()
 
         x = np.linspace(self.dist.ppf(0.01), self.dist.ppf(0.99), 1000)
         fn = self.pl.button.currentText()
