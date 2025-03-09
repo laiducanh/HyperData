@@ -175,9 +175,18 @@ class Node(NodeGraphicsNode):
         elif title == "Model Compiler":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = ModelCompiler(self,parent)
-        elif title == "One Sample Tester":
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+        elif title == "Distribution":
+            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
+            self.content = ProbDist(self,parent)
+        elif title == "One-Sample Tester":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
             self.content = OneSampleTest(self,parent)
+        elif title == "Multi-Sample Tester":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[])
+            self.content = MultiSampleTest(self,parent)
+        elif title == "Correlation Tester":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
+            self.content = CorrelationTest(self,parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)

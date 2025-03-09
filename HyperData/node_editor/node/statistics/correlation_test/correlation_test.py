@@ -6,34 +6,34 @@ from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from PySide6.QtWidgets import QStackedLayout
 import pandas as pd
-from scipy.stats import (ttest_1samp, quantile_test, skewtest, kurtosistest, jarque_bera, shapiro,
-                         anderson, cramervonmises, ks_1samp, chisquare)
-from node_editor.node.statistics.one_sample_test.ttest_1samp import Ttest1samp
-from node_editor.node.statistics.one_sample_test.quantile_test import QuantileTest
-from node_editor.node.statistics.one_sample_test.jarque_bera import JarqueBera
-from node_editor.node.statistics.one_sample_test.shapiro import Shapiro
-from node_editor.node.statistics.one_sample_test.anderson import Anderson
-from node_editor.node.statistics.one_sample_test.cramervonmises import CramervonMises
-from node_editor.node.statistics.one_sample_test.kolmogorov import Kolmogorov
-from node_editor.node.statistics.one_sample_test.chisquare import Chisquare
-from node_editor.node.statistics.one_sample_test.base import TestBase
+from node_editor.node.statistics.correlation_test.base import TestBase
+from node_editor.node.statistics.correlation_test.pearson import Pearson
+from node_editor.node.statistics.correlation_test.spearman import Spearman
+from node_editor.node.statistics.correlation_test.pointbiserial import Pointbiserial
+from node_editor.node.statistics.correlation_test.kendall import Kendall
+from node_editor.node.statistics.correlation_test.somersd import SomersD
+from node_editor.node.statistics.correlation_test.siegelslopes import Siegel
+from node_editor.node.statistics.correlation_test.theil import Theil
+from node_editor.node.statistics.correlation_test.mgc import MGC
+from scipy.stats import (pearsonr, spearmanr, pointbiserialr, kendalltau, somersd, siegelslopes,
+                         theilslopes, multiscale_graphcorr)
 
 DEBUG = True
 
-class OneSampleTest (NodeContentWidget):
+class CorrelationTest (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].setSocketLabel("Samples (X)")
-        self.node.input_sockets[1].setSocketLabel("Distribution")
+        self.node.input_sockets[0].setSocketLabel("X")
+        self.node.input_sockets[1].setSocketLabel("Y")
 
         self._config = dict(
-            test = "T-test",
+            test = "Pearson correlation coefficient",
             config = dict(popmean = 0,alternative = "two-sided")
         )
-        self.test_list = ["T-test","Quantile test","Jarque-Bera test","Shapiro-Wilk test",
-                          "Anderson-Darling test","Cramer-von Mises test","Kolmogorov-Smirnov test",
-                          "Chi-square test"]
+        self.test_list = ["Pearson correlation coefficient","Spearman correlation coefficient",
+                          "Point biserial correlation coefficient","Kendall's tau","Somers' D",
+                          "Siegel's slope","Theil-Sen's slope","Multiscale graph correlation"]
         self.result = None
 
         self.label.hide()
@@ -56,15 +56,15 @@ class OneSampleTest (NodeContentWidget):
         self.dialog.main_layout.addWidget(SeparateHLine())
         self.stackedlayout = QStackedLayout()
         self.dialog.main_layout.addLayout(self.stackedlayout)
-        self.stackedlayout.addWidget(Ttest1samp())
-        self.stackedlayout.addWidget(QuantileTest())
-        self.stackedlayout.addWidget(JarqueBera())
-        self.stackedlayout.addWidget(Shapiro())
-        self.stackedlayout.addWidget(Anderson())
-        self.stackedlayout.addWidget(CramervonMises())
-        self.stackedlayout.addWidget(Kolmogorov())
-        self.stackedlayout.addWidget(Chisquare())
-
+        self.stackedlayout.addWidget(Pearson())
+        self.stackedlayout.addWidget(Spearman())
+        self.stackedlayout.addWidget(Pointbiserial())
+        self.stackedlayout.addWidget(Kendall())
+        self.stackedlayout.addWidget(SomersD())
+        self.stackedlayout.addWidget(Siegel())
+        self.stackedlayout.addWidget(Theil())
+        self.stackedlayout.addWidget(MGC())
+        
         self.stackedlayout.setCurrentIndex(self.test_list.index(self.test.button.currentText()))
         self.currentWidget().set_config(self._config["config"])
     
@@ -91,25 +91,25 @@ class OneSampleTest (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            data = self.node.input_sockets[0].socket_data.copy()
-            dist = self.node.input_sockets[1].socket_data
+            X = self.node.input_sockets[0].socket_data.copy()
+            Y = self.node.input_sockets[1].socket_data.copy()
             test = self._config["test"]
-            if test == "T-test":
-                self.result = ttest_1samp(data, **self._config["config"])
-            elif test == "Binomial test":
-                self.result = quantile_test(data, **self._config["config"])
-            elif test == "Jarque-Bera test":
-                self.result = jarque_bera(data, **self._config["config"])
-            elif test == "Shapiro-Wilk test":
-                self.result = shapiro(data, **self._config["config"])
-            elif test == "Anderson-Darling test":
-                self.result = anderson(data, **self._config["config"])
-            elif test == "Cramer-von Mises test":
-                self.result = cramervonmises(data, dist.cdf, **self._config["config"])
-            elif test == "Kolmogorov-Smirnov test":
-                self.result = ks_1samp(data, dist.cdf, **self._config["config"])
-            elif test == "Chi-square test":
-                self.result = chisquare(data, **self._config["config"])
+            if test == "Pearson correlation coefficient":
+                self.result = pearsonr(X, Y, **self._config["config"])
+            elif test == "Spearman correlation coefficient":
+                self.result = spearmanr(X, Y, **self._config["config"])
+            elif test == "Point biserial correlation coefficient":
+                self.result = pointbiserialr(X, Y, **self._config["config"])
+            elif test == "Kendall's tau":
+                self.result = kendalltau(X, Y, **self._config["config"])
+            elif test == "Somers' D":
+                self.result = somersd(X, Y, **self._config["config"])
+            elif test == "Siegel's slope":
+                self.result = siegelslopes(X, Y, **self._config["config"])
+            elif test == "Theil-Sen's slope":
+                self.result = theilslopes(X, Y, **self._config["config"])
+            elif test == "Multiscale graph correlation":
+                self.result = multiscale_graphcorr(X, Y, **self._config["config"])
             
             # change progressbar's color
             self.progress.changeColor('success')
@@ -130,7 +130,7 @@ class OneSampleTest (NodeContentWidget):
     def eval(self):
         self.resetStatus()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
-        self.node.input_sockets[0].socket_data = None
+        self.node.input_sockets[1].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
         for edge in self.node.input_sockets[1].edges:

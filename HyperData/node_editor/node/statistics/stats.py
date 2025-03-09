@@ -1,1 +1,4 @@
 from node_editor.node.statistics.one_sample_test.one_sample_test import OneSampleTest
+from node_editor.node.statistics.prob_dist.prob_distr import ProbDist
+from node_editor.node.statistics.multi_sample_test.multi_sample_test import MultiSampleTest
+from node_editor.node.statistics.correlation_test.correlation_test import CorrelationTest

@@ -43,7 +43,8 @@ class NodeView (QMainWindow):
                                 "Label Encoder","Feature Encoder",
                                 ],
             "Deep Learning": ["Input Layer","Dense Layer","Normalization Layer","Model Compiler"],
-            "Statistics": ["One Sample Tester"],
+            "Statistics": ["Distribution","One-Sample Tester","Multi-Sample Tester",
+                           "Correlation Tester"],
             "Visualization": ["Figure 2D", "Figure 3D","Multi-Figure"],
             "Misc": ["Executor", "Looper", "Undefined Node"]
         }
