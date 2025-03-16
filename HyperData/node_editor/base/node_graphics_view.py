@@ -289,16 +289,11 @@ class NodeGraphicsView(QGraphicsView):
         Updates the current scale based on the wheel events.
 
         """
-
         if not factor: factor = 1.0 + self._numScheduledScalings / 300.0
-                
-        if self.currentScale*factor <= 1:
+        
+        if self.currentScale*factor <= 2 and self.currentScale*factor >= 0.5:
             self.currentScale *= factor
             self.scale(factor, factor)
-        else: 
-            factor = 1/self.currentScale
-            self.scale(factor, factor)
-            self.currentScale = 1
             
     def anim_finished(self):
         """
