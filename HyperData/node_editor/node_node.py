@@ -116,7 +116,7 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = NAEliminator(self,parent)
         elif title == 'Nan Imputer':
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = NAImputer(self,parent)
         elif title == "Drop Duplicate":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])

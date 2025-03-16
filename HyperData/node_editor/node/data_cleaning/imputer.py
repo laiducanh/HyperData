@@ -22,7 +22,7 @@ class NAImputer (NodeContentWidget):
             imputer='univariate', 
             m_strategy='mean', 
             m_fill_value=None,
-            estimator=None, 
+            sample_posterior = False,
             max_iter=10, 
             tol=1e-3, 
             u_strategy='mean', 
@@ -32,11 +32,14 @@ class NAImputer (NodeContentWidget):
             n_neighbors=5,
             weights='uniform',
         )
+
+        self.node.input_sockets[0].setSocketLabel("Data")
+        self.node.input_sockets[1].setSocketLabel("Estimator")
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        imputer = ComboBox(items=["univariate","multivariate","KNN"], text='imputer')
-        imputer.button.setCurrentText(self._config['imputer'].title())
+        imputer = ComboBox(items=["univariate","multivariate","KNN"], text='Imputer')
+        imputer.button.setCurrentText(self._config['imputer'])
         imputer.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(imputer.button.currentIndex()))
         dialog.main_layout.addWidget(imputer)
 
@@ -53,7 +56,7 @@ class NAImputer (NodeContentWidget):
         
         u_strategy.button.setCurrentText(self._config['u_strategy'])
         univariate_layout.addWidget(u_strategy)
-        u_fill_value = LineEdit(text='fill value')
+        u_fill_value = LineEdit(text='Fill value')
         u_fill_value.button.setText(self._config['u_fill_value'])
         u_fill_value.button.setEnabled(True if u_strategy.button.currentText() == 'constant' else False)
         u_strategy.button.currentTextChanged.connect(lambda s: u_fill_value.button.setEnabled(True) if s == 'constant' 
@@ -66,26 +69,30 @@ class NAImputer (NodeContentWidget):
         multivariate_widget.setLayout(multivariate_layout)
         stacklayout.addWidget(multivariate_widget)
 
-        max_iter = SpinBox(min=1, max=1000, step=5, text='max iterations')
+        sample_posterior = Toggle(text="Sample posterior")
+        sample_posterior.button.setChecked(self._config["sample_posterior"])
+        multivariate_layout.addWidget(sample_posterior)
+
+        max_iter = SpinBox(min=1, max=1000, step=5, text='Max iterations')
         max_iter.button.setValue(self._config['max_iter'])
         multivariate_layout.addWidget(max_iter)
 
-        tol = DoubleSpinBox(min=1e-8,max=1,step=5e-8, text='tolerance')
+        tol = DoubleSpinBox(min=1e-8,max=1,step=5e-8, text='Tolerance')
         tol.button.setDecimals(8)
         tol.button.setValue(self._config['tol'])
         multivariate_layout.addWidget(tol)
 
-        m_strategy = ComboBox(items=["mean","median","most_frequent","constant"],text='strategy')
+        m_strategy = ComboBox(items=["mean","median","most_frequent","constant"],text='Strategy')
         m_strategy.button.currentTextChanged.connect(lambda s: m_fill_value.button.setEnabled(True) if s == 'Constant' 
                                                    else m_fill_value.button.setEnabled(False))
         m_strategy.button.setCurrentText(self._config['m_strategy'])
         multivariate_layout.addWidget(m_strategy)
-        m_fill_value = LineEdit(text='fill value')
+        m_fill_value = LineEdit(text='Fill value')
         m_fill_value.button.setText(self._config['m_fill_value'])
         m_fill_value.button.setEnabled(True if m_strategy.button.currentText() == 'Constant' else False)
         multivariate_layout.addWidget(m_fill_value)
 
-        imputation_order = ComboBox(items=['ascending', 'descending', 'roman', 'arabic', 'random'], text='imputation order')
+        imputation_order = ComboBox(items=['ascending', 'descending', 'roman', 'arabic', 'random'], text='Imputation order')
         imputation_order.button.setCurrentText(self._config["imputation_order"])
         multivariate_layout.addWidget(imputation_order)
 
@@ -108,13 +115,15 @@ class NAImputer (NodeContentWidget):
         weights.button.setCurrentText(self._config["weights"])
         knn_layout.addWidget(weights)
 
+        stacklayout.setCurrentIndex(imputer.button.currentIndex())
+
         if dialog.exec(): 
             self._config["imputer"] = imputer.button.currentText()
             self._config["u_strategy"] = u_strategy.button.currentText()
             self._config["u_fill_value"] = u_fill_value.button.text()
             self._config["m_strategy"] = m_strategy.button.currentText()
             self._config["m_fill_value"] = m_fill_value.button.text()
-            self._config["estimator"] = None
+            self._config["sample_posterior"] = sample_posterior.button.isChecked()
             self._config["max_iter"] = max_iter.button.value()
             self._config["tol"] = tol.button.value()
             self._config["imputation_order"] = imputation_order.button.currentText()
@@ -130,7 +139,6 @@ class NAImputer (NodeContentWidget):
             from sklearn import datasets
             data = datasets.load_iris()
             df = pd.DataFrame(data=data.data, columns=data.feature_names)
-            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
             # randomly introduce some missing values
             df = df.mask(np.random.random(df.shape) < 0.2)
             self.node.input_sockets[0].socket_data = df
@@ -138,6 +146,9 @@ class NAImputer (NodeContentWidget):
 
         try:
             imputer = None
+            estimator = self.node.input_sockets[1].socket_data
+
+            # Prepare imputer
             if self._config["imputer"] == 'univariate':
                 if self._config['u_strategy'] == 'next valid observation':
                     data = self.node.input_sockets[0].socket_data.fillna(method='ffill')
@@ -150,22 +161,27 @@ class NAImputer (NodeContentWidget):
                     )
             elif self._config["imputer"] == 'multivariate':
                 imputer = IterativeImputer(
+                    estimator=estimator,
+                    sample_posterior=self._config["sample_posterior"],
                     max_iter=self._config['max_iter'],
                     tol=self._config["tol"],
                     initial_strategy=self._config["m_strategy"],
                     fill_value=self._config["m_fill_value"],
                     imputation_order=self._config['imputation_order'],
-                    skip_complete=self._config["skip complete"]
+                    skip_complete=self._config["skip_complete"]
                 )
             elif self._config["imputer"] == "knn":
                 imputer = KNNImputer(
                     n_neighbors=self._config['n_neighbors'],
                     weights=self._config["weights"]
                 )
+
+            # Impute data
             if imputer:
                 columns = self.node.input_sockets[0].socket_data.columns
                 data = imputer.fit_transform(self.node.input_sockets[0].socket_data)
-                data = pd.DataFrame(data, columns=columns)     
+                data = pd.DataFrame(data, columns=columns)   
+
             # change progressbar's color
             self.progress.changeColor('success')       
             # write log
@@ -186,5 +202,8 @@ class NAImputer (NodeContentWidget):
     def eval(self):
         self.resetStatus()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
+        self.node.input_sockets[1].socket_data = None
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+        for edge in self.node.input_sockets[1].edges:
+            self.node.input_sockets[1].socket_data = edge.start_socket.socket_data
