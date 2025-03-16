@@ -1,6 +1,6 @@
 Menu {
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 8px;
+    /* border-radius: 8px; */
     font: 11.5pt;
     background-color: white;
     padding: 4px 3px 4px 3px;

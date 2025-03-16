@@ -2,7 +2,7 @@ _PushButton, _DropDownPushButton, _ToolButton, _TogglePushButton, _ToggleToolBut
     color: rgba(67, 67, 67, 1);
     background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius:8px;
+    /* border-radius:8px; */
     font: 11.5pt;
     padding: 7px 12px 7px 12px;
     outline: none;
@@ -32,7 +32,7 @@ _PushButton:disabled, _ToolButton:disabled, _TogglePushButton:disabled, _ToggleT
 _TransparentPushButton, _DropDownTransparentPushButton, _TransparentToolButton {
     background-color: transparent;
     border: none;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     margin: 0;
 }
 
