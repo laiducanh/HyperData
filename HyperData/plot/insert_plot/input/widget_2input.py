@@ -116,7 +116,7 @@ class Widget2D_2input (QWidget):
 
         self.input = [_input1, _input2]
                         
-        if _input1 != '' and _input2 != '':
+        if _input1 and _input2:
             self.sig.emit()
 
     def open_data (self, which_input):

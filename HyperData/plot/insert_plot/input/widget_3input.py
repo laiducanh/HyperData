@@ -128,7 +128,7 @@ class Widget2D_3input (QWidget):
         _input2 = self.input2.currentText()
         _input3 = self.input3.currentText()
         self.input = [_input1, _input2,_input3]
-        if _input1 != '' and _input2 != '' and _input3 != '':       
+        if _input1 and _input2 and _input3:       
             self.sig.emit()
 
     def open_data (self, which_input):
@@ -210,7 +210,7 @@ class Widget3D (QWidget):
         _input2 = self.input2.currentText()
         _input3 = self.input3.currentText()
         self.input = [_input1, _input2,_input3]
-        if _input1 != '' and _input2 != '' and _input3 != '':       
+        if _input1 and _input2 and _input3:       
             self.sig.emit()
 
     def open_data (self, which_input):

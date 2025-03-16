@@ -83,7 +83,7 @@ class Widget3D_4input (QWidget):
         _input3 = self.input3.currentText()
         _input4 = self.input4.currentText()
         self.input = [_input1, _input2,_input3, _input4]
-        if _input1 != '' and _input2 != '' and _input3 != '' and _input4 != '':       
+        if _input1 and _input2 and _input3 and _input4:       
             self.sig.emit()
 
     def open_data (self, which_input):
