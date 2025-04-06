@@ -138,7 +138,8 @@ if not dataPathDir.exists():
 appName = 'HyperData'
 configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
 configFile = "config.json.txt"
-if os.path.exists(configFile):
+new_version = True
+if os.path.exists(configFile) and not new_version:
     with open(configFile, "r") as file:
         raw_data = file.read()
         config = json.loads(raw_data)
