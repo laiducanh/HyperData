@@ -76,5 +76,5 @@ def split_input(input:str, data:pandas.DataFrame):
             data_input.append(process_1d_data(i, data))
     else:
         data_input = process_1d_data(input, data)
-    print(data_input)
+    
     return data_input
