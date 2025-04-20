@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<div id="container"></div>
+<script src="d3.v7.min.js"></script>
+<script type="module">
+
+// Declare the chart dimensions and margins.
+const width = 640;
+const height = 480;
+const marginTop = 20;
+const marginRight = 20;
+const marginBottom = 30;
+const marginLeft = 40;
+
+// Data
+const data = [
+    { x: 1, y: 9 },
+    { x: 2, y: 7 },
+    { x: 3, y: 5 },
+    { x: 4, y: 3 },
+    { x: 5, y: 6 },
+    { x: 6, y: 8 },
+    { x: 7, y: 4 },
+    { x: 8, y: 2 },
+    { x: 9, y: 1 }
+];
+
+
+// Declare the x (horizontal position) scale.
+const axisBottom = d3.scaleLinear()
+    .domain([0, 10])
+    .range([marginLeft, width - marginRight]);
+
+// Declare the y (vertical position) scale.
+const axisLeft = d3.scaleLinear()
+    .domain([0, 10])
+    .range([height - marginBottom, marginTop]);
+
+// Create the SVG container.
+const svg = d3.create("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+// Add the x-axis.
+svg.append("g")
+    .attr("transform", `translate(0,${height - marginBottom})`)
+    .call(d3.axisBottom(axisBottom));
+
+// Add the y-axis.
+svg.append("g")
+    .attr("transform", `translate(${marginLeft},0)`)
+    .call(d3.axisLeft(axisLeft));
+
+const line = d3.line()
+        .x(d => axisBottom(d.x))
+        .y(d => axisLeft(d.y));
+
+const g = svg.append("g")
+    .attr("transform", `translate(${marginLeft},${marginTop})`);
+
+g.append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", "red")
+    .attr("stroke-width", 2)
+    .attr("d", line);
+
+
+// Create the tooltip container.
+const tooltip = svg.append("g");
+
+function formatValue(value) {
+  return value.toLocaleString("en", {
+    style: "currency",
+    currency: "USD"
+  });
+}
+
+function formatDate(date) {
+  return date.toLocaleString("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  });
+}
+
+// Add the event listeners that show or hide the tooltip.
+const bisect = d3.bisector(d => d.Date).center;
+function pointermoved(event) {
+  const i = bisect(aapl, x.invert(d3.pointer(event)[0]));
+  tooltip.style("display", null);
+  tooltip.attr("transform", `translate(${x(aapl[i].Date)},${y(aapl[i].Close)})`);
+
+  const path = tooltip.selectAll("path")
+    .data([,])
+    .join("path")
+      .attr("fill", "white")
+      .attr("stroke", "black");
+
+  const text = tooltip.selectAll("text")
+    .data([,])
+    .join("text")
+    .call(text => text
+      .selectAll("tspan")
+      .data([formatDate(aapl[i].Date), formatValue(aapl[i].Close)])
+      .join("tspan")
+        .attr("x", 0)
+        .attr("y", (_, i) => `${i * 1.1}em`)
+        .attr("font-weight", (_, i) => i ? null : "bold")
+        .text(d => d));
+
+  size(text, path);
+}
+
+function pointerleft() {
+  tooltip.style("display", "none");
+}
+
+// Wraps the text with a callout path of the correct size, as measured in the page.
+function size(text, path) {
+  const {x, y, width: w, height: h} = text.node().getBBox();
+  text.attr("transform", `translate(${-w / 2},${15 - y})`);
+  path.attr("d", `M${-w / 2 - 10},5H-5l5,-5l5,5H${w / 2 + 10}v${h + 20}h-${w + 20}z`);
+}
+
+
+// Append the SVG element.
+container.append(svg.node());
+
+</script>
+</html>
