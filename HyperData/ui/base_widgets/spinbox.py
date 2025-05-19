@@ -48,7 +48,7 @@ class SpinBox (HButton):
         self.butn_layout.addWidget(self.button)
     
 class DoubleSpinBox (HButton):
-    def __init__(self, min:int=0, max:int=100, step:int=1, 
+    def __init__(self, min:float=0, max:float=100, step:float=1, 
                  text:str=None, text2:str=None, parent=None):
         super().__init__(text, text2, parent) 
         

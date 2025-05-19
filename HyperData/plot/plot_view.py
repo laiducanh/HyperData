@@ -157,7 +157,7 @@ class PlotView (QMainWindow):
         QApplication.processEvents()
         if self.plot3d: self.grid = Grid3D(self.canvas, self.parent())
         else: self.grid = Grid(self.canvas,self.parent())
-        self.stackedlayout.addWidget(self.grid)
+        #self.stackedlayout.addWidget(self.grid)
         self.diag.progressbar._setValue(80)
         
         self.diag.setLabelText("Loading labels")
@@ -208,7 +208,8 @@ class PlotView (QMainWindow):
             self.stackedlayout.setCurrentWidget(self.spine)
         
         elif text in ["plot size", "grid"]:
-            self.stackedlayout.setCurrentWidget(self.grid)
+            #self.stackedlayout.setCurrentWidget(self.grid)
+            self.grid.show()
         
         elif text == 'title':
             self.stackedlayout.setCurrentWidget(self.title)

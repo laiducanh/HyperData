@@ -80,10 +80,10 @@ class TreeWidget (QtWidgets.QTreeWidget):
         self.expandAll()
     
     def mousePressEvent(self, event:QtGui.QMouseEvent):
-        item = self.itemAt(event.pos())
-        if isinstance(item, QtWidgets.QTreeWidgetItem):
-            if item.text(0) in self.data.keys():
-                item.setExpanded(not item.isExpanded())
+        # item = self.itemAt(event.pos())
+        # if isinstance(item, QtWidgets.QTreeWidgetItem):
+        #     if item.text(0) in self.data.keys():
+        #         item.setExpanded(not item.isExpanded())
 
         super().mousePressEvent(event) 
     

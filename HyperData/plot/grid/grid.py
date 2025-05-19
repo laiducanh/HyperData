@@ -1,53 +1,63 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QApplication
-import matplotlib.pyplot
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QTreeWidgetItem, QMainWindow, QWidget, QVBoxLayout
+from PySide6.QtGui import QColor
 from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.frame import SeparateHLine, Frame
-from ui.base_widgets.window import ProgressDialog
+from ui.base_widgets.list import TreeWidget
+from plot.utilis import TreeWidgetItem
 from plot.canvas import Canvas
-import matplotlib
+from matplotlib import lines, rcParams
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
 DEBUG = False
 
-class PlotSize2D (Frame):
-    def __init__(self, canvas:Canvas, parent=None):
-        super().__init__(parent)
+class PlotSize2D (TreeWidgetItem):
+    def __init__(self, canvas: Canvas, treeview:TreeWidget):
+        super().__init__(treeview)
 
-        layout = QVBoxLayout(self)
-        #layout.setContentsMargins(0,0,0,0)
+        self.setText(0, 'Plot Size')
         self.canvas = canvas
 
-        layout.addWidget(TitleLabel('Figure Margin'))
-        layout.addWidget(SeparateHLine())
-
-        top = DoubleSpinBox(text='Margin top',text2="The position of the top edge",
-                            min=0,max=1,step=0.05)
+        child = QTreeWidgetItem(self)
+        top = DoubleSpinBox(
+            text  = 'Margin top',
+            text2 = "The position of the top edge",
+            min = 0, max = 1, step = 0.05
+        )
         top.button.valueChanged.connect(self.set_top)
         top.button.setValue(self.get_top())
-        layout.addWidget(top)
+        treeview.setItemWidget(child, 0, top)
 
-        bottom = DoubleSpinBox(text='Margin bottom',text2='The position of the bottom edge',
-                               min=0,max=1,step=0.05)
+        child = QTreeWidgetItem(self)
+        bottom = DoubleSpinBox(
+            text  = 'Margin bottom',
+            text2 = 'The position of the bottom edge',
+            min = 0, max = 1, step = 0.05
+        )
         bottom.button.valueChanged.connect(self.set_bottom)
         bottom.button.setValue(self.get_bottom())
-        layout.addWidget(bottom)
+        treeview.setItemWidget(child, 0, bottom)
 
-        left = DoubleSpinBox(text='Margin left',text2='The position of the left edge',
-                             min=0,max=1,step=0.05)
+        child = QTreeWidgetItem(self)
+        left = DoubleSpinBox(
+            text  = 'Margin left',
+            text2 ='The position of the left edge',
+            min = 0, max = 1, step = 0.05
+        )
         left.button.valueChanged.connect(self.set_left)
         left.button.setValue(self.get_left())
-        layout.addWidget(left)
+        treeview.setItemWidget(child, 0, left)
 
-        right = DoubleSpinBox(text='Margin right',text2='The position of the right edge',
-                              min=0,max=1,step=0.05)
+        child = QTreeWidgetItem(self)
+        right = DoubleSpinBox(
+            text  = 'Margin right',
+            text2 = 'The position of the right edge',
+            min = 0, max = 1, step = 0.05
+        )
         right.button.valueChanged.connect(self.set_right)
         right.button.setValue(self.get_right())
-        layout.addWidget(right)
-        #layout.addStretch()
+        treeview.setItemWidget(child, 0, right)
     
     def set_top(self,value):
         self.canvas.fig.subplots_adjust(top=value)
@@ -77,149 +87,185 @@ class PlotSize2D (Frame):
     def get_right(self):
         return self.canvas.fig.subplotpars.right
 
-    
-class Grid2D (Frame):
-    def __init__(self, canvas: Canvas, parent=None):
-        super().__init__(parent)
+class Grid2D (TreeWidgetItem):
+    def __init__(self, canvas: Canvas, treeview:TreeWidget):
+        super().__init__(treeview)
 
-        layout = QVBoxLayout(self)
-        #layout.setContentsMargins(0,0,0,0)
+        self.setText(0, 'Grid')
+        self.setExpanded(True)
+
         self.canvas = canvas
 
-        layout.addWidget(TitleLabel('Grid'))
-        layout.addWidget(SeparateHLine())
-
-        self.visible = Toggle(text='Visible',text2='Whether to show the grid lines')
-        layout.addWidget(self.visible)
+        child = QTreeWidgetItem(self)
+        self.visible = Toggle(
+            text  = 'Visible',
+            text2 = 'Whether to show the grid lines'
+        )
         self.visible.button.checkedChanged.connect(self.set_grid)
         self.visible.button.setChecked(self.get_visible())
+        treeview.setItemWidget(child, 0, self.visible)
 
-        self.type = ComboBox(items=['Major','Minor','Both'],
-                             text='Type',text2='The grid lines to apply the changes on')
-        self.type.button.currentTextChanged.connect(self.set_gridtype)
-        self.type.button.setCurrentText(self.get_gridtype())
-        layout.addWidget(self.type)
+        child = QTreeWidgetItem(self)
+        self.which = ComboBox(
+            items = ['Major','Minor','Both'],
+            text  = 'Type',
+            text2 = 'The grid lines to apply the changes on'
+        )
+        self.which.button.currentTextChanged.connect(self.set_gridtype)
+        self.which.button.setCurrentText(self.get_gridtype())
+        treeview.setItemWidget(child, 0, self.which)
 
-        self.axis = ComboBox(text='Axis',text2='The axis to apply the changes on',
-                             items=['X','Y','Both'])
+        child = QTreeWidgetItem(self)
+        self.axis = ComboBox(
+            text  = 'Axis',
+            text2 = 'The axis to apply the changes on',
+            items = ['X','Y','Both']
+        )
         self.axis.button.currentTextChanged.connect(self.set_gridaxis)
         self.axis.button.setCurrentText(self.get_gridaxis())
-        layout.addWidget(self.axis)
+        treeview.setItemWidget(child, 0, self.axis)
 
-        self.color = ColorDropdown(text='Line color',text2='Set the color of the grid',
-                                   color=self.get_color())
-        self.color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.color)
-
-        self.linewidth = DoubleSpinBox(text='Line width',text2='Set the width of the grid lines',
-                                       min=0.1,max=10,step=0.5)
+        child = QTreeWidgetItem(self)
+        self.linewidth = DoubleSpinBox(
+            text  = 'Line Width',
+            text2 = 'Set the width of the grid lines',
+            min = 0.1, max = 10, step = 0.5
+        )
         self.linewidth.button.valueChanged.connect(self.set_linewidth)
         self.linewidth.button.setValue(self.get_linewidth())
-        layout.addWidget(self.linewidth)
+        treeview.setItemWidget(child, 0, self.linewidth)
 
-        self.linestyle = ComboBox(text='Line style',text2='Set the style of the grid lines',
-                                  items=linestyle_lib.values())
+        child = QTreeWidgetItem(self)
+        self.linestyle = ComboBox(
+            text  = 'Line Style',
+            text2 = 'Set the style of the grid lines',
+            items = linestyle_lib.values()
+        )
         self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
         self.linestyle.button.setCurrentText(self.get_linestyle())
-        layout.addWidget(self.linestyle)
+        treeview.setItemWidget(child, 0, self.linestyle)
 
-        self.transparency = Slider(text='Transparency', text2='Set the transparency of the grid lines')
-        self.transparency.button.valueChanged.connect(self.set_alpha)
-        self.transparency.button.setValue(self.get_alpha())
-        layout.addWidget(self.transparency)
+        child = QTreeWidgetItem(self)
+        self.color = ColorDropdown(
+            text  = 'Line Color',
+            text2 = 'Set the color of the grid',
+            color = self.get_color(),
+        )
+        self.color.button.colorChanged.connect(self.set_color)
+        treeview.setItemWidget(child, 0, self.color)
 
+        child = QTreeWidgetItem(self)
+        self.alpha = Slider(
+            text  = 'Transparency',
+            text2 = 'Set the transparency of the grid lines'
+        )
+        self.alpha.button.valueChanged.connect(self.set_alpha)
+        self.alpha.button.setValue(self.get_alpha())
+        treeview.setItemWidget(child, 0, self.alpha)
+    
     def set_grid(self):
         try:
+        # Need to redraw grid after any changes
             self.canvas.axes.grid(visible=False)
             if self.visible.button.isChecked():
-                which = self.type.button.currentText().lower()
-                axis = self.axis.button.currentText().lower()
-                alpha = self.transparency.button.value()/100
-                linewidth = self.linewidth.button.value()
-                linestyle = self.linestyle.button.currentText().lower()
-                color = self.color.button.color.name()
+                self.canvas.axes.grid(
+                    which     = self.which.button.currentText().lower(), 
+                    axis      = self.axis.button.currentText().lower(), 
+                    alpha     = self.alpha.button.value()/100,
+                    linewidth = self.linewidth.button.value(),
+                    linestyle = self.linestyle.button.currentText().lower(), 
+                    color     = self.color.button.color.name(),
+                    gid       = "_grid"
+                )
 
-                self.canvas.axes.grid(which=which, axis=axis, alpha=alpha, linewidth=linewidth,
-                                    linestyle=linestyle, color=color,gid="_grid")
+        # Idle Redraw
             self.canvas.draw_idle()
+
         except Exception as e:
             logger.exception(e)
     
     def get_visible(self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
-            if obj._gid != None and '_grid' in obj._gid:
+        for obj in self.canvas.fig.findobj(match=lines.Line2D):
+            if obj.get_gid() and '_grid' in obj.get_gid():
                 return obj.get_visible()
         return False
-    
+
     def set_gridtype(self, value:str):
-        matplotlib.rcParams['axes.grid.which'] = value.lower()
-        self.set_grid()
+        rcParams['axes.grid.which'] = value.lower()
+        self.canvas.draw_idle()
     
     def get_gridtype (self):
-        return matplotlib.rcParams['axes.grid.which'].title()
+        return rcParams['axes.grid.which'].title()
     
     def set_gridaxis(self, value:str):
-        matplotlib.rcParams['axes.grid.axis'] = value.lower()
+        rcParams['axes.grid.axis'] = value.lower()
         self.set_grid()
 
     def get_gridaxis (self):
-        return matplotlib.rcParams['axes.grid.axis'].title()
+        return rcParams['axes.grid.axis'].title()
 
     def set_alpha(self, value:int):
-        matplotlib.rcParams['grid.alpha'] = value/100
+        rcParams['grid.alpha'] = value/100
         self.set_grid()
 
     def get_alpha(self):
-        return int(matplotlib.rcParams['grid.alpha']*100)
+        return int(rcParams['grid.alpha']*100)
     
     def set_linewidth(self, value:float):
-        matplotlib.rcParams['grid.linewidth'] = value
+        rcParams['grid.linewidth'] = value
         self.set_grid()
     
-    def get_linewidth(self) -> str:
-        return matplotlib.rcParams['grid.linewidth']
+    def get_linewidth(self) -> float:
+        return rcParams['grid.linewidth']
     
     def set_linestyle(self, value:str):
-        linestyle_lib[matplotlib.rcParams['grid.linestyle']] = value
+        linestyle_lib[rcParams['grid.linestyle']] = value
         self.set_grid()
 
     def get_linestyle (self) -> str:
-        return linestyle_lib[matplotlib.rcParams['grid.linestyle']].lower()
+        return linestyle_lib[rcParams['grid.linestyle']].lower()
 
     def set_color(self, color):
-        matplotlib.rcParams['grid.color'] = color
+        rcParams['grid.color'] = color
         self.set_grid()
        
     def get_color(self) -> str:
-        return matplotlib.rcParams['grid.color']
+        return rcParams['grid.color']
+    
+class Pane (TreeWidgetItem):
+    def __init__(self, canvas: Canvas, treeview:TreeWidget):
+        super().__init__(treeview)
 
+        self.setText(0, 'Pane')
+        self.setExpanded(True)
 
-class Pane(Frame):
-    def __init__(self, canvas: Canvas, parent=None):
-        super().__init__(parent)
-
-        layout = QVBoxLayout(self)
-        #layout.setContentsMargins(0,0,0,0)
         self.canvas = canvas
 
-        layout.addWidget(TitleLabel('Pane'))
-        layout.addWidget(SeparateHLine())
-
-        self.visible = Toggle(text='Visible',text2='Whether to show the color')
-        layout.addWidget(self.visible)
+        child = QTreeWidgetItem(self)
+        self.visible = Toggle(
+            text  = 'Visible',
+            text2 = 'Whether to show the color'
+        )
         self.visible.button.checkedChanged.connect(self.set_visible)
         self.visible.button.setChecked(self.get_visible())
-
-        self.facecolor = ColorDropdown(text='Color',text2='Set the color of the Pane',
-                                       color=self.get_color())
+        treeview.setItemWidget(child, 0, self.visible)
+    
+        child = QTreeWidgetItem(self)
+        self.facecolor = ColorDropdown(
+            text  = 'Color',
+            text2 = 'Set the color of the Pane',
+            color = self.get_color())
         self.facecolor.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.facecolor)
+        treeview.setItemWidget(child, 0, self.facecolor)
 
-        self.alpha = Slider(text='Transparency',text2='Set the transparency of the Pane')
+        child = QTreeWidgetItem(self)
+        self.alpha = Slider(
+            text  = 'Transparency',
+            text2 = 'Set the transparency of the Pane')
         self.alpha.button.valueChanged.connect(self.set_patch_alpha)
         self.alpha.button.setValue(self.get_patch_alpha())
-        layout.addWidget(self.alpha)
-    
+        treeview.setItemWidget(child, 0, self.alpha)
+
     def set_visible(self,value):
         self.canvas.axes.patch.set_visible(value)
         self.canvas.draw_idle()
@@ -232,64 +278,31 @@ class Pane(Frame):
         self.canvas.draw_idle()
     
     def get_color(self):
-        try: return self.canvas.axes.patch.get_color()
-        except: return matplotlib.rcParams['axes.facecolor']
+        try: return QColor(self.canvas.axes.patch.get_facecolor())
+        except: return QColor(rcParams['axes.facecolor'])
 
     def set_patch_alpha (self, value):
         self.canvas.axes.patch.set_alpha(value/100)
         self.canvas.draw_idle()
     
     def get_patch_alpha (self):
-        if self.canvas.axes.patch.get_alpha() != None: return int(self.canvas.axes.patch.get_alpha()*100)
-        else: return 100
+        if self.canvas.axes.patch.get_alpha(): 
+            return int(self.canvas.axes.patch.get_alpha()*100)
+        return 100
 
-class Grid (QScrollArea):
+class Grid (QMainWindow):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
-
+    # Layout
         widget = QWidget()
-        self.vlayout = QVBoxLayout()
-        #layout.setContentsMargins(10,0,10,15)
-        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        widget.setLayout(self.vlayout)
-        self.setWidget(widget)
-        self.setWidgetResizable(True)
-        self.verticalScrollBar().setValue(1900)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.first_show = True
-        self.canvas = canvas
-        
- 
-    def showEvent(self, a0):
-        if self.first_show:
-            self.diag = ProgressDialog("Waiting", None, self.parent())
-            self.diag.progressbar._setValue(0)
-            self.diag.show()
-            QApplication.processEvents()
-
-            self.plotsize = PlotSize2D(self.canvas, self.parent())
-            self.vlayout.addWidget(self.plotsize)
-
-            self.diag.progressbar._setValue(20)
-            QApplication.processEvents()
-
-            self.pane = Pane(self.canvas, self.parent())
-            self.vlayout.addWidget(self.pane)
-
-            self.diag.progressbar._setValue(60)
-            QApplication.processEvents()
-            
-            self.grid = Grid2D(self.canvas,self.parent())
-            self.vlayout.addWidget(self.grid)
-
-            self.diag.progressbar._setValue(100)
-            QApplication.processEvents()
-
-            self.diag.close()
-
-            self.first_show = False
-
-        return super().showEvent(a0)
-
-
-
+        self.setCentralWidget(widget)
+        layout = QVBoxLayout(widget)
+    
+    # Create a QTreeWidget
+        self.tree = TreeWidget()
+        self.tree.setColumnCount(1)
+        self.tree.setUniformRowHeights(True)
+        plotsize = PlotSize2D(canvas, self.tree)
+        grid = Grid2D(canvas, self.tree)
+        pane = Pane(canvas, self.tree)
+        layout.addWidget(self.tree)

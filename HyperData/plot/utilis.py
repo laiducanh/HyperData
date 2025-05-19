@@ -9,6 +9,8 @@ from matplotlib.text import Text
 from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+from PySide6.QtWidgets import QTreeWidgetItem, QTreeWidget
+from PySide6.QtCore import QSize
 from typing import Literal, Union
 import numpy as np
 
@@ -53,3 +55,10 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list=None, gid:str=N
                 else: obj_found.append(artist)
         #obj_found += [artist for artist in _found if artist.get_gid() != None]
     return obj_found
+
+class TreeWidgetItem (QTreeWidgetItem):
+    def __init__(self, treeview:QTreeWidget):
+        super().__init__(treeview)
+
+        self.setSizeHint(0, QSize(42,42))
+        self.setExpanded(True)
