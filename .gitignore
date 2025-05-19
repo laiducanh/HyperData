@@ -7,7 +7,7 @@
 # cached files
 *.pyc
 __pycache__
-
+.vscode/
 
 # debug files
 *.txt
