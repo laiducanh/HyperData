@@ -1,25 +1,27 @@
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtGui import QMouseEvent, QPixmap, QCursor, QEnterEvent, QColor, QDrag
+from PySide6.QtWidgets import QTreeWidgetItem, QTreeWidget, QListWidget, QAbstractItemView, QWidget
+from PySide6.QtCore import QSize, Qt, QEvent, QMimeData, QPoint, Signal
 
-class ListWidget (QtWidgets.QListWidget):
+class ListWidget (QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
     
-        self.setIconSize(QtCore.QSize(32, 32))
+        self.setIconSize(QSize(32, 32))
         #self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.verticalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
-        self.horizontalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
-        self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.verticalScrollBar().setCursor(QCursor(Qt.CursorShape.ClosedHandCursor))
+        self.horizontalScrollBar().setCursor(QCursor(Qt.CursorShape.ClosedHandCursor))
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
     
-    def enterEvent(self, event: QtGui.QEnterEvent) -> None:
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+    def enterEvent(self, event: QEnterEvent) -> None:
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         return super().enterEvent(event)
 
-    def leaveEvent(self, a0: QtCore.QEvent) -> None:
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    def leaveEvent(self, a0: QEvent) -> None:
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         return super().leaveEvent(a0)
 
 class Draggable_ListWidget(ListWidget):
@@ -28,38 +30,39 @@ class Draggable_ListWidget(ListWidget):
 
         self.setDragEnabled(True)
     
-    def mousePressEvent(self, event:QtGui.QMouseEvent):
+    def mousePressEvent(self, event:QMouseEvent):
         item = self.itemAt(event.pos())
         if item and item.text():
 
-            pixmap = QtGui.QPixmap(16, 16)
-            pixmap.fill(QtGui.QColor("lightgray"))
+            pixmap = QPixmap(16, 16)
+            pixmap.fill(QColor("lightgray"))
 
-            mimeData = QtCore.QMimeData()
+            mimeData = QMimeData()
             mimeData.setText(item.text())
 
-            drag = QtGui.QDrag(self)
+            drag = QDrag(self)
             drag.setMimeData(mimeData)
-            drag.setHotSpot(QtCore.QPoint(int(pixmap.width() / 2), int(pixmap.height() / 2)))
+            drag.setHotSpot(QPoint(int(pixmap.width() / 2), int(pixmap.height() / 2)))
             drag.setPixmap(pixmap)
 
-            drag.exec(QtCore.Qt.DropAction.MoveAction)
+            drag.exec(Qt.DropAction.MoveAction)
 
             super().mousePressEvent(event)
 
 
-class TreeWidget (QtWidgets.QTreeWidget):
-    sig_doubleClick = QtCore.Signal(str)
+class TreeWidget (QTreeWidget):
+    sig_doubleClick = Signal(str)
+    sig_onChange = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
     
-        self.setIconSize(QtCore.QSize(24, 24))
-        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.verticalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
-        self.horizontalScrollBar().setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
-        self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.setIconSize(QSize(24, 24))
+        self.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.verticalScrollBar().setCursor(QCursor(Qt.CursorShape.ClosedHandCursor))
+        self.horizontalScrollBar().setCursor(QCursor(Qt.CursorShape.ClosedHandCursor))
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.setHeaderHidden(True)
 
     def setData (self, data:dict):
@@ -69,17 +72,23 @@ class TreeWidget (QtWidgets.QTreeWidget):
         items = []
         self.data = data
         for key, values in data.items():
-            item = QtWidgets.QTreeWidgetItem([key])            
+            item = QTreeWidgetItem([key])            
 
             for value in values:
-                child = QtWidgets.QTreeWidgetItem([value])
+                child = QTreeWidgetItem([value])
                 item.addChild(child)
             items.append(item)
 
         self.insertTopLevelItems(0, items)
         self.expandAll()
     
-    def mousePressEvent(self, event:QtGui.QMouseEvent):
+    def addItemWidget(self, item:QTreeWidgetItem, column:int, widget: QWidget, index=None):
+        if not index: index = self.topLevelItemCount()
+        child = QTreeWidgetItem(item)
+        self.insertTopLevelItem(index, child)
+        self.setItemWidget(child, column, widget)
+    
+    def mousePressEvent(self, event:QMouseEvent):
         # item = self.itemAt(event.pos())
         # if isinstance(item, QtWidgets.QTreeWidgetItem):
         #     if item.text(0) in self.data.keys():
@@ -87,40 +96,47 @@ class TreeWidget (QtWidgets.QTreeWidget):
 
         super().mousePressEvent(event) 
     
-    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         item = self.itemAt(event.pos())
-        if isinstance(item, QtWidgets.QTreeWidgetItem): 
+        if isinstance(item, QTreeWidgetItem): 
             self.sig_doubleClick.emit(str(item.data(0,0)))
         return super().mouseDoubleClickEvent(event)
 
-    def enterEvent(self, event: QtGui.QEnterEvent) -> None:
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+    def enterEvent(self, event: QEnterEvent) -> None:
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         return super().enterEvent(event)
 
-    def leaveEvent(self, a0: QtCore.QEvent) -> None:
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    def leaveEvent(self, a0: QEvent) -> None:
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         return super().leaveEvent(a0)
+
+class TreeWidgetItem (QTreeWidgetItem):
+    def __init__(self, treeview:QTreeWidget):
+        super().__init__(treeview)
+
+        self.setSizeHint(0, QSize(36,36))
+        self.setExpanded(True)
 
 class Draggable_TreeWidget (TreeWidget):   
     
-    def mousePressEvent(self, event:QtGui.QMouseEvent):
+    def mousePressEvent(self, event:QMouseEvent):
         item = self.itemAt(event.pos())
-        if isinstance(item, QtWidgets.QTreeWidgetItem):
+        if isinstance(item, QTreeWidgetItem):
             if item.text(0) not in self.data.keys():
-                pixmap = QtGui.QPixmap(16, 16)
-                pixmap.fill(QtGui.QColor("lightgray"))
+                pixmap = QPixmap(16, 16)
+                pixmap.fill(QColor("lightgray"))
 
-                mimeData = QtCore.QMimeData()
+                mimeData = QMimeData()
                 mimeData.setText(item.text(0))
 
-                drag = QtGui.QDrag(self)
+                drag = QDrag(self)
                 drag.setMimeData(mimeData)
-                drag.setHotSpot(QtCore.QPoint(int(pixmap.width() / 2), int(pixmap.height() / 2)))
+                drag.setHotSpot(QPoint(int(pixmap.width() / 2), int(pixmap.height() / 2)))
                 drag.setPixmap(pixmap)
 
-                drag.exec(QtCore.Qt.DropAction.MoveAction)
+                drag.exec(Qt.DropAction.MoveAction)
             
             
         super().mousePressEvent(event)

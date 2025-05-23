@@ -12,6 +12,10 @@ DEBUG = True
 
 def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> List[Line2D]:
 
+    if DEBUG:
+        X = [1,2]
+        Y = [1,3]
+
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
@@ -41,6 +45,10 @@ def line3d (X, Y, Z, ax:Axes, gid:str, *args, **kwargs) -> List[Line2D]:
     return artist
 
 def step2d (X, Y, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
+    
+    if DEBUG:
+        X = [1,2]
+        Y = [1,3]
 
     _X = np.asarray(X)
     _Y = np.asarray(Y)
@@ -77,6 +85,10 @@ def step3d (X, Y, Z, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]
 
 def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs) -> List[Line2D]:
 
+    if DEBUG:
+        X = [1,2]
+        Y = [1,3]
+        
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
@@ -150,6 +162,11 @@ def spline2d(X, Y, ax:Axes, gid, num:int=1000, order:int=3, bc_type="not-a-knot"
 
 def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *args, **kwargs) -> List[PolyCollection]:
 
+    if DEBUG:
+        X = [1, 2]
+        Y = [2, 3]
+        Z = [3, 4]
+
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     _Z = np.asarray(Z)
@@ -184,6 +201,10 @@ def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *arg
 
 def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs) -> List[PolyCollection]:
     
+    if DEBUG:
+        X = [1, 2]
+        Y = [2, 3]
+        
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     stack = np.cumsum(_Y, axis=0)
@@ -209,6 +230,10 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
 
 def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> List[PolyCollection]:
 
+    if DEBUG:
+        X = [1, 2]
+        Y = [2, 3]
+        
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     _Y = _Y/np.sum(_Y, axis=0)

@@ -7,7 +7,6 @@ from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
@@ -25,51 +24,56 @@ import matplotlib
 DEBUG = False
 
 class Heatmap (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
-
-        self.initUI()
+    sig = Signal()
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot=None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
 
-        heatmap = TreeWidgetItem(self.treeview)
-        heatmap.setText(0, 'Heatmap')
+        self.quadmesh = QuadMesh(self.gid, self.canvas)
+        self.quadmesh.onChange.connect(self.sig.emit)
+        self._layout.addWidget(self.quadmesh)
 
-        QuadMesh(self.gid, self.canvas, self.treeview, heatmap)
-
-class Contour (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
-
-        self.initUI()
+class Contour(PlotConfigBase):
+    sig = Signal()
+    def __init__(self, gid, canvas, plot = None, parent=None):
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
+        self._layout = QVBoxLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0,0,0,0)
 
-        contour = TreeWidgetItem(self.treeview)
-        contour.setText(0, 'Contour')
-        
         self.fillmesh = Toggle(text="Fill Color")
         self.fillmesh.button.setChecked(self.get_fillmesh())
         self.fillmesh.button.checkedChanged.connect(self.set_fillmesh)
-        self.treeview.addItemWidget(contour, 0, self.fillmesh)
+        self._layout.addWidget(self.fillmesh)
 
         self.cmap = ComboBox(items=colormaps(), text="Colormap")
         self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        self.treeview.addItemWidget(contour, 0, self.cmap)
+        self._layout.addWidget(self.cmap)
 
         self.norm = ComboBox(items=['linear', 'log', 'logit', 'symlog','asinh'], text="Norm")
         self.norm.button.setCurrentText(self.get_norm())
         self.norm.button.currentTextChanged.connect(self.set_norm)
-        self.treeview.addItemWidget(contour, 0, self.norm)
+        self._layout.addWidget(self.norm)
 
         self.alpha = Slider(text='Transparency',min=0,max=100)
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(contour, 0, self.alpha)
+        self._layout.addWidget(self.alpha)
 
-        Line(self.gid, self.canvas, self.treeview, contour)
-
+        self.line = Line(self.gid, self.canvas)
+        self.line.color.hide()
+        self.line.onChange.connect(self.update_plot)
+        self._layout.addWidget(self.line)
+    
     def find_object(self) -> list[collections.QuadMesh]:
         return find_mpl_object(
             source=self.canvas.fig,
@@ -85,7 +89,7 @@ class Contour (PlotConfigBase):
             logger.exception(e)
     
     def get_fillmesh(self) -> bool:
-        try: return self.find_object()[0].fill
+        try: return self.obj[0].fill
         except: return False
     
     def set_cmap (self, value:str):
@@ -97,7 +101,7 @@ class Contour (PlotConfigBase):
     
     def get_cmap(self) -> str:
         try:
-            return self.find_object()[0].cmap.name
+            return self.obj[0].cmap.name
         except: return matplotlib.rcParams["image.cmap"]
     
     def set_norm(self, value:str):
@@ -108,12 +112,12 @@ class Contour (PlotConfigBase):
             logger.exception(e)
     
     def get_norm(self) -> str:
-        try: return self.find_object()[0].norm_
+        try: return self.obj[0].norm_
         except: return "linear"
     
     def set_alpha(self, value: float):
         try:
-            for obj in self.find_object():
+            for obj in self.obj:
                 obj.set_alpha(value/100)
             self.canvas.draw_idle()
         except Exception as e:
@@ -121,7 +125,9 @@ class Contour (PlotConfigBase):
     
     def get_alpha (self):
         try:
-            if self.find_object()[0].get_alpha() != None:
-                return int(self.find_object()[0].get_alpha()*100)
+            if self.obj[0].get_alpha() != None:
+                return int(self.obj[0].get_alpha()*100)
             return 100
         except: return 100
+
+    

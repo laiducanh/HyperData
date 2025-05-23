@@ -11,7 +11,8 @@ from PySide6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
 ### Import self classes
 from plot.insert_plot.insert_plot import InsertPlot
 from plot.curve.curve import Curve
-from plot.axes.axes import Tick, Spine, Tick3D, Spine3D
+from plot.axes.tick_2d import Tick2D
+from plot.axes.tick_3d import Tick3D
 from plot.plot_graphics_view import GraphicsView, GraphicsViewMultiFig
 from plot.multifigure.layout import Layout
 from ui.base_widgets.list import TreeWidget
@@ -79,7 +80,6 @@ class PlotView (QMainWindow):
             self.treeview_data = {
                 "Graph":["Manage graph"],
                 "Tick":["Tick X3D","Tick Y3D","Tick Z3D"],
-                "Spine":["Spine X3D","Spine Y3D","Spine Z3D"],
                 "Figure":["Plot size","Grid"],
                 "Label":["Title","Axis label","Legend","Data annotation"],
             }
@@ -88,7 +88,6 @@ class PlotView (QMainWindow):
             self.treeview_data = {
                 "Graph":["Manage graph"],
                 "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
-                "Spine":["Spine bottom","Spine left","Spine top","Spine right"],
                 "Figure":["Plot size","Grid"],
                 "Label":["Title","Axis label","Legend","Data annotation"],
             }
@@ -142,16 +141,9 @@ class PlotView (QMainWindow):
         self.diag.setLabelText("Loading ticks")
         QApplication.processEvents()
         if self.plot3d: self.tick = Tick3D(self.canvas, self.parent())
-        else: self.tick = Tick(self.canvas, self.parent())
-        self.stackedlayout.addWidget(self.tick)
+        else: self.tick = Tick2D(self.canvas, self.parent())
+        #self.stackedlayout.addWidget(self.tick)
         self.diag.progressbar._setValue(60)
-
-        self.diag.setLabelText("Loading spines")
-        QApplication.processEvents()
-        if self.plot3d: self.spine = Spine3D(self.canvas, self.parent())
-        else: self.spine = Spine(self.canvas, self.parent())
-        self.stackedlayout.addWidget(self.spine)
-        self.diag.progressbar._setValue(70)
 
         self.diag.setLabelText("Loading grid")
         QApplication.processEvents()
@@ -187,8 +179,9 @@ class PlotView (QMainWindow):
                     break
             curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
             curve.sig.connect(self.update_plotlist)
-            self.stackedlayout.addWidget(curve)
-            self.stackedlayout.setCurrentWidget(curve)
+            #self.stackedlayout.addWidget(curve)
+            #self.stackedlayout.setCurrentWidget(curve)
+            curve.show()
         
         elif "manage graph" == text:
             self.stackedlayout.setCurrentWidget(self.insertplot)
@@ -201,11 +194,8 @@ class PlotView (QMainWindow):
             
         elif "tick " in text:
             self.tick.choose_axis_func(text.split()[-1].title())
-            self.stackedlayout.setCurrentWidget(self.tick)
-        
-        elif "spine " in text:
-            self.spine.choose_axis_func(text.split()[-1].title())
-            self.stackedlayout.setCurrentWidget(self.spine)
+            #self.stackedlayout.setCurrentWidget(self.tick)
+            self.tick.show()
         
         elif text in ["plot size", "grid"]:
             #self.stackedlayout.setCurrentWidget(self.grid)

@@ -1,36 +1,22 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from PySide6.QtCore import Qt, Signal, QTimer
-from PySide6.QtGui import QPaintEvent
+from PySide6.QtCore import QTimer, QObject
+from PySide6.QtWidgets import QWidget
+from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.canvas import Canvas
-from plot.utilis import find_mpl_object
-from matplotlib.artist import Artist
 
-class ArtistConfigBase(QWidget):
-    onChange = Signal()
-    def __init__(self, gid, canvas:Canvas, parent=None):
-        super().__init__(parent)
+class ArtistConfigBase (QWidget):
+    def __init__(self, gid:str, canvas:Canvas, treeview:TreeWidget, parent:TreeWidgetItem):
+        super().__init__(treeview)
 
         self.gid = gid
         self.canvas = canvas
-        self.obj = self.find_object()
+        self.treeview = treeview
+        self.parent = parent
         self.timer = QTimer()
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.update_plot)
-
-        self.initUI()
     
-    def initUI(self):
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self._layout)
-        self._layout.setContentsMargins(0,0,0,0)
-    
-    def find_object (self) -> list[Artist]:
-        return find_mpl_object(
-            source=self.canvas.fig,
-            match=[Artist],
-            gid=self.gid
-        )
+    def find_object (self):
+        pass
 
     def update_props(self):
         pass
@@ -40,8 +26,5 @@ class ArtistConfigBase(QWidget):
         self.update_plot()
     
     def update_plot(self):
-        self.onChange.emit()
-    
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        self.obj = self.find_object()            
-        return super().paintEvent(a0)
+        self.treeview.sig_onChange.emit()
+        self.canvas.draw_idle()

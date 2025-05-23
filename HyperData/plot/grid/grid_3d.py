@@ -6,8 +6,7 @@ from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.window import ProgressDialog
-from ui.base_widgets.list import TreeWidget
-from plot.utilis import TreeWidgetItem
+from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.canvas import Canvas
 import matplotlib
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger

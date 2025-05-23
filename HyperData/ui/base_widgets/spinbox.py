@@ -11,12 +11,18 @@ class _SpinBox (QSpinBox):
         self.setRange(min, max)
         self.setSingleStep(step)
 
+class _TransparentSpinBox (_SpinBox):
+    """ SpinBox with no border and background color """
+
 class _DoubleSpinBox (QDoubleSpinBox):
     def __init__(self, min:int=0, max:int=100, step:int=1, parent=None):
         super().__init__(parent)
 
         self.setRange(min, max)
         self.setSingleStep(step)
+    
+class _TransparentDoubleSpinBox (_DoubleSpinBox):
+    """ DoubleSpinBox with no border and background color """
 
 class _Slider (QSlider):
     def __init__(self, min:int=0, max:int=100, step:int=1, orientation=Qt.Orientation.Horizontal, parent=None):
@@ -46,6 +52,22 @@ class SpinBox (HButton):
         self.button.setRange(min,max)
         self.button.setSingleStep(step)
         self.butn_layout.addWidget(self.button)
+
+class TransparentSpinBox (HButton):
+    def __init__(self, min:int=0, max:int=100, step:int=1, 
+                 text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent) 
+        
+        self.text = text
+        self.min = min
+        self.max = max
+        self.step = step
+
+        self.button = _TransparentSpinBox(min, max, step, parent=parent)
+        self.button.setFixedWidth(150)
+        self.button.setRange(min,max)
+        self.button.setSingleStep(step)
+        self.butn_layout.addWidget(self.button)
     
 class DoubleSpinBox (HButton):
     def __init__(self, min:float=0, max:float=100, step:float=1, 
@@ -57,6 +79,21 @@ class DoubleSpinBox (HButton):
         self.step = step
         
         self.button = _DoubleSpinBox(min, max, step, parent=parent)
+        self.button.setFixedWidth(150)
+        self.button.setRange(min,max)
+        self.button.setSingleStep(step)
+        self.butn_layout.addWidget(self.button)
+
+class TransparentDoubleSpinBox (HButton):
+    def __init__(self, min:float=0, max:float=100, step:float=1, 
+                 text:str=None, text2:str=None, parent=None):
+        super().__init__(text, text2, parent) 
+        
+        self.min = min
+        self.max = max
+        self.step = step
+        
+        self.button = _TransparentDoubleSpinBox(min, max, step, parent=parent)
         self.button.setFixedWidth(150)
         self.button.setRange(min,max)
         self.button.setSingleStep(step)

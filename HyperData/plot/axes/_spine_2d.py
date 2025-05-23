@@ -7,9 +7,11 @@ from ui.base_widgets.frame import Frame
 from plot.canvas import Canvas
 from config.settings import linestyle_lib, marker_lib, logger
 import matplotlib
-from matplotlib import spines, lines, axis
+from matplotlib import spines, lines
 from typing import List
 from plot.utilis import find_mpl_object
+
+##### This file was deprecated #####
 
 class SpineBase (Frame):
     def __init__(self, axis, canvas:Canvas, parent=None):
@@ -20,7 +22,7 @@ class SpineBase (Frame):
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.axis = axis
         self.canvas = canvas
-        self.obj = self.find_object()
+        self.spines, self.arrows = self.find_object()
         self.first_show = True
     
     def initUI(self):
@@ -60,68 +62,80 @@ class SpineBase (Frame):
         linewidth.button.setValue(self.get_linewidth())
         self.vlayout.addWidget(linewidth)
     
-    def find_object (self) -> lines.Line2D:
-        return find_mpl_object(
+    def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
+        s = find_mpl_object(
             self.canvas.fig, 
-            match=[axis.Axis], 
-            gid=self.axis
-        )[0].line
+            [spines.Spine],
+            gid = f"spine {self.axis}",
+        )
+        a = find_mpl_object(
+            self.canvas.fig, 
+            [lines.Line2D],
+            gid = f"spine {self.axis}",
+        )
+        return s, a
 
     def set_visible (self, value:bool):
-        self.obj.set_visible(value)
+        for obj in self.spines+self.arrows:
+            obj.set_visible(value)
         self.canvas.draw_idle()
     
     def get_visible (self):
-        return self.obj.get_visible()  
+        return self.spines[0].get_visible()  
 
     def set_arrow(self, marker):
         try:
             marker = list(marker_lib.keys())[list(marker_lib.values()).index(marker.lower())]
-            self.obj.set_marker(marker)
-            self.obj.set_markevery((1,1))
+            for obj in self.arrows:
+                obj.set_marker(marker)
         except Exception as e:
             logger.exception(e)
         self.canvas.draw_idle()
     
     def get_arrow(self):
-        return marker_lib[self.obj.get_marker()]
+        return marker_lib[self.arrows[0].get_marker()]
     
     def set_alpha (self, value):
-        self.obj.set_alpha(float(value/100))
+        for obj in self.spines+self.arrows:
+            obj.set_alpha(float(value/100))
         self.canvas.draw_idle()
     
     def get_alpha(self):
-        if self.obj.get_alpha() == None:
+        if self.spines[0].get_alpha() == None:
             return 100
-        return self.obj.get_alpha()*100
+        return self.spines[0].get_alpha()*100
     
     def set_linestyle(self, value):
-        self.obj.set_linestyle(value)
+        for obj in self.spines:
+            obj.set_linestyle(value)
         self.canvas.draw_idle()
     
     def get_linestyle(self):
-        return self.obj.get_linestyle()
+        return self.spines[0].get_linestyle()
 
     def set_linewidth(self, value):
-        self.obj.set_linewidth(value)
+        for obj in self.spines+self.arrows:
+            obj.set_linewidth(value)
         self.canvas.draw_idle()
     
     def get_linewidth (self):
-        return self.obj.get_linewidth()
+        return self.spines[0].get_linewidth()
 
     def set_color(self, color):
-        self.obj.set_color(color)
+        for obj in self.spines+self.arrows:
+            obj.set_color(color)
         self.canvas.draw_idle()
     
     def get_color(self):
-        return matplotlib.colors.rgb2hex(self.obj.get_color())
+        return matplotlib.colors.rgb2hex(self.spines[0].get_edgecolor())
 
     def set_arrowcolor(self, color):
-        self.obj.set_markerfacecolor(color)
+        for obj in self.arrows:
+            obj.set_markerfacecolor(color)
         self.canvas.draw_idle()
     
     def get_arrowcolor(self):
-        return matplotlib.colors.rgb2hex(self.obj.get_markerfacecolor())
+        return matplotlib.colors.rgb2hex(self.arrows[0].get_markerfacecolor())
 
     def showEvent(self, a0):
         if self.first_show:
@@ -130,10 +144,10 @@ class SpineBase (Frame):
         return super().showEvent(a0)
 
     def paintEvent(self, e):
-        self.obj = self.find_object()
+        self.spines, self.arrows = self.find_object()
         return super().paintEvent(e)
 
-class Spine3D (QWidget):
+class Spine2D (QWidget):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
@@ -144,17 +158,20 @@ class Spine3D (QWidget):
         self.choose_axis = SegmentedWidget()
         self.layout.addWidget(self.choose_axis)
 
-        self.choose_axis.addButton(text='X3D', func=lambda: self.stackedlayout.setCurrentIndex(0))
-        self.choose_axis.addButton(text='Y3D', func=lambda: self.stackedlayout.setCurrentIndex(1))
-        self.choose_axis.addButton(text='Z3D', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.choose_axis.addButton(text='Bottom', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_axis.addButton(text='Left', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_axis.addButton(text='Top', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.choose_axis.addButton(text='Right', func=lambda: self.stackedlayout.setCurrentIndex(3))
 
         self.stackedlayout = QStackedLayout()
         self.layout.addLayout(self.stackedlayout)
 
-        self.bot = SpineBase('x3d',self.canvas, parent)
+        self.bot = SpineBase('bottom',self.canvas, parent)
         self.stackedlayout.addWidget(self.bot)
-        self.left = SpineBase('y3d',self.canvas, parent)
+        self.left = SpineBase('left',self.canvas, parent)
         self.stackedlayout.addWidget(self.left)
-        self.top = SpineBase('z3d',self.canvas, parent)
+        self.top = SpineBase('top',self.canvas, parent)
         self.stackedlayout.addWidget(self.top)
+        self.right = SpineBase('right',self.canvas, parent)
+        self.stackedlayout.addWidget(self.right)
     

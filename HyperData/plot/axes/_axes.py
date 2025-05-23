@@ -5,6 +5,7 @@ from plot.canvas import Canvas
 # axis = 'axis bottom', 'axis left'
 # type = 'major', 'minor'
 
+##### This file was deprecated #####
 
 class Spine (QWidget):
     def __init__(self, canvas:Canvas, parent=None):

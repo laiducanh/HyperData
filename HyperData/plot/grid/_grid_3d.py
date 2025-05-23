@@ -11,6 +11,8 @@ from plot.canvas import Canvas
 import matplotlib
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
+##### This file was deprecated #####
+
 DEBUG = False
 
 class PlotSize2D (Frame):

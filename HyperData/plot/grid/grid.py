@@ -1,11 +1,9 @@
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QTreeWidgetItem, QMainWindow, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
 from PySide6.QtGui import QColor
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import Slider, DoubleSpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.spinbox import Slider, TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.list import TreeWidget
-from plot.utilis import TreeWidgetItem
+from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.canvas import Canvas
 from matplotlib import lines, rcParams
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
@@ -19,45 +17,41 @@ class PlotSize2D (TreeWidgetItem):
         self.setText(0, 'Plot Size')
         self.canvas = canvas
 
-        child = QTreeWidgetItem(self)
-        top = DoubleSpinBox(
+        top = TransparentDoubleSpinBox(
             text  = 'Margin top',
             text2 = "The position of the top edge",
             min = 0, max = 1, step = 0.05
         )
         top.button.valueChanged.connect(self.set_top)
         top.button.setValue(self.get_top())
-        treeview.setItemWidget(child, 0, top)
+        treeview.addItemWidget(self, 0, top)
 
-        child = QTreeWidgetItem(self)
-        bottom = DoubleSpinBox(
+        bottom = TransparentDoubleSpinBox(
             text  = 'Margin bottom',
             text2 = 'The position of the bottom edge',
             min = 0, max = 1, step = 0.05
         )
         bottom.button.valueChanged.connect(self.set_bottom)
         bottom.button.setValue(self.get_bottom())
-        treeview.setItemWidget(child, 0, bottom)
+        treeview.addItemWidget(self, 0, bottom)
 
-        child = QTreeWidgetItem(self)
-        left = DoubleSpinBox(
+        left = TransparentDoubleSpinBox(
             text  = 'Margin left',
             text2 ='The position of the left edge',
             min = 0, max = 1, step = 0.05
         )
         left.button.valueChanged.connect(self.set_left)
         left.button.setValue(self.get_left())
-        treeview.setItemWidget(child, 0, left)
+        treeview.addItemWidget(self, 0, left)
 
-        child = QTreeWidgetItem(self)
-        right = DoubleSpinBox(
+        right = TransparentDoubleSpinBox(
             text  = 'Margin right',
             text2 = 'The position of the right edge',
             min = 0, max = 1, step = 0.05
         )
         right.button.valueChanged.connect(self.set_right)
         right.button.setValue(self.get_right())
-        treeview.setItemWidget(child, 0, right)
+        treeview.addItemWidget(self, 0, right)
     
     def set_top(self,value):
         self.canvas.fig.subplots_adjust(top=value)
@@ -96,72 +90,65 @@ class Grid2D (TreeWidgetItem):
 
         self.canvas = canvas
 
-        child = QTreeWidgetItem(self)
         self.visible = Toggle(
             text  = 'Visible',
             text2 = 'Whether to show the grid lines'
         )
         self.visible.button.checkedChanged.connect(self.set_grid)
         self.visible.button.setChecked(self.get_visible())
-        treeview.setItemWidget(child, 0, self.visible)
+        treeview.addItemWidget(self, 0, self.visible)
 
-        child = QTreeWidgetItem(self)
-        self.which = ComboBox(
+        self.which = TransparentComboBox(
             items = ['Major','Minor','Both'],
             text  = 'Type',
             text2 = 'The grid lines to apply the changes on'
         )
         self.which.button.currentTextChanged.connect(self.set_gridtype)
         self.which.button.setCurrentText(self.get_gridtype())
-        treeview.setItemWidget(child, 0, self.which)
+        treeview.addItemWidget(self, 0, self.which)
 
-        child = QTreeWidgetItem(self)
-        self.axis = ComboBox(
+        self.axis = TransparentComboBox(
             text  = 'Axis',
             text2 = 'The axis to apply the changes on',
             items = ['X','Y','Both']
         )
         self.axis.button.currentTextChanged.connect(self.set_gridaxis)
         self.axis.button.setCurrentText(self.get_gridaxis())
-        treeview.setItemWidget(child, 0, self.axis)
+        treeview.addItemWidget(self, 0, self.axis)
 
-        child = QTreeWidgetItem(self)
-        self.linewidth = DoubleSpinBox(
+        self.linewidth = TransparentDoubleSpinBox(
             text  = 'Line Width',
             text2 = 'Set the width of the grid lines',
             min = 0.1, max = 10, step = 0.5
         )
         self.linewidth.button.valueChanged.connect(self.set_linewidth)
         self.linewidth.button.setValue(self.get_linewidth())
-        treeview.setItemWidget(child, 0, self.linewidth)
+        treeview.addItemWidget(self, 0, self.linewidth)
 
-        child = QTreeWidgetItem(self)
-        self.linestyle = ComboBox(
+        self.linestyle = TransparentComboBox(
             text  = 'Line Style',
             text2 = 'Set the style of the grid lines',
             items = linestyle_lib.values()
         )
         self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
         self.linestyle.button.setCurrentText(self.get_linestyle())
-        treeview.setItemWidget(child, 0, self.linestyle)
+        treeview.addItemWidget(self, 0, self.linestyle)
 
-        child = QTreeWidgetItem(self)
         self.color = ColorDropdown(
             text  = 'Line Color',
             text2 = 'Set the color of the grid',
             color = self.get_color(),
         )
         self.color.button.colorChanged.connect(self.set_color)
-        treeview.setItemWidget(child, 0, self.color)
+        treeview.addItemWidget(self, 0, self.color)
 
-        child = QTreeWidgetItem(self)
         self.alpha = Slider(
             text  = 'Transparency',
             text2 = 'Set the transparency of the grid lines'
         )
         self.alpha.button.valueChanged.connect(self.set_alpha)
         self.alpha.button.setValue(self.get_alpha())
-        treeview.setItemWidget(child, 0, self.alpha)
+        treeview.addItemWidget(self, 0, self.alpha)
     
     def set_grid(self):
         try:
@@ -241,30 +228,27 @@ class Pane (TreeWidgetItem):
 
         self.canvas = canvas
 
-        child = QTreeWidgetItem(self)
         self.visible = Toggle(
             text  = 'Visible',
             text2 = 'Whether to show the color'
         )
         self.visible.button.checkedChanged.connect(self.set_visible)
         self.visible.button.setChecked(self.get_visible())
-        treeview.setItemWidget(child, 0, self.visible)
+        treeview.addItemWidget(self, 0, self.visible)
     
-        child = QTreeWidgetItem(self)
         self.facecolor = ColorDropdown(
             text  = 'Color',
             text2 = 'Set the color of the Pane',
             color = self.get_color())
         self.facecolor.button.colorChanged.connect(self.set_color)
-        treeview.setItemWidget(child, 0, self.facecolor)
+        treeview.addItemWidget(self, 0, self.facecolor)
 
-        child = QTreeWidgetItem(self)
         self.alpha = Slider(
             text  = 'Transparency',
             text2 = 'Set the transparency of the Pane')
         self.alpha.button.valueChanged.connect(self.set_patch_alpha)
         self.alpha.button.setValue(self.get_patch_alpha())
-        treeview.setItemWidget(child, 0, self.alpha)
+        treeview.addItemWidget(self, 0, self.alpha)
 
     def set_visible(self,value):
         self.canvas.axes.patch.set_visible(value)
