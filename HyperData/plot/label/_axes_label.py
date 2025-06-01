@@ -1,76 +1,91 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QStackedLayout
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QVBoxLayout, QScrollArea, QSizePolicy, QWidget, QStackedLayout
 from plot.canvas import Canvas
-from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.line_edit import _TextEdit
+from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.button import ComboBox, SegmentedWidget
 from ui.base_widgets.spinbox import DoubleSpinBox, Slider
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.list import TreeWidget
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import font_lib
 from matplotlib.axis import XAxis, YAxis
+from matplotlib.text import Text
 from typing import Union
 
-DEBUG = False
-
-class AxisLabel (TreeWidget):
-    def __init__(self, axis:str, canvas: Canvas, parent=None):
+class AxesLabelBase (QScrollArea):
+    def __init__(self, axis, canvas:Canvas, parent=None):
         super().__init__(parent)
 
+        widget = Frame()
+        widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        self.vlayout = QVBoxLayout()
+        self.vlayout.setContentsMargins(10,0,10,15)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        widget.setLayout(self.vlayout)
+        self.setWidget(widget)
+        self.setWidgetResizable(True)
+        self.verticalScrollBar().setValue(1900)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
         self.canvas = canvas
         self.axis = axis
         self.ax = self.find_axis()
-        self.text = self.ax.get_label()
-
-        self.initUI()
+        self.first_show = True
     
     def initUI(self):
-        label = LineEdit(text='Label')
-        label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        label.button.setText(self.get_label())
-        label.button.textChanged.connect(self.set_label)
-        self.addItemWidget(self, 0, label)
+
+        self.title = _TextEdit()
+        self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        self.title.setPlaceholderText(f"Enter the {self.axis} axis' label")
+        self.title.textChanged.connect(self.set_label)
+        self.title.setText(self.get_title())
+        self.title.setFixedHeight(100)
+        self.vlayout.addWidget(self.title)
+
+        self.vlayout.addSpacing(10)
 
         font = ComboBox(items=font_lib,text='Font')
         font.button.currentTextChanged.connect(self.set_fontname)
         font.button.setCurrentText(self.get_fontname())
-        self.addItemWidget(self, 0, font)
+        self.vlayout.addWidget(font)
 
         size = DoubleSpinBox(text='font size',min=1,max=100,step=1)
         size.button.valueChanged.connect(self.set_fontsize)
         size.button.setValue(self.get_fontsize())
-        self.addItemWidget(self, 0, size)
+        self.vlayout.addWidget(size)
 
         style = FontStyle(obj=[self.text], canvas=self.canvas)
-        self.addItemWidget(self, 0, style)
+        self.vlayout.addWidget(style)
 
         color = ColorDropdown(text='font color',color=self.get_color())
         color.button.colorChanged.connect(self.set_color)
-        self.addItemWidget(self, 0, color)
+        self.vlayout.addWidget(color)
 
         self.backgroundcolor = ColorDropdown(text='background color',color=self.get_backgroundcolor())
         self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        self.addItemWidget(self, 0, self.backgroundcolor)
+        self.vlayout.addWidget(self.backgroundcolor)
 
         edgecolor = ColorDropdown(text='edge color',color=self.get_edgecolor())
         edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.addItemWidget(self, 0, edgecolor)
+        self.vlayout.addWidget(edgecolor)
 
         alpha = Slider(text='transparency')
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
-        self.addItemWidget(self, 0, alpha)
-    
+        self.vlayout.addWidget(alpha)
+      
     def find_axis(self) -> Union[XAxis, YAxis]:
         return find_mpl_object(self.canvas.fig,[XAxis, YAxis], self.axis)[0]
-    
-    def set_label(self, value:str):
-        self.ax.set_label_text(value)
+
+    def set_label(self):
+        self.text: Text = self.ax.set_label_text(label=self.title.toPlainText())
         self.canvas.draw_idle()
     
-    def get_label(self) -> str:
+    def get_title(self) -> str:
         return self.ax.get_label_text()
-
+    
     def set_fontname (self, font:str):
         self.text.set_fontfamily(font)
         self.canvas.draw_idle()
@@ -120,18 +135,21 @@ class AxisLabel (TreeWidget):
             return int(self.text.get_alpha()*100)
         return 100
 
+    def showEvent(self, a0):
+        self.ax = self.find_axis()
+        if self.first_show:
+            self.initUI()
+            self.first_show = False
+        return super().showEvent(a0)
 
-class AxisLabel2D (QMainWindow):
+class AxesLabel2D (QWidget):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
-    # Layout
-        widget = QWidget()
-        self.setCentralWidget(widget)
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.canvas = canvas
-    
         choose_axis = SegmentedWidget()
         layout.addWidget(choose_axis)
 
@@ -145,26 +163,23 @@ class AxisLabel2D (QMainWindow):
         self.stackedlayout = QStackedLayout()
         layout.addLayout(self.stackedlayout)
 
-        self.bot = AxisLabel('bottom', canvas, parent)
+        self.bot = AxesLabelBase('bottom', canvas, parent)
         self.stackedlayout.addWidget(self.bot)
-        self.left = AxisLabel('left', canvas, parent)
+        self.left = AxesLabelBase('left', canvas, parent)
         self.stackedlayout.addWidget(self.left)
-        self.top = AxisLabel('top', canvas, parent)
+        self.top = AxesLabelBase('top', canvas, parent)
         self.stackedlayout.addWidget(self.top)
-        self.right = AxisLabel('right', canvas, parent)
+        self.right = AxesLabelBase('right', canvas, parent)
         self.stackedlayout.addWidget(self.right)
 
-class AxisLabel3D(QMainWindow):
+class AxesLabel3D(QWidget):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
-    # Layout
-        widget = QWidget()
-        self.setCentralWidget(widget)
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.canvas = canvas
-    
         choose_axis = SegmentedWidget()
         layout.addWidget(choose_axis)
 
@@ -177,9 +192,9 @@ class AxisLabel3D(QMainWindow):
         self.stackedlayout = QStackedLayout()
         layout.addLayout(self.stackedlayout)
 
-        self.bot = AxisLabel('x3d', canvas, parent)
+        self.bot = AxesLabelBase('x3d', canvas, parent)
         self.stackedlayout.addWidget(self.bot)
-        self.left = AxisLabel('y3d', canvas, parent)
+        self.left = AxesLabelBase('y3d', canvas, parent)
         self.stackedlayout.addWidget(self.left)
-        self.top = AxisLabel('z3d', canvas, parent)
+        self.top = AxesLabelBase('z3d', canvas, parent)
         self.stackedlayout.addWidget(self.top)

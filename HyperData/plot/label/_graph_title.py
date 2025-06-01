@@ -1,67 +1,71 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QVBoxLayout, QScrollArea, QSizePolicy
 from plot.canvas import Canvas
-from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.line_edit import _TextEdit
+from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, Slider
+from ui.base_widgets.spinbox import Slider, DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.list import TreeWidget
-from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import font_lib
 
-DEBUG = False
-
-class GraphTitle (QMainWindow):
+class GraphTitle (QScrollArea):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
+        widget = Frame()
+        widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        self.vlayout = QVBoxLayout()
+        self.vlayout.setContentsMargins(10,0,10,15)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        widget.setLayout(self.vlayout)
+        self.setWidget(widget)
+        self.setWidgetResizable(True)
+        self.verticalScrollBar().setValue(1900)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.canvas = canvas
-        self.obj = self.canvas.axes.set_title('')
-        self.initUI()
+        self.first_show = True
     
     def initUI(self):
+        
+        self.vlayout.addWidget(TitleLabel("Graph Title"))
+        self.vlayout.addWidget(SeparateHLine())
 
-    # Layout
-        widget = QWidget()
-        self.setCentralWidget(widget)
-        layout = QVBoxLayout(widget)
-    
-    # Create a QTreeWidget
-        self.tree = TreeWidget()
-        self.tree.setColumnCount(1)
-        self.tree.setUniformRowHeights(True)
-        layout.addWidget(self.tree)
+        self.title = _TextEdit()
+        self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        self.title.setPlaceholderText("Enter the Graph's Title")
+        self.title.textChanged.connect(self.set_title)
+        self.title.setText(self.get_title())
+        self.title.setFixedHeight(100)
+        self.vlayout.addWidget(self.title)
 
-        label = LineEdit(text='Label')
-        label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        label.button.setText(self.get_title())
-        label.button.textChanged.connect(self.set_title)
-        self.tree.addItemWidget(self.tree, 0, label)
-
+        self.vlayout.addSpacing(10)
+        
         font = ComboBox(items=font_lib,text='Font')
         font.button.currentTextChanged.connect(self.set_fontname)
         font.button.setCurrentText(self.get_fontname())
-        self.tree.addItemWidget(self.tree, 0, font)
+        self.vlayout.addWidget(font)
 
         size = DoubleSpinBox(text='font size',min=1,max=100,step=2)
         size.button.valueChanged.connect(self.set_fontsize)
         size.button.setValue(self.get_fontsize())
-        self.tree.addItemWidget(self.tree, 0, size)
+        self.vlayout.addWidget(size)
         
         style = FontStyle(obj=[self.obj], canvas=self.canvas)
-        self.tree.addItemWidget(self.tree, 0, style)
+        self.vlayout.addWidget(style)
 
         color = ColorDropdown(text='font color',color=self.get_color())
         color.button.colorChanged.connect(self.set_color)
-        self.tree.addItemWidget(self.tree, 0, color)
+        self.vlayout.addWidget(color)
 
         self.backgroundcolor = ColorDropdown(text='background color',color=self.get_backgroundcolor())
         self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        self.tree.addItemWidget(self.tree, 0, self.backgroundcolor)
+        self.vlayout.addWidget(self.backgroundcolor)
 
         edgecolor = ColorDropdown(text='edge color',color=self.get_edgecolor())
         edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.tree.addItemWidget(self.tree, 0, edgecolor)
+        self.vlayout.addWidget(edgecolor)
 
         # #align = FontAlignment(type='graph')
         # #align.sig.connect(lambda: self.sig.emit())
@@ -74,10 +78,12 @@ class GraphTitle (QMainWindow):
         alpha = Slider(text='transparency')
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
-        self.tree.addItemWidget(self.tree, 0, alpha)
-    
-    def set_title (self, title:str):
-        self.canvas.axes.set_title(title) 
+        self.vlayout.addWidget(alpha)
+
+        # #self.layout.addStretch()
+
+    def set_title (self):
+        self.obj = self.canvas.axes.set_title(label=self.title.toPlainText()) 
         self.canvas.draw_idle()
     
     def get_title(self):
@@ -137,3 +143,9 @@ class GraphTitle (QMainWindow):
         if self.obj.get_alpha() != None:
             return int(self.obj.get_alpha()*100)
         return 100
+
+    def showEvent(self, a0):
+        if self.first_show:
+            self.initUI()
+            self.first_show = False
+        return super().showEvent(a0)

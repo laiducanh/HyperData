@@ -23,7 +23,7 @@ from plot.canvas import Canvas
 from plot.grid.grid import Grid
 from plot.grid.grid_3d import Grid3D
 from plot.label.graph_title import GraphTitle
-from plot.label.axes_label import AxesLabel2D, AxesLabel3D
+from plot.label.axes_label import AxisLabel2D, AxisLabel3D
 from plot.label.legend import LegendLabel
 from config.settings import GLOBAL_DEBUG, logger, config
 from node_editor.node_node import Node
@@ -155,12 +155,12 @@ class PlotView (QMainWindow):
         self.diag.setLabelText("Loading labels")
         QApplication.processEvents()
         self.title = GraphTitle(self.canvas, self.parent())
-        self.stackedlayout.addWidget(self.title)
-        if self.plot3d: self.axeslabel = AxesLabel3D(self.canvas, self.parent())
-        else: self.axeslabel = AxesLabel2D(self.canvas, self.parent())
-        self.stackedlayout.addWidget(self.axeslabel)
+        #self.stackedlayout.addWidget(self.title)
+        if self.plot3d: self.axeslabel = AxisLabel3D(self.canvas, self.parent())
+        else: self.axeslabel = AxisLabel2D(self.canvas, self.parent())
+        #self.stackedlayout.addWidget(self.axeslabel)
         self.legendlabel = LegendLabel(self.canvas, self.parent())
-        self.stackedlayout.addWidget(self.legendlabel)
+        #self.stackedlayout.addWidget(self.legendlabel)
         self.diag.progressbar._setValue(100)
         self.diag.close()
 
@@ -202,13 +202,16 @@ class PlotView (QMainWindow):
             self.grid.show()
         
         elif text == 'title':
-            self.stackedlayout.setCurrentWidget(self.title)
+            #self.stackedlayout.setCurrentWidget(self.title)
+            self.title.show()
         
         elif text == 'axis label':
-            self.stackedlayout.setCurrentWidget(self.axeslabel)
+            #self.stackedlayout.setCurrentWidget(self.axeslabel)
+            self.axeslabel.show()
         
         elif text == 'legend':
-            self.stackedlayout.setCurrentWidget(self.legendlabel)
+            #self.stackedlayout.setCurrentWidget(self.legendlabel)
+            self.legendlabel.show()
     
     def update_plotlist(self):
         try:
@@ -354,7 +357,7 @@ class PlotViewMultiFig (PlotView):
         QApplication.processEvents()
         self.title = GraphTitle(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.title)
-        self.axeslabel = AxesLabel2D(self.canvas, self.parent())
+        self.axeslabel = AxisLabel2D(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.axeslabel)
 
         self.diag.progressbar._setValue(100)
