@@ -1,7 +1,9 @@
+from PySide6.QtWidgets import QVBoxLayout, QStackedLayout, QWidget
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
@@ -16,63 +18,81 @@ from typing import Union
 DEBUG = False
 
 class Histogram (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        hist = TreeWidgetItem(self.treeview)
-        hist.setText(0, 'Histogram')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Histogram'))
+        layout.addWidget(SeparateHLine())
 
         self.bins = SpinBox(text="Bins",min=1)
         self.bins.button.setValue(self.get_bins())
         self.bins.button.valueChanged.connect(self.set_bins)
-        self.treeview.addItemWidget(hist, 0, self.bins)
+        layout.addWidget(self.bins)
 
         self.density = Toggle(text="Density")
         self.density.button.setChecked(self.get_density())
         self.density.button.checkedChanged.connect(self.set_density)
-        self.treeview.addItemWidget(hist, 0, self.density)
+        layout.addWidget(self.density)
 
         self.cumulative = Toggle(text="Cumulative")
         self.cumulative.button.setChecked(self.get_cumulative())
         self.cumulative.button.checkedChanged.connect(self.set_cumulative)
-        self.treeview.addItemWidget(hist, 0, self.cumulative)
+        layout.addWidget(self.cumulative)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        self.treeview.addItemWidget(hist, 0, self.bottom)
+        layout.addWidget(self.bottom)
 
-        self.histtype = ComboBox(items=['bar', 'barstacked', 'step', 'stepfilled'],text="Histtype")
-        self.histtype.button.setCurrentText(self.get_histtype())
-        self.histtype.button.currentTextChanged.connect(self.set_histtype)
+        # self.histtype = ComboBox(
+        #     items = ['bar', 'barstacked', 'step', 'stepfilled'],
+        #     text  = "Histtype"
+        # )
+        # self.histtype.button.setCurrentText(self.get_histtype())
+        # self.histtype.button.currentTextChanged.connect(self.set_histtype)
         # self._layout.addWidget(self.histtype)
 
-        self.align = ComboBox(items=["left","mid","right"],text="Alignment")
+        self.align = ComboBox(
+            items = ["left","mid","right"],
+            text  = "Alignment"
+        )
         self.align.button.setCurrentText(self.get_alignment())
         self.align.button.currentTextChanged.connect(self.set_alignment)
-        self.treeview.addItemWidget(hist, 0, self.align)
+        layout.addWidget(self.align)
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(hist, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
-        self.rwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
+        self.rwidth = DoubleSpinBox(
+            text = 'Bar Width',
+            min  = 0,
+            max  = 5,
+            step = 0.1
+        )
         self.rwidth.button.setValue(self.get_rwidth())
         self.rwidth.button.valueChanged.connect(self.set_rwidth)
-        self.treeview.addItemWidget(hist, 0, self.rwidth)
+        layout.addWidget(self.rwidth)
 
         self.log = Toggle(text="Log")
         self.log.button.setChecked(self.get_log())
         self.log.button.checkedChanged.connect(self.set_log)
-        self.treeview.addItemWidget(hist, 0, self.log)
+        layout.addWidget(self.log)
 
-        Rectangle(self.gid, self.canvas, self.treeview, hist)
+        rect = Rectangle(self.gid, self.canvas)
+        rect.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(rect)
     
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
@@ -175,103 +195,150 @@ class Histogram (PlotConfigBase):
         return self.find_object()[0].log
 
 class Boxplot (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        boxes = TreeWidgetItem(self.treeview)
-        boxes.setText(0, 'Boxes')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        
+        self.choose_component = SegmentedWidget()
+        layout.addWidget(self.choose_component)
+
+        self.choose_component.addButton(text='Boxes', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_component.addButton(text='Whiskers', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_component.addButton(text='Caps', func=lambda: self.stackedlayout.setCurrentIndex(2) )
+        self.choose_component.addButton(text='Fliers', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.choose_component.addButton(text='Medians', func=lambda: self.stackedlayout.setCurrentIndex(4))
+        self.choose_component.addButton(text='Means', func=lambda: self.stackedlayout.setCurrentIndex(5))
+
+        self.choose_component.setCurrentIndex(0)
+
+        self.stackedlayout = QStackedLayout()
+        layout.addLayout(self.stackedlayout)
+
+        # Boxes
+        boxes = QWidget()
+        layout_boxes = QVBoxLayout(boxes)
+        layout_boxes.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(boxes)
 
         self.showbox = Toggle(text="Show boxes")
         self.showbox.button.setChecked(self.get_showbox())
         self.showbox.button.checkedChanged.connect(self.set_showbox)
-        self.treeview.addItemWidget(boxes, 0, self.showbox)
-        
+        layout_boxes.addWidget(self.showbox)
+
         self.notch = Toggle(text="Notch")
         self.notch.button.setChecked(self.get_notch())
         self.notch.button.checkedChanged.connect(self.set_notch)
-        self.treeview.addItemWidget(boxes, 0, self.notch)
+        layout_boxes.addWidget(self.notch)
 
         self.vert = ComboBox(items=["vertical","horizontal"], text="Orientation")
         self.vert.button.setCurrentText(self.get_vert())
         self.vert.button.currentTextChanged.connect(self.set_vert)
-        self.treeview.addItemWidget(boxes, 0, self.vert)
+        layout_boxes.addWidget(self.vert)
 
         self.widths = DoubleSpinBox(text="Widths", step=0.25)
         self.widths.button.setValue(self.get_widths())
         self.widths.button.valueChanged.connect(self.set_widths)
-        self.treeview.addItemWidget(boxes, 0, self.widths)
+        layout_boxes.addWidget(self.widths)
 
-        Rectangle(f"{self.gid}/boxes", self.canvas, self.treeview, boxes)
-    
-        whiskers = TreeWidgetItem(self.treeview)
-        whiskers.setText(0, 'Whiskers')
+        self.boxes = Rectangle(f"{self.gid}/boxes", self.canvas, self.parent())
+        self.boxes.onChanged.connect(self.onChanged.emit)
+        layout_boxes.addWidget(self.boxes)
+
+        # Whiskers
+        whiskers = QWidget()
+        layout_whiskers = QVBoxLayout(whiskers)
+        layout_whiskers.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(whiskers)
 
         self.whis = DoubleSpinBox(text="Whis")
         self.whis.button.setValue(self.get_whis())
         self.whis.button.valueChanged.connect(self.set_whis)
-        self.treeview.addItemWidget(whiskers, 0, self.whis)
+        layout_whiskers.addWidget(self.whis)
 
         self.autorange = Toggle(text="Autorange")
         self.autorange.button.setChecked(self.get_autorange())
         self.autorange.button.checkedChanged.connect(self.set_autorange)
-        self.treeview.addItemWidget(whiskers, 0, self.autorange)
+        layout_whiskers.addWidget(self.autorange)
 
-        Line(f"{self.gid}/whiskers", self.canvas, self.treeview, whiskers)
-
-        caps = TreeWidgetItem(self.treeview)
-        caps.setText(0, 'Caps')
+        self.whiskers = Line(f"_{self.gid}/whiskers", self.canvas)
+        self.whiskers.onChanged.connect(self.onChanged.emit)
+        layout_whiskers.addWidget(self.whiskers)
+        
+        # Caps
+        caps = QWidget()
+        layout_caps = QVBoxLayout(caps)
+        layout_caps.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(caps)
 
         self.showcaps = Toggle(text="Show Caps")
         self.showcaps.button.setChecked(self.get_showcaps())
         self.showcaps.button.checkedChanged.connect(self.set_showcaps)
-        self.treeview.addItemWidget(caps, 0, self.showcaps)
+        layout_caps.addWidget(self.showcaps)
 
         self.capwidths = DoubleSpinBox(text="Capwidth", step=0.25)
         self.capwidths.button.setValue(self.get_capwidths())
         self.capwidths.button.valueChanged.connect(self.set_capwidths)
-        self.treeview.addItemWidget(caps, 0, self.capwidths)
+        layout_caps.addWidget(self.capwidths)
 
-        Line(f"{self.gid}/caps", self.canvas, self.treeview, caps)
+        self.caps = Line(f"_{self.gid}/caps", self.canvas)
+        self.caps.onChanged.connect(self.onChanged.emit)
+        layout_caps.addWidget(self.caps)
 
-        fliers = TreeWidgetItem(self.treeview)
-        fliers.setText(0, 'Fliers')
+        # Fliers
+        fliers = QWidget()
+        layout_fliers = QVBoxLayout(fliers)
+        layout_fliers.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(fliers)
 
         self.showfliers = Toggle(text="Show Fliers")
         self.showfliers.button.setChecked(self.get_showfliers())
         self.showfliers.button.checkedChanged.connect(self.set_showfliers)
-        self.treeview.addItemWidget(fliers, 0, self.showfliers)
+        layout_fliers.addWidget(self.showfliers)
 
-        Marker(f"{self.gid}/fliers", self.canvas, self.treeview, fliers)
+        self.fliers = Marker(f"_{self.gid}/fliers", self.canvas)
+        self.fliers.onChanged.connect(self.onChanged.emit)
+        layout_fliers.addWidget(self.fliers)
 
-        medians = TreeWidgetItem(self.treeview)
-        medians.setText(0, 'Medians')
+        # Medians 
+        medians = QWidget()
+        layout_medians = QVBoxLayout(medians)
+        layout_medians.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(medians)
 
         self.bootstrap = SpinBox(text="Bootstrap", max=100000, step=1000)
         self.bootstrap.button.setValue(self.get_bootstrap())
         self.bootstrap.button.valueChanged.connect(self.set_bootstrap)
-        self.treeview.addItemWidget(medians, 0, self.bootstrap)
+        layout_medians.addWidget(self.bootstrap)
 
-        Line(f"{self.gid}/medians", self.canvas, self.treeview, medians)
-    
-        means = TreeWidgetItem(self.treeview)
-        means.setText(0, 'Means')
+        self.medians = Line(f"_{self.gid}/medians", self.canvas)
+        self.medians.onChanged.connect(self.onChanged.emit)
+        layout_medians.addWidget(self.medians)
+
+        # Means
+        means = QWidget()
+        layout_mean = QVBoxLayout(means)
+        layout_mean.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(means)
 
         self.showmeans = Toggle(text="Show Means")
         self.showmeans.button.setChecked(self.get_showmeans())
         self.showmeans.button.checkedChanged.connect(self.set_showmeans)
-        self.treeview.addItemWidget(means, 0, self.showmeans)
+        layout_mean.addWidget(self.showmeans)
 
         self.meanline = Toggle(text="Meanline")
         self.meanline.button.setChecked(self.get_meanline())
         self.meanline.button.checkedChanged.connect(self.set_meanline)
-        self.treeview.addItemWidget(means, 0, self.meanline)
+        layout_mean.addWidget(self.meanline)
 
-        Line(self.gid, self.canvas, self.treeview, means)
-        Marker(self.gid, self.canvas, self.treeview, means)
+        self.means = Line(f"_{self.gid}/means", self.canvas)
+        self.means.onChanged.connect(self.onChanged.emit)
+        layout_mean.addWidget(self.means)
     
     def find_object(self) -> list[Union[lines.Line2D, patches.PathPatch]]:
         return find_mpl_object(
@@ -403,82 +470,136 @@ class Boxplot (PlotConfigBase):
         return self.find_object()[0].meanline
 
 class Violinplot (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        bodies = TreeWidgetItem(self.treeview)
-        bodies.setText(0, 'Bodies')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        
+        self.choose_component = SegmentedWidget()
+        layout.addWidget(self.choose_component)
+
+        self.choose_component.addButton(text='Bodies', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_component.addButton(text='Means', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_component.addButton(text='Min', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.choose_component.addButton(text='Max', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.choose_component.addButton(text='Bars', func=lambda: self.stackedlayout.setCurrentIndex(4))
+        self.choose_component.addButton(text='Medians', func=lambda: self.stackedlayout.setCurrentIndex(5))
+        self.choose_component.addButton(text='Quantiles', func=lambda: self.stackedlayout.setCurrentIndex(6))
+
+        self.choose_component.setCurrentIndex(0)
+
+        self.stackedlayout = QStackedLayout()
+        layout.addLayout(self.stackedlayout)
+
+        # Bodies
+        bodies = QWidget()
+        layout_bodies = QVBoxLayout(bodies)
+        layout_bodies.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(bodies)
 
         self.vert = ComboBox(items=["vertical","horizontal"],text="Orientation")
         self.vert.button.setCurrentText(self.get_vert())
         self.vert.button.currentTextChanged.connect(self.set_vert)
-        self.treeview.addItemWidget(bodies, 0, self.vert)
+        layout_bodies.addWidget(self.vert)
 
         self.widths = DoubleSpinBox(text="Widths")
         self.widths.button.setValue(self.get_widths())
         self.widths.button.valueChanged.connect(self.set_widths)
-        self.treeview.addItemWidget(bodies, 0, self.widths)
+        layout_bodies.addWidget(self.widths)
 
         self.points = SpinBox(text="Num of Points")
         self.points.button.setValue(self.get_points())
         self.points.button.valueChanged.connect(self.set_points)
-        self.treeview.addItemWidget(bodies, 0, self.points)
+        layout_bodies.addWidget(self.points)
 
         self.bw_method = ComboBox(items=["scott","silverman"],text="Bandwidth Method")
         self.bw_method.button.setCurrentText(self.get_bw_method())
         self.bw_method.button.currentTextChanged.connect(self.set_bw_method)
-        self.treeview.addItemWidget(bodies, 0, self.bw_method)
+        layout_bodies.addWidget(self.bw_method)
 
-        SingleColorCollection(f"{self.gid}/bodies", self.canvas, self.treeview, bodies)
+        self.bodies = SingleColorCollection(f"{self.gid}/bodies", self.canvas)
+        self.bodies.onChanged.connect(self.onChanged.emit)
+        layout_bodies.addWidget(self.bodies)
 
-        means = TreeWidgetItem(self.treeview)
-        means.setText(0, 'Means')
+        # Means
+        cmeans = QWidget()
+        layout_cmeans = QVBoxLayout(cmeans)
+        layout_cmeans.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(cmeans)
 
         self.showmeans = Toggle(text="Show Means")
         self.showmeans.button.setChecked(self.get_showmeans())
         self.showmeans.button.checkedChanged.connect(self.set_showmeans)
-        self.treeview.addItemWidget(means, 0, self.showmeans)
+        layout_cmeans.addWidget(self.showmeans)
 
-        LineCollection(f"{self.gid}/cmeans",self.canvas, self.treeview, means)
+        self.cmeans = LineCollection(f"_{self.gid}/cmeans",self.canvas)
+        self.cmeans.onChanged.connect(self.onChanged.emit)
+        layout_cmeans.addWidget(self.cmeans)
 
-        min = TreeWidgetItem(self.treeview)
-        min.setText(0, 'Min')
+        # Mins
+        cmins = QWidget()
+        layout_cmins = QVBoxLayout(cmins)
+        layout_cmins.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(cmins)
 
-        LineCollection(f"{self.gid}/cmins", self.canvas, self.treeview, min)
+        self.cmins = LineCollection(f"_{self.gid}/cmins", self.canvas)
+        self.cmins.onChanged.connect(self.onChanged.emit)
+        layout_cmins.addWidget(self.cmins)
 
-        max = TreeWidgetItem(self.treeview)
-        max.setText(0, 'Max')
+        # Maxes
+        cmaxes = QWidget()
+        layout_cmaxes = QVBoxLayout(cmaxes)
+        layout_cmaxes.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(cmaxes)
 
-        LineCollection(f"{self.gid}/cmaxes", self.canvas, self.treeview, max)
+        self.cmaxes = LineCollection(f"_{self.gid}/cmaxes", self.canvas)
+        self.cmaxes.onChanged.connect(self.onChanged.emit)
+        layout_cmaxes.addWidget(self.cmaxes)
 
-        bars = TreeWidgetItem(self.treeview)
-        bars.setText(0, 'Bars')
+        # Bars
+        cbars = QWidget()
+        layout_cbars = QVBoxLayout(cbars)
+        layout_cbars.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(cbars)
 
         self.showextrema = Toggle(text="Show Extrema")
         self.showextrema.button.setChecked(self.get_showextrema())
         self.showextrema.button.checkedChanged.connect(self.set_showextrema)
-        self.treeview.addItemWidget(bars, 0, self.showextrema)
+        layout_cbars.addWidget(self.showextrema)
 
-        LineCollection(f"{self.gid}/cbars", self.canvas, self.treeview, bars)
+        self.cbars = LineCollection(f"_{self.gid}/cbars", self.canvas)
+        self.cbars.onChanged.connect(self.onChanged.emit)
+        layout_cbars.addWidget(self.cbars)
 
-        medians = TreeWidgetItem(self.treeview)
-        medians.setText(0, 'Medians')
+        # Medians
+        cmedians = QWidget()
+        layout_cmedians = QVBoxLayout(cmedians)
+        layout_cmedians.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(cmedians)
 
         self.showmedians = Toggle(text="Show Medians")
         self.showmedians.button.setChecked(self.get_showmedians())
         self.showmedians.button.checkedChanged.connect(self.set_showmedians)
-        self.treeview.addItemWidget(medians, 0, self.showmedians)
+        layout_cmedians.addWidget(self.showmedians)
 
-        LineCollection(f"{self.gid}/cmedians", self.canvas, self.treeview, medians)
+        self.cmedians = LineCollection(f"_{self.gid}/cmedians", self.canvas)
+        self.cmedians.onChanged.connect(self.onChanged.emit)
+        layout_cmedians.addWidget(self.cmedians)
 
-        quantiles = TreeWidgetItem(self.treeview)
-        quantiles.setText(0, 'Quantiles')
-
-        SingleColorCollection(f"{self.gid}/cquantiles", self.canvas, self.treeview, quantiles)
+        # Quantiles
+        cquantiles = QWidget()
+        layout_cquantiles = QVBoxLayout(cquantiles)
+        layout_cquantiles.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(cquantiles)
+        
+        self.cquantiles = SingleColorCollection(f"_{self.gid}/cquantiles", self.canvas)
+        self.cquantiles.onChanged.connect(self.onChanged.emit)
+        layout_cquantiles.addWidget(self.cquantiles)
     
     def find_object(self) -> list[Union[collections.PolyCollection, collections.LineCollection]]:
         return find_mpl_object(
@@ -558,32 +679,42 @@ class Violinplot (PlotConfigBase):
         return self.find_object()[0].showmedians
 
 class Eventplot (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        ep = TreeWidgetItem(self.treeview)
-        ep.setText(0, 'Eventplot')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Eventplot'))
+        layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(ep, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
         self.lineoffsets = DoubleSpinBox(text="Line Offsets")
         self.lineoffsets.button.setValue(self.get_lineoffsets())
         self.lineoffsets.button.valueChanged.connect(self.set_lineoffsets)
-        self.treeview.addItemWidget(ep, 0, self.lineoffsets)
+        layout.addWidget(self.lineoffsets)
 
-        self.linelengths = DoubleSpinBox(text="Line Lengths",step=0.25)
+        self.linelengths = DoubleSpinBox(
+            text = "Line Lengths",
+            step = 0.25
+        )
         self.linelengths.button.setValue(self.get_linelengths())
         self.linelengths.button.valueChanged.connect(self.set_linelengths)
-        self.treeview.addItemWidget(ep, 0, self.linelengths)
+        layout.addWidget(self.linelengths)
 
-        LineCollection(self.gid, self.canvas, self.treeview, ep)
+        collection = LineCollection(self.gid, self.canvas)
+        collection.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(collection)
     
     def find_object(self) -> list[collections.EventCollection]:
         return find_mpl_object(
@@ -623,32 +754,36 @@ class Eventplot (PlotConfigBase):
         return self.find_object()[0].linelengths
 
 class Hist2d (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        hist2d = TreeWidgetItem(self.treeview)
-        hist2d.setText(0, 'Histogram 2d')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Histogram 2D'))
+        layout.addWidget(SeparateHLine())
 
         self.binx = SpinBox(text="Bins X")
         self.binx.button.setValue(self.get_binx())
         self.binx.button.valueChanged.connect(self.set_binx)
-        self.treeview.addItemWidget(hist2d, 0, self.binx)
+        layout.addWidget(self.binx)
 
         self.biny = SpinBox(text="Spin Y")
         self.biny.button.setValue(self.get_biny())
         self.biny.button.valueChanged.connect(self.set_biny)
-        self.treeview.addItemWidget(hist2d, 0, self.biny)
+        layout.addWidget(self.biny)
 
         self.density = Toggle(text="Density")
         self.density.button.setChecked(self.get_density())
         self.density.button.checkedChanged.connect(self.set_density)
-        self.treeview.addItemWidget(hist2d, 0, self.density)
+        layout.addWidget(self.density)
 
-        QuadMesh(self.gid, self.canvas, self.treeview, hist2d)
+        qm = QuadMesh(self.gid, self.canvas)
+        qm.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(qm)
 
     def find_object(self) -> list[collections.QuadMesh]:
         return find_mpl_object(

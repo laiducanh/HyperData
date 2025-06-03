@@ -1,6 +1,8 @@
+from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.spinbox import SpinBox
 from ui.base_widgets.button import Toggle
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 from matplotlib.collections import PathCollection
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
@@ -12,22 +14,32 @@ from config.settings import GLOBAL_DEBUG, logger
 DEBUG = False
 
 class Scatter (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        self.scatter = TreeWidgetItem(self.treeview)
-        self.scatter.setText(0, 'Scatter')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.sizes = SpinBox(min=1,max=1000,step=2,text="sizes")
+        layout.addWidget(TitleLabel('Scatter'))
+        layout.addWidget(SeparateHLine())
+
+        self.sizes = SpinBox(
+            min  = 1,
+            max  = 1000,
+            step = 2,
+            text = "sizes"
+        )
         self.sizes.button.setValue(self.get_sizes())
         self.sizes.button.valueChanged.connect(self.set_sizes)
-        self.treeview.addItemWidget(self.scatter, 0, self.sizes)
+        layout.addWidget(self.sizes)
 
-        CmapCollection(self.gid, self.canvas, self.treeview, self.scatter)
+        collection = CmapCollection(self.gid, self.canvas)
+        collection.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(collection)
     
     def find_obj (self) -> list[PathCollection]:
         return find_mpl_object(
@@ -50,16 +62,34 @@ class Scatter (PlotConfigBase):
         return int(self.find_obj()[0].sizes)
 
 class Scatter3D (Scatter):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
-        super().initUI()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        layout.addWidget(TitleLabel('3D Scatter'))
+        layout.addWidget(SeparateHLine())
 
         self.depthshade = Toggle(text="Depth Shade")
         self.depthshade.button.setChecked(self.get_depthshade())
         self.depthshade.button.checkedChanged.connect(self.set_depthshade)
-        self.treeview.addItemWidget(self.scatter, 0, self.depthshade, 0)
+        layout.addWidget(self.depthshade)
+
+        self.sizes = SpinBox(
+            min  = 1,
+            max  = 1000,
+            step = 2,
+            text = "sizes"
+        )
+        self.sizes.button.setValue(self.get_sizes())
+        self.sizes.button.valueChanged.connect(self.set_sizes)
+        layout.addWidget(self.sizes)
+
+        collection = CmapCollection(self.gid, self.canvas)
+        collection.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(collection)
     
     def set_depthshade(self, value:bool):
         try:

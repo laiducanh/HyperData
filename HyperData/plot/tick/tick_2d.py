@@ -1,31 +1,31 @@
-from PySide6.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QStackedLayout
-from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox, Slider
+from PySide6.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
+from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
+from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.utilis import find_mpl_object
-from config.settings import logger, marker_lib, linestyle_lib
+from plot.label.base import FontStyle
+from config.settings import logger, marker_lib, linestyle_lib, font_lib
 from matplotlib import ticker, spines, lines, colors, rcParams
 from matplotlib.axis import Axis
+from typing import Union
 from plot.canvas import Canvas
 
 DEBUG = False
 
-class TickBase (TreeWidgetItem):
-    def __init__(self, axis:str, canvas: Canvas, treeview:TreeWidget):
-        super().__init__(treeview)
+class TickBase (QWidget):
+    def __init__(self, axis:str, canvas: Canvas, parent=None):
+        super().__init__(parent)
 
         self.axis = axis
         self.canvas = canvas
         self.obj = self.find_obj()
-        self.treeview = treeview
 
         self.initUI()
     
     def initUI(self):
 
-        self.setText(0, 'General')
+        layout = QVBoxLayout(self)
 
         visible = Toggle(
             text  = "Visible",
@@ -33,7 +33,7 @@ class TickBase (TreeWidgetItem):
         )
         visible.button.checkedChanged.connect(self.set_visible)
         visible.button.setChecked(self.get_visible())
-        self.treeview.addItemWidget(self, 0, visible)
+        layout.addWidget(visible)
 
         self.min = LineEdit(
             text  = "Min Value",
@@ -42,7 +42,7 @@ class TickBase (TreeWidgetItem):
         self.min.button.setFixedWidth(150)
         self.min.button.textChanged.connect(self.set_min)
         self.min.button.setText(str(round(self.get_lim()[0],5)))
-        self.treeview.addItemWidget(self, 0, self.min)
+        layout.addWidget(self.min)
 
         self.max = LineEdit(
             text  = 'Max Value',
@@ -51,20 +51,19 @@ class TickBase (TreeWidgetItem):
         self.max.button.setFixedWidth(150)
         self.max.button.textChanged.connect(self.set_max)
         self.max.button.setText(str(round(self.get_lim()[1],5)))
-        self.treeview.addItemWidget(self, 0, self.max)
+        layout.addWidget(self.max)
 
-        scale = TransparentComboBox(
+        scale = ComboBox(
             items = ['linear','log','symlog','logit','asinh'],
             text  = 'Scale',
             text2 = f"Set {self.axis} axis' scale"
         )
         scale.button.currentTextChanged.connect(self.set_scale)
         scale.button.setCurrentText(self.get_scale())
-        self.treeview.addItemWidget(self, 0, scale)
+        layout.addWidget(scale)
 
     def find_obj(self) -> Axis:
-        obj = find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)
-        return obj[0]
+        return find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)[0]
     
     def set_visible(self, value):
         self.obj.set_visible(value)
@@ -112,29 +111,29 @@ class TickBase (TreeWidgetItem):
         else: return self.obj.axes.get_yscale()
 
 class TickBase2 (TickBase):
-    def __init__(self, axis:str, type:str, canvas: Canvas, treeview:TreeWidget):
+    def __init__(self, axis:str, type:str, canvas: Canvas, parent=None):
 
         self.ticktype = type
 
-        super().__init__(axis, canvas, treeview)
+        super().__init__(axis, canvas, parent)
 
     def initUI(self):
 
-        self.setText(0, self.ticktype.title())
+        layout = QVBoxLayout(self)
 
-        self.tickinterval = TransparentComboBox(
+        self.tickinterval = ComboBox(
             items = ['Tick Interval','Tick Values'],
             text  = 'Type' 
         )
         self.tickinterval.button.setCurrentText('Tick Interval')
         self.tickinterval.button.currentTextChanged.connect(self.set_tickvalues)
-        self.treeview.addItemWidget(self, 0, self.tickinterval)
+        layout.addWidget(self.tickinterval)
 
         self.value = LineEdit(
             text = 'Tick values'
         )
         self.value.button.textChanged.connect(self.set_tickvalues)
-        self.treeview.addItemWidget(self, 0, self.value)
+        layout.addWidget(self.value)
 
         self.tick_label = LineEdit(
             text  = 'Tick labels',
@@ -142,71 +141,71 @@ class TickBase2 (TickBase):
         )
         self.tick_label.button.textChanged.connect(self.set_ticklabels)
         self.tick_label.button.setPlaceholderText(self.get_ticklabels())
-        self.treeview.addItemWidget(self, 0, self.tick_label)
+        layout.addWidget(self.tick_label)
 
-        tick_labelsize = TransparentDoubleSpinBox(
+        tick_labelsize = DoubleSpinBox(
             text  = 'Label size',
             text2 = f"Set {self.axis} axis' {self.ticktype} tick label size",
             min = 1, max = 100, step = 1
         )
         tick_labelsize.button.valueChanged.connect(self.set_labelsize)
         tick_labelsize.button.setValue(self.get_labelsize())
-        self.treeview.addItemWidget(self, 0, tick_labelsize)
+        layout.addWidget(tick_labelsize)
 
-        tick_direction = TransparentComboBox(
+        tick_direction = ComboBox(
             text  = 'Tick direction',
             text2 = f"Put {self.ticktype}ticks inside/outside {self.axis} axis, or both",
             items = ['In','Out','InOut']
         )
         tick_direction.button.currentTextChanged.connect(self.set_tickdir)
         tick_direction.button.setCurrentText(self.get_tickdir())
-        self.treeview.addItemWidget(self, 0, tick_direction)
+        layout.addWidget(tick_direction)
 
         tick_labelcolor = ColorDropdown(
             text  = 'Label color', 
             color = self.get_labelcolor()
         )
         tick_labelcolor.button.colorChanged.connect(self.set_labelcolor)
-        self.treeview.addItemWidget(self, 0, tick_labelcolor)
+        layout.addWidget(tick_labelcolor)
 
         tickcolor = ColorDropdown(
             text  = 'Tick color', 
             color = self.get_tickcolor()
         )
         tickcolor.button.colorChanged.connect(self.set_tickcolor)
-        self.treeview.addItemWidget(self, 0, tickcolor)
+        layout.addWidget(tickcolor)
 
-        tick_rotation = TransparentDoubleSpinBox(
+        tick_rotation = DoubleSpinBox(
             text = 'Tick label rotation',
             min = -180, max = 180, step = 10
         )
         tick_rotation.button.valueChanged.connect(self.set_labelrotation)
         tick_rotation.button.setValue(self.get_labelrotation())
-        self.treeview.addItemWidget(self, 0, tick_rotation)
+        layout.addWidget(tick_rotation)
 
-        tick_labelpad = TransparentDoubleSpinBox(
+        tick_labelpad = DoubleSpinBox(
             text = 'Tick labelpad',
             min = 0, max = 50, step = 0.5
         )
         tick_labelpad.button.valueChanged.connect(self.set_tickpadding)
         tick_labelpad.button.setValue(self.get_tickpadding())
-        self.treeview.addItemWidget(self, 0, tick_labelpad)
+        layout.addWidget(tick_labelpad)
 
-        tick_length = TransparentDoubleSpinBox(
+        tick_length = DoubleSpinBox(
             text = 'Tick length',
             min = 0, max = 50, step = 0.5
         )
         tick_length.button.valueChanged.connect(self.set_ticklength)
         tick_length.button.setValue(self.get_ticklength())
-        self.treeview.addItemWidget(self, 0, tick_length)
+        layout.addWidget(tick_length)
 
-        tick_width = TransparentDoubleSpinBox(
+        tick_width = DoubleSpinBox(
             text = 'Tick width',
             min = 0, max = 50, step = 0.5
         )
         tick_width.button.valueChanged.connect(self.set_tickwidth)
         tick_width.button.setValue(self.get_tickwidth())
-        self.treeview.addItemWidget(self, 0, tick_width)
+        layout.addWidget(tick_width)
     
     def set_tickvalues (self, value:str):
         try:
@@ -323,67 +322,66 @@ class TickBase2 (TickBase):
             try: return self.obj.get_minor_ticks()[0]._width
             except: return rcParams['ytick.minor.width']
 
-class SpineBase (TreeWidgetItem):
-    def __init__(self, axis:str, canvas: Canvas, treeview:TreeWidget):
-        super().__init__(treeview)
+class SpineBase (QWidget):
+    def __init__(self, axis:str, canvas: Canvas, parent=None):
+        super().__init__(parent)
 
         self.axis = axis
         self.canvas = canvas
         self.spines, self.arrows = self.find_object()
-        self.treeview = treeview
 
         self.initUI()
 
     def initUI(self):
 
-        self.setText(0, 'Spine')
+        layout = QVBoxLayout(self)
 
         visible = Toggle(text='Spine visible')
         visible.button.checkedChanged.connect(self.set_visible)
         visible.button.setChecked(self.get_visible())
-        self.treeview.addItemWidget(self, 0, visible)
+        layout.addWidget(visible)
 
-        arrow = TransparentComboBox(
+        arrow = ComboBox(
             text  = 'Arrow Style',
             items = marker_lib.values()
         )
         arrow.button.setCurrentText(self.get_arrow())
         arrow.button.currentTextChanged.connect(self.set_arrow)
-        self.treeview.addItemWidget(self, 0, arrow)
+        layout.addWidget(arrow)
 
         color = ColorDropdown(text='Spine color')
         color.button.colorChanged.connect(self.set_color)
         color.button.setColor(self.get_color())
-        self.treeview.addItemWidget(self, 0, color)
+        layout.addWidget(color)
 
         arrowcolor = ColorDropdown(text="Arrow color")
         arrowcolor.button.colorChanged.connect(self.set_arrowcolor)
         arrowcolor.button.setColor(self.get_arrowcolor())
-        self.treeview.addItemWidget(self, 0, arrowcolor)
+        layout.addWidget(arrowcolor)
 
-        alpha = Slider(
+        alpha = DoubleSpinBox(
             text ='Transparent',
-            min = 0, max = 100, step = 1
+            min = 0, max = 100, step = 10
         )
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
-        self.treeview.addItemWidget(self, 0, alpha)
+        layout.addWidget(alpha)
 
-        linestyle = TransparentComboBox(
+        linestyle = ComboBox(
             text  = 'Line style',
             items = linestyle_lib.values()
         )
         linestyle.button.currentTextChanged.connect(self.set_linestyle)
         linestyle.button.setCurrentText(self.get_linestyle())
-        self.treeview.addItemWidget(self, 0, linestyle)
+        layout.addWidget(linestyle)
 
-        linewidth = TransparentDoubleSpinBox(
+        linewidth = DoubleSpinBox(
             text = 'Line width',
             min = 0, max = 20, step = 0.5
         )
         linewidth.button.valueChanged.connect(self.set_linewidth)
         linewidth.button.setValue(self.get_linewidth())
-        self.treeview.addItemWidget(self, 0, linewidth)
+        layout.addWidget(linewidth)
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
         s = find_mpl_object(
@@ -459,50 +457,171 @@ class SpineBase (TreeWidgetItem):
     
     def get_arrowcolor(self):
         return colors.rgb2hex(self.arrows[0].get_markerfacecolor())
-    
-class TickBase2D (TreeWidget):
+
+class AxisLabel (QWidget):
     def __init__(self, axis:str, canvas: Canvas, parent=None):
         super().__init__(parent)
 
-        self.setColumnCount(1)
-        self.setUniformRowHeights(True)
-    
-        base = TickBase(axis, canvas, self)
-        major = TickBase2(axis, 'major', canvas, self)
-        minor = TickBase2(axis, 'minor', canvas, self)
-        spine = SpineBase(axis, canvas, self)
+        self.canvas = canvas
+        self.axis = axis
+        self.ax = self.find_axis()
+        self.text = self.ax.get_label()
 
-class Tick2D (QMainWindow):
-    def __init__(self, canvas:Canvas, parent=None):
+        self.initUI()
+    
+    def initUI(self):
+
+        layout = QVBoxLayout(self)
+
+        label = LineEdit(text='Label')
+        label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        label.button.setText(self.get_label())
+        label.button.textChanged.connect(self.set_label)
+        layout.addWidget(label)
+
+        font = ComboBox(
+            items = font_lib,
+            text  = 'Font'
+        )
+        font.button.currentTextChanged.connect(self.set_fontname)
+        font.button.setCurrentText(self.get_fontname())
+        layout.addWidget(font)
+
+        size = DoubleSpinBox(
+            text = 'Font size',
+            min = 1, max = 100, step = 1
+        )
+        size.button.valueChanged.connect(self.set_fontsize)
+        size.button.setValue(self.get_fontsize())
+        layout.addWidget(size)
+
+        style = FontStyle(
+            obj = [self.text], 
+            canvas = self.canvas
+        )
+        layout.addWidget(style)
+
+        color = ColorDropdown(
+            text  = 'Font color',
+            color = self.get_color()
+        )
+        color.button.colorChanged.connect(self.set_color)
+        layout.addWidget(color)
+
+        self.backgroundcolor = ColorDropdown(
+            text  = 'Background color',
+            color = self.get_backgroundcolor()
+        )
+        self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
+        layout.addWidget(self.backgroundcolor)
+
+        edgecolor = ColorDropdown(
+            text  = 'Edge color',
+            color = self.get_edgecolor()
+        )
+        edgecolor.button.colorChanged.connect(self.set_edgecolor)
+        layout.addWidget(edgecolor)
+
+        alpha = DoubleSpinBox(
+            text = 'Transparency',
+            step = 10
+        )
+        alpha.button.valueChanged.connect(self.set_alpha)
+        alpha.button.setValue(self.get_alpha())
+        layout.addWidget(alpha)
+    
+    def find_axis(self) -> Axis:
+        return find_mpl_object(self.canvas.fig,[Axis], self.axis)[0]
+    
+    def set_label(self, value:str):
+        self.ax.set_label_text(value)
+        self.canvas.draw_idle()
+    
+    def get_label(self) -> str:
+        return self.ax.get_label_text()
+
+    def set_fontname (self, font:str):
+        self.text.set_fontfamily(font)
+        self.canvas.draw_idle()
+    
+    def get_fontname(self):
+        return self.text.get_fontname()
+    
+    def set_fontsize(self, value):
+        self.text.set_fontsize(value)
+        self.canvas.draw_idle()
+    
+    def get_fontsize(self):
+        return self.text.get_fontsize()
+    
+    def set_color (self, color):
+        self.text.set_color(color)
+        self.canvas.draw_idle()
+    
+    def get_color (self):
+        return self.text.get_color()
+
+    def set_backgroundcolor (self, color):
+        self.text.set_backgroundcolor(color)
+        self.canvas.draw_idle()
+    
+    def get_backgroundcolor(self):
+        if self.text.get_bbox_patch() != None:
+            return self.text.get_bbox_patch().get_facecolor()
+        return 'white'
+    
+    def set_edgecolor (self, color):
+        self.text.set_bbox({"edgecolor":color,
+                           "facecolor":self.backgroundcolor.button.color.name()})
+        self.canvas.draw_idle()
+    
+    def get_edgecolor(self):
+        if self.text.get_bbox_patch() != None:
+            return self.text.get_bbox_patch().get_edgecolor()
+        return 'white'
+    
+    def set_alpha (self, value):
+        self.text.set_alpha(value/100)
+        self.canvas.draw_idle()
+    
+    def get_alpha (self):
+        if self.text.get_alpha() != None:
+            return int(self.text.get_alpha()*100)
+        return 100
+    
+class Tick2D (QDialog):
+    def __init__(self, axis:str, canvas: Canvas, parent=None):
         super().__init__(parent)
 
-    # Layout
-        widget = QWidget()
-        self.setCentralWidget(widget)
-        layout = QVBoxLayout(widget)
-        layout.setContentsMargins(10,0,10,15)
-
+        self.setWindowTitle(f'{axis.title()} Axis')
+        layout = QVBoxLayout(self)
         self.canvas = canvas
 
         self.choose_axis = SegmentedWidget(parent)
         layout.addWidget(self.choose_axis)
 
-        self.choose_axis.addButton(text='Bottom', func=lambda: self.stackedlayout.setCurrentIndex(0))
-        self.choose_axis.addButton(text='Left', func=lambda: self.stackedlayout.setCurrentIndex(1))
-        self.choose_axis.addButton(text='Top', func=lambda: self.stackedlayout.setCurrentIndex(2))
-        self.choose_axis.addButton(text='Right', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.choose_axis.addButton(text='General', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_axis.addButton(text='Major', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.choose_axis.addButton(text='Minor', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.choose_axis.addButton(text='Spine', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.choose_axis.addButton(text='Label', func=lambda: self.stackedlayout.setCurrentIndex(4))
+
+        self.choose_axis.setCurrentIndex(0)
 
         self.stackedlayout = QStackedLayout()
         layout.addLayout(self.stackedlayout)
-        
-        self.bot = TickBase2D('bottom',self.canvas, parent)
-        self.stackedlayout.addWidget(self.bot)
-        self.left = TickBase2D('left',self.canvas, parent)
-        self.stackedlayout.addWidget(self.left)
-        self.top = TickBase2D('top',self.canvas, parent)
-        self.stackedlayout.addWidget(self.top)
-        self.right = TickBase2D('right',self.canvas, parent)
-        self.stackedlayout.addWidget(self.right)
 
-    def choose_axis_func(self, axis):
-        self.choose_axis._onClick(axis)
+        base = TickBase(axis, canvas, parent)
+        self.stackedlayout.addWidget(base)
+
+        major = TickBase2(axis, 'major', canvas, parent)
+        self.stackedlayout.addWidget(major)
+
+        minor = TickBase2(axis, 'minor', canvas, parent)
+        self.stackedlayout.addWidget(minor)
+
+        spine = SpineBase(axis, canvas, parent)
+        self.stackedlayout.addWidget(spine)
+
+        label = AxisLabel(axis, canvas, parent)
+        self.stackedlayout.addWidget(label)

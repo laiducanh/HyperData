@@ -1,10 +1,10 @@
+from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox, Slider
-from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
+from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
@@ -12,8 +12,8 @@ from plot.curve.base_elements.collection import Poly3DCollection
 from plot.curve.base_elements.line import Marker, Line, LineCollection
 from plot.utilis import find_mpl_object
 from plot.curve.base_plottype.base import PlotConfigBase
-from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
-from matplotlib import patches, colors, lines, collections
+from config.settings import GLOBAL_DEBUG, logger
+from matplotlib import patches, colors, lines
 from matplotlib.pyplot import colormaps
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection as Poly3D
 import numpy as np
@@ -21,35 +21,53 @@ import numpy as np
 DEBUG = False
 
 class Column (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.col = TreeWidgetItem(self.treeview)
-        self.col.setText(0, 'Bar')
+        layout.addWidget(TitleLabel('Bar'))
+        layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(self.col, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        self.treeview.addItemWidget(self.col, 0, self.bottom)
+        layout.addWidget(self.bottom)
 
-        self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
+        self.barwidth = DoubleSpinBox(
+            text = 'Bar Width',
+            min  = 0, 
+            max  = 5, 
+            step = 0.1
+        )
         self.barwidth.button.setValue(self.get_barwidth())
         self.barwidth.button.valueChanged.connect(self.set_barwidth)
-        self.treeview.addItemWidget(self.col, 0, self.barwidth)
+        layout.addWidget(self.barwidth)
 
-        LineCollection(f"_{self.gid.split('.')[0]}", self.canvas, self.treeview, self.col)
+        rect = Rectangle(self.gid, self.canvas)
+        rect.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(rect)
 
-        Rectangle(self.gid, self.canvas, self.treeview, self.col)
+        layout.addWidget(TitleLabel('Connecting lines'))
+        layout.addWidget(SeparateHLine())
+        
+        collection = LineCollection(f"_{self.gid.split('.')[0]}", self.canvas)
+        collection.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(collection)
         
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
@@ -90,47 +108,68 @@ class Column (PlotConfigBase):
         return self.find_object()[0].width
 
 class Column3D (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        col = TreeWidgetItem(self.treeview)
-        col.setText(0, 'Column 3D')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.orientation = ComboBox(items=["x","y","z"],text="Orientation")
+        layout.addWidget(TitleLabel('Column 3D'))
+        layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(
+            items = ["x","y","z"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(col, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        self.treeview.addItemWidget(col, 0, self.bottom)
+        layout.addWidget(self.bottom)
 
-        self.dx = DoubleSpinBox(text='Dx',min=0,max=5,step=0.1)
+        self.dx = DoubleSpinBox(
+            text = 'Dx',
+            min  = 0,
+            max  = 5,
+            step = 0.1
+        )
         self.dx.button.setValue(self.get_dx())
         self.dx.button.valueChanged.connect(self.set_dx)
-        self.treeview.addItemWidget(col, 0, self.dx)
+        layout.addWidget(self.dx)
 
-        self.dy = DoubleSpinBox(text="Dy",min=0,max=5,step=0.1)
+        self.dy = DoubleSpinBox(
+            text = "Dy",
+            min  = 0,
+            max  = 5,
+            step = 0.1
+        )
         self.dy.button.setValue(self.get_dy())
         self.dy.button.valueChanged.connect(self.set_dy)
-        self.treeview.addItemWidget(col, 0, self.dy)
+        layout.addWidget(self.dy)
 
-        self.color = ColorDropdown(text="Color", color=self.get_color())
+        self.color = ColorDropdown(
+            text  = "Color", 
+            color = self.get_color()
+        )
         self.color.button.colorChanged.connect(self.set_color)
-        self.treeview.addItemWidget(col, 0, self.color)
+        layout.addWidget(self.color)
 
         self.shade = Toggle(text="Shade") 
         self.shade.button.setChecked(self.get_shade())
         self.shade.button.checkedChanged.connect(self.set_shade)
-        self.treeview.addItemWidget(col, 0, self.shade)
+        layout.addWidget(self.shade)
 
-        Poly3DCollection(self.gid, self.canvas, self.treeview, col)
+        collection = Poly3DCollection(self.gid, self.canvas)
+        collection.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(collection)
     
     def find_object (self) -> list[Poly3D]:
         return find_mpl_object(
@@ -190,7 +229,7 @@ class Column3D (PlotConfigBase):
     def get_color(self) -> str:
         _color = self.find_object()[0].color
         if not _color:
-            color = np.max(self.obj[0].get_facecolor(),axis=0)
+            color = np.max(self.find_object()[0].get_facecolor(),axis=0)
             return colors.to_hex(color)
         return _color
     
@@ -205,28 +244,44 @@ class Column3D (PlotConfigBase):
         return self.find_object()[0].shade
     
 class Dot (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        self.dot = TreeWidgetItem(self.treeview)
-        self.dot.setText(0, 'Dot')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        layout.addWidget(TitleLabel('Dot'))
+        layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(self.dot, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        self.treeview.addItemWidget(self.dot, 0, self.bottom)
+        layout.addWidget(self.bottom)
 
-        Marker(self.gid, self.canvas, self.treeview, self.dot)
+        marker = Marker(self.gid, self.canvas)
+        marker.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(marker)
+
+        alpha = SpinBox(
+            text = 'Transparent',
+            step = 10
+        )
+        alpha.button.setValue(self.get_alpha())
+        alpha.button.valueChanged.connect(self.set_alpha)
+        layout.addWidget(alpha)
 
     def find_object(self):
         return find_mpl_object(
@@ -255,18 +310,67 @@ class Dot (PlotConfigBase):
     
     def get_bottom (self) -> str:
         return str(self.find_object()[0].bottom)
+    
+    def set_alpha(self, value:int):
+        for obj in self.find_object():
+            obj.set_alpha(value/100)
+        self.onChanged.emit()
+        self.canvas.draw_idle()
+    
+    def get_alpha(self) -> int:
+        if not self.find_object()[0].get_alpha():
+            return 100
+        return int(self.find_object()[0].get_alpha()*100)
 
 class ClusteredColumn (Column):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
-        super().initUI()
-        
-        self.distance = SpinBox(min=0,max=100,step=10,text="Distance")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        layout.addWidget(TitleLabel('Bar'))
+        layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.orientation.button.currentTextChanged.connect(self.set_orientation)
+        layout.addWidget(self.orientation)
+
+        self.bottom = LineEdit(text="Bottom")
+        self.bottom.button.setFixedWidth(150)
+        self.bottom.button.setText(self.get_bottom())
+        self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
+        layout.addWidget(self.bottom)
+
+        self.barwidth = DoubleSpinBox(
+            text = 'Bar Width',
+            min  = 0, 
+            max  = 5, 
+            step = 0.1
+        )
+        self.barwidth.button.setValue(self.get_barwidth())
+        self.barwidth.button.valueChanged.connect(self.set_barwidth)
+        layout.addWidget(self.barwidth)
+
+        self.distance = SpinBox(
+            min  = 0,
+            max  = 100,
+            step = 10,
+            text = "Distance"
+        )
         self.distance.button.setValue(self.get_distance())
         self.distance.button.valueChanged.connect(self.set_distance)
-        self.treeview.addItemWidget(self.col, 0, self.distance, 0)
+        layout.addWidget(self.distance)
+
+        rect = Rectangle(self.gid, self.canvas)
+        rect.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(rect)
     
     def set_distance(self, value:int):
         try:
@@ -279,16 +383,51 @@ class ClusteredColumn (Column):
         return int(self.find_object()[0].distance*100)
 
 class ClusteredDot (Dot):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
-        super().initUI()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.distance = SpinBox(min=0,max=100,step=10,text="Distance")
+        layout.addWidget(TitleLabel('Dot'))
+        layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
+        self.orientation.button.setCurrentText(self.get_orientation())
+        self.orientation.button.currentTextChanged.connect(self.set_orientation)
+        layout.addWidget(self.orientation)
+
+        self.bottom = LineEdit(text="Bottom")
+        self.bottom.button.setFixedWidth(150)
+        self.bottom.button.setText(self.get_bottom())
+        self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
+        layout.addWidget(self.bottom)
+
+        self.distance = SpinBox(
+            min  = 0,
+            max  = 100,
+            step = 10,
+            text = "Distance"
+        )
         self.distance.button.setValue(self.get_distance())
         self.distance.button.valueChanged.connect(self.set_distance)
-        self.treeview.addItemWidget(self.dot, 0, self.distance, 0)
+        layout.addWidget(self.distance)
+
+        marker = Marker(self.gid, self.canvas)
+        marker.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(marker)
+
+        alpha = SpinBox(
+            text = 'Transparent',
+            step = 10
+        )
+        alpha.button.setValue(self.get_alpha())
+        alpha.button.valueChanged.connect(self.set_alpha)
+        layout.addWidget(alpha)
     
     def set_distance(self, value:int):
         try:
@@ -301,7 +440,7 @@ class ClusteredDot (Dot):
         return int(self.find_object()[0].distance*100)
 
 class Dumbbell (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
         if "." in gid:
@@ -312,22 +451,37 @@ class Dumbbell (PlotConfigBase):
     
     def initUI(self):
 
-        lines = TreeWidgetItem(self.treeview)
-        lines.setText(0, 'Lines')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        Line(self.gid, self.canvas, self.treeview, lines)
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        layout.addWidget(TitleLabel('Dumbbell'))
+        layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(lines, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
-        head1 = TreeWidgetItem(self.treeview)
-        head1.setText(0, 'Head 1')
-        Marker(self.gid, self.canvas, self.treeview, head1)
+        layout.addWidget(TitleLabel('Lines'))
+        layout.addWidget(SeparateHLine())
+        line = Line(f"{self.gid}/0", self.canvas)
+        line.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(line)
 
-        head2 = TreeWidgetItem(self.treeview)
-        head2.setText(0, 'Head 2')
-        Marker(self.gid, self.canvas, self.treeview, head2)
+        layout.addWidget(TitleLabel('Head 1'))
+        layout.addWidget(SeparateHLine())
+        head1 = Marker(f"_{self.gid}/1", self.canvas)
+        head1.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(head1)
+
+        layout.addWidget(TitleLabel('Head 2'))
+        layout.addWidget(SeparateHLine())
+        head2 = Marker(f"_{self.gid}/2", self.canvas)
+        head2.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(head2)
 
     def find_object(self):
         return find_mpl_object(self.canvas.fig, [lines.Line2D], self.gid)
@@ -343,22 +497,30 @@ class Dumbbell (PlotConfigBase):
         return self.find_object()[0].orientation
 
 class Marimekko (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        item = TreeWidgetItem(self.treeview)
-        item.setText(0, 'Marimekko')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        layout.addWidget(TitleLabel('Marimekko'))
+        layout.addWidget(SeparateHLine())
+
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(item, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
-        Rectangle(self.gid, self.canvas, self.treeview, item)
+        rect = Rectangle(self.gid, self.canvas)
+        rect.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(rect)
         
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
@@ -366,9 +528,6 @@ class Marimekko (PlotConfigBase):
             match=[patches.Rectangle],
             gid=self.gid
         )
-
-    def update_props(self):
-        self.orientation.button.setCurrentText(self.get_orientation())
     
     def set_orientation(self, value:str):
         try:
@@ -381,37 +540,50 @@ class Marimekko (PlotConfigBase):
         return self.find_object()[0].orientation
 
 class Treemap (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        treemap = TreeWidgetItem(self.treeview)
-        treemap.setText(0, 'Treemap')
+        layout.addWidget(TitleLabel('Treemap'))
+        layout.addWidget(SeparateHLine())
 
-        self.rounded = DoubleSpinBox(text="Rounded")
+        self.rounded = DoubleSpinBox(text="Rounding factor")
         self.rounded.button.setValue(self.get_rounded())
         self.rounded.button.valueChanged.connect(self.set_rounded)
-        self.treeview.addItemWidget(treemap, 0, self.rounded)
+        layout.addWidget(self.rounded)
 
-        self.pad = DoubleSpinBox(min=0,max=20,step=0.5,text="Padding")
+        self.pad = DoubleSpinBox(
+            min  = 0,
+            max  = 20,
+            step = 0.5,
+            text = "Padding"
+        )
         self.pad.button.setValue(self.get_pad())
         self.pad.button.valueChanged.connect(self.set_pad)
-        self.treeview.addItemWidget(treemap, 0, self.pad)
+        layout.addWidget(self.pad)
 
         self.cmap_on = Toggle(text="Use colormap")
         self.cmap_on.button.setChecked(self.get_cmap_on())
         self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
-        self.treeview.addItemWidget(treemap, 0, self.cmap_on)
+        layout.addWidget(self.cmap_on)
 
-        self.cmap = ComboBox(items=colormaps(), text="Colormap")
+        self.cmap = ComboBox(
+            items = colormaps(), 
+            text  = "Colormap"
+        )
         self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        self.treeview.addItemWidget(treemap, 0, self.cmap)
+        layout.addWidget(self.cmap)
 
-        Rectangle(self.gid, self.canvas, self.treeview, treemap)
+        rect = Rectangle(self.gid, self.canvas)
+        rect.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(rect)
     
     def find_object(self) -> list[patches.FancyBboxPatch]:
         return find_mpl_object(
@@ -461,43 +633,60 @@ class Treemap (PlotConfigBase):
         return self.find_object()[0].cmap
 
 class WaterFall (PlotConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent:TreeWidgetItem):
+    def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        wf = TreeWidgetItem(self.treeview)
-        wf.setText(0, 'Waterfall')
+        layout.addWidget(TitleLabel('Waterfall'))
+        layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
+        self.orientation = ComboBox(
+            items = ["vertical","horizontal"],
+            text  = "Orientation"
+        )
         self.orientation.button.setCurrentText(self.get_orientation())
         self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        self.treeview.addItemWidget(wf, 0, self.orientation)
+        layout.addWidget(self.orientation)
 
         self.bottom = LineEdit(text="Bottom")
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        self.treeview.addItemWidget(wf, 0, self.bottom)
+        layout.addWidget(self.bottom)
 
-        self.barwidth = DoubleSpinBox(text='Bar Width',min=0,max=5,step=0.1)
+        self.barwidth = DoubleSpinBox(
+            text = 'Bar Width',
+            min  = 0,
+            max  = 5,
+            step = 0.1
+        )
         self.barwidth.button.setValue(self.get_barwidth())
         self.barwidth.button.valueChanged.connect(self.set_barwidth)
-        self.treeview.addItemWidget(wf, 0, self.barwidth)
+        layout.addWidget(self.barwidth)
 
-        pbars = TreeWidgetItem(self.treeview)
-        pbars.setText(0, 'Positive Bars')
-        Rectangle(f"{self.gid}/positive", self.canvas, self.treeview, pbars)
+        layout.addWidget(TitleLabel('Positive Bars'))
+        layout.addWidget(SeparateHLine())
+        pbars = Rectangle(f"{self.gid}/positive", self.canvas)
+        pbars.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(pbars)
 
-        nbars = TreeWidgetItem(self.treeview)
-        nbars.setText(0, 'Negative Bars')
-        Rectangle(f"{self.gid}/negative", self.canvas, self.treeview, nbars)
-    
-        cline = TreeWidgetItem(self.treeview)
-        cline.setText(0, 'Connected Lines')
-        LineCollection(f"{self.gid}/line", self.canvas, self.treeview, cline)
+        layout.addWidget(TitleLabel('Negative Bars'))
+        layout.addWidget(SeparateHLine())
+        nbars = Rectangle(f"{self.gid}/negative", self.canvas)
+        nbars.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(nbars)
+
+        layout.addWidget(TitleLabel('Connected Lines'))
+        layout.addWidget(SeparateHLine())
+        cline = LineCollection(f"_{self.gid}/line", self.canvas)
+        cline.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(cline)
     
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(

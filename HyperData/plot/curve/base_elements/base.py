@@ -1,15 +1,14 @@
-from PySide6.QtCore import QTimer, QObject
+from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QWidget
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.canvas import Canvas
 
 class ArtistConfigBase (QWidget):
-    def __init__(self, gid:str, canvas:Canvas, treeview:TreeWidget, parent:TreeWidgetItem):
-        super().__init__(treeview)
+    onChanged = Signal()
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(parent)
 
         self.gid = gid
         self.canvas = canvas
-        self.treeview = treeview
         self.parent = parent
         self.timer = QTimer()
         self.timer.setSingleShot(True)
@@ -26,5 +25,5 @@ class ArtistConfigBase (QWidget):
         self.update_plot()
     
     def update_plot(self):
-        self.treeview.sig_onChange.emit()
+        self.onChanged.emit()
         self.canvas.draw_idle()

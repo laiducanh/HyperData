@@ -1,7 +1,9 @@
+from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.button import Toggle
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Wedge, MultiWedges
@@ -14,52 +16,64 @@ from typing import List
 DEBUG = False
 
 class Pie (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):   
         
-        self.pie = TreeWidgetItem(self.treeview)
-        self.pie.setText(0, 'Pie')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Pie'))
+        layout.addWidget(SeparateHLine())
 
         self.explode = LineEdit(text="Explode")
         self.explode.button.setText(self.get_explode())
         self.explode.button.textChanged.connect(self.set_explode)
-        self.treeview.addItemWidget(self.pie, 0, self.explode)
+        layout.addWidget(self.explode)
 
         self.labels = LineEdit(text="Labels")
         self.labels.button.setText(self.get_labels())
         self.labels.button.textChanged.connect(self.set_labels)
-        self.treeview.addItemWidget(self.pie, 0, self.labels)
+        layout.addWidget(self.labels)
 
-        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle = DoubleSpinBox(
+            min  = 0,
+            max  = 360, 
+            step = 30,
+            text = "Start angle"
+        )
         self.startangle.button.setValue(self.get_startangle())
         self.startangle.button.valueChanged.connect(self.set_startangle)
-        self.treeview.addItemWidget(self.pie, 0, self.startangle)
+        layout.addWidget(self.startangle)
 
-        self.radius = DoubleSpinBox(text="Radius",step=0.2)
+        self.radius = DoubleSpinBox(
+            text = "Radius",
+            step = 0.2
+        )
         self.radius.button.setValue(self.get_radius())
         self.radius.button.valueChanged.connect(self.set_radius)
-        self.treeview.addItemWidget(self.pie, 0, self.radius)
+        layout.addWidget(self.radius)
 
         self.counterclock = Toggle(text="Counterclock")
         self.counterclock.button.setChecked(self.get_counterclock())
         self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        self.treeview.addItemWidget(self.pie, 0, self.counterclock)
+        layout.addWidget(self.counterclock)
 
         self.rotatelabels = Toggle(text="Rotate Labels")
         self.rotatelabels.button.setChecked(self.get_rotatelabels())
         self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        self.treeview.addItemWidget(self.pie, 0, self.rotatelabels)
+        layout.addWidget(self.rotatelabels)
 
         self.normalize = Toggle(text="Normalize")
         self.normalize.button.setChecked(self.get_normalize())
         self.normalize.button.checkedChanged.connect(self.set_normalize)
-        self.treeview.addItemWidget(self.pie, 0, self.normalize)
+        layout.addWidget(self.normalize)
 
-        Wedge(self.gid, self.canvas, self.treeview, self.pie)
+        wedge = Wedge(self.gid, self.canvas)
+        wedge.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(wedge)
     
     def find_object (self) -> List[patches.Wedge]:
         return find_mpl_object(
@@ -147,57 +161,121 @@ class Pie (PlotConfigBase):
         return self.find_object()[0].normalize
 
 class Coxcomb (Pie):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):   
 
-        pie = TreeWidgetItem(self.treeview)
-        pie.setText(0, 'Pie')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Coxcomb'))
+        layout.addWidget(SeparateHLine())
 
         self.explode = LineEdit(text="Explode")
         self.explode.button.setText(self.get_explode())
         self.explode.button.textChanged.connect(self.set_explode)
-        self.treeview.addItemWidget(pie, 0, self.explode)
+        layout.addWidget(self.explode)
 
         self.labels = LineEdit(text="Labels")
         self.labels.button.setText(self.get_labels())
         self.labels.button.textChanged.connect(self.set_labels)
-        self.treeview.addItemWidget(pie, 0, self.labels)
+        layout.addWidget(self.labels)
 
-        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle = DoubleSpinBox(
+            min  = 0,
+            max  = 360, 
+            step = 30,
+            text = "Start angle"
+        )
         self.startangle.button.setValue(self.get_startangle())
         self.startangle.button.valueChanged.connect(self.set_startangle)
-        self.treeview.addItemWidget(pie, 0, self.startangle)
+        layout.addWidget(self.startangle)
 
         self.radius = DoubleSpinBox(text="Radius",step=0.2)
         self.radius.button.setValue(self.get_radius())
         self.radius.button.valueChanged.connect(self.set_radius)
-        self.treeview.addItemWidget(pie, 0, self.radius)
+        layout.addWidget(self.radius)
 
         self.counterclock = Toggle(text="Counterclock")
         self.counterclock.button.setChecked(self.get_counterclock())
         self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        self.treeview.addItemWidget(pie, 0, self.counterclock)
+        layout.addWidget(self.counterclock)
 
         self.rotatelabels = Toggle(text="Rotate Labels")
         self.rotatelabels.button.setChecked(self.get_rotatelabels())
         self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        self.treeview.addItemWidget(pie, 0, self.rotatelabels)
+        layout.addWidget(self.rotatelabels)
 
-        Wedge(self.gid, self.canvas, self.treeview, pie)
+        wedge = Wedge(self.gid, self.canvas)
+        wedge.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(wedge)
 
 class Doughnut (Pie):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
-        super().initUI()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Doughnut'))
+        layout.addWidget(SeparateHLine())
 
-        self.wedgewidth = DoubleSpinBox(min=0,max=1, step=0.1,text="Width")
+        self.wedgewidth = DoubleSpinBox(
+            min  = 0,
+            max  = 1, 
+            step = 0.1,
+            text = "Width"
+        )
         self.wedgewidth.button.setValue(self.get_wedgewidth())
         self.wedgewidth.button.valueChanged.connect(self.set_wedgewidth)
-        self.treeview.addItemWidget(self.pie, 0, self.wedgewidth)
+        layout.addWidget(self.wedgewidth)
+
+        self.explode = LineEdit(text="Explode")
+        self.explode.button.setText(self.get_explode())
+        self.explode.button.textChanged.connect(self.set_explode)
+        layout.addWidget(self.explode)
+
+        self.labels = LineEdit(text="Labels")
+        self.labels.button.setText(self.get_labels())
+        self.labels.button.textChanged.connect(self.set_labels)
+        layout.addWidget(self.labels)
+
+        self.startangle = DoubleSpinBox(
+            min  = 0,
+            max  = 360, 
+            step = 30,
+            text = "Start angle"
+        )
+        self.startangle.button.setValue(self.get_startangle())
+        self.startangle.button.valueChanged.connect(self.set_startangle)
+        layout.addWidget(self.startangle)
+
+        self.radius = DoubleSpinBox(
+            text = "Radius",
+            step = 0.2
+        )
+        self.radius.button.setValue(self.get_radius())
+        self.radius.button.valueChanged.connect(self.set_radius)
+        layout.addWidget(self.radius)
+
+        self.counterclock = Toggle(text="Counterclock")
+        self.counterclock.button.setChecked(self.get_counterclock())
+        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
+        layout.addWidget(self.counterclock)
+
+        self.rotatelabels = Toggle(text="Rotate Labels")
+        self.rotatelabels.button.setChecked(self.get_rotatelabels())
+        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
+        layout.addWidget(self.rotatelabels)
+
+        self.normalize = Toggle(text="Normalize")
+        self.normalize.button.setChecked(self.get_normalize())
+        self.normalize.button.checkedChanged.connect(self.set_normalize)
+        layout.addWidget(self.normalize)
+
+        wedge = Wedge(self.gid, self.canvas)
+        wedge.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(wedge)
     
     def set_wedgewidth(self, value:float):
         try:
@@ -210,101 +288,135 @@ class Doughnut (Pie):
         return self.find_object()[0].width
 
 class SemicircleDoughnut (Doughnut):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
         
-        sd = TreeWidgetItem(self.treeview)
-        sd.setText(0, 'Semicircle Doughnut')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Semicircle Doughnut'))
+        layout.addWidget(SeparateHLine())
 
         self.explode = LineEdit(text="Explode")
         self.explode.button.setText(self.get_explode())
         self.explode.button.textChanged.connect(self.set_explode)
-        self.treeview.addItemWidget(sd, 0, self.explode)
+        layout.addWidget(self.explode)
 
         self.labels = LineEdit(text="Labels")
         self.labels.button.setText(self.get_labels())
         self.labels.button.textChanged.connect(self.set_labels)
-        self.treeview.addItemWidget(sd, 0, self.labels)
+        layout.addWidget(self.labels)
 
-        self.radius = DoubleSpinBox(text="Radius",step=0.2)
+        self.radius = DoubleSpinBox(
+            text = "Radius",
+            step = 0.2
+        )
         self.radius.button.setValue(self.get_radius())
         self.radius.button.valueChanged.connect(self.set_radius)
-        self.treeview.addItemWidget(sd, 0, self.radius)
+        layout.addWidget(self.radius)
 
-        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle = DoubleSpinBox(
+            min  = 0,
+            max  = 360, 
+            step = 30,
+            text = "Start angle"
+        )
         self.startangle.button.setValue(self.get_startangle())
         self.startangle.button.valueChanged.connect(self.set_startangle)
-        self.treeview.addItemWidget(sd, 0, self.startangle)
+        layout.addWidget(self.startangle)
 
         self.counterclock = Toggle(text="Counterclock")
         self.counterclock.button.setChecked(self.get_counterclock())
         self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        self.treeview.addItemWidget(sd, 0, self.counterclock)
+        layout.addWidget(self.counterclock)
 
         self.rotatelabels = Toggle(text="Rotate Labels")
         self.rotatelabels.button.setChecked(self.get_rotatelabels())
         self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        self.treeview.addItemWidget(sd, 0, self.rotatelabels)
+        layout.addWidget(self.rotatelabels)
 
-        Wedge(self.gid, self.canvas, self.treeview, sd)
+        wedge = Wedge(self.gid, self.canvas)
+        wedge.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(wedge)
     
 class MultilevelDoughnut (Doughnut):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
 
-        md = TreeWidgetItem(self.treeview)
-        md.setText(0, 'Multilevel Doughnut')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Multilevel Doughnut'))
+        layout.addWidget(SeparateHLine())
 
-        self.wedgewidth = DoubleSpinBox(min=0,max=1, step=0.1,text="Width")
+        self.wedgewidth = DoubleSpinBox(
+            min  = 0,
+            max  = 1, 
+            step = 0.1,
+            text = "Width"
+        )
         self.wedgewidth.button.setValue(self.get_wedgewidth())
         self.wedgewidth.button.valueChanged.connect(self.set_wedgewidth)
-        self.treeview.addItemWidget(md, 0, self.wedgewidth)
+        layout.addWidget(self.wedgewidth)
 
         self.explode = LineEdit(text="Explode")
         self.explode.button.setText(self.get_explode())
         self.explode.button.textChanged.connect(self.set_explode)
-        self.treeview.addItemWidget(md, 0, self.explode)
+        layout.addWidget(self.explode)
 
         self.labels = LineEdit(text="Labels")
         self.labels.button.setText(self.get_labels())
         self.labels.button.textChanged.connect(self.set_labels)
-        self.treeview.addItemWidget(md, 0, self.labels)
+        layout.addWidget(self.labels)
 
-        self.startangle = DoubleSpinBox(min=0,max=360, step=30,text="Start angle")
+        self.startangle = DoubleSpinBox(
+            min  = 0,
+            max  = 360, 
+            step = 30,
+            text = "Start angle"
+        )
         self.startangle.button.setValue(self.get_startangle())
         self.startangle.button.valueChanged.connect(self.set_startangle)
-        self.treeview.addItemWidget(md, 0, self.startangle)
+        layout.addWidget(self.startangle)
 
-        self.radius = DoubleSpinBox(text="Radius",step=0.2)
+        self.radius = DoubleSpinBox(
+            text = "Radius",
+            step = 0.2
+        )
         self.radius.button.setValue(self.get_radius())
         self.radius.button.valueChanged.connect(self.set_radius)
-        self.treeview.addItemWidget(md, 0, self.radius)
+        layout.addWidget(self.radius)
 
         self.counterclock = Toggle(text="Counterclock")
         self.counterclock.button.setChecked(self.get_counterclock())
         self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        self.treeview.addItemWidget(md, 0, self.counterclock)
+        layout.addWidget(self.counterclock)
 
         self.rotatelabels = Toggle(text="Rotate Labels")
         self.rotatelabels.button.setChecked(self.get_rotatelabels())
         self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        self.treeview.addItemWidget(md, 0, self.rotatelabels)
+        layout.addWidget(self.rotatelabels)
 
         self.normalize = Toggle(text="Normalize")
         self.normalize.button.setChecked(self.get_normalize())
         self.normalize.button.checkedChanged.connect(self.set_normalize)
-        self.treeview.addItemWidget(md, 0, self.normalize)
+        layout.addWidget(self.normalize)
 
-        self.pad = DoubleSpinBox(min=0,max=1,step=0.01,text="Padding")
+        self.pad = DoubleSpinBox(
+            min  = 0,
+            max  = 1,
+            step = 0.01,
+            text = "Padding"
+        )
         self.pad.button.setValue(self.get_pad())
         self.pad.button.valueChanged.connect(self.set_pad)
-        self.treeview.addItemWidget(md, 0, self.pad)
+        layout.addWidget(self.pad)
         
-        MultiWedges(self.gid, self.canvas, self.treeview, md)
+        mw = MultiWedges(self.gid, self.canvas)
+        mw.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(mw)
     
     def set_pad(self, pad:float):
         try:

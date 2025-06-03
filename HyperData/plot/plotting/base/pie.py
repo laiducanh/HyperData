@@ -7,10 +7,13 @@ import math
 import numpy as np
 from config.settings import GLOBAL_DEBUG, logger
 
-DEBUG = False
+DEBUG = True
 
 def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
          radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.asarray([1,4])
 
     if explode != None and len(explode) != len(X):
         explode = None
@@ -89,6 +92,9 @@ def coxcomb(X, ax:Axes, gid, explode=None, labels=None, startangle=0,
 
 def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=0,
               radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.asarray([1,4])
 
     artist = ax.pie(X, wedgeprops=dict(width=width), explode=explode, labels=labels, startangle=startangle,
                     radius=radius, counterclock=counterclock, rotatelabels=rotatelabels, normalize=normalize, *args, **kwargs)

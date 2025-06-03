@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, Slider
+from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
@@ -12,32 +12,57 @@ import numpy as np
 DEBUG = False
 
 class Rectangle (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.5)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.edgewidth = DoubleSpinBox(
+            text = 'Edge Width',
+            min  = 0, 
+            max  = 5, 
+            step = 0.5
+        )
+        self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.edgewidth)
+        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(text='Edge Style',items=linestyle_lib.values())
+        self.edgestyle = ComboBox(
+            text  = 'Edge Style',
+            items = linestyle_lib.values()
+        )
+        self.edgestyle.button.setCurrentText(self.get_edgestyle())
         self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        self.treeview.addItemWidget(self.parent, 0, self.edgestyle)
+        layout.addWidget(self.edgestyle)
 
-        self.facecolor = ColorDropdown(text='Face Color',color=self.get_facecolor())
+        self.facecolor = ColorDropdown(
+            text  = 'Face Color',
+            color = self.get_facecolor()
+        )
         self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.facecolor)
+        layout.addWidget(self.facecolor)
 
-        self.edgecolor = ColorDropdown(text='Edge Color',color=self.get_edgecolor())
+        self.edgecolor = ColorDropdown(
+            text  = 'Edge Color',
+            color = self.get_edgecolor()
+        )
         self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.edgecolor)
+        layout.addWidget(self.edgecolor)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min  = 0, 
+            max  = 100, 
+            step = 10
+        )
+        self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
+        layout.addWidget(self.alpha)
 
     def find_object (self) -> list[patches.Patch]:
         return find_mpl_object(
@@ -105,8 +130,8 @@ class Rectangle (ArtistConfigBase):
 
 class Wedge (Rectangle):
     """ same as Rectangle, but overwrite find_object() """
-    def __init__(self, gid, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
     def find_object(self) -> list[patches.Wedge]:
         return find_mpl_object(
@@ -121,8 +146,8 @@ class MultiWedges (Wedge):
         set_facecolor function lightenes the color to 
         set for multiple wedges 
     """
-    def __init__(self, gid, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
     def set_facecolor (self, value):
         try:

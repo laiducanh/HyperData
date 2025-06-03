@@ -2,7 +2,7 @@ import os
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, 
                              QGridLayout)
 from PySide6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
-from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize
+from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize, QPoint
 from PySide6.QtSvg import QSvgRenderer
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton
@@ -235,7 +235,7 @@ class ColorPickerButton (_PushButton):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
         rect = QRectF(self.width()-22, self.height() /
                       2-5, 10, 10)
-        self._drawDropDownIcon(painter, rect)  
+        self._drawDropDownIcon(painter, rect)          
 
 class ColorDropdown (HButton):
     def __init__(self, text:str=None, text2:str=None, color=None,parent=None):

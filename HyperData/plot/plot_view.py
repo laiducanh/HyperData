@@ -1,6 +1,6 @@
 ### Import libraries from Python
 import matplotlib
-from mpl_toolkits.mplot3d.axes3d import Axes3D
+from mpl_toolkits import mplot3d
 
 ### Import libraries from PySide6
 from PySide6.QtCore import Qt, Signal
@@ -11,8 +11,8 @@ from PySide6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
 ### Import self classes
 from plot.insert_plot.insert_plot import InsertPlot
 from plot.curve.curve import Curve
-from plot.axes.tick_2d import Tick2D
-from plot.axes.tick_3d import Tick3D
+from plot.tick.tick_2d import Tick2D
+from plot.tick.tick_3d import Tick3D
 from plot.plot_graphics_view import GraphicsView, GraphicsViewMultiFig
 from plot.multifigure.layout import Layout
 from ui.base_widgets.list import TreeWidget
@@ -20,10 +20,9 @@ from ui.base_widgets.button import _TransparentToolButton
 from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.window import ProgressDialog, FileDialog
 from plot.canvas import Canvas
-from plot.grid.grid import Grid
-from plot.grid.grid_3d import Grid3D
+from plot.axes.axes_2d import Axes2D
+from plot.axes.axes_3d import Axes3D
 from plot.label.graph_title import GraphTitle
-from plot.label.axes_label import AxisLabel2D, AxisLabel3D
 from plot.label.legend import LegendLabel
 from config.settings import GLOBAL_DEBUG, logger, config
 from node_editor.node_node import Node
@@ -43,7 +42,7 @@ class PlotView (QMainWindow):
         self.num_plot = 0
         self.current_plot = 0
         self.curvelist = list()
-        self.plot3d = isinstance(self.canvas.axes, Axes3D)
+        self.plot3d = isinstance(self.canvas.axes, mplot3d.axes3d.Axes3D)
         self.main_layout = QHBoxLayout()
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.main_layout)
@@ -66,9 +65,7 @@ class PlotView (QMainWindow):
             
     def setup_visual (self):
         self.plot_visual = GraphicsView(self.canvas,parent=self.parent())
-        self.plot_visual.mpl_pressed.connect(self.update_sidebar)
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
-        self.plot_visual.mouse_released.connect(self.update_sidebar)
         self.plot_visual.save_figure.connect(self.save_figure)
         self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
@@ -78,18 +75,18 @@ class PlotView (QMainWindow):
 
         if self.plot3d:
             self.treeview_data = {
-                "Graph":["Manage graph"],
-                "Tick":["Tick X3D","Tick Y3D","Tick Z3D"],
-                "Figure":["Plot size","Grid"],
-                "Label":["Title","Axis label","Legend","Data annotation"],
+                "Manage graph":[],
+                "Label":["Data annotation"],
+                "Objects":["X Axis","Y Axis","Z Axis","XY Pane","YZ Pane","XZ Pane",
+                           "Title","Legend"]
             }
 
         else:
             self.treeview_data = {
-                "Graph":["Manage graph"],
-                "Tick":["Tick bottom","Tick left","Tick top","Tick right"],
-                "Figure":["Plot size","Grid"],
-                "Label":["Title","Axis label","Legend","Data annotation"],
+                "Manage graph":[],
+                "Label":["Data annotation"],
+                "Objects":["Bottom Axis","Left Axis","Top Axis","Right Axis",
+                           "Axes","Title","Legend"],
             }
 
         self.sidebar = QWidget()
@@ -140,36 +137,37 @@ class PlotView (QMainWindow):
 
         self.diag.setLabelText("Loading ticks")
         QApplication.processEvents()
-        if self.plot3d: self.tick = Tick3D(self.canvas, self.parent())
-        else: self.tick = Tick2D(self.canvas, self.parent())
-        #self.stackedlayout.addWidget(self.tick)
+        if self.plot3d: 
+            self.xax = Tick3D('x3d', self.canvas, self.parent())
+            self.yax = Tick3D('y3d', self.canvas, self.parent())
+            self.zax = Tick3D('z3d', self.canvas, self.parent())
+        else: 
+            self.botax = Tick2D('bottom', self.canvas, self.parent())
+            self.lefax = Tick2D('left', self.canvas, self.parent())
+            self.rigax = Tick2D('right', self.canvas, self.parent())
+            self.topax = Tick2D('top', self.canvas, self.parent())
         self.diag.progressbar._setValue(60)
 
-        self.diag.setLabelText("Loading grid")
+        self.diag.setLabelText("Loading axes")
         QApplication.processEvents()
-        if self.plot3d: self.grid = Grid3D(self.canvas, self.parent())
-        else: self.grid = Grid(self.canvas,self.parent())
-        #self.stackedlayout.addWidget(self.grid)
+        if self.plot3d: 
+            self.xpane = Axes3D('YZ Pane', self.canvas, self.parent())
+            self.ypane = Axes3D('XZ Pane', self.canvas, self.parent())
+            self.zpane = Axes3D('XY Pane', self.canvas, self.parent())
+        else: 
+            self.axes  = Axes2D(self.canvas, self.parent())
         self.diag.progressbar._setValue(80)
         
         self.diag.setLabelText("Loading labels")
         QApplication.processEvents()
         self.title = GraphTitle(self.canvas, self.parent())
-        #self.stackedlayout.addWidget(self.title)
-        if self.plot3d: self.axeslabel = AxisLabel3D(self.canvas, self.parent())
-        else: self.axeslabel = AxisLabel2D(self.canvas, self.parent())
-        #self.stackedlayout.addWidget(self.axeslabel)
         self.legendlabel = LegendLabel(self.canvas, self.parent())
-        #self.stackedlayout.addWidget(self.legendlabel)
         self.diag.progressbar._setValue(100)
         self.diag.close()
 
     def treeview_func (self, item:QTreeWidgetItem):
         text = item.text(0).lower()
-        self.update_sidebar(text)
-    
-    def update_sidebar(self, text:str):
-        text = text.lower()
+
         if "graph " in text:
             
             _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
@@ -179,55 +177,65 @@ class PlotView (QMainWindow):
                     break
             curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
             curve.sig.connect(self.update_plotlist)
-            #self.stackedlayout.addWidget(curve)
-            #self.stackedlayout.setCurrentWidget(curve)
             curve.show()
         
         elif "manage graph" == text:
             self.stackedlayout.setCurrentWidget(self.insertplot)
-
-        elif "add graph" in text:
-            self.num_plot += 1
-            self.current_plot = self.num_plot
-            self.treeview_data["Graph"].insert(-1,f"Graph {self.current_plot}")
-            self.treeview.setData(self.treeview_data)
             
-        elif "tick " in text:
-            self.tick.choose_axis_func(text.split()[-1].title())
-            #self.stackedlayout.setCurrentWidget(self.tick)
-            self.tick.show()
+        elif text == "bottom axis":
+            self.botax.show()
         
-        elif text in ["plot size", "grid"]:
-            #self.stackedlayout.setCurrentWidget(self.grid)
-            self.grid.show()
+        elif text == "left axis":
+            self.lefax.show()
+
+        elif text == "top axis":
+            self.topax.show()
+
+        elif text == "right axis":
+            self.rigax.show()
+        
+        elif text == 'x axis':
+            self.xax.show()
+        
+        elif text == 'y axis':
+            self.yax.show()
+        
+        elif text == 'z axis':
+            self.zax.show()
+        
+        elif text == 'xy pane':
+            self.zpane.show()
+        
+        elif text == 'xz pane':
+            self.ypane.show()
+        
+        elif text == 'yz pane':
+            self.xpane.show()
+        
+        elif text == 'axes':
+            self.axes.show()
         
         elif text == 'title':
-            #self.stackedlayout.setCurrentWidget(self.title)
             self.title.show()
         
-        elif text == 'axis label':
-            #self.stackedlayout.setCurrentWidget(self.axeslabel)
-            self.axeslabel.show()
-        
         elif text == 'legend':
-            #self.stackedlayout.setCurrentWidget(self.legendlabel)
             self.legendlabel.show()
     
     def update_plotlist(self):
         try:
-            self.treeview_data["Graph"] = ["Manage graph"]
-            plot_list = list()
-            for obj in find_mpl_object(self.canvas.fig,gid="graph "):
+            # reset treeview items
+            self.treeview_data["Objects"] = [item for item in self.treeview_data["Objects"] if "graph" not in item]
+
+            # append list of graphs
+            for obj in find_mpl_object(self.canvas.fig, gid="graph "):
                 if not obj.get_gid().startswith("_"):
-                    plot_list.append(obj.get_gid().split("/")[0])
-            for gid in set(plot_list):
-                _gid = gid.title()
-                self.treeview_data["Graph"].insert(-1,_gid)
+                    if obj.get_gid().split('/')[0].title() not in self.treeview_data["Objects"]:
+                        self.treeview_data["Objects"].append(obj.get_gid().split('/')[0].title())
             self.treeview.setData(self.treeview_data)
 
             # update color icon for each graph
             pixmap = QPixmap(12,12)
-            for item in self.treeview.findItems("Graph",Qt.MatchFlag.MatchExactly):
+            for item in self.treeview.findItems("Objects",Qt.MatchFlag.MatchExactly):
                 for child in range(item.childCount()):
                     name = item.child(child).text(0).lower()
                     if "graph " in name:
@@ -357,9 +365,7 @@ class PlotViewMultiFig (PlotView):
         QApplication.processEvents()
         self.title = GraphTitle(self.canvas, self.parent())
         self.stackedlayout.addWidget(self.title)
-        self.axeslabel = AxisLabel2D(self.canvas, self.parent())
-        self.stackedlayout.addWidget(self.axeslabel)
-
+        
         self.diag.progressbar._setValue(100)
         self.diag.close()
     

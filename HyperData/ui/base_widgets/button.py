@@ -36,10 +36,10 @@ class _PrimaryPushButton (_PushButton):
 class _DropDownPushButton (_PushButton):
     """ PushButton with dropdown menu """
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setCheckable(True)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
+        self.setCheckable(True)
         self._menu = None
     
     def setMenu(self, menu: QMenu):
@@ -64,8 +64,8 @@ class _DropDownPrimaryPushButton (_DropDownPushButton):
 
 class _TogglePushButton (_PushButton):
     """ checkable PushButton """
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.setCheckable(True)
         self.textOn = "Enable"
@@ -85,15 +85,15 @@ class _CheckBox(_TransparentPushButton):
         self.setCheckable(True)
     
 class _ToolButton (QToolButton):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self._icon = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
     
     def setMenu(self, menu: QMenu) -> None:
-        self.setProperty("hasMenu",True)
+        self.setProperty("hasMenu", True)
         return super().setMenu(menu)
 
     # def mousePressEvent(self, a0):
@@ -119,14 +119,14 @@ class _PrimaryToolButton (_ToolButton):
 
 class _ToggleToolButton (_ToolButton):
     """ checkable ToolButton """
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.setCheckable(True)
 
 class _ComboBox (QComboBox):
-    def __init__(self, items:Iterable[str]=None, parent=None):
-        super().__init__(parent)
+    def __init__(self, items:Iterable[str]=None, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.view().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -222,8 +222,9 @@ class _Toggle(QFrame):
 class HButton(QWidget): 
     """" Button Widget in horizontal layout """
     def __init__(self, text:str=None, text2:str=None, 
-                 parent:QWidget=None, flags:Qt.WindowType=Qt.WindowType.Widget):
-        super().__init__(parent, flags)
+                 parent:QWidget=None, flags:Qt.WindowType=Qt.WindowType.Widget,
+                 *args, **kwargs):
+        super().__init__(parent, flags, *args, **kwargs)
 
         self.text = text
         self.text2 = text2
@@ -400,11 +401,18 @@ class SegmentedWidget (QWidget):
                 self.currentWidget = btn
                 btn.setStyleSheet("font-weight:bold")
                 self.update()
+    
+    def setCurrentIndex (self, index:int):
+        for idx, btn in enumerate(self.findChildren(_TransparentPushButton)):
+            btn : _TransparentPushButton
+            btn.setStyleSheet("font-weight:normal")
+            if idx == index:
+                self.currentWidget = btn
+                btn.setStyleSheet("font-weight:bold")
+                self.update()
 
     def paintEvent(self, e):
         super().paintEvent(e)
-        if not self.currentWidget:
-            return
 
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)

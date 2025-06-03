@@ -1,74 +1,85 @@
-from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QPaintEvent
-from PySide6.QtWidgets import QVBoxLayout, QWidget, QStackedLayout
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox, Slider
-from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.color import ColorDropdown
+from PySide6.QtWidgets import QVBoxLayout
+from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from plot.curve.base_elements.patches import Rectangle
 from plot.curve.base_elements.collection import QuadMesh
-from plot.curve.base_elements.line import Marker, Line, LineCollection
+from plot.curve.base_elements.line import Line
 from plot.utilis import find_mpl_object
 from plot.curve.base_plottype.base import PlotConfigBase
-from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
-from matplotlib import patches, colors, lines, collections
+from config.settings import GLOBAL_DEBUG, logger
+from matplotlib import collections
 from matplotlib.pyplot import colormaps
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection as Poly3D
-import numpy as np
 import matplotlib
 
 DEBUG = False
 
 class Heatmap (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
 
-        heatmap = TreeWidgetItem(self.treeview)
-        heatmap.setText(0, 'Heatmap')
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Heatmap'))
+        layout.addWidget(SeparateHLine())
 
-        QuadMesh(self.gid, self.canvas, self.treeview, heatmap)
+        qm = QuadMesh(self.gid, self.canvas)
+        qm.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(qm)
 
 class Contour (PlotConfigBase):
-    def __init__(self, gid, canvas:Canvas, plot:NewPlot, treeview:TreeWidget):
-        super().__init__(gid, canvas, plot, treeview)
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
 
         self.initUI()
     
     def initUI(self):
-
-        contour = TreeWidgetItem(self.treeview)
-        contour.setText(0, 'Contour')
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(TitleLabel('Contour'))
+        layout.addWidget(SeparateHLine())
         
         self.fillmesh = Toggle(text="Fill Color")
         self.fillmesh.button.setChecked(self.get_fillmesh())
         self.fillmesh.button.checkedChanged.connect(self.set_fillmesh)
-        self.treeview.addItemWidget(contour, 0, self.fillmesh)
+        layout.addWidget(self.fillmesh)
 
-        self.cmap = ComboBox(items=colormaps(), text="Colormap")
+        self.cmap = ComboBox(
+            items = colormaps(), 
+            text  = "Colormap"
+        )
         self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        self.treeview.addItemWidget(contour, 0, self.cmap)
+        layout.addWidget(self.cmap)
 
-        self.norm = ComboBox(items=['linear', 'log', 'logit', 'symlog','asinh'], text="Norm")
+        self.norm = ComboBox(
+            items = ['linear', 'log', 'logit', 'symlog','asinh'], 
+            text = "Norm"
+        )
         self.norm.button.setCurrentText(self.get_norm())
         self.norm.button.currentTextChanged.connect(self.set_norm)
-        self.treeview.addItemWidget(contour, 0, self.norm)
+        layout.addWidget(self.norm)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min  = 0,
+            max  = 100,
+            step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(contour, 0, self.alpha)
+        layout.addWidget(self.alpha)
 
-        Line(self.gid, self.canvas, self.treeview, contour)
+        line = Line(self.gid, self.canvas)
+        line.onChanged.connect(self.onChanged.emit)
+        layout.addWidget(line)
 
     def find_object(self) -> list[collections.QuadMesh]:
         return find_mpl_object(

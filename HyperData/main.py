@@ -1,5 +1,9 @@
 import sys, os, json, logging
 
+# forcing software-based backend on MacOS
+# because of Bus error 10
+os.environ["QT_QUICK_BACKEND"] = "software"
+
 from PySide6.QtCore import QThreadPool, Qt, QDir
 from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
 from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPalette)
@@ -15,7 +19,7 @@ try:
     from ctypes import windll  # Only exists on Windows.
     myappid = 'mycompany.myproduct.subproduct.version'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
+    
 except ImportError as e:
     logger.exception(e)
 
@@ -66,8 +70,11 @@ class Main(QMainWindow):
         else:
             if isinstance(node.content, MultiFigure):
                 plot_view = PlotViewMultiFig(node, node.content.canvas, self)
+            elif isinstance(node.content, Figure3D):
+                plot_view = PlotView(node, node.content.canvas, self)
             elif isinstance(node.content, Figure2D):
                 plot_view = PlotView(node, node.content.canvas, self)
+
             self.stack_scene.append(node.id)
             plot_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
             self.mainlayout.addWidget(plot_view)

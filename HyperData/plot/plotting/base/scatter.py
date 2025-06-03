@@ -1,13 +1,18 @@
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from matplotlib.lines import Line2D
 from matplotlib.collections import PathCollection
 from typing import List
 import matplotlib
-import numpy as np
+from config.settings import GLOBAL_DEBUG
+
+DEBUG = True
 
 def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathCollection]:
-    
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = [1,2]
+        Y = [2,5]
+
     artist = ax.scatter(X, Y, gid=gid, s=matplotlib.rcParams["lines.markersize"]**2*sizes, *args, **kwargs)
 
     artist.sizes = sizes
@@ -19,6 +24,11 @@ def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathCollect
     return [artist]
 
 def scatter3d(X, Y, Z, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs) -> List[PathCollection]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = [1,2]
+        Y = [2,5]
+        Z = [3,6]
     
     artist = ax.scatter(X, Y, Z, gid=gid, depthshade=depthshade,
                         s=matplotlib.rcParams["lines.markersize"]**2*sizes, *args, **kwargs)
@@ -29,6 +39,11 @@ def scatter3d(X, Y, Z, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs
     return [artist]
 
 def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathCollection]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = [1,2]
+        Y = [2,5]
+        Z = [10,15]
 
     artist = ax.scatter(X, Y, s=Z*sizes, gid=gid, *args, **kwargs)
 
@@ -42,6 +57,12 @@ def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1, *args, **kwargs) -> List[PathColle
 
 def bubble3d (X, Y, Z, T, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs) -> List[PathCollection]:
 
+    if DEBUG or GLOBAL_DEBUG:
+        X = [1,2]
+        Y = [2,5]
+        Z = [3,6]
+        T = [10,15]
+        
     artist = ax.scatter(X, Y, Z, s=T*sizes, gid=gid, depthshade=depthshade, *args, **kwargs)
 
     artist.sizes = sizes

@@ -1,16 +1,15 @@
-from PySide6.QtCore import Signal, Qt, QTimer
-from PySide6.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QSizePolicy
+from PySide6.QtCore import Signal, QTimer
+from PySide6.QtWidgets import QVBoxLayout, QDialog, QWidget, QSizePolicy
 from ui.base_widgets.line_edit import TextEdit, LineEdit
-from ui.base_widgets.list import TreeWidget, TreeWidgetItem
+from ui.base_widgets.frame import SeparateHLine
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
 from plot.utilis import find_mpl_object
-from plot.curve.base_plottype.line import (Line, Step, Stem, Area, StackedArea, StackedArea100,
-                                           Stem3d)
-from plot.curve.base_plottype.column import (Column, Dot, Dumbbell, ClusteredColumn, ClusteredDot, 
-                                             WaterFall, Marimekko, Treemap, Column3D)
+from plot.curve.base_plottype.line import (Line, Step, Stem, Stem3d, Area, StackedArea, StackedArea100)
+from plot.curve.base_plottype.column import (Column, Column3D, Dot, ClusteredColumn, ClusteredDot, Dumbbell,
+                                             Marimekko, Treemap, WaterFall)
 from plot.curve.base_plottype.scatter import Scatter, Scatter3D
-from plot.curve.base_plottype.pie import (Pie, Coxcomb, Doughnut, MultilevelDoughnut, SemicircleDoughnut)
+from plot.curve.base_plottype.pie import Pie, Doughnut, Coxcomb, SemicircleDoughnut, MultilevelDoughnut
 from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d
 from plot.curve.base_plottype.grid import Heatmap, Contour
 from config.settings import GLOBAL_DEBUG, logger
@@ -20,7 +19,7 @@ from matplotlib import legend
 
 DEBUG = False
 
-class Curve (QMainWindow):
+class Curve (QDialog):
     sig = Signal() # fire signal when plot updated
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
@@ -41,17 +40,7 @@ class Curve (QMainWindow):
     
     def initUI(self):
     
-    # Layout
-        widget = QWidget()
-        self.setCentralWidget(widget)
-        layout = QVBoxLayout(widget)
-    
-    # Create a QTreeWidget
-        self.tree = TreeWidget()
-        self.tree.setColumnCount(1)
-        self.tree.setUniformRowHeights(True)
-        layout.addWidget(self.tree)
-        self.tree.sig_onChange.connect(self.update_legend)
+        self.vlayout = QVBoxLayout(self)
     
     # Timer for updating legend
         self.timer = QTimer()
@@ -59,13 +48,13 @@ class Curve (QMainWindow):
         self.timer.timeout.connect(self.set_label)
     
     # Legend
-        child = TreeWidgetItem(self.tree)
         self.legend = LineEdit(text='Legend')
         self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.legend.button.setText(self.get_label())
         self.legend.button.textChanged.connect(lambda: self.timer.start(300))
-        self.tree.setItemWidget(child, 0, self.legend)
-        
+        self.vlayout.addWidget(self.legend)
+        self.vlayout.addWidget(SeparateHLine())
+
         self.initialize_layout()
 
     def set_label (self):
@@ -73,19 +62,18 @@ class Curve (QMainWindow):
             if self.legend.button.text() == "":
                 _label = "_"
             else: _label = self.legend.button.text()
-            for obj in self.obj:
-                obj.set_label(_label)
-        
+            for obj in self.find_object():
+                if not obj.get_gid().startswith('_'):
+                    obj.set_label(_label)
             set_legend(self.canvas)
             self.canvas.draw_idle()
-            
             
         except Exception as e:
             logger.exception(e)
 
     def get_label (self) -> str:
         # skip label starting with "_"
-        for obj in self.obj:
+        for obj in self.find_object():
             if obj.get_label().startswith("_"):
                 return None
             return obj.get_label()
@@ -101,9 +89,9 @@ class Curve (QMainWindow):
     def initialize_layout(self):
         try:
             plot_type = self.obj[0].plot_type
-            args = [self.gid.split('/')[0], self.canvas, self.plot, self.tree]
+            args = [self.gid.split('/')[0], self.canvas, self.plot]
 
-            if plot_type == '2d line':                  widget = Line(*args)
+            if   plot_type == '2d line':                widget = Line(*args)
             elif plot_type == "2d step":                widget = Step(*args)
             elif plot_type == '2d stem':                widget = Stem(*args)
             elif plot_type == "2d area":                widget = Area(*args)
@@ -143,6 +131,9 @@ class Curve (QMainWindow):
             elif plot_type == "3d column":              widget = Column3D(*args)
             elif plot_type == "3d scatter":             widget = Scatter3D(*args)
             elif plot_type == "3d bubble":              widget = Scatter3D(*args)
-           
+
+            widget.onChanged.connect(self.update_legend)
+            self.vlayout.addWidget(widget)
+
         except Exception as e:
             logger.exception(e)

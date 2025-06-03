@@ -1,67 +1,77 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QDialog
 from plot.canvas import Canvas
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, Slider
+from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.list import TreeWidget
+from ui.base_widgets.frame import SeparateHLine
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import font_lib
 
 DEBUG = False
 
-class GraphTitle (QMainWindow):
+class GraphTitle (QDialog):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle('Graph Title')
         self.canvas = canvas
-        self.obj = self.canvas.axes.set_title('')
+        self.obj = self.canvas.axes.set_title('Graph Title')
         self.initUI()
     
-    def initUI(self):
+    def initUI(self):  
 
-    # Layout
-        widget = QWidget()
-        self.setCentralWidget(widget)
-        layout = QVBoxLayout(widget)
-    
-    # Create a QTreeWidget
-        self.tree = TreeWidget()
-        self.tree.setColumnCount(1)
-        self.tree.setUniformRowHeights(True)
-        layout.addWidget(self.tree)
+        layout = QVBoxLayout(self)
 
         label = LineEdit(text='Label')
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         label.button.setText(self.get_title())
         label.button.textChanged.connect(self.set_title)
-        self.tree.addItemWidget(self.tree, 0, label)
+        layout.addWidget(label)
 
-        font = ComboBox(items=font_lib,text='Font')
+        font = ComboBox(
+            items = font_lib,
+            text  = 'Font'
+        )
         font.button.currentTextChanged.connect(self.set_fontname)
         font.button.setCurrentText(self.get_fontname())
-        self.tree.addItemWidget(self.tree, 0, font)
+        layout.addWidget(font)
 
-        size = DoubleSpinBox(text='font size',min=1,max=100,step=2)
+        size = DoubleSpinBox(
+            text = 'Font size',
+            min = 1, max = 100, step = 2
+        )
         size.button.valueChanged.connect(self.set_fontsize)
         size.button.setValue(self.get_fontsize())
-        self.tree.addItemWidget(self.tree, 0, size)
+        layout.addWidget(size)
         
-        style = FontStyle(obj=[self.obj], canvas=self.canvas)
-        self.tree.addItemWidget(self.tree, 0, style)
+        style = FontStyle(
+            obj = [self.obj], 
+            canvas = self.canvas
+        )
+        layout.addWidget(style)
 
-        color = ColorDropdown(text='font color',color=self.get_color())
+        color = ColorDropdown(
+            text  = 'Font color',
+            color = self.get_color()
+        )
         color.button.colorChanged.connect(self.set_color)
-        self.tree.addItemWidget(self.tree, 0, color)
+        layout.addWidget(color)
 
-        self.backgroundcolor = ColorDropdown(text='background color',color=self.get_backgroundcolor())
+        self.backgroundcolor = ColorDropdown(
+            text  = 'Background color',
+            color = self.get_backgroundcolor()
+        )
         self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        self.tree.addItemWidget(self.tree, 0, self.backgroundcolor)
+        layout.addWidget(self.backgroundcolor)
 
-        edgecolor = ColorDropdown(text='edge color',color=self.get_edgecolor())
+        edgecolor = ColorDropdown(
+            text  = 'Edge color',
+            color = self.get_edgecolor()
+        )
         edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.tree.addItemWidget(self.tree, 0, edgecolor)
+        layout.addWidget(edgecolor)
 
         # #align = FontAlignment(type='graph')
         # #align.sig.connect(lambda: self.sig.emit())
@@ -71,10 +81,13 @@ class GraphTitle (QMainWindow):
         # #pad.button.valueChanged.connect(lambda: self.sig.emit())
         # #layout.addWidget(pad)
 
-        alpha = Slider(text='transparency')
+        alpha = DoubleSpinBox(
+            text = 'Transparency',
+            step = 10
+        )
         alpha.button.valueChanged.connect(self.set_alpha)
         alpha.button.setValue(self.get_alpha())
-        self.tree.addItemWidget(self.tree, 0, alpha)
+        layout.addWidget(alpha)
     
     def set_title (self, title:str):
         self.canvas.axes.set_title(title) 
@@ -109,17 +122,20 @@ class GraphTitle (QMainWindow):
         self.canvas.draw_idle()
     
     def get_backgroundcolor(self):
-        if self.obj.get_bbox_patch() != None:
+        if self.obj.get_bbox_patch():
             return self.obj.get_bbox_patch().get_facecolor()
         return 'white'
 
     def set_edgecolor (self, color):
-        self.obj.set_bbox({"edgecolor":color,
-                           "facecolor":self.backgroundcolor.button.color.name()})
+        self.obj.set_bbox(
+            {"edgecolor" : color,
+            "facecolor"  : self.backgroundcolor.button.color.name()
+            }
+        )
         self.canvas.draw_idle()
     
     def get_edgecolor(self):
-        if self.obj.get_bbox_patch() != None:
+        if self.obj.get_bbox_patch():
             return self.obj.get_bbox_patch().get_edgecolor()
         return 'white'
 
@@ -134,6 +150,6 @@ class GraphTitle (QMainWindow):
         self.canvas.draw_idle()
     
     def get_alpha (self):
-        if self.obj.get_alpha() != None:
+        if self.obj.get_alpha():
             return int(self.obj.get_alpha()*100)
         return 100

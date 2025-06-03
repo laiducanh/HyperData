@@ -1,9 +1,9 @@
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import DoubleSpinBox, Slider
+from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
-from config.settings import GLOBAL_DEBUG, logger, linestyle_lib, marker_lib
+from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
 from matplotlib import scale, colors, collections, rcParams
@@ -15,34 +15,53 @@ import numpy
 DEBUG = False
 
 class SingleColorCollection (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
 
     def initUI(self):
-        self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.edgewidth = DoubleSpinBox(
+            text = 'Edge Width',
+            min = 0, max = 5, step = 0.1
+        )
         self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.edgewidth)
+        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(text='Edge Style',items=linestyle_lib.values())
+        self.edgestyle = ComboBox(
+            text  = 'Edge Style',
+            items = linestyle_lib.values()
+        )
         self.edgestyle.button.setCurrentText(self.get_edgestyle())
         self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        self.treeview.addItemWidget(self.parent, 0, self.edgestyle)
+        layout.addWidget(self.edgestyle)
 
-        self.facecolor = ColorDropdown(text='Face Color',color=self.get_facecolor())
+        self.facecolor = ColorDropdown(
+            text  = 'Face Color',
+            color = self.get_facecolor()
+        )
         self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.facecolor)
+        layout.addWidget(self.facecolor)
 
-        self.edgecolor = ColorDropdown(text='Edge Color',color=self.get_edgecolor())
+        self.edgecolor = ColorDropdown(
+            text  = 'Edge Color',
+            color = self.get_edgecolor()
+        )
         self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.edgecolor)
+        layout.addWidget(self.edgecolor)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min = 0, max = 100, step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
+        layout.addWidget(self.alpha)
     
     def find_object (self) -> List[Union[collections.Collection, collections.PolyCollection]]:
         return find_mpl_object(
@@ -127,50 +146,74 @@ class SingleColorCollection (ArtistConfigBase):
         except: return 100
 
 class CmapCollection (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
 
     def initUI(self):
 
-        self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.edgewidth = DoubleSpinBox(
+            text = 'Edge Width'
+            ,min = 0, max = 5, step = 0.1
+        )
         self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.edgewidth)
+        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(text='Edge Style',items=linestyle_lib.values())
+        self.edgestyle = ComboBox(
+            text  = 'Edge Style',
+            items = linestyle_lib.values()
+        )
         self.edgestyle.button.setCurrentText(self.get_edgestyle())
         self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        self.treeview.addItemWidget(self.parent, 0, self.edgestyle)
+        layout.addWidget(self.edgestyle)
 
         self.cmap_on = Toggle(text="Colormap On")
         self.cmap_on.button.setChecked(self.get_cmap_on())
         self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
-        self.treeview.addItemWidget(self.parent, 0, self.cmap_on)
+        layout.addWidget(self.cmap_on)
 
-        self.cmap = ComboBox(items=colormaps(), text="Colormap")
+        self.cmap = ComboBox(
+            items = colormaps(), 
+            text  = "Colormap"
+        )
         self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        self.treeview.addItemWidget(self.parent, 0, self.cmap)
+        layout.addWidget(self.cmap)
 
-        self.norm = ComboBox(items=['linear', 'log', 'logit', 'symlog','asinh'], text="Norm")
+        self.norm = ComboBox(
+            items = ['linear', 'log', 'logit', 'symlog','asinh'], 
+            text  = "Norm"
+        )
         self.norm.button.setCurrentText(self.get_norm())
         self.norm.button.currentTextChanged.connect(self.set_norm)
-        self.treeview.addItemWidget(self.parent, 0, self.norm)
+        layout.addWidget(self.norm)
 
-        self.facecolor = ColorDropdown(text='Face Color',color=self.get_facecolor())
+        self.facecolor = ColorDropdown(
+            text  = 'Face Color',
+            color = self.get_facecolor()
+        )
         self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.facecolor)
+        layout.addWidget(self.facecolor)
 
-        self.edgecolor = ColorDropdown(text='Edge Color',color=self.get_edgecolor())
+        self.edgecolor = ColorDropdown(
+            text  = 'Edge Color',
+            color = self.get_edgecolor()
+        )
         self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.edgecolor)
+        layout.addWidget(self.edgecolor)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min = 0, max = 100, step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
+        layout.addWidget(self.alpha)
     
     def find_object (self) -> list[collections.Collection]:
         return find_mpl_object(
@@ -297,41 +340,66 @@ class CmapCollection (ArtistConfigBase):
         return 100
 
 class QuadMesh (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
 
     def initUI(self):
 
-        self.edgewidth = DoubleSpinBox(text='Edge Width',min=0,max=5,step=0.1)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.edgewidth = DoubleSpinBox(
+            text = 'Edge Width',
+            min  = 0,
+            max  = 5, 
+            step = 0.1
+        )
         self.edgewidth.button.setValue(self.get_edgewidth())
         self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.edgewidth)
+        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(text='Edge Style',items=linestyle_lib.values())
+        self.edgestyle = ComboBox(
+            text  = 'Edge Style',
+            items = linestyle_lib.values()
+        )
         self.edgestyle.button.setCurrentText(self.get_edgestyle())
         self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        self.treeview.addItemWidget(self.parent, 0, self.edgestyle)
+        layout.addWidget(self.edgestyle)
 
-        self.edgecolor = ColorDropdown(text='Edge Color',color=self.get_edgecolor())
+        self.edgecolor = ColorDropdown(
+            text  = 'Edge Color',
+            color = self.get_edgecolor()
+        )
         self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.edgecolor)
+        layout.addWidget(self.edgecolor)
 
-        self.cmap = ComboBox(items=colormaps(), text="Colormap")
+        self.cmap = ComboBox(
+            items = colormaps(), 
+            text  = "Colormap"
+        )
         self.cmap.button.setCurrentText(self.get_cmap())
         self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        self.treeview.addItemWidget(self.parent, 0, self.cmap)
+        layout.addWidget(self.cmap)
 
-        self.norm = ComboBox(items=['linear', 'log', 'logit', 'symlog','asinh'], text="Norm")
+        self.norm = ComboBox(
+            items = ['linear', 'log', 'logit', 'symlog','asinh'], 
+            text  = "Norm"
+        )
         self.norm.button.setCurrentText(self.get_norm())
         self.norm.button.currentTextChanged.connect(self.set_norm)
-        self.treeview.addItemWidget(self.parent, 0, self.norm)
+        layout.addWidget(self.norm)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min  = 0,
+            max  = 100,
+            step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
+        layout.addWidget(self.alpha)
     
     def find_object (self) -> list[collections.QuadMesh]:
         return find_mpl_object(source=self.canvas.fig,
@@ -432,22 +500,33 @@ class QuadMesh (ArtistConfigBase):
         except: return 100
 
 class Poly3DCollection (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
 
     def initUI(self):
 
-        self.zsort = ComboBox(items=["average","min","max"], text="Zsort")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.zsort = ComboBox(
+            items = ["average","min","max"], 
+            text  = "Zsort"
+        )
         self.zsort.button.setCurrentText(self.get_zsort())
         self.zsort.button.currentTextChanged.connect(self.set_zsort)
-        self.treeview.addItemWidget(self.parent, 0, self.zsort)
+        layout.addWidget(self.zsort)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min  = 0,
+            max  = 100,
+            step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
+        layout.addWidget(self.alpha)
 
     def find_object(self) -> List[art3d.Poly3DCollection]:
         return find_mpl_object(

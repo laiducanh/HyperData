@@ -74,6 +74,11 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, a
 
 def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
               orientation="z", zsort="average", shade=True, *args, **kwargs) -> list[Poly3DCollection]:
+    
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(3)
+        Y = np.array([1,3,5])
+        Z = np.array([2,4,7])
 
     if orientation == "x": x, y, z, dx, dy, dz = bottom, X, Y, Z, Dx, Dy
     elif orientation == "y":   x, y, z, dx, dy, dz = X, bottom, Y, Dx, Z, Dy
@@ -112,7 +117,7 @@ def _dotstep(arr) -> Union[float,int]:
 def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -> list[Line2D]:
     
     if DEBUG or GLOBAL_DEBUG:
-        X = np.arange(0,10)
+        X = np.arange(0,2)
         Y = np.array([2.2,3.2])
 
     X = np.asarray(X)
@@ -122,7 +127,7 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
     artist = list()
     for _x, _y in zip(X, Y):
         if orientation == "vertical":
-            x = np.repeat(_x, int(_y*(1/step)*0.5))
+            x = np.repeat(_x, int(_y*(1/step)))
             y = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
         else:
             x = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
@@ -223,7 +228,8 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
                 color='black',
                 linewidth=1,
                 solid_capstyle="round",
-                gid=f"{gid}.0",
+                marker='',
+                gid=f"{gid}/0",
             )
             artist += line
 
@@ -231,14 +237,14 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
         p1 = ax.plot(
             X, Y, 
             marker='o', 
-            gid=f"{gid}.1", 
+            gid=f"_{gid}/1", 
             linestyle="none",
             zorder=line[0].get_zorder()+1
         )
         p2 = ax.plot(
             X, Z, 
             marker='o', 
-            gid=f"{gid}.2", 
+            gid=f"_{gid}/2", 
             linestyle="none",
             zorder=line[0].get_zorder()+1
         )
@@ -254,7 +260,8 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
                 color='black',
                 linewidth=1,
                 solid_capstyle="round",
-                gid=f"{gid}.0",
+                marker='',
+                gid=f"{gid}/0",
             )
             artist += line
 
@@ -262,14 +269,14 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
         p1 = ax.plot(
             Y, X, 
             marker='o', 
-            gid=f"{gid}.1", 
+            gid=f"_{gid}/1", 
             linestyle="none",
             zorder=line[0].get_zorder()+1
         )
-        p2 = ax.scatter(
+        p2 = ax.plot(
             Z, X, 
             marker='o', 
-            gid=f"{gid}.2", 
+            gid=f"_{gid}/2", 
             linestyle="none",
             zorder=line[0].get_zorder()+1
         )
@@ -346,7 +353,7 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
                 y = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
             else:
                 x = np.linspace(bottom+step, _y+bottom, num=int(_y*(1/step)), endpoint=True, dtype=np.float16)
-                y = np.repeat(_x+offset, int(_y*(1/step))+1)
+                y = np.repeat(_x+offset, int(_y*(1/step)))
             _lines = ax.plot(
                 x, y,
                 gid = f"{gid}.{idx+1}",
@@ -740,7 +747,7 @@ def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=
 
     lines = LineCollection(
         segments,
-        gid=f"{gid}/line",
+        gid=f"_{gid}/line",
     )
     lines.Xdata = None
     lines.Ydata = None

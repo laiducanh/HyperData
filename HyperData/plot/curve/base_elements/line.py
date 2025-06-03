@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import DoubleSpinBox, Slider
+from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib, marker_lib
@@ -11,57 +11,81 @@ from matplotlib import lines, colors, collections
 DEBUG = False
 
 class Line (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
     
     def initUI(self):
-        
-        self.visible = Toggle(text="Visible")
-        self.visible.button.checkedChanged.connect(self.set_visible)
-        self.visible.button.setChecked(self.get_visible())
-        self.treeview.addItemWidget(self.parent, 0, self.visible)
 
-        self.linestyle = ComboBox(text='Line Style',items=linestyle_lib.values())
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+        
+        self.linestyle = ComboBox(
+            text  = 'Line Style',
+            items = linestyle_lib.values()
+        )
         self.linestyle.button.setCurrentText(self.get_linestyle())
         self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
-        self.treeview.addItemWidget(self.parent, 0, self.linestyle)
+        layout.addWidget(self.linestyle)
 
-        self.solid_capstyle = ComboBox(text="Solid Capstyle", items=['butt', 'projecting', 'round'])
+        self.solid_capstyle = ComboBox(
+            text  = "Solid Capstyle", 
+            items = ['butt', 'projecting', 'round']
+        )
         self.solid_capstyle.button.setCurrentText(self.get_solid_capstyle())
         self.solid_capstyle.button.currentTextChanged.connect(self.set_solid_capstyle)
-        self.treeview.addItemWidget(self.parent, 0, self.solid_capstyle)
+        layout.addWidget(self.solid_capstyle)
 
-        self.solid_joinstyle = ComboBox(text="Solid Joinstyle", items=['miter', 'round', 'bevel'])
+        self.solid_joinstyle = ComboBox(
+            text  = "Solid Joinstyle", 
+            items = ['miter', 'round', 'bevel']
+        )
         self.solid_joinstyle.button.setCurrentText(self.get_solid_joinstyle())
         self.solid_joinstyle.button.currentTextChanged.connect(self.set_solid_joinstyle)
-        self.treeview.addItemWidget(self.parent, 0, self.solid_joinstyle)
+        layout.addWidget(self.solid_joinstyle)
 
-        self.dash_capstyle = ComboBox(text="Dash Capstyle", items=['butt', 'projecting', 'round'])
+        self.dash_capstyle = ComboBox(
+            text  = "Dash Capstyle", 
+            items = ['butt', 'projecting', 'round']
+        )
         self.dash_capstyle.button.setCurrentText(self.get_dash_capstyle())
         self.dash_capstyle.button.currentTextChanged.connect(self.set_dash_capstyle)
-        self.treeview.addItemWidget(self.parent, 0, self.dash_capstyle)
+        self.dash_capstyle.hide()
+        layout.addWidget(self.dash_capstyle)
 
-        self.dash_joinstyle = ComboBox(text="Dash Joinstyle", items=['miter', 'round', 'bevel'])
+        self.dash_joinstyle = ComboBox(
+            text  = "Dash Joinstyle", 
+            items = ['miter', 'round', 'bevel']
+        )
         self.dash_joinstyle.button.setCurrentText(self.get_dash_joinstyle())
         self.dash_joinstyle.button.currentTextChanged.connect(self.set_dash_joinstyle)
-        self.treeview.addItemWidget(self.parent, 0, self.dash_joinstyle)
+        self.dash_joinstyle.hide()
+        layout.addWidget(self.dash_joinstyle)
 
-        self.linewidth = DoubleSpinBox(text='Line Width',min=0,max=10,step=0.5)
+        self.linewidth = DoubleSpinBox(
+            text = 'Line Width',
+            min = 0, max = 10, step = 0.5
+        )
         self.linewidth.button.setValue(self.get_linewidth())
         self.linewidth.button.valueChanged.connect(self.set_linewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.linewidth)
+        layout.addWidget(self.linewidth)
 
-        self.color = ColorDropdown(text='Line Color',color=self.get_color())
+        self.color = ColorDropdown(
+            text  = 'Line Color',
+            color = self.get_color()
+        )
         self.color.button.colorChanged.connect(self.set_color)
-        self.treeview.addItemWidget(self.parent, 0, self.color)
+        layout.addWidget(self.color)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min = 0, max = 100, step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
-    
+        layout.addWidget(self.alpha)
+
     def find_object(self) -> list[lines.Line2D]:
         return find_mpl_object(
             self.canvas.fig, 
@@ -181,37 +205,55 @@ class Line (ArtistConfigBase):
 
 
 class Marker(ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
     
     def initUI(self):
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
 
-        self.marker = ComboBox(text='Marker Style',items=marker_lib.values())
+        self.marker = ComboBox(
+            text  = 'Marker Style',
+            items = marker_lib.values()
+        )
         self.marker.button.setCurrentText(self.get_marker())
         self.marker.button.currentTextChanged.connect(self.set_marker)
-        self.treeview.addItemWidget(self.parent, 0, self.marker)
+        layout.addWidget(self.marker)
 
-        self.markersize = DoubleSpinBox(text='Marker Size',min=0,step=2)
+        self.markersize = DoubleSpinBox(
+            text = 'Marker Size',
+            min = 0, step = 2
+        )
         self.markersize.button.setValue(self.get_markersize())
         self.markersize.button.valueChanged.connect(self.set_markersize)
-        self.treeview.addItemWidget(self.parent, 0, self.markersize)
+        layout.addWidget(self.markersize)
 
-        self.markeredgewidth = DoubleSpinBox(text='Marker Edge Width',min=0,max=5,step=0.5)
+        self.markeredgewidth = DoubleSpinBox(
+            text = 'Marker Edge Width',
+            min = 0, max = 5, step = 0.5
+        )
         self.markeredgewidth.button.setValue(self.get_markeredgewidth())
         self.markeredgewidth.button.valueChanged.connect(self.set_markeredgewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.markeredgewidth)
+        layout.addWidget(self.markeredgewidth)
 
-        self.markerfacecolor = ColorDropdown(text='Marker Face Color',color=self.get_markerfacecolor())
+        self.markerfacecolor = ColorDropdown(
+            text  = 'Marker Face Color',
+            color = self.get_markerfacecolor()
+        )
         self.markerfacecolor.button.setColor(self.get_markerfacecolor())
         self.markerfacecolor.button.colorChanged.connect(self.set_markerfacecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.markerfacecolor)
+        layout.addWidget(self.markerfacecolor)
 
-        self.markeredgecolor = ColorDropdown(text='Marker Edge Color',color=self.get_markeredgecolor())
+        self.markeredgecolor = ColorDropdown(
+            text  = 'Marker Edge Color',
+            color = self.get_markeredgecolor()
+        )
         self.markeredgecolor.button.setColor(self.get_markeredgecolor())
         self.markeredgecolor.button.colorChanged.connect(self.set_markeredgecolor)
-        self.treeview.addItemWidget(self.parent, 0, self.markeredgecolor)
+        layout.addWidget(self.markeredgecolor)
 
     def find_object (self) -> list[lines.Line2D]:
         return find_mpl_object(
@@ -285,32 +327,44 @@ class Marker(ArtistConfigBase):
         except: return "black"
 
 class LineCollection (ArtistConfigBase):
-    def __init__(self, gid:str, canvas:Canvas, treeview:QTreeWidget, parent:QTreeWidgetItem):
-        super().__init__(gid, canvas, treeview, parent)
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
 
         self.initUI()
     
     def initUI(self):
 
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
         self.visible = Toggle(text="Visible")
         self.visible.button.setChecked(self.get_visible())
         self.visible.button.checkedChanged.connect(self.set_visible)
-        self.treeview.addItemWidget(self.parent, 0, self.visible)
+        layout.addWidget(self.visible)
 
-        self.linewidth = DoubleSpinBox(text='Line Width',min=0,max=10,step=0.5)
+        self.linewidth = DoubleSpinBox(
+            text = 'Line Width',
+            min = 0, max = 10, step = 0.5
+        )
         self.linewidth.button.setValue(self.get_linewidth())
         self.linewidth.button.valueChanged.connect(self.set_linewidth)
-        self.treeview.addItemWidget(self.parent, 0, self.linewidth)
+        layout.addWidget(self.linewidth)
 
-        self.color = ColorDropdown(text='Line Color',color=self.get_color())
+        self.color = ColorDropdown(
+            text  = 'Line Color',
+            color = self.get_color()
+        )
         self.color.button.setColor(self.get_color())
         self.color.button.colorChanged.connect(self.set_color)
-        self.treeview.addItemWidget(self.parent, 0, self.color)
+        layout.addWidget(self.color)
 
-        self.alpha = Slider(text='Transparency',min=0,max=100)
+        self.alpha = SpinBox(
+            text = 'Transparency',
+            min = 0, max = 100, step = 10
+        )
         self.alpha.button.setValue(self.get_alpha())
         self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.treeview.addItemWidget(self.parent, 0, self.alpha)
+        layout.addWidget(self.alpha)
         
     def find_object(self) -> list[collections.LineCollection]:
         return find_mpl_object(

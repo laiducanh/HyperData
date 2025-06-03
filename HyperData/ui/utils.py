@@ -23,6 +23,6 @@ def get_path():
     try:
         return os.path.join(os.getcwd(), sys._MEIPASS)
     except Exception as e:
-        logger.error(e)
+        #logger.error(e)
         return os.getcwd()
         

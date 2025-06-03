@@ -203,7 +203,7 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
     
     if DEBUG:
         X = [1, 2]
-        Y = [2, 3]
+        Y = [[1,2],[2, 5]]
         
     _X = np.asarray(X)
     _Y = np.asarray(Y)
@@ -213,10 +213,10 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
 
     for ind, art in enumerate(artist):
         art.baseline = baseline
-        art.Xdata = _X.copy()
-        art.Ydata = stack[ind, :].copy()
-        art.Xshow = art.Xdata.copy()
-        art.Yshow = art.Ydata.copy()
+        # art.Xdata = _X.copy()
+        # art.Ydata = stack[ind, :].copy()
+        # art.Xshow = art.Xdata.copy()
+        # art.Yshow = art.Ydata.copy()
     
         if step: art.step = step
         else: art.step = 'none'  
@@ -232,7 +232,7 @@ def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> List[PolyCollection]
 
     if DEBUG:
         X = [1, 2]
-        Y = [2, 3]
+        Y = [[1,2],[2, 5]]
         
     _X = np.asarray(X)
     _Y = np.asarray(Y)

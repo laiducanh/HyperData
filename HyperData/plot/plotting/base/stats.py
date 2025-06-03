@@ -179,19 +179,19 @@ def boxplot(X, ax:Axes, gid:str, showbox = True, notch = False,
         art.Yshow = p[1]
     for art in _artist.get("medians"):
         artist.append(art)
-        art.set_gid(gid=f"{gid}/medians")
+        art.set_gid(gid=f"_{gid}/medians")
     for art in _artist.get("whiskers"):
         artist.append(art)
-        art.set_gid(gid=f"{gid}/whiskers")
+        art.set_gid(gid=f"_{gid}/whiskers")
     for art in _artist.get("caps"):
         artist.append(art)
-        art.set_gid(gid=f"{gid}/caps")
+        art.set_gid(gid=f"_{gid}/caps")
     for art in _artist.get("fliers"):
         artist.append(art)
-        art.set_gid(gid=f"{gid}/fliers")
+        art.set_gid(gid=f"_{gid}/fliers")
     for art in _artist.get("means"):
         artist.append(art)
-        art.set_gid(gid=f"{gid}/means")
+        art.set_gid(gid=f"_{gid}/means")
 
     for art in artist:
        # print("abc", art, art.get_gid())
@@ -224,7 +224,7 @@ def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
     artist = list()
     _artist = ax.violinplot(
         X, 
-        orientation=orientation, 
+        vert=orientation, 
         widths=widths,
         showextrema=showextrema, 
         showmeans=showmeans,
@@ -250,22 +250,22 @@ def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
             art.set_gid(gid=f"{gid}/bodies")
     if cmeans: 
         artist.append(cmeans)
-        cmeans.set_gid(gid=f"{gid}/cmeans")
+        cmeans.set_gid(gid=f"_{gid}/cmeans")
     if cmins: 
         artist.append(cmins)
-        cmins.set_gid(gid=f"{gid}/cmins")
+        cmins.set_gid(gid=f"_{gid}/cmins")
     if cmaxes: 
         artist.append(cmaxes)
-        cmaxes.set_gid(gid=f"{gid}/cmaxes")
+        cmaxes.set_gid(gid=f"_{gid}/cmaxes")
     if cbars: 
         artist.append(cbars)
-        cbars.set_gid(gid=f"{gid}/cbars")
+        cbars.set_gid(gid=f"_{gid}/cbars")
     if cmedians: 
         artist.append(cmedians)
-        cmedians.set_gid(gid=f"{gid}/cmedians")
+        cmedians.set_gid(gid=f"_{gid}/cmedians")
     if cquantiles: 
         artist.append(cquantiles)
-        cquantiles.set_gid(gid=f"{gid}/cquantiles")
+        cquantiles.set_gid(gid=f"_{gid}/cquantiles")
     
     for art in artist:
         art.orientation = orientation
