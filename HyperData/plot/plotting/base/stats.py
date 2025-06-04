@@ -334,3 +334,38 @@ def hist2d(X, Y, ax:Axes, gid:str, binx=10, biny=10, density=False, *args, **kwa
 
     return [artist]
 
+def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args, **kwargs) -> list[Line2D]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = np.arange(0.1, 4, 0.5)
+        Y = np.exp(-X)
+        Yerr = 0.1 + 0.2 * X
+        Xerr = [0.4 * Yerr, Yerr]
+    
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    Yerr = np.asarray(Yerr)
+    Xerr = np.asarray(Xerr)
+    artist = list()
+
+    art = ax.errorbar(
+        X, Y, Yerr, Xerr, 
+        capsize=capsize, 
+        errorevery=errorevery,
+        *args, **kwargs
+    )
+    
+    data_line = art.lines[0]
+    artist.append(data_line)
+    data_line.set_gid(f'{gid}/dataline')
+    data_line.capsize = capsize
+    data_line.errorevery = errorevery
+
+    for cap in art.lines[1]:
+        artist.append(cap)
+        cap.set_gid(f'_{gid}/err')
+    for err in art.lines[2]:
+        artist.append(err)
+        err.set_gid(f'_{gid}/err')
+
+    return artist

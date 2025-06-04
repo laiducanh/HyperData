@@ -7,7 +7,7 @@ from ui.base_widgets.frame import SeparateHLine
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.patches import Rectangle
-from plot.curve.base_elements.line import LineCollection, Line, Marker
+from plot.curve.base_elements.line import LineCollection, Line, Marker, ErrorBarCollection
 from plot.curve.base_elements.collection import SingleColorCollection, QuadMesh
 from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
@@ -821,3 +821,69 @@ class Hist2d (PlotConfigBase):
     
     def get_density(self) -> bool:
         return self.find_object()[0].density
+
+class ErrorBar (PlotConfigBase):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+
+        self.initUI()
+    
+    def initUI(self):
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.choose_component = SegmentedWidget()
+        layout.addWidget(self.choose_component)
+
+        self.choose_component.addButton(text='Data line', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_component.addButton(text='Error bars', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        
+        self.choose_component.setCurrentIndex(0)
+
+        self.stackedlayout = QStackedLayout()
+        layout.addLayout(self.stackedlayout)
+
+        data_line = QWidget()
+        layout_data = QVBoxLayout(data_line)
+        layout_data.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(data_line)
+
+        data_line = Line(f'{self.gid}/dataline', self.canvas)
+        data_line.onChanged.connect(self.onChanged.emit)
+        layout_data.addWidget(data_line)
+
+        marker = Marker(f'{self.gid}/dataline', self.canvas)
+        marker.onChanged.connect(self.onChanged.emit)
+        layout_data.addWidget(marker)
+
+        err = QWidget()
+        layout_err = QVBoxLayout(err)
+        layout_err.setContentsMargins(0,0,0,0)
+        self.stackedlayout.addWidget(err)
+
+        capsize = DoubleSpinBox(text="Cap Size")
+        capsize.button.setValue(self.get_capsize())
+        capsize.button.valueChanged.connect(self.set_capsize)
+        layout_err.addWidget(capsize)
+
+        err = ErrorBarCollection(f'_{self.gid}/err', self.canvas)
+        err.onChanged.connect(self.onChanged.emit)
+        layout_err.addWidget(err)
+    
+    def find_object(self) -> lines.Line2D:
+        return find_mpl_object(
+            source=self.canvas.fig,
+            match=[lines.Line2D],
+            gid=self.gid,
+        )
+
+    def set_capsize(self, value:float):
+        try:
+            self.props.update(capsize = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_capsize(self) -> float:
+        return self.find_object()[0].capsize

@@ -67,7 +67,7 @@ class Menu_type_2D (Menu):
 
         stats = Menu('Statistics', self)
         stats.setIcon(icon_statistics)
-        for i in ['histogram','stacked histogram','hist2d']:
+        for i in ['histogram','stacked histogram','hist2d','error bar']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             stats.addAction(action)

@@ -46,3 +46,32 @@ class WidgetPie (QWidget):
         self.input1.setCurrentText(text)
         self.input = [self.input1.currentText()] 
         self.sig.emit()
+
+class Pie(WidgetPie):
+    ''' '''
+class Coxcomb(WidgetPie):
+    ''' '''
+class Doughnut(WidgetPie):
+    ''' '''
+class MultilevelDoughnut(WidgetPie):
+    ''' '''
+class SemicircleDoughnut(WidgetPie):
+    ''' '''
+class Histogram(WidgetPie):
+    ''' '''
+class StackedHistogram(WidgetPie):
+    ''' '''
+class Boxplot(WidgetPie):
+    ''' '''
+class Violinplot(WidgetPie):
+    ''' '''
+class Eventplot(WidgetPie):
+    ''' '''
+class Treemap(WidgetPie):
+    ''' '''
+class Marimekko(WidgetPie):
+    ''' '''
+class Heatmap(WidgetPie):
+    ''' '''
+class Contour(WidgetPie):
+    ''' '''

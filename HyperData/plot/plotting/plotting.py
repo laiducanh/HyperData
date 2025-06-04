@@ -220,6 +220,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     elif plot_type == "violinplot":              artist = violinplot(X, ax, gid, *args, **kwargs)
     elif plot_type == "eventplot":               artist = eventplot(X, ax, gid, *args, **kwargs)
     elif plot_type == "hist2d":                  artist = hist2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "error bar":               artist = errorbar(X, Y, Z, T, ax, gid, *args, **kwargs)
     elif plot_type == "heatmap":                 artist = heatmap(X, ax, gid, *args, **kwargs)
     elif plot_type == "contour":                 artist = contour(X, ax, gid, *args, **kwargs)
 

@@ -435,3 +435,14 @@ class LineCollection (ArtistConfigBase):
         try:
             return colors.to_hex(self.find_object()[0].get_edgecolor()[0])
         except: return "black"
+
+class ErrorBarCollection (LineCollection):
+    def __init__(self, gid:str, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
+    
+    def find_object(self) -> list[collections.LineCollection, lines.Line2D]:
+        return find_mpl_object(
+            source=self.canvas.fig,
+            match=[collections.LineCollection, lines.Line2D],
+            gid=self.gid,
+        )

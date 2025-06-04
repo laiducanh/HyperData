@@ -6,6 +6,10 @@ from matplotlib.artist import Artist
 from plot.plot_plottype_window import Plottype_Window
 from plot.insert_plot.menu import Menu_type_2D, Menu_type_3D
 from plot.insert_plot.input import widget_2input, widget_1input, widget_3input, widget_4input
+from plot.insert_plot.input.widget_1input import *
+from plot.insert_plot.input.widget_2input import *
+from plot.insert_plot.input.widget_3input import *
+from plot.insert_plot.input.widget_4input import *
 from ui.base_widgets.button import _TransparentPushButton, _DropDownPrimaryPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.window import ProgressBar
@@ -97,7 +101,7 @@ class NewPlot (Frame):
         self.plot_3input = ["fill between","2d bubble","dumbbell"]
         self.plot_3dtype = ["3d line","3d step","3d stem","3d column",
                         "3d scatter"]
-        self.plot_4input = ["3d bubble"]
+        self.plot_4input = ["3d bubble","error bar"]
 
         effect = QGraphicsOpacityEffect(self)
         effect.setOpacity(0.5)
@@ -135,19 +139,67 @@ class NewPlot (Frame):
 
         self.initUI()
 
-    def initUI(self):
+    def initUI(self, input=None):
         
-        _input = [str(), str(), str(), str()]
-        if self.plot_type in self.plot_1input:
-            self.widget = widget_1input.WidgetPie(self.node, _input, self.parent())
-        elif self.plot_type in self.plot_3input:
-            self.widget = widget_3input.Widget2D_3input(self.node, _input, self.parent())
-        elif self.plot_type in self.plot_3dtype:
-            self.widget = widget_3input.Widget3D(self.node, _input, self.parent())
-        elif self.plot_type in self.plot_4input:
-            self.widget = widget_4input.Widget3D_4input(self.node, _input, self.parent())
-        else:
-            self.widget = widget_2input.Widget2D_2input(self.node, _input, self.parent())
+        if not input: input = [str(), str(), str(), str()]
+        # if self.plot_type in self.plot_1input:
+        #     self.widget = widget_1input.WidgetPie(self.node, input, self.parent())
+        # elif self.plot_type in self.plot_3input:
+        #     self.widget = widget_3input.Widget2D_3input(self.node, input, self.parent())
+        # elif self.plot_type in self.plot_3dtype:
+        #     self.widget = widget_3input.Widget3D(self.node, input, self.parent())
+        # elif self.plot_type in self.plot_4input:
+        #     if self.plot_type == "error bar":
+        #         self.widget = widget_4input.Widget2D_4input(self.node, input, self.parent())
+        #     else: 
+        #         self.widget = widget_4input.Widget3D_4input(self.node, input, self.parent())
+        # else:
+        #     self.widget = widget_2input.Widget2D_2input(self.node, input, self.parent())
+        
+        args = [self.node, input, self.parent()]
+
+        if   self.plot_type == "2d line":                   self.widget = Line2D(*args)
+        elif self.plot_type == "2d step":                   self.widget = Step2D(*args)
+        elif self.plot_type == "2d stem":                   self.widget = Stem2D(*args)
+        elif self.plot_type == "2d spline":                 self.widget = Spline2D(*args)
+        elif self.plot_type == "2d area":                   self.widget = Fillbetween(*args)
+        elif self.plot_type == "fill between":              self.widget = Fillbetween(*args)
+        elif self.plot_type == "2d stacked area":           self.widget = StackedArea(*args)
+        elif self.plot_type == "2d 100% stacked area":      self.widget = StackedArea100(*args)
+        elif self.plot_type == "2d column":                 self.widget = Column2D(*args)
+        elif self.plot_type == "dot":                       self.widget = Dot2D(*args)
+        elif self.plot_type == "dumbbell":                  self.widget = Dumbbell(*args)
+        elif self.plot_type == "2d clustered column":       self.widget = ClusteredColumn2D(*args)
+        elif self.plot_type == "clustered dot":             self.widget = ClusteredDot(*args)
+        elif self.plot_type == "2d stacked column":         self.widget = StackedColumn2D(*args)
+        elif self.plot_type == "stacked dot":               self.widget = StackedDot(*args)
+        elif self.plot_type == "2d 100% stacked column":    self.widget = StackedColumn2D100(*args)
+        elif self.plot_type == "2d waterfall column":       self.widget = Waterfall(*args)
+        elif self.plot_type == "marimekko":                 self.widget = Marimekko(*args)
+        elif self.plot_type == "treemap":                   self.widget = Treemap(*args)
+        elif self.plot_type == "2d scatter":                self.widget = Scatter2D(*args)
+        elif self.plot_type == "2d bubble":                 self.widget = Bubble2D(*args)
+        elif self.plot_type == "pie":                       self.widget = Pie(*args)
+        elif self.plot_type == "coxcomb":                   self.widget = Coxcomb(*args)
+        elif self.plot_type == "doughnut":                  self.widget = Doughnut(*args)
+        elif self.plot_type == "multilevel doughnut":       self.widget = MultilevelDoughnut(*args)
+        elif self.plot_type == "semicircle doughnut":       self.widget = SemicircleDoughnut(*args)
+        elif self.plot_type == "histogram":                 self.widget = Histogram(*args)
+        elif self.plot_type == "stacked histogram":         self.widget = StackedHistogram(*args)
+        elif self.plot_type == "boxplot":                   self.widget = Boxplot(*args)
+        elif self.plot_type == "violinplot":                self.widget = Violinplot(*args)
+        elif self.plot_type == "eventplot":                 self.widget = Eventplot(*args)
+        elif self.plot_type == "hist2d":                    self.widget = Hist2D(*args)
+        elif self.plot_type == "error bar":                 self.widget = Errorbar(*args)
+        elif self.plot_type == "heatmap":                   self.widget = Heatmap(*args)
+        elif self.plot_type == "contour":                   self.widget = Contour(*args)
+
+        elif self.plot_type == "3d line":                   self.widget = Line3D(*args)
+        elif self.plot_type == "3d step":                   self.widget = Step3D(*args)
+        elif self.plot_type == "3d stem":                   self.widget = Stem3D(*args)
+        elif self.plot_type == "3d column":                 self.widget = Column3D(*args)
+        elif self.plot_type == "3d scatter":                self.widget = Scatter3D(*args)
+        elif self.plot_type == "3d bubble":                 self.widget = Bubble3D(*args)
 
         self.widget.sig.connect(self.plotting)
         self.layout_input.addWidget(self.widget)
@@ -175,20 +227,9 @@ class NewPlot (Frame):
             self.sig_delete.emit(self)
             self.deleteLater()
             return None
-        elif plot_type in self.plot_1input:
-            self.widget = widget_1input.WidgetPie(self.node, _input, self.parent())
-        elif plot_type in self.plot_3input:
-            self.widget = widget_3input.Widget2D_3input(self.node, _input, self.parent())
-        elif self.plot_type in self.plot_3dtype:
-            self.widget = widget_3input.Widget3D(self.node, _input, self.parent())
-        elif self.plot_type in self.plot_4input:
-            self.widget = widget_4input.Widget3D_4input(self.node, _input, self.parent())
         else:
-            self.widget = widget_2input.Widget2D_2input(self.node, _input, self.parent())
-
-        self.widget.sig.connect(self.plotting)
-        self.layout_input.addWidget(self.widget)
-
+            self.initUI(_input)
+    
         self.plotting()
     
 

@@ -10,7 +10,7 @@ from plot.curve.base_plottype.column import (Column, Column3D, Dot, ClusteredCol
                                              Marimekko, Treemap, WaterFall)
 from plot.curve.base_plottype.scatter import Scatter, Scatter3D
 from plot.curve.base_plottype.pie import Pie, Doughnut, Coxcomb, SemicircleDoughnut, MultilevelDoughnut
-from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d
+from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d, ErrorBar
 from plot.curve.base_plottype.grid import Heatmap, Contour
 from config.settings import GLOBAL_DEBUG, logger
 from plot.plotting.plotting import set_legend, get_legend
@@ -122,6 +122,7 @@ class Curve (QDialog):
             elif plot_type == "violinplot":             widget = Violinplot(*args)
             elif plot_type == "eventplot":              widget = Eventplot(*args)
             elif plot_type == "hist2d":                 widget = Hist2d(*args)
+            elif plot_type == "error bar":              widget = ErrorBar(*args)
             elif plot_type == "heatmap":                widget = Heatmap(*args)
             elif plot_type == "contour":                widget = Contour(*args)
 

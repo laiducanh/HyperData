@@ -136,3 +136,36 @@ class Widget2D_2input (QWidget):
 
         self.input_func()
         self.dataview.close()
+
+class Line2D(Widget2D_2input):
+    ''' '''
+class Step2D(Widget2D_2input):
+    ''' '''
+class Stem2D(Widget2D_2input):
+    ''' '''
+class Spline2D(Widget2D_2input):
+    ''' '''
+class StackedArea(Widget2D_2input):
+    ''' '''
+class StackedArea100(Widget2D_2input):
+    ''' '''
+class Column2D(Widget2D_2input):
+    ''' '''
+class Dot2D(Widget2D_2input):
+    ''' '''
+class ClusteredColumn2D(Widget2D_2input):
+    ''' '''
+class ClusteredDot(Widget2D_2input):
+    ''' '''
+class StackedColumn2D(Widget2D_2input):
+    ''' '''
+class StackedDot(Widget2D_2input):
+    ''' '''
+class StackedColumn2D100(Widget2D_2input):
+    ''' '''
+class Waterfall(Widget2D_2input):
+    ''' '''
+class Scatter2D(Widget2D_2input):
+    ''' '''
+class Hist2D(Widget2D_2input):
+    ''' '''

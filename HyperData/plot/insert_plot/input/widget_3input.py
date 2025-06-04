@@ -228,3 +228,19 @@ class Widget3D (QWidget):
         self.input_func()
         self.dataview.close()
 
+class Fillbetween(Widget2D_3input):
+    ''' '''
+class Bubble2D(Widget2D_3input):
+    ''' '''
+class Dumbbell(Widget2D_3input):
+    ''' '''
+class Line3D(Widget3D):
+    ''' '''
+class Step3D(Widget3D):
+    ''' '''
+class Stem3D(Widget3D):
+    ''' '''
+class Column3D(Widget3D):
+    ''' '''
+class Scatter3D(Widget3D):
+    ''' '''
