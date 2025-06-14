@@ -1,9 +1,11 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, Toggle
+from config.settings import logger, GLOBAL_DEBUG
+from ui.base_widgets.button import TransparentComboBox, Toggle
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
@@ -15,24 +17,35 @@ class DataConcator (NodeContentWidget):
         self._config = dict(
             axis='index',
             join='outer',
-            ignore_index=False
+            ignore_index=False,
+            sort=False
         )
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        axis = ComboBox(items=["index","columns"], text='Axis')
+        dialog.main_layout.addWidget(TitleLabel("Concatenation"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        axis = TransparentComboBox(items=["index","columns"], text='Axis')
         axis.button.setCurrentText(self._config['axis'])
         dialog.main_layout.addWidget(axis)
-        join = ComboBox(items=['inner','outer'],text='Join')
+        
+        dialog.main_layout.addWidget(TitleLabel("Index"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        join = TransparentComboBox(items=['inner','outer'],text='Join')
         join.button.setCurrentText(self._config['join'])
         dialog.main_layout.addWidget(join)
         ignore_index = Toggle("Ignore index")
         ignore_index.button.setChecked(self._config['ignore_index'])
         dialog.main_layout.addWidget(ignore_index)
+        sort = Toggle("Sort non-concate")
+        sort.button.setChecked(self._config["sort"])
+        dialog.main_layout.addWidget(sort)
+        
         if dialog.exec(): 
             self._config["axis"] = axis.button.currentText()
             self._config["join"] = join.button.currentText()
             self._config["ignore_index"] = ignore_index.button.isChecked()
+            self._config["sort"] = sort.button.isChecked()
             self.exec()
     
     def func(self):
