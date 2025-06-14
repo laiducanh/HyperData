@@ -156,8 +156,6 @@ class NodeGraphicsNode (GraphicsNode):
 
 
         return True
-
-
     
 class NodeEditor (GraphicsNode):
     def __init__(self, title:str, socket_type, parent=None):

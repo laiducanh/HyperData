@@ -3,8 +3,9 @@ _SpinBox, _DoubleSpinBox {
     color: rgba(67, 67, 67, 1);
     background-color: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
-    /* border-radius: 8px; */
-    height: 34px;
+    border-radius: 8px;
+    padding: 7px 20px 7px 12px;
+    height: 30px;
 }
 
 _TransparentSpinBox, _TransparentDoubleSpinBox {
@@ -17,7 +18,7 @@ _SpinBox::up-button, _DoubleSpinBox::up-button {
     subcontrol-position: top right;
     position: relative;
     left: -10px;
-    top: 5px;
+    top: 7px;
     border: none;
     width: 8px;
     height: 8px;
@@ -28,7 +29,7 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
     subcontrol-origin: margin;
     subcontrol-position: bottom right;
     left: -10px;
-    bottom: 2px;
+    bottom: 4px;
     border: none;
     width: 8px;
     height: 8px;
@@ -41,7 +42,7 @@ _SpinBox:hover, _DoubleSpinBox:hover {
     color: black;
 }
 
-_TransparentSpinBox:hoever, _TransparentDoubleSpinBox:hover {
+_TransparentSpinBox:hover, _TransparentDoubleSpinBox:hover {
     border: none;
 }
 
@@ -62,13 +63,13 @@ _Slider::groove:horizontal {
 }
 
 _Slider::sub-page:horizontal {
-    background: rgba(0, 120, 215, 1);
+    background: --THEMECOLOR-1.0;
     height: 5px;
     border-radius: 2px;
 }
 
 _Slider::handle:horizontal {
-    background-color: rgba(0, 120, 215, 1);
+    background-color: --THEMECOLOR-1.0;
     border: none;
     height: 12px;
     width: 12px;

@@ -2,13 +2,13 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog, FileDialog
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import ComboBox, Toggle, TransparentComboBox, TogglePushButton
+from ui.base_widgets.spinbox import SpinBox, TransparentSpinBox
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.text import BodyLabel, TitleLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode, GLOBAL_DEBUG
-from PySide6.QtWidgets import QTableView
+from PySide6.QtWidgets import QTableView, QHBoxLayout
 from PySide6.QtCore import QFileSystemWatcher
 
 DEBUG = False
@@ -50,39 +50,45 @@ class DataReader (NodeContentWidget):
     def config(self):
         # Note that this configuration works for csv file
         dialog = Dialog("Configuration", self.parent)
+        dialog.main_layout.addWidget(TitleLabel("File Watcher"))
+        dialog.main_layout.addWidget(SeparateHLine())
         auto_update = Toggle(text="Auto update")
         dialog.main_layout.addWidget(auto_update)
         auto_update.button.setChecked(self._config["auto_update"])
+        dialog.main_layout.addWidget(TitleLabel("Processing"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        hlayout = QHBoxLayout()
+        dialog.main_layout.addLayout(hlayout)
         self.header = Toggle(text="Header")
         self.header.button.setChecked(not self._config["header"])
-        dialog.main_layout.addWidget(self.header)
+        hlayout.addWidget(self.header)
         self.header.button.checkedChanged.connect(self.update_preview)
         self.skip_blank_lines = Toggle(text="Skip blank lines")
         self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
-        dialog.main_layout.addWidget(self.skip_blank_lines)
+        hlayout.addWidget(self.skip_blank_lines)
         self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
-        nrows = SpinBox(max=100000, text="Number of rows")
-        dialog.main_layout.addWidget(nrows)
-        nrows.button.setValue(self._config["nrows"])
-        self.delimiter = ComboBox(items=["Tab","Semicolon","Comma","Space"],
+        self.delimiter = TransparentComboBox(items=["Tab","Semicolon","Comma","Space"],
                              text="Delimiter",text2="abc")
         self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
         self.delimiter.button.setCurrentText(list(self._delimiterDict.keys())
                                         [list(self._delimiterDict.values()).index(self._config["delimiter"])])
         dialog.main_layout.addWidget(self.delimiter)
         self.delimiter.button.currentTextChanged.connect(self.update_preview)
-        self.encoding = ComboBox(items=encode,text="Encoding",text2="abc")
+        self.encoding = TransparentComboBox(items=encode,text="Encoding",text2="abc")
         dialog.main_layout.addWidget(self.encoding)
         self.encoding.button.setCurrentText(self._config["encoding"])
         self.encoding.button.currentTextChanged.connect(self.update_preview)
-        self.sheet_name = ComboBox(text="Sheet name",text2="abc")
+        nrows = TransparentSpinBox(max=100000, text="Number of rows")
+        dialog.main_layout.addWidget(nrows)
+        nrows.button.setValue(self._config["nrows"])
+        self.sheet_name = TransparentComboBox(text="Sheet name",text2="abc")
         dialog.main_layout.addWidget(self.sheet_name)
         if self.filetype == "excel":
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
             self.sheet_name.button.setCurrentText(self._config["sheet_name"])
         self.sheet_name.button.currentTextChanged.connect(self.update_preview)
 
-        dialog.main_layout.addWidget(BodyLabel("Preview"))
+        dialog.main_layout.addWidget(TitleLabel("Preview"))
         dialog.main_layout.addWidget(SeparateHLine())
         self.preview = QTableView()
         self.update_preview()

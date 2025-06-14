@@ -199,7 +199,4 @@ class Node(NodeGraphicsNode):
         
         self.menu = self.content.menu
         self.set_Content(self.content)
-
-    
-
     

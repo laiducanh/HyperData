@@ -2,7 +2,8 @@ _LineEdit, _TextEdit {
     color: rgba(62, 62, 62, 1);
     background-color: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
-    /* border-radius: 6px; */
+    border-radius: 6px;
+    padding: 7px 12px 7px 12px;
     font: 11.5pt;
 }
 
@@ -12,12 +13,12 @@ _TextEdit {
 
 _LineEdit:hover, _TextEdit:hover {
     background-color: rgba(220, 220, 220, 0.4);
-    border: 2px solid rgba(0, 120, 215, 1);
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
 _LineEdit:focus, _TextEdit:focus {
     background-color: white;
-    border: 2px solid rgba(0, 120, 215, 1);
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
 _LineEdit:disabled, _TextEdit:disabled {

@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphics
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
 from ui.utils import isDark
+from config.settings import config
 from node_editor.graphics.graphics_content import ContentItem
 
 DEBUG = False
@@ -26,16 +27,24 @@ class NodeItem(QGraphicsItem):
 
         self.setTitle()
         
-
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setAcceptHoverEvents(True)
 
     def setColor(self):
         
-        self._color = QColor("#7F000000")
-        self._color_selected = QColor("#252525")
-        self._color_hovered = QColor("#FF37A6FF")
+        if isDark():
+            self._color = QColor("#c8c8c8")
+            self._color_selected = QColor(config["themecolor"])
+            self._color_hovered = QColor(config["themecolor"])
+            self._brush_background = QBrush(QColor("#232323"))
+            self._title_color = Qt.GlobalColor.white
+        else:
+            self._color = QColor("#7F000000")
+            self._color_selected = QColor(config["themecolor"])
+            self._color_hovered = QColor(config["themecolor"])
+            self._brush_background = QBrush(Qt.GlobalColor.white)
+            self._title_color = Qt.GlobalColor.black
 
         self._pen_default = QPen(self._color)
         self._pen_default.setWidthF(1.0)
@@ -43,13 +52,6 @@ class NodeItem(QGraphicsItem):
         self._pen_selected.setWidthF(2.0)
         self._pen_hovered = QPen(self._color_hovered)
         self._pen_hovered.setWidthF(3.0)
-
-        if isDark():
-            self._brush_background = QBrush(QColor("#232323"))
-            self._title_color = Qt.GlobalColor.white
-        else:
-            self._brush_background = QBrush(Qt.GlobalColor.white)
-            self._title_color = Qt.GlobalColor.black
 
     def boundingRect(self):
         return QRectF(
@@ -147,6 +149,9 @@ class NodeItem(QGraphicsItem):
     def deserialize(self, data, hashmap={}):
         pass
 
+    def update(self):
+        self.setColor()
+        return super().update()
 
 
     

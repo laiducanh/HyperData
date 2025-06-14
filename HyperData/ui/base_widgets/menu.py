@@ -13,16 +13,14 @@ class Menu (QMenu):
                             Qt.WindowType.NoDropShadowWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self._icon = None
+        self.icon_path = None
     
-    def setIcon(self, icon: Union[QIcon,str]) -> None:
-        if isinstance(icon, QIcon):
-            self._icon = icon
-        else: self._icon = Icon(icon)
-        super().setIcon(self._icon)
+    def setIcon(self, icon_path: str) -> None:
+        self.icon_path = icon_path
+        super().setIcon(Icon(self.icon_path))
 
     def update(self):
-        if self._icon: super().setIcon(self._icon)
+        if self.icon_path: super().setIcon(Icon(self.icon_path))
         for action in self.actions():
             if isinstance(action, Action): action.update()
         super().update()
@@ -34,19 +32,17 @@ class Action (QAction):
     in cases we need to change the action's icon according to the theme change 
     
     """
-    def __init__(self, icon=None, *args, **kwargs):
+    def __init__(self, icon_path:str=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if icon: self.setIcon(icon)
+        if icon_path: self.setIcon(icon_path)
 
-    def setIcon(self, icon: Union[QIcon,str]) -> None:
-        if isinstance(icon, QIcon):
-            self._icon = icon
-        else: self._icon = Icon(icon)
-        super().setIcon(self._icon)
+    def setIcon(self, icon_path: str) -> None:
+        self.icon_path = icon_path
+        super().setIcon(Icon(self.icon_path))
 
     def update(self):
-        if self._icon: super().setIcon(self._icon)
+        if self.icon_path: super().setIcon(Icon(self.icon_path))
 
 class LineEdit_Menu (Menu):
     def __init__(self, text: str = None, parent=None):

@@ -14,13 +14,13 @@ _ComboBox:hover {
 }
 
 _PrimaryComboBox {
-    background-color: rgba(0, 120, 215, 1);
+    background-color: --THEMECOLOR-1.0;
     color: white;
 }
 
 _PrimaryComboBox:hover {
-    background-color: rgba(0, 120, 215, 0.9);
-    border: 2px solid rgba(0, 120, 215, 1);
+    background-color: --THEMECOLOR-0.9;
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
 _ComboBox:disabled {
@@ -46,7 +46,7 @@ _ComboBox::down-arrow {
 
 _ComboBox QAbstractItemView {
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 8px;
+    /* border-radius: 8px; */
     padding: 4px 3px 4px 3px;
     outline: none;
     background: rgb(43, 43, 43);

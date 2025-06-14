@@ -2,12 +2,11 @@ from PySide6.QtGui import QKeyEvent, QAction, QIcon, QColor
 from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, 
                                QDockWidget, QStackedLayout, QApplication, QGraphicsScene)
 from PySide6.QtCore import QSize, Qt
-import matplotlib.figure
 import matplotlib.pyplot
 import matplotlib.style
 
 from ui.base_widgets.button import _ComboBox, ComboBox, Toggle
-from ui.base_widgets.color import ColorPickerButton
+from ui.base_widgets.color import ColorPickerButton, ColorDropdown
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
@@ -15,47 +14,64 @@ from ui.base_widgets.list import ListWidget
 from ui.base_widgets.spinbox import SpinBox
 from ui.utils import get_path
 from config.settings import config
-import os, darkdetect, sys, matplotlib, itertools, cycler, numpy
+import os, darkdetect, re, matplotlib, itertools, cycler, numpy
 
-class Theme (Frame):
+def set_stylesheet():
+        app: QApplication = QApplication.instance()
+        theme = config["theme"]
+        if theme == 'Auto': theme = darkdetect.theme()
+        qss = str()
+        path = os.path.join(get_path(), "ui","qss", theme)
+        for file in os.listdir(path):
+            with open(os.path.join(path, file), 'r') as f:
+                qss += f.read()
+        color = list(int(config["themecolor"].lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+        color.append(re.search(r'--THEMECOLOR-([0-1]\.\d+)', qss).group(1))
+        qss = re.sub(r'--THEMECOLOR-[0-1]\.\d+', 
+                     f"rgba({color[0]}, {color[1]}, {color[2]}, {color[3]})", qss)
+        app.setStyleSheet(qss)
+        for widget in app.allWidgets():
+            if widget.isVisible():
+                try: widget.update()
+                except: pass
+
+class Theme (ComboBox):
     def __init__(self, parent:QMainWindow=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        self._parent = parent
-        self.app = QApplication.instance()
+        self.button.addItems(["Auto","Light","Dark"])
+        self.button.setCurrentText(self.get_theme())
+        self.button.currentTextChanged.connect(self.set_theme)
+        self.setText("Appearance")
+        self.setText2("Customize how app looks on your device")
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-
-        theme = ComboBox(items=["Auto","Light","Dark"], text="Appearance", 
-                         text2="Customize how app looks on your device", parent=parent)
-        theme.button.currentTextChanged.connect(self.setTheme)
-        theme.button.setCurrentText(self.get_theme())
-        layout.addWidget(theme)
-
-        self.setTheme(config["theme"])
+        self.set_theme(config["theme"])
 
 
-    def setTheme (self, theme):
+    def set_theme (self, theme):
         config["theme"] = theme
-        if theme == "Auto":
-            theme = darkdetect.theme()
-        self._setStyleSheet(theme.lower())
+        set_stylesheet()
     
     def get_theme(self) -> str:
         return config["theme"]
         
-    def _setStyleSheet (self, theme=["light","dark"]):
-        string = str()
-        path = os.path.join(get_path(), "ui","qss", theme)
-        for file in os.listdir(path):
-            with open(os.path.join(path, file), 'r') as f:
-                string += f.read()
-        self.app.setStyleSheet(string)
-        # for widget in self.app.allWidgets():
-        #     if widget.isVisible():
-        #         try: widget.update()
-        #         except: pass
+    
+class ThemeColor(ColorDropdown):
+    def __init__(self, parent:QMainWindow=None):
+        super().__init__(parent=parent)
+
+        self.button.setColor(self.get_themecolor())
+        self.button.colorChanged.connect(self.set_themecolor)
+        
+        self.setText("Theme Color")
+
+    def set_themecolor(self, color):
+        config["themecolor"] = color
+        set_stylesheet()
+    
+    def get_themecolor(self):
+        return config["themecolor"]
+
 
 class DockWidget_Position (Frame):
     def __init__(self, parent=None):
@@ -233,6 +249,7 @@ class SettingsWindow (QMainWindow):
         layout.addWidget(appearance)
 
         appearance_layout.addWidget(Theme(parent))
+        appearance_layout.addWidget(ThemeColor(parent))
         appearance_layout.addWidget(DockWidget_Position(parent))
         appearance_layout.addStretch()
 

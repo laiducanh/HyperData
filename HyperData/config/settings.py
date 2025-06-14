@@ -144,7 +144,7 @@ if os.path.exists(configFile) and not new_version:
         raw_data = file.read()
         config = json.loads(raw_data)
 else: 
-    config = {"config_path":configFile, "theme":"Light", "dock area":"Left",  
+    config = {"config_path":configFile, "theme":"Light", "themecolor":"#0078d7", "dock area":"Left",  
               "plot_tooltip":True, "plot_dpi":300, "plot_style":"default",
               "plot_palette":["#1a1a2e","#16213e","#0f3460","#e94560","#f6d55c"],
               }

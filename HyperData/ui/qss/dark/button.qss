@@ -61,22 +61,22 @@ _TransparentToolButton:disabled, _CheckBox:disabled {
 _PrimaryPushButton, _DropDownPrimaryPushButton, _PrimaryToolButton,
 _TogglePushButton:checked, _ToggleToolButton:checked, _CheckBox:checked {
     color: white;
-    background-color: rgba(0, 120, 215, 1);
+    background-color: --THEMECOLOR-1.0;
     border: none;
 }
 
 _PrimaryPushButton:hover, _DropDownPrimaryPushButton:hover, _PrimaryToolButton:hover,
 _TogglePushButton:checked:hover, _ToggleToolButton:checked:hover,
 _CheckBox:checked:hover {
-    background-color: rgba(0, 120, 215, 0.9);
-    border: 2px solid rgba(0, 120, 215, 1);
+    background-color: --THEMECOLOR-0.9;
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
 _PrimaryPushButton:pressed, _PrimaryToolButton:pressed,
 _TogglePushButton:checked:pressed, _ToggleToolButton:checked:pressed,
 _CheckBox:checked:pressed {
     color: rgba(255, 255, 255, 0.63);
-    background: rgba(0, 120, 215, 0.6);
+    background: --THEMECOLOR-0.6;
     border: none;
 }
 
@@ -84,7 +84,7 @@ _PrimaryPushButton:disabled, _DropDownPrimaryPushButton:disabled, _PrimaryToolBu
 _TogglePushButton:checked:disabled, _ToggleToolButton:checked:disabled,
 _CheckBox:checked:disabled {
     color: rgba(255, 255, 255, 0.63);
-    background-color: rgba(0, 120, 215, 0.3);
+    background-color: --THEMECOLOR-0.3;
 }
 
 _DropDownPushButton::menu-indicator,

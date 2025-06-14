@@ -6,8 +6,9 @@ from PySide6.QtSvg import QSvgRenderer
 from typing import Iterable, Union
 from ui.base_widgets.text import BodyLabel, InfoLabel
 from ui.base_widgets.menu import Menu
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.utils import icon as Icon
+from config.settings import config
 import os
 
 class _PushButton (QPushButton):
@@ -15,16 +16,14 @@ class _PushButton (QPushButton):
         super().__init__(parent, *args, **kwargs)
 
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self._icon = None
+        self.icon_path = None
     
-    def setIcon(self, icon: Union[QIcon,str]) -> None:
-        if isinstance(icon, QIcon):
-            self._icon = icon
-        else: self._icon = Icon(icon)
-        super().setIcon(self._icon)
-    
+    def setIcon(self, icon_path: str) -> None:
+        self.icon_path = icon_path
+        super().setIcon(Icon(self.icon_path))
+            
     def update(self):
-        if self._icon: super().setIcon(self._icon)
+        if self.icon_path: super().setIcon(Icon(self.icon_path))
         super().update()
 
 class _TransparentPushButton (_PushButton):
@@ -88,7 +87,7 @@ class _ToolButton (QToolButton):
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        self._icon = None
+        self.icon_path = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
     
@@ -101,14 +100,12 @@ class _ToolButton (QToolButton):
     #     self.pressed.emit()
     #     self.clicked.emit()
 
-    def setIcon(self, icon: Union[QIcon,str]) -> None:
-        if isinstance(icon, QIcon):
-            self._icon = icon
-        else: self._icon = Icon(icon)
-        super().setIcon(self._icon)
+    def setIcon(self, icon_path: str) -> None:
+        self.icon_path = icon_path
+        super().setIcon(Icon(self.icon_path))
     
     def update(self):
-        if self._icon: super().setIcon(self._icon)
+        if self.icon_path: super().setIcon(Icon(self.icon_path))
         super().update()
 
 class _TransparentToolButton (_ToolButton):
@@ -128,11 +125,16 @@ class _ComboBox (QComboBox):
     def __init__(self, items:Iterable[str]=None, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
+        # Cursor
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.view().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.view().window().setWindowFlags(Qt.WindowType.Popup | 
-                                            Qt.WindowType.FramelessWindowHint |
-                                            Qt.WindowType.NoDropShadowWindowHint)
+
+        # Rounded popup
+        self.view().window().setWindowFlags(
+            Qt.WindowType.Popup | 
+            Qt.WindowType.FramelessWindowHint |
+            Qt.WindowType.NoDropShadowWindowHint
+        )
         self.view().window().setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         if items: self.addItems(items)
@@ -151,8 +153,8 @@ class _Toggle(QFrame):
         super().__init__(parent)
         self.width = width
         self.height = height
-        if self.width < self.height * 2 -20:
-            self.width = self.height * 2 -20
+        if self.width < self.height * 2 - 20:
+            self.width = self.height * 2 - 20
         self.setFixedSize(self.width, self.height)
         self.toggle_on = False
         self.initUI()
@@ -206,11 +208,11 @@ class _Toggle(QFrame):
     def checkChange (self):
         
         if self.toggle_on:
-            self.button_1.setStyleSheet("border-radius : %d; border : none; background-color: rgb(0, 120, 215)"%((self.height - 20)//2))
+            self.button_1.setStyleSheet(f"border-radius : {(self.height - 20)//2}; border : none; background-color: {config['themecolor']}")
             self.button_2.setVisible(False)
             self.button_3.setVisible(True)
         else:
-            self.button_1.setStyleSheet("border-radius : %d; border : 1px solid black; background-color: rgb(255, 255, 255)"%((self.height - 20)//2))
+            self.button_1.setStyleSheet(f"border-radius : {(self.height - 20)//2}; border : 1px solid black; background-color: white")
             self.button_2.setVisible(True)
             self.button_3.setVisible(False)
         
@@ -219,12 +221,11 @@ class _Toggle(QFrame):
     def isChecked(self):
         return self.toggle_on
 
-class HButton(QWidget): 
+class HButton(Frame): 
     """" Button Widget in horizontal layout """
     def __init__(self, text:str=None, text2:str=None, 
-                 parent:QWidget=None, flags:Qt.WindowType=Qt.WindowType.Widget,
-                 *args, **kwargs):
-        super().__init__(parent, flags, *args, **kwargs)
+                 parent:QWidget=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.text = text
         self.text2 = text2
@@ -235,7 +236,7 @@ class HButton(QWidget):
         self.label2.hide()
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        #layout.setContentsMargins(0,0,0,0)
 
         self.text_layout = QVBoxLayout()
         layout.addLayout(self.text_layout)

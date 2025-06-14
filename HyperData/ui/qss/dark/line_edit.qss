@@ -13,13 +13,13 @@ _TextEdit {
 }
 
 _LineEdit:hover, _TextEdit:hover {
-    border: 2px solid rgba(0, 120, 215, 1);
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
 _LineEdit:focus, _TextEdit:focus {
     background-color: white;
     color: black;
-    border: 2px solid rgba(0, 120, 215, 1);
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
 _LineEdit:disabled, _TextEdit:disabled {

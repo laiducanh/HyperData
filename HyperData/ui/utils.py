@@ -4,7 +4,6 @@ from config.settings import config, logger
 import os, darkdetect, sys
 
 def icon(fileName:str) -> QIcon:
-    
     if isDark():
         return QIcon(os.path.join(get_path(),"ui","icons","white",fileName))
     return QIcon(os.path.join(get_path(),"ui","icons","black",fileName))
