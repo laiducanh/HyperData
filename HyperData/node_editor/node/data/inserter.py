@@ -1,10 +1,12 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
+from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import Toggle
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
@@ -19,8 +21,11 @@ class DataInserter (NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
-        loc = SpinBox(max=len(self.node.input_sockets[0].socket_data.columns),
-                      text="Insertion index")
+        dialog.main_layout.addWidget(TitleLabel("Insertion"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        loc = TransparentSpinBox(text="Column index")
+        try: loc.button.setMaximum(len(self.node.input_sockets[0].socket_data.columns))
+        except: loc.button.setMaximum(0)
         loc.button.setValue(self._config["loc"])
         dialog.main_layout.addWidget(loc)
         allow_duplicates = Toggle(text="Allow duplicates")
