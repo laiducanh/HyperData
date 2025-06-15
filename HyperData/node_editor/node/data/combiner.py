@@ -2,9 +2,11 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, Toggle
+from config.settings import logger, GLOBAL_DEBUG
+from ui.base_widgets.button import TransparentComboBox
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
@@ -19,7 +21,13 @@ class DataCombiner (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        function = ComboBox(items=["take smaller","take bigger","minimum","maximum"],text="Function")
+        dialog.main_layout.addWidget(TitleLabel("Combine by function"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        function = TransparentComboBox(
+            items=["addition", "subtraction", "multiplication", "division", 
+                   "take smaller","take bigger","minimum","maximum","mean"],
+            text="Function"
+        )
         dialog.main_layout.addWidget(function)
         function.button.setCurrentText(self._config["func"])
 
@@ -28,12 +36,22 @@ class DataCombiner (NodeContentWidget):
             self.exec()
     
     def func(self):
-        if self._config["func"] == "take smaller":
+        if self._config["func"] == "addition":
+            func = lambda s1, s2: s1 + s2
+        elif self._config["func"] == "subtraction":
+            func = lambda s1, s2: s1 - s2
+        elif self._config["func"] == "multiplication":
+            func = lambda s1, s2: s1 * s2
+        elif self._config["func"] == "division":
+            func = lambda s1, s2: s1 / s2
+        elif self._config["func"] == "take smaller":
             func = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
         elif self._config["func"] == "take bigger":
             func = lambda s1, s2: s1 if s1.sum() > s2.sum() else s2
         elif self._config["func"] == "minimum":
             func = np.minimum
+        elif self._config["func"] == "mean":
+            func = lambda s1, s2: (s1 + s2)/2
         else:
             func = np.maximum
 
