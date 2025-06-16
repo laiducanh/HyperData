@@ -68,7 +68,9 @@ class NodeGraphicsSocket (GraphicsSocket):
     def serialize(self):
         return {"id":self.id,
                 "index":self.index,
-                "socket_type":self.socket_type}
+                "socket_type":self.socket_type,
+                "edges":self.edges,
+                "data":self.socket_data.to_json()}
 
     def deserialize(self, data, hashmap={}):
         self.id = data['id']

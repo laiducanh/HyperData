@@ -4,7 +4,7 @@ from PySide6.QtCore import Signal, Qt
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.node_node import Node
-from config.settings import logger
+from config.settings import logger, config
 from ui.utils import isDark
 
 SINGLE_IN = 1
@@ -99,12 +99,13 @@ class NodeGraphicsScene(QGraphicsScene):
         nodes, edges = dict(), dict()
         for node in self.nodes: nodes[node.id] = node.serialize()
         for edge in self.edges: edges[edge.id] = edge.serialize()
+
         return {"id":self.id,
                 "scene_width":self.scene_width,
                 "scene_height":self.scene_height,
                 "nodes":nodes,
                 "edges":edges}
-    
+
     def deserialize(self, data, hashmap={}):
         self.clear()
         hashmap = {}

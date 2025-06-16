@@ -4,6 +4,7 @@ from ui.base_widgets.menu import Menu
 from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
 from node_editor.base.node_graphics_socket import NodeGraphicsSocket
 from ui.utils import isDark
+import pandas as pd
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -124,13 +125,14 @@ class NodeGraphicsNode (GraphicsNode):
                 "title":self.title,
                 "pos_x":self.scenePos().x(),
                 "pos_y":self.scenePos().y(),
-                "inputs":inputs,
-                "outputs":outputs,
+                "input sockets":inputs,
+                "output sockets":outputs,
                 "content":self.content.serialize()}
     
     def deserialize(self, data, hashmap={}):
         self.id = data['id']
         hashmap[data['id']] = self
+        print('hasmap',hashmap)
 
         self.setPos(data['pos_x'], data['pos_y'])
         self.title = data['title']
@@ -139,21 +141,34 @@ class NodeGraphicsNode (GraphicsNode):
         #data['outputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
 
         self.input_sockets = []
-        for socket_data in data['inputs'].keys():
-            path = data['inputs'][socket_data]
-            new_socket = NodeGraphicsSocket(node=self, index=path['index'], socket_type=path['socket_type'],parent=self)
+        for socket_data in data['input sockets'].keys():
+            path = data['input sockets'][socket_data]
+            new_socket = NodeGraphicsSocket(
+                node=self, 
+                index=path['index'], 
+                socket_type=path['socket_type'],
+                data=pd.read_json(path['socket_data']),
+                parent=self
+            )
             new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))
             new_socket.deserialize(path, hashmap)
             self.input_sockets.append(new_socket)
 
         self.output_sockets = []
-        for socket_data in data['outputs'].keys():
-            path = data['outputs'][socket_data]
-            new_socket = NodeGraphicsSocket(node=self, index=path['index'], socket_type=path['socket_type'],parent=self)
+        for socket_data in data['output sockets'].keys():
+            path = data['output sockets'][socket_data]
+            new_socket = NodeGraphicsSocket(
+                node=self, 
+                index=path['index'], 
+                socket_type=path['socket_type'],
+                data=pd.read_json(path['data']),
+                parent=self
+            )
             new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))
             new_socket.deserialize(path, hashmap)
             self.output_sockets.append(new_socket)
 
+        self.content.deserialize(data['content'])
 
         return True
     

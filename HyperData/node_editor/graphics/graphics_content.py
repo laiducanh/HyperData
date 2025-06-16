@@ -161,7 +161,7 @@ class ContentItem(QWidget):
         self.label.setText('Shape: (--, --)') 
         
     def serialize(self):
-        return dict()
+        pass
 
     def deserialize(self, data, hashmap={}):
         pass

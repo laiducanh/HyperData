@@ -221,3 +221,15 @@ class DataReader (NodeContentWidget):
         
         self.node.output_sockets[0].socket_data = data.copy()
         self.data_to_view = data.copy()
+
+    def serialize(self):
+        return {
+            "config": self._config,
+            "selected_files":self.selectedFiles,
+            "file_type":self.filetype,
+            "is_readable":self.isReadable,
+        }
+
+    def deserialize(self, data, hashmap={}):
+        print('redaer deserial')
+        super().exec()

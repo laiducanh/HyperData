@@ -5,13 +5,14 @@ import sys, os, json, logging
 os.environ["QT_QUICK_BACKEND"] = "software"
 
 from PySide6.QtCore import QThreadPool, Qt, QDir
-from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
-from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent, QPalette)
+from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory)
+from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
 
 from plot.plot_view import PlotView, PlotViewMultiFig
 from node_editor.node_view import NodeView, NodeUserDefine
 from node_editor.node_node import Node, Figure2D, Figure3D, MultiFigure, UserDefine
 from window.menu_bar import MenuBar
+from ui.base_widgets.window import FileDialog
 from config.settings import GLOBAL_DEBUG, config, logger
 from ui.utils import get_path
 
@@ -100,17 +101,19 @@ class Main(QMainWindow):
             super().keyPressEvent(event)
     
     def saveToFile(self):
-        dialog = QFileDialog(self)
-        
+        self.serialize()
+        dialog = FileDialog()
         if dialog.exec():
-            filename = dialog.selectedFiles()[0]
-            with open(filename, "w") as file:
-                file.write( json.dumps( self.serialize(), indent=4 ) )
-            print("saving to", filename, "was successfull.")
+            try:
+                filename = dialog.selectedFiles()[0]
+                with open(filename, "w") as file:
+                    file.write(json.dumps(config, indent=4))
+                print("saving to", filename, "was successfull.")
+            except Exception as e:
+                logger.exception(e)
     
     def loadFromFile(self):
-        dialog = QFileDialog(self)
-        
+        dialog = FileDialog()
         if dialog.exec():
             filename = dialog.selectedFiles()[0]
             with open(filename, "r") as file:
@@ -130,13 +133,16 @@ class Main(QMainWindow):
         return super().closeEvent(a0)
 
     def serialize(self):
-        return {"id":            id(self),
-                "screen size":   QGuiApplication.primaryScreen().geometry().getRect(),
-                "graphic Scene": self.node_view.grScene.serialize()}
+        config.update(
+            id=id(self),
+            screen_size=QGuiApplication.primaryScreen().geometry().getRect(),
+            node_view=self.node_view.grScene.serialize()
+        )
         
-    def deserialize(self, data, hashmap={}):
+    def deserialize(self, data:dict, hashmap={}):
         print("deserializating data")
-        self.node_view.grScene.deserialize(data["graphic Scene"], hashmap={})
+        config = data.copy()
+        self.node_view.grScene.deserialize(config["node_view"], hashmap={})
      
 
 if __name__ == "__main__":
