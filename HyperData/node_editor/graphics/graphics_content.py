@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QColorDialog
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Signal, Qt, QTimer
 from PySide6.QtGui import QAction
 import pandas, os
@@ -46,7 +46,7 @@ class ContentItem(QWidget):
         self.exec_btn = _TransparentToolButton()
         self.exec_btn.setIcon("play.png")
         self.exec_btn.setToolTip("Execute")
-        self.exec_btn.pressed.connect(self.exec)
+        self.exec_btn.clicked.connect(self.exec)
         self.hlayout.addWidget(self.exec_btn)
         self.config_btn = _TransparentToolButton()
         self.config_btn.setIcon("settings.png")
@@ -60,7 +60,7 @@ class ContentItem(QWidget):
         self.hlayout.addWidget(comment)
 
         self.label = _TransparentPushButton()
-        self.label.pressed.connect(self.viewData)
+        self.label.clicked.connect(self.viewData)
         #self.label.setContentsMargins(5,0,5,3)
         self.vlayout.addWidget(self.label)
         #self.setFixedHeight(46)

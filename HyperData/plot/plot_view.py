@@ -198,7 +198,7 @@ class PlotView (QMainWindow):
     def update_plotlist(self):
         try:
             # reset treeview items
-            self.treeview_data["Objects"] = [item for item in self.treeview_data["Objects"] if "graph" not in item]
+            self.treeview_data["Objects"] = [item for item in self.treeview_data["Objects"] if "Graph" not in item]
 
             # append list of graphs
             for obj in find_mpl_object(self.canvas.fig, gid="graph "):
