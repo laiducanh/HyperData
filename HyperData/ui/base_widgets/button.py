@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, Qt, Signal, QEvent, QPoint, QRectF
+from PySide6.QtCore import QObject, Qt, Signal, QEvent, QPoint, QRectF, QTimer
 from PySide6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, QSizePolicy,
                              QSizePolicy, QGridLayout, QToolButton, QScrollArea, QVBoxLayout, QLayout)
 from PySide6.QtGui import QCursor, QPainter, QColor, QIcon
@@ -17,6 +17,20 @@ class _PushButton (QPushButton):
 
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.icon_path = None
+        self._menu = None
+    
+    def setMenu(self, menu: QMenu):
+        self._menu = menu
+        return super().setMenu(menu)
+    
+    def mousePressEvent(self, e):
+        if self._menu:
+            pos = self.mapToGlobal(self.rect().bottomLeft())
+            self._menu.setMinimumWidth(self.width())
+            QTimer.singleShot(0, lambda: self._menu.popup(pos))
+            self.clearFocus()
+        else:
+            super().mousePressEvent(e)
     
     def setIcon(self, icon: Union[str, QIcon]) -> None:
         if isinstance(icon, str):
@@ -38,27 +52,7 @@ class _PrimaryPushButton (_PushButton):
     """ PushButton with highlight color """
 
 class _DropDownPushButton (_PushButton):
-    """ PushButton with dropdown menu """
-
-    # def __init__(self, parent=None, *args, **kwargs):
-    #     super().__init__(parent, *args, **kwargs)
-
-        # self.setCheckable(True)
-        # self._menu = None
-    
-    # def setMenu(self, menu: QMenu):
-    #     self._menu = menu
-    #     return super().setMenu(menu)
-    
-    # def mousePressEvent(self, e):
-    #     if self._menu:
-    #         self._menu.setMinimumWidth(self.width())
-    #         self._menu.triggered.connect(lambda s: self.setText(s.text()))
-    #         self._menu.exec(self.mapToGlobal(QPoint(0,self.height())))
-    #         self.clearFocus()
-        
-    #     self.pressed.emit()
-    #     self.clicked.emit()
+    """ PushButton with dropdown arrow """
 
 class _DropDownTransparentPushButton (_DropDownPushButton):
     """ DropDownPushButton with no border and background color """

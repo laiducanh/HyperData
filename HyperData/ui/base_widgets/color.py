@@ -1,11 +1,12 @@
 import os
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, QLayout, QGridLayout)
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, QLayout, 
+                               QGridLayout, QWidgetAction)
 from PySide6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
 from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize, QPoint
 from PySide6.QtSvg import QSvgRenderer
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton
-from ui.base_widgets.menu import Menu
+from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton, _DropDownPushButton
+from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.frame import SeparateHLine
 from ui.utils import get_path
 from typing import Callable
@@ -153,17 +154,23 @@ class PaletteGrid(_PaletteBase):
 
 
 class PaletteMenu (Menu):
-    def __init__(self, colors, n_columns=8, *args, **kwargs):
-        super().__init__()
+    def __init__(self, colors, n_columns=8, parent=None, *args, **kwargs):
+        super().__init__(parent=parent)
         self._palette = PaletteGrid(colors=colors, n_columns=n_columns, *args, **kwargs)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(self._palette)
+        # layout = QVBoxLayout(self)
+        # layout.setContentsMargins(0,0,0,0)
+        # layout.addWidget(self._palette)
 
+        # Embed the widget using QWidgetAction
+        widget_action = QWidgetAction(self)
+        widget_action.setDefaultWidget(self._palette)
+        self.addAction(widget_action)
+    
 class ColorPickerButton (_PushButton):
     colorChanged = Signal(str)
     def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent)
+
         self.setFixedSize(96, 32)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.isHover = False
