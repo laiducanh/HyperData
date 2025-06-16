@@ -1,9 +1,11 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, Toggle
+from config.settings import logger, GLOBAL_DEBUG
+from ui.base_widgets.button import TransparentComboBox, Toggle
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel
 
 DEBUG = False
 
@@ -19,13 +21,25 @@ class DataCompare (NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
-        align_axis = ComboBox(items=["index","columns"],text="Axis")
+        dialog.main_layout.addWidget(TitleLabel("Data Comparison"))
+        dialog.main_layout.addWidget(BodyLabel("Compare two DataFrames and show the differences"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        align_axis = TransparentComboBox(
+            items=["index","columns"],
+            text="Axis",
+            text2="Determine which axis to align the comparison on")
         dialog.main_layout.addWidget(align_axis)
         align_axis.button.setCurrentText(self._config["align_axis"])
-        keep_shape = Toggle(text="Keep shape")
+        keep_shape = Toggle(
+            text="Keep shape",
+            text2="If selected, all rows and columns are kept. " \
+            "Otherwise, only the ones with different values are kept")
         dialog.main_layout.addWidget(keep_shape)
         keep_shape.button.setChecked(self._config["keep_shape"])
-        keep_equal = Toggle(text="Keep equal")
+        keep_equal = Toggle(
+            text="Keep equal",
+            text2="If selected, the result keeps values that are equal. " \
+            "Otherwise, equal values are shown as NaNs")
         dialog.main_layout.addWidget(keep_equal)
         keep_equal.button.setChecked(self._config["keep_equal"])
 

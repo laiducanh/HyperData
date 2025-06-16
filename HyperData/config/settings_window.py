@@ -181,7 +181,7 @@ class Figure_Colors(Frame):
         layout2 = QHBoxLayout()
         layout.addLayout(layout2)
         for idx in range(5):
-            btn = ColorPickerButton(QColor(config["plot_palette"][idx]))
+            btn = ColorPickerButton(getter=lambda: QColor(config["plot_palette"][idx]))
             btn.setFixedSize(80, 32)
             btn.colorChanged.connect(lambda color, i=idx: self.changeColor(color, i))
             layout2.addWidget(btn)

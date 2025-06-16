@@ -1,22 +1,35 @@
 from PySide6.QtCore import Signal, Qt, QStringListModel, QSize
 from PySide6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
-from PySide6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget, QCompleter, QHBoxLayout,
+from PySide6.QtWidgets import (QTextEdit, QVBoxLayout, QLayout, QCompleter, QHBoxLayout,
                              QTreeWidget, QLineEdit)
 from ui.base_widgets.menu import Menu, LineEdit_Menu
-from ui.base_widgets.button import _TransparentPushButton, _ComboBox, HButton
+from ui.base_widgets.button import _TransparentPushButton, _TransparentComboBox, HButton
 from ui.base_widgets.text import BodyLabel
+from typing import Callable
 
 class _LineEdit (QLineEdit):
-    def __init__(self, parent=None):
+    def __init__(self, getter:Callable=None, PlaceholderText:str=None, 
+                 setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent) 
+
+        if getter: self.setText(getter())
+        if PlaceholderText: self.setPlaceholderText(PlaceholderText)
+        if setter: self.textChanged.connect(setter)
+        if layout: layout.addWidget(self)
         
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
         menu = LineEdit_Menu(parent=self)
         menu.exec(a0.globalPos())
 
 class _TextEdit (QTextEdit):
-    def __init__(self, parent=None):
+    def __init__(self, getter:Callable=None, PlaceholderText:str=None, 
+                 setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent)
+
+        if getter: self.setText(getter())
+        if PlaceholderText: self.setPlaceholderText(PlaceholderText)
+        if setter: self.textChanged.connect(setter)
+        if layout: layout.addWidget(self)
 
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
         menu = LineEdit_Menu(parent=self)
@@ -69,9 +82,9 @@ class _SearchBox (_LineEdit):
             self.clear()
         return super().keyPressEvent(a0)
 
-class _CompleterLineEdit (_ComboBox):
-    def __init__(self, items:list=None, parent=None):
-        super().__init__(items=items, parent=parent)    
+class _CompleterLineEdit (_TransparentComboBox):
+    def __init__(self, items:list=None, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(items=items, getter=getter, setter=setter, layout=layout, parent=parent)    
 
         if items: self.items = items
         else: self.items = list()
@@ -113,24 +126,27 @@ class _CompleterLineEdit (_ComboBox):
         return super().focusOutEvent(e)
     
 class LineEdit (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
+                 setter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
-        self.button = _LineEdit(parent=parent)
+        self.button = _LineEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)   
 
 class TextEdit (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
+                 setter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
-        self.button = _TextEdit(parent=parent)
+        self.button = _TextEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button) 
 
 class CompleterLineEdit(HButton):
-    def __init__(self, items=None, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, items=None, text:str=None, text2:str=None, getter:Callable=None, setter:Callable=None,
+                 layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
-        self.button = _CompleterLineEdit(items=items, parent=parent)
+        self.button = _CompleterLineEdit(items=items, getter=getter, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)
 
 

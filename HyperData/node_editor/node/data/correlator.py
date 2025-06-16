@@ -2,8 +2,11 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.spinbox import TransparentSpinBox
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel
 
 DEBUG = False
 
@@ -15,18 +18,42 @@ class DataCorrelator (NodeContentWidget):
         self._config = dict(
             type="correlation",
             method="pearson",
-            numeric_only=True
+            min_periods=1,
+            ddof=1,
+            numeric_only=False
             )
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        method = ComboBox(text="Type",items=["correlation","covariance"])
+        dialog.main_layout.addWidget(TitleLabel("Correlation and Covariance"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        method = TransparentComboBox(text="Type", items=["correlation","covariance"])
         method.button.setCurrentText(self._config["type"])
         dialog.main_layout.addWidget(method)
-        function = ComboBox(items=["pearson","kendall","spearman"],text="Method")
+        function = TransparentComboBox(
+            items=["pearson","kendall","spearman"],
+            text="Method",
+            text2="Method of correlation: Pearson (standard) correlation coefficient, " \
+            "Kendall Tau correlation coefficient, Spearman rank correlation")
         dialog.main_layout.addWidget(function)
         function.button.setCurrentText(self._config["method"])
-        overwrite = Toggle(text="Numeric only")
+        min_periods = TransparentSpinBox(
+            min=1,
+            text="Minimum observations",
+            text2="Minimum number of observations required per pair of columns to have a valid result. " \
+            "Currently only available for Pearson, Spearman correlation, and covariance analyses."
+        )
+        min_periods.button.setValue(self._config["min_periods"])
+        dialog.main_layout.addWidget(min_periods)
+        ddof = TransparentSpinBox(
+            min=1,
+            text="Delta degrees of freedom",
+            text2="To determine the divisor used in calculations. This option is applicable only " \
+            "when no missing data is in the DataFrame"
+        )
+        ddof.button.setValue(self._config["ddof"])
+        dialog.main_layout.addWidget(ddof)
+        overwrite = Toggle(text="Numeric only", text2="Include only float, int or boolean data")
         dialog.main_layout.addWidget(overwrite)
         overwrite.button.setChecked(self._config["numeric_only"])
 
@@ -34,6 +61,8 @@ class DataCorrelator (NodeContentWidget):
             self._config["method"] = function.button.currentText()
             self._config["numeric_only"] = overwrite.button.isChecked()
             self._config["type"] = method.button.currentText()
+            self._config["min_periods"]=min_periods.button.value()
+            self._config["ddof"]=ddof.button.value()
             self.exec()
     
     def func(self):
@@ -50,10 +79,13 @@ class DataCorrelator (NodeContentWidget):
             if self._config["type"] == "correlation":
                 data = self.node.input_sockets[0].socket_data.corr(
                     method=self._config["method"],
+                    min_periods=self._config["min_periods"],
                     numeric_only=self._config["numeric_only"],
                 )   
             else:
                 data = self.node.input_sockets[0].socket_data.cov(
+                    min_periods=self._config["min_periods"],
+                    ddof=self._config["ddof"],
                     numeric_only=self._config["numeric_only"]
                 )
             # change progressbar's color

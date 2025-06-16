@@ -2,7 +2,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import TransparentComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.line_edit import CompleterLineEdit
@@ -37,12 +37,15 @@ class DataSplitter (NodeContentWidget):
         self._data = self.node.input_sockets[0].socket_data.copy()
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Split Data", self.parent)
 
-        type = ComboBox(items=["columns","rows"], text="type")
-        type.button.setCurrentText(self._config["type"])
-        type.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(type.button.currentIndex()))
-        dialog.main_layout.addWidget(type)
+        type = TransparentComboBox(
+            items=["columns","rows"], 
+            text="type",
+            getter=lambda: self._config["type"],
+            setter=lambda: stacklayout.setCurrentIndex(type.button.currentIndex()),
+            layout=dialog.main_layout
+        )
 
         dialog.main_layout.addWidget(SeparateHLine())
 

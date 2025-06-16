@@ -1,10 +1,12 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import Toggle
+from ui.base_widgets.button import Toggle, TransparentComboBox
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import TransparentSpinBox
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel
 import pandas as pd
 import numpy as np
 import math
@@ -18,41 +20,42 @@ class DataCreator (NodeContentWidget):
         self._config = dict(
             num_rows = 0,
             num_cols = 0,
-            fill_values = None,
-            diagonal = False,
-            tri = False,
+            fill_values = 0.0,
+            structure = 'full',
             )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Data Creator", self.parent)
 
-        num_rows = SpinBox(max=1000000, text="Number of rows")
+        dialog.main_layout.addWidget(TitleLabel("Dimensions"))
+        dialog.main_layout.addWidget(SeparateHLine())
+
+        num_rows = TransparentSpinBox(max=1000000, text="Number of rows")
         num_rows.button.setValue(self._config["num_rows"])
         dialog.main_layout.addWidget(num_rows)
 
-        num_cols = SpinBox(max=1000000, text="Number of columns")
+        num_cols = TransparentSpinBox(max=1000000, text="Number of columns")
         num_cols.button.setValue(self._config["num_cols"])
         dialog.main_layout.addWidget(num_cols)
 
-        fill_values = LineEdit(text="Fill values")
-        fill_values.button.setText(self._config["fill_values"])
+        dialog.main_layout.addWidget(TitleLabel("Data structure"))
+        dialog.main_layout.addWidget(SeparateHLine())
+
+        structure = TransparentComboBox(items=["full","diagonal","triangular"],text="Structure")
+        structure.button.setCurrentText(self._config["structure"])
+        dialog.main_layout.addWidget(structure)
+
+        fill_values = LineEdit(text="Fill values",text2="Values to fill to DataFrame")
+        fill_values.button.setText(str(self._config["fill_values"]))
         dialog.main_layout.addWidget(fill_values)
-
-        diagonal = Toggle(text="Diagonal matrix")
-        diagonal.button.setChecked(self._config["diagonal"])
-        dialog.main_layout.addWidget(diagonal)
-
-        tri = Toggle(text="Triangluar matrix")
-        tri.button.setChecked(self._config["tri"])
-        dialog.main_layout.addWidget(tri)
+        
         
         if dialog.exec():
             self._config.update(
                 num_rows = num_rows.button.value(),
                 num_cols = num_cols.button.value(),
                 fill_values = fill_values.button.text(),
-                diagonal = diagonal.button.isChecked(),
-                tri = tri.button.isChecked(),
+                structure = structure.button.currentText()
             )
             self.exec()
     
@@ -60,7 +63,7 @@ class DataCreator (NodeContentWidget):
         self.eval()
 
         try:
-            fill_values = 0.0
+            fill_values = self._config["fill_values"]
             if self._config["fill_values"] != '':
                 fill_values = eval(
                     self._config["fill_values"], 
@@ -71,9 +74,9 @@ class DataCreator (NodeContentWidget):
                 shape=(self._config["num_rows"], self._config["num_cols"]),
                 fill_value=fill_values
             )
-            if self._config["tri"]:
+            if self._config["structure"] == 'triangular':
                 data = np.tril(data)
-            if self._config["diagonal"]:
+            if self._config["structure"] == 'diagonal':
                 diag = np.diag(data)
                 data = np.zeros_like(data)
                 np.fill_diagonal(data, diag)

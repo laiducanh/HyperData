@@ -1,14 +1,13 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import feature_selection, linear_model
 from sklearn.feature_selection import (f_classif, mutual_info_classif, chi2, f_regression,
                                        mutual_info_regression)
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import Toggle, PrimaryComboBox, ComboBox
+from ui.base_widgets.button import PrimaryComboBox, TransparentComboBox
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from ui.base_widgets.spinbox import TransparentSpinBox, TransparentDoubleSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
@@ -59,10 +58,12 @@ class VarianceThreshold (MethodBase):
         else: self._config = config
         self.method = feature_selection.VarianceThreshold(**self._config)
         
-        self.threshold = DoubleSpinBox(text="Threshold")
-        self.threshold.button.setValue(self._config["threshold"])
-        self.threshold.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.threshold)   
+        self.threshold = TransparentDoubleSpinBox(
+            text="Threshold",
+            getter=lambda: self._config["threshold"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        ) 
     
     def set_estimator(self):
         self._config.update(
@@ -85,22 +86,26 @@ class SelectKBest(MethodBase):
         else: self._config = config
         self.method = feature_selection.SelectKBest(**self._config)
         
-        self.score_func = ComboBox(items=["ANOVA F-value", "Mutual information classification",
-                                          "Chi-squared", "F-value","Mutual information regression"], 
-                                   text="Scoring function")
+        self.score_func = TransparentComboBox(
+            items=["ANOVA F-value", "Mutual information classification","Chi-squared", 
+                   "F-value","Mutual information regression"], 
+            text="Scoring function",
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         if self._config["score_func"] == f_classif: s = "ANOVA F-value"
         elif self._config["score_func"] == mutual_info_classif: s = "Mutual information classification"
         elif self._config["score_func"] == chi2: s = "Chi2"
         elif self._config["score_func"] == f_regression: s = "F-value"
         elif self._config["score_func"] == mutual_info_regression: s = "Mutual information regression"
         self.score_func.button.setCurrentText(s)
-        self.score_func.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.score_func)
 
-        self.k = SpinBox(text="Number of features")
-        self.k.button.setValue(self._config["k"])
-        self.k.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.k)
+        self.k = TransparentSpinBox(
+            text="Number of features",
+            getter=lambda: self._config["k"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
         if self.score_func.button.currentText() == "ANOVA F-value": 
@@ -135,22 +140,26 @@ class SelectFpr(MethodBase):
         else: self._config = config
         self.method = feature_selection.SelectFpr(**self._config)
         
-        self.score_func = ComboBox(items=["ANOVA F-value", "Mutual information classification",
-                                          "Chi-squared", "F-value","Mutual information regression"], 
-                                   text="Scoring function")
+        self.score_func = TransparentComboBox(
+            items=["ANOVA F-value", "Mutual information classification","Chi-squared", 
+                   "F-value","Mutual information regression"], 
+            text="Scoring function",
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         if self._config["score_func"] == f_classif: s = "ANOVA F-value"
         elif self._config["score_func"] == mutual_info_classif: s = "Mutual information classification"
         elif self._config["score_func"] == chi2: s = "Chi2"
         elif self._config["score_func"] == f_regression: s = "F-value"
         elif self._config["score_func"] == mutual_info_regression: s = "Mutual information regression"
         self.score_func.button.setCurrentText(s)
-        self.score_func.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.score_func)
 
-        self.alpha = DoubleSpinBox(text="P-values")
-        self.alpha.button.setValue(self._config["alpha"])
-        self.alpha.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.alpha)
+        self.alpha = TransparentDoubleSpinBox(
+            text="P-values",
+            getter=lambda: self._config["alpha"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
         if self.score_func.button.currentText() == "ANOVA F-value": 
@@ -185,22 +194,26 @@ class SelectFdr(MethodBase):
         else: self._config = config
         self.method = feature_selection.SelectFdr(**self._config)
         
-        self.score_func = ComboBox(items=["ANOVA F-value", "Mutual information classification",
-                                          "Chi-squared", "F-value","Mutual information regression"], 
-                                   text="Scoring function")
+        self.score_func = TransparentComboBox(
+            items=["ANOVA F-value", "Mutual information classification","Chi-squared", 
+                   "F-value","Mutual information regression"], 
+            text="Scoring function",
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         if self._config["score_func"] == f_classif: s = "ANOVA F-value"
         elif self._config["score_func"] == mutual_info_classif: s = "Mutual information classification"
         elif self._config["score_func"] == chi2: s = "Chi2"
         elif self._config["score_func"] == f_regression: s = "F-value"
         elif self._config["score_func"] == mutual_info_regression: s = "Mutual information regression"
         self.score_func.button.setCurrentText(s)
-        self.score_func.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.score_func)
 
-        self.alpha = DoubleSpinBox(text="P-values")
-        self.alpha.button.setValue(self._config["alpha"])
-        self.alpha.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.alpha)
+        self.alpha = TransparentDoubleSpinBox(
+            text="P-values",
+            setter=self.set_estimator,
+            getter=lambda: self._config["alpha"],
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
         if self.score_func.button.currentText() == "ANOVA F-value": 
@@ -235,22 +248,26 @@ class SelectFwe(MethodBase):
         else: self._config = config
         self.method = feature_selection.SelectFwe(**self._config)
         
-        self.score_func = ComboBox(items=["ANOVA F-value", "Mutual information classification",
-                                          "Chi-squared", "F-value","Mutual information regression"], 
-                                   text="Scoring function")
+        self.score_func = TransparentComboBox(
+            items=["ANOVA F-value", "Mutual information classification","Chi-squared", 
+                   "F-value","Mutual information regression"], 
+            text="Scoring function",
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         if self._config["score_func"] == f_classif: s = "ANOVA F-value"
         elif self._config["score_func"] == mutual_info_classif: s = "Mutual information classification"
         elif self._config["score_func"] == chi2: s = "Chi2"
         elif self._config["score_func"] == f_regression: s = "F-value"
         elif self._config["score_func"] == mutual_info_regression: s = "Mutual information regression"
         self.score_func.button.setCurrentText(s)
-        self.score_func.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.score_func)
 
-        self.alpha = DoubleSpinBox(text="P-values")
-        self.alpha.button.setValue(self._config["alpha"])
-        self.alpha.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.alpha)
+        self.alpha = TransparentDoubleSpinBox(
+            text="P-values",
+            setter=self.set_estimator,
+            getter=lambda: self._config["alpha"],
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
         if self.score_func.button.currentText() == "ANOVA F-value": 
@@ -284,15 +301,19 @@ class RFE(MethodBase):
         )
         else: self._config = config
         
-        self.n_features_to_select = SpinBox(text="Number of features")
-        self.n_features_to_select.button.setValue(self._config["n_features_to_select"])
-        self.n_features_to_select.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.n_features_to_select)
+        self.n_features_to_select = TransparentSpinBox(
+            text="Number of features",
+            getter=lambda: self._config["n_features_to_select"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
 
-        self.step = SpinBox(text="Features remove each iteration")
-        self.step.button.setValue(self._config["step"])
-        self.step.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.step)
+        self.step = TransparentSpinBox(
+            text="Features remove each iteration",
+            getter=lambda: self._config["step"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
         self._config.update(
@@ -335,7 +356,7 @@ class FeatureSelector (NodeContentWidget):
         return self.stackedlayout.currentWidget()       
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Feature Selection", self.parent)
         method = PrimaryComboBox(items=self.method_list,text="Scaler")
         method.button.setMinimumWidth(250)
         method.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.method_list.index(s)))

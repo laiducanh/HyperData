@@ -1,10 +1,10 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
+from config.settings import logger, GLOBAL_DEBUG
 from sklearn.preprocessing import normalize
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import TransparentComboBox
 
 DEBUG = False
 
@@ -18,13 +18,20 @@ class DataNormalizer (NodeContentWidget):
         )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
-        norm = ComboBox(text="Norm",items=["l1","l2","max"])
-        norm.button.setCurrentText(self._config["norm"])
-        dialog.main_layout.addWidget(norm)
-        axis = ComboBox(items=["row","column"],text="Axis")
-        dialog.main_layout.addWidget(axis)
-        axis.button.setCurrentText("row" if self._config["axis"] else "column")
+        dialog = Dialog("Data Normalization", self.parent)
+        norm = TransparentComboBox(
+            text="Norm",
+            items=["l1","l2","max"],
+            getter=lambda: self._config["norm"],
+            layout=dialog.main_layout
+        )
+
+        axis = TransparentComboBox(
+            items=["row","column"],
+            text="Axis",
+            getter=lambda: "row" if self._config["axis"] else "column",
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
             self._config["norm"] = norm.button.currentText()

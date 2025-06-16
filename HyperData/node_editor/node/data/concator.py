@@ -25,22 +25,32 @@ class DataConcator (NodeContentWidget):
         dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.addWidget(TitleLabel("Concatenation"))
         dialog.main_layout.addWidget(SeparateHLine())
-        axis = TransparentComboBox(items=["index","columns"], text='Axis')
+        axis = TransparentComboBox(
+            items=["index","columns"], 
+            text='Axis',
+            text2='Choose axis to concatenate along')
         axis.button.setCurrentText(self._config['axis'])
         dialog.main_layout.addWidget(axis)
         
         dialog.main_layout.addWidget(TitleLabel("Index"))
         dialog.main_layout.addWidget(SeparateHLine())
-        join = TransparentComboBox(items=['inner','outer'],text='Join')
+        join = TransparentComboBox(
+            items=['inner','outer'],
+            text='Join',
+            text2='How to handle indexes on other axis')
         join.button.setCurrentText(self._config['join'])
         dialog.main_layout.addWidget(join)
-        ignore_index = Toggle("Ignore index")
+        ignore_index = Toggle(
+            text="Ignore index", 
+            text2="The index along the concatenation axis will be ignored")
         ignore_index.button.setChecked(self._config['ignore_index'])
         dialog.main_layout.addWidget(ignore_index)
-        sort = Toggle("Sort non-concate")
+        sort = Toggle(
+            text="Sort", 
+            text2='Sort non-concatenation axis if it is not already aligned')
         sort.button.setChecked(self._config["sort"])
         dialog.main_layout.addWidget(sort)
-        
+
         if dialog.exec(): 
             self._config["axis"] = axis.button.currentText()
             self._config["join"] = join.button.currentText()

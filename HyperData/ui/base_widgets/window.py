@@ -1,8 +1,9 @@
-from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, QHBoxLayout, QFileDialog)
+from PySide6.QtWidgets import (QProgressBar, QVBoxLayout, QProgressDialog, QDialog, 
+                               QHBoxLayout, QFileDialog, QWidget)
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, Property, QSize, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QBrush, QPen
 import math, typing, platform
-from ui.base_widgets.button import _PrimaryPushButton, _PushButton
+from ui.base_widgets.button import _PrimaryPushButton, _TransparentPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.utils import isDark
@@ -17,7 +18,7 @@ class Dialog (QDialog):
         
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        #self.vlayout.setContentsMargins(20,30,20,10)
+        # self.vlayout.setContentsMargins(0,0,0,0)
         # self.vlayout.addWidget(TitleLabel(title))
         # self.vlayout.addWidget(SeparateHLine())
 
@@ -25,14 +26,20 @@ class Dialog (QDialog):
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.vlayout.addLayout(self.main_layout)
 
-        self.groupButton = QHBoxLayout()
-        self.vlayout.addLayout(self.groupButton)
+        self.vlayout.addStretch()
+
+        widget = QWidget()
+        # widget.setAutoFillBackground(True)
+        # widget.setPalette(Qt.GlobalColor.gray)
+        self.groupButton = QHBoxLayout(widget)
+        self.vlayout.addWidget(widget)
+        self.groupButton.addStretch()
         self.ok_btn = _PrimaryPushButton("Save Changes")
-        self.ok_btn.setMinimumWidth(200)
+        #self.ok_btn.setMinimumWidth(200)
         self.ok_btn.clicked.connect(self.accept)
         self.groupButton.addWidget(self.ok_btn)
-        self.cancel_btn = _PushButton("Cancel")
-        self.cancel_btn.setMinimumWidth(200)
+        self.cancel_btn = _TransparentPushButton("Cancel")
+        #self.cancel_btn.setMinimumWidth(200)
         self.cancel_btn.clicked.connect(self.reject)
         self.groupButton.addWidget(self.cancel_btn)
     
@@ -41,14 +48,14 @@ class Dialog (QDialog):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # Create rounded rectangle path
-        path = QPainterPath()
-        path.addRoundedRect(self.rect().toRectF(), 10, 10)
+        # path = QPainterPath()
+        # path.addRoundedRect(self.rect().toRectF(), 10, 10)
 
         # Fill the dialog background
-        if isDark():
-            painter.fillPath(path, QBrush(QColor(32,32,32)))
-        else:
-            painter.fillPath(path, QBrush(QColor(250,250,250)))
+        # if isDark():
+        #     painter.fillPath(path, QBrush(QColor(32,32,32)))
+        # else:
+        #     painter.fillPath(path, QBrush(QColor(250,250,250)))
     
     def showEvent(self, event):
         

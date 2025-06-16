@@ -5,8 +5,6 @@ from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import Toggle
 from ui.base_widgets.spinbox import TransparentSpinBox
-from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
@@ -20,17 +18,24 @@ class DataInserter (NodeContentWidget):
         )
     
     def config(self):
-        dialog = Dialog(title="configuration", parent=self.parent)
-        dialog.main_layout.addWidget(TitleLabel("Insertion"))
-        dialog.main_layout.addWidget(SeparateHLine())
-        loc = TransparentSpinBox(text="Column index")
+        dialog = Dialog(title="Insert Data", parent=self.parent)
+
+        loc = TransparentSpinBox(
+            text="Column index",
+            text2="Insertion index",
+            getter=lambda: self._config["loc"],
+            layout=dialog.main_layout
+        )
         try: loc.button.setMaximum(len(self.node.input_sockets[0].socket_data.columns))
         except: loc.button.setMaximum(0)
-        loc.button.setValue(self._config["loc"])
-        dialog.main_layout.addWidget(loc)
-        allow_duplicates = Toggle(text="Allow duplicates")
-        allow_duplicates.button.setChecked(self._config["allow_duplicates"])
-        dialog.main_layout.addWidget(allow_duplicates)
+
+        allow_duplicates = Toggle(
+            text="Allow duplicates",
+            text2="If not selected, the execution " \
+            "will raise error if column is already contained in the DataFrame",
+            getter=lambda: self._config["allow_duplicates"],
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
             self._config["loc"] = loc.button.value()

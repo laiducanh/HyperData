@@ -36,7 +36,7 @@ class DataLocator (NodeContentWidget):
         self._data = self.node.input_sockets[0].socket_data.copy()
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Locate Data", self.parent)
 
         col_from = CompleterLineEdit(text="From column")
         dialog.main_layout.addWidget(col_from)

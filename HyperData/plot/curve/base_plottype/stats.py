@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QStackedLayout, QWidget
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
-from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
 from plot.insert_plot.insert_plot import NewPlot
@@ -30,26 +30,35 @@ class Histogram (PlotConfigBase):
         layout.addWidget(TitleLabel('Histogram'))
         layout.addWidget(SeparateHLine())
 
-        self.bins = SpinBox(text="Bins",min=1)
-        self.bins.button.setValue(self.get_bins())
-        self.bins.button.valueChanged.connect(self.set_bins)
-        layout.addWidget(self.bins)
+        self.bins = TransparentSpinBox(
+            text="Bins",
+            min=1, 
+            getter=self.get_bins,
+            setter=self.set_bins,
+            layout=layout
+        )
 
-        self.density = Toggle(text="Density")
-        self.density.button.setChecked(self.get_density())
-        self.density.button.checkedChanged.connect(self.set_density)
-        layout.addWidget(self.density)
+        self.density = Toggle(
+            text="Density",
+            getter=self.get_density,
+            setter=self.set_density,
+            layout=layout
+        )
 
-        self.cumulative = Toggle(text="Cumulative")
-        self.cumulative.button.setChecked(self.get_cumulative())
-        self.cumulative.button.checkedChanged.connect(self.set_cumulative)
-        layout.addWidget(self.cumulative)
+        self.cumulative = Toggle(
+            text="Cumulative",
+            getter=self.get_cumulative,
+            setter=self.set_cumulative,
+            layout=layout
+        )
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
         # self.histtype = ComboBox(
         #     items = ['bar', 'barstacked', 'step', 'stepfilled'],
@@ -59,36 +68,36 @@ class Histogram (PlotConfigBase):
         # self.histtype.button.currentTextChanged.connect(self.set_histtype)
         # self._layout.addWidget(self.histtype)
 
-        self.align = ComboBox(
+        self.align = TransparentComboBox(
             items = ["left","mid","right"],
-            text  = "Alignment"
+            text  = "Alignment",
+            getter=self.get_alignment,
+            setter=self.set_alignment,
+            layout=layout
         )
-        self.align.button.setCurrentText(self.get_alignment())
-        self.align.button.currentTextChanged.connect(self.set_alignment)
-        layout.addWidget(self.align)
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.rwidth = DoubleSpinBox(
+        self.rwidth = TransparentDoubleSpinBox(
             text = 'Bar Width',
-            min  = 0,
-            max  = 5,
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_rwidth,
+            setter=self.set_rwidth,
+            layout=layout
         )
-        self.rwidth.button.setValue(self.get_rwidth())
-        self.rwidth.button.valueChanged.connect(self.set_rwidth)
-        layout.addWidget(self.rwidth)
 
-        self.log = Toggle(text="Log")
-        self.log.button.setChecked(self.get_log())
-        self.log.button.checkedChanged.connect(self.set_log)
-        layout.addWidget(self.log)
+        self.log = Toggle(
+            text="Log",
+            getter=self.get_log,
+            setter=self.set_log,
+            layout=layout
+        )
 
         rect = Rectangle(self.gid, self.canvas)
         rect.onChanged.connect(self.onChanged.emit)
@@ -226,25 +235,35 @@ class Boxplot (PlotConfigBase):
         layout_boxes.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(boxes)
 
-        self.showbox = Toggle(text="Show boxes")
-        self.showbox.button.setChecked(self.get_showbox())
-        self.showbox.button.checkedChanged.connect(self.set_showbox)
-        layout_boxes.addWidget(self.showbox)
+        self.showbox = Toggle(
+            text="Show boxes",
+            getter=self.get_showbox,
+            setter=self.set_showbox,
+            layout=layout
+        )
 
-        self.notch = Toggle(text="Notch")
-        self.notch.button.setChecked(self.get_notch())
-        self.notch.button.checkedChanged.connect(self.set_notch)
-        layout_boxes.addWidget(self.notch)
+        self.notch = Toggle(
+            text="Notch",
+            getter=self.get_notch,
+            setter=self.set_notch,
+            layout=layout
+        )
 
-        self.vert = ComboBox(items=["vertical","horizontal"], text="Orientation")
-        self.vert.button.setCurrentText(self.get_vert())
-        self.vert.button.currentTextChanged.connect(self.set_vert)
-        layout_boxes.addWidget(self.vert)
+        self.vert = TransparentComboBox(
+            items=["vertical","horizontal"], 
+            text="Orientation",
+            getter=self.get_vert,
+            setter=self.set_vert,
+            layout=layout
+        )
 
-        self.widths = DoubleSpinBox(text="Widths", step=0.25)
-        self.widths.button.setValue(self.get_widths())
-        self.widths.button.valueChanged.connect(self.set_widths)
-        layout_boxes.addWidget(self.widths)
+        self.widths = TransparentDoubleSpinBox(
+            text="Widths", 
+            step=0.25,
+            getter=self.get_widths,
+            setter=self.set_widths,
+            layout=layout
+        )
 
         self.boxes = Rectangle(f"{self.gid}/boxes", self.canvas, self.parent())
         self.boxes.onChanged.connect(self.onChanged.emit)
@@ -256,15 +275,19 @@ class Boxplot (PlotConfigBase):
         layout_whiskers.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(whiskers)
 
-        self.whis = DoubleSpinBox(text="Whis")
-        self.whis.button.setValue(self.get_whis())
-        self.whis.button.valueChanged.connect(self.set_whis)
-        layout_whiskers.addWidget(self.whis)
+        self.whis = TransparentDoubleSpinBox(
+            text="Whis",
+            getter=self.get_whis,
+            setter=self.set_whis,
+            layout=layout
+        )
 
-        self.autorange = Toggle(text="Autorange")
-        self.autorange.button.setChecked(self.get_autorange())
-        self.autorange.button.checkedChanged.connect(self.set_autorange)
-        layout_whiskers.addWidget(self.autorange)
+        self.autorange = Toggle(
+            text="Autorange",
+            getter=self.get_autorange,
+            setter=self.set_autorange,
+            layout=layout
+        )
 
         self.whiskers = Line(f"_{self.gid}/whiskers", self.canvas)
         self.whiskers.onChanged.connect(self.onChanged.emit)
@@ -276,15 +299,20 @@ class Boxplot (PlotConfigBase):
         layout_caps.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(caps)
 
-        self.showcaps = Toggle(text="Show Caps")
-        self.showcaps.button.setChecked(self.get_showcaps())
-        self.showcaps.button.checkedChanged.connect(self.set_showcaps)
-        layout_caps.addWidget(self.showcaps)
+        self.showcaps = Toggle(
+            text="Show Caps",
+            getter=self.get_showcaps,
+            setter=self.set_showcaps,
+            layout=layout
+        )
 
-        self.capwidths = DoubleSpinBox(text="Capwidth", step=0.25)
-        self.capwidths.button.setValue(self.get_capwidths())
-        self.capwidths.button.valueChanged.connect(self.set_capwidths)
-        layout_caps.addWidget(self.capwidths)
+        self.capwidths = TransparentDoubleSpinBox(
+            text="Capwidth", 
+            step=0.25,
+            getter=self.get_capwidths,
+            setter=self.set_capwidths,
+            layout=layout
+        )
 
         self.caps = Line(f"_{self.gid}/caps", self.canvas)
         self.caps.onChanged.connect(self.onChanged.emit)
@@ -296,10 +324,12 @@ class Boxplot (PlotConfigBase):
         layout_fliers.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(fliers)
 
-        self.showfliers = Toggle(text="Show Fliers")
-        self.showfliers.button.setChecked(self.get_showfliers())
-        self.showfliers.button.checkedChanged.connect(self.set_showfliers)
-        layout_fliers.addWidget(self.showfliers)
+        self.showfliers = Toggle(
+            text="Show Fliers",
+            getter=self.get_showfliers,
+            setter=self.set_showfliers,
+            layout=layout
+        )
 
         self.fliers = Marker(f"_{self.gid}/fliers", self.canvas)
         self.fliers.onChanged.connect(self.onChanged.emit)
@@ -311,10 +341,13 @@ class Boxplot (PlotConfigBase):
         layout_medians.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(medians)
 
-        self.bootstrap = SpinBox(text="Bootstrap", max=100000, step=1000)
-        self.bootstrap.button.setValue(self.get_bootstrap())
-        self.bootstrap.button.valueChanged.connect(self.set_bootstrap)
-        layout_medians.addWidget(self.bootstrap)
+        self.bootstrap = TransparentSpinBox(
+            text="Bootstrap", 
+            max=100000, step=1000,
+            getter=self.get_bootstrap,
+            setter=self.set_bootstrap,
+            layout=layout
+        )
 
         self.medians = Line(f"_{self.gid}/medians", self.canvas)
         self.medians.onChanged.connect(self.onChanged.emit)
@@ -326,15 +359,19 @@ class Boxplot (PlotConfigBase):
         layout_mean.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(means)
 
-        self.showmeans = Toggle(text="Show Means")
-        self.showmeans.button.setChecked(self.get_showmeans())
-        self.showmeans.button.checkedChanged.connect(self.set_showmeans)
-        layout_mean.addWidget(self.showmeans)
+        self.showmeans = Toggle(
+            text="Show Means",
+            getter=self.get_showmeans,
+            setter=self.set_showmeans,
+            layout=layout
+        )
 
-        self.meanline = Toggle(text="Meanline")
-        self.meanline.button.setChecked(self.get_meanline())
-        self.meanline.button.checkedChanged.connect(self.set_meanline)
-        layout_mean.addWidget(self.meanline)
+        self.meanline = Toggle(
+            text="Meanline",
+            getter=self.get_meanline,
+            setter=self.set_meanline,
+            layout=layout
+        )
 
         self.means = Line(f"_{self.gid}/means", self.canvas)
         self.means.onChanged.connect(self.onChanged.emit)
@@ -502,25 +539,35 @@ class Violinplot (PlotConfigBase):
         layout_bodies.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(bodies)
 
-        self.vert = ComboBox(items=["vertical","horizontal"],text="Orientation")
-        self.vert.button.setCurrentText(self.get_vert())
-        self.vert.button.currentTextChanged.connect(self.set_vert)
-        layout_bodies.addWidget(self.vert)
+        self.vert = TransparentComboBox(
+            items=["vertical","horizontal"],
+            text="Orientation",
+            getter=self.get_vert,
+            setter=self.set_vert,
+            layout=layout
+        )
 
-        self.widths = DoubleSpinBox(text="Widths")
-        self.widths.button.setValue(self.get_widths())
-        self.widths.button.valueChanged.connect(self.set_widths)
-        layout_bodies.addWidget(self.widths)
+        self.widths = TransparentDoubleSpinBox(
+            text="Widths",
+            getter=self.get_widths,
+            setter=self.set_widths,
+            layout=layout
+        )
 
-        self.points = SpinBox(text="Num of Points")
-        self.points.button.setValue(self.get_points())
-        self.points.button.valueChanged.connect(self.set_points)
-        layout_bodies.addWidget(self.points)
+        self.points = TransparentSpinBox(
+            text="Num of Points",
+            getter=self.get_points,
+            setter=self.set_points,
+            layout=layout
+        )
 
-        self.bw_method = ComboBox(items=["scott","silverman"],text="Bandwidth Method")
-        self.bw_method.button.setCurrentText(self.get_bw_method())
-        self.bw_method.button.currentTextChanged.connect(self.set_bw_method)
-        layout_bodies.addWidget(self.bw_method)
+        self.bw_method = TransparentComboBox(
+            items=["scott","silverman"],
+            text="Bandwidth Method",
+            getter=self.get_bw_method,
+            setter=self.set_bw_method,
+            layout=layout
+        )
 
         self.bodies = SingleColorCollection(f"{self.gid}/bodies", self.canvas)
         self.bodies.onChanged.connect(self.onChanged.emit)
@@ -532,10 +579,12 @@ class Violinplot (PlotConfigBase):
         layout_cmeans.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(cmeans)
 
-        self.showmeans = Toggle(text="Show Means")
-        self.showmeans.button.setChecked(self.get_showmeans())
-        self.showmeans.button.checkedChanged.connect(self.set_showmeans)
-        layout_cmeans.addWidget(self.showmeans)
+        self.showmeans = Toggle(
+            text="Show Means",
+            getter=self.get_showmeans,
+            setter=self.set_showmeans,
+            layout=layout
+        )
 
         self.cmeans = LineCollection(f"_{self.gid}/cmeans",self.canvas)
         self.cmeans.onChanged.connect(self.onChanged.emit)
@@ -567,10 +616,12 @@ class Violinplot (PlotConfigBase):
         layout_cbars.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(cbars)
 
-        self.showextrema = Toggle(text="Show Extrema")
-        self.showextrema.button.setChecked(self.get_showextrema())
-        self.showextrema.button.checkedChanged.connect(self.set_showextrema)
-        layout_cbars.addWidget(self.showextrema)
+        self.showextrema = Toggle(
+            text="Show Extrema",
+            getter=self.get_showextrema,
+            setter=self.set_showextrema,
+            layout=layout
+        )
 
         self.cbars = LineCollection(f"_{self.gid}/cbars", self.canvas)
         self.cbars.onChanged.connect(self.onChanged.emit)
@@ -582,10 +633,12 @@ class Violinplot (PlotConfigBase):
         layout_cmedians.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(cmedians)
 
-        self.showmedians = Toggle(text="Show Medians")
-        self.showmedians.button.setChecked(self.get_showmedians())
-        self.showmedians.button.checkedChanged.connect(self.set_showmedians)
-        layout_cmedians.addWidget(self.showmedians)
+        self.showmedians = Toggle(
+            text="Show Medians",
+            getter=self.get_showmedians,
+            setter=self.set_showmedians,
+            layout=layout
+        )
 
         self.cmedians = LineCollection(f"_{self.gid}/cmedians", self.canvas)
         self.cmedians.onChanged.connect(self.onChanged.emit)
@@ -691,26 +744,28 @@ class Eventplot (PlotConfigBase):
         layout.addWidget(TitleLabel('Eventplot'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.lineoffsets = DoubleSpinBox(text="Line Offsets")
-        self.lineoffsets.button.setValue(self.get_lineoffsets())
-        self.lineoffsets.button.valueChanged.connect(self.set_lineoffsets)
-        layout.addWidget(self.lineoffsets)
+        self.lineoffsets = TransparentDoubleSpinBox(
+            text="Line Offsets",
+            getter=self.get_lineoffsets,
+            setter=self.set_lineoffsets,
+            layout=layout
+        )
 
-        self.linelengths = DoubleSpinBox(
+        self.linelengths = TransparentDoubleSpinBox(
             text = "Line Lengths",
-            step = 0.25
+            step = 0.25,
+            getter=self.get_linelengths,
+            setter=self.set_linelengths,
+            layout=layout
         )
-        self.linelengths.button.setValue(self.get_linelengths())
-        self.linelengths.button.valueChanged.connect(self.set_linelengths)
-        layout.addWidget(self.linelengths)
 
         collection = LineCollection(self.gid, self.canvas)
         collection.onChanged.connect(self.onChanged.emit)
@@ -766,20 +821,26 @@ class Hist2d (PlotConfigBase):
         layout.addWidget(TitleLabel('Histogram 2D'))
         layout.addWidget(SeparateHLine())
 
-        self.binx = SpinBox(text="Bins X")
-        self.binx.button.setValue(self.get_binx())
-        self.binx.button.valueChanged.connect(self.set_binx)
-        layout.addWidget(self.binx)
+        self.binx = TransparentSpinBox(
+            text="Bins X",
+            getter=self.get_binx,
+            setter=self.set_binx,
+            layout=layout
+        )
 
-        self.biny = SpinBox(text="Spin Y")
-        self.biny.button.setValue(self.get_biny())
-        self.biny.button.valueChanged.connect(self.set_biny)
-        layout.addWidget(self.biny)
+        self.biny = TransparentSpinBox(
+            text="Spin Y",
+            getter=self.get_biny,
+            setter=self.set_biny,
+            layout=layout
+        )
 
-        self.density = Toggle(text="Density")
-        self.density.button.setChecked(self.get_density())
-        self.density.button.checkedChanged.connect(self.set_density)
-        layout.addWidget(self.density)
+        self.density = Toggle(
+            text="Density",
+            getter=self.get_density,
+            setter=self.set_density,
+            layout=layout
+        )
 
         qm = QuadMesh(self.gid, self.canvas)
         qm.onChanged.connect(self.onChanged.emit)
@@ -862,10 +923,12 @@ class ErrorBar (PlotConfigBase):
         layout_err.setContentsMargins(0,0,0,0)
         self.stackedlayout.addWidget(err)
 
-        capsize = DoubleSpinBox(text="Cap Size")
-        capsize.button.setValue(self.get_capsize())
-        capsize.button.valueChanged.connect(self.set_capsize)
-        layout_err.addWidget(capsize)
+        capsize = TransparentDoubleSpinBox(
+            text="Cap Size",
+            getter=self.get_capsize,
+            setter=self.set_capsize,
+            layout=layout
+        )
 
         err = ErrorBarCollection(f'_{self.gid}/err', self.canvas)
         err.onChanged.connect(self.onChanged.emit)

@@ -182,6 +182,10 @@ class NodeGraphicsView(QGraphicsView):
 
     def leftMouseButtonPress(self, event:QMouseEvent):
         super().mousePressEvent(event)
+
+        # Press Ctrl with left mouse move to have the same behavior as middle mouse
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier: 
+            self.middleMouseButtonPress(event)
         
         # get item which we clicked on
         item = self.itemAt(event.pos())
@@ -205,6 +209,8 @@ class NodeGraphicsView(QGraphicsView):
 
     def leftMouseButtonRelease(self, event:QMouseEvent):
         super().mouseReleaseEvent(event)
+
+        self.middleMouseButtonRelease(event)
 
         # get item which we release mouse button on
         item = self.itemAt(event.pos())

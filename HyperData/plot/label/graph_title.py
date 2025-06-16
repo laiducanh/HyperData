@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QDialog
 from plot.canvas import Canvas
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import SeparateHLine
 from plot.utilis import find_mpl_object
@@ -24,54 +24,56 @@ class GraphTitle (QDialog):
 
         layout = QVBoxLayout(self)
 
-        label = LineEdit(text='Label')
+        label = LineEdit(
+            text='Label',
+            getter=self.get_title,
+            setter=self.set_title,
+            layout=layout
+        )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        label.button.setText(self.get_title())
-        label.button.textChanged.connect(self.set_title)
-        layout.addWidget(label)
 
-        font = ComboBox(
+        font = TransparentComboBox(
             items = font_lib,
-            text  = 'Font'
+            text  = 'Font',
+            setter=self.set_fontname,
+            getter=self.get_fontname,
+            layout=layout
         )
-        font.button.currentTextChanged.connect(self.set_fontname)
-        font.button.setCurrentText(self.get_fontname())
-        layout.addWidget(font)
 
-        size = DoubleSpinBox(
+        size = TransparentDoubleSpinBox(
             text = 'Font size',
-            min = 1, max = 100, step = 2
+            min = 1, max = 100, step = 2,
+            setter=self.set_fontsize,
+            getter=self.get_fontsize,
+            layout=layout
         )
-        size.button.valueChanged.connect(self.set_fontsize)
-        size.button.setValue(self.get_fontsize())
-        layout.addWidget(size)
         
         style = FontStyle(
             obj = [self.obj], 
-            canvas = self.canvas
+            canvas = self.canvas,
+            layout=layout
         )
-        layout.addWidget(style)
 
         color = ColorDropdown(
             text  = 'Font color',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(color)
 
         self.backgroundcolor = ColorDropdown(
             text  = 'Background color',
-            color = self.get_backgroundcolor()
+            getter=self.get_backgroundcolor,
+            setter=self.set_backgroundcolor,
+            layout=layout
         )
-        self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        layout.addWidget(self.backgroundcolor)
 
         edgecolor = ColorDropdown(
             text  = 'Edge color',
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(edgecolor)
 
         # #align = FontAlignment(type='graph')
         # #align.sig.connect(lambda: self.sig.emit())
@@ -81,13 +83,13 @@ class GraphTitle (QDialog):
         # #pad.button.valueChanged.connect(lambda: self.sig.emit())
         # #layout.addWidget(pad)
 
-        alpha = DoubleSpinBox(
+        alpha = TransparentDoubleSpinBox(
             text = 'Transparency',
-            step = 10
+            step = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=layout
         )
-        alpha.button.valueChanged.connect(self.set_alpha)
-        alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
     
     def set_title (self, title:str):
         self.canvas.axes.set_title(title) 

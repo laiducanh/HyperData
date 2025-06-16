@@ -1,12 +1,11 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import preprocessing
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import Toggle, PrimaryComboBox, ComboBox
+from ui.base_widgets.button import Toggle, PrimaryComboBox, TransparentComboBox
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import TransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
@@ -14,15 +13,20 @@ from PySide6.QtCore import Qt
 DEBUG = False
 
 class ExpanderBase(QWidget):
+    """ 
+    Base class for FeatureExpander 
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Create and set a main vertical layout with no margins
         _layout = QVBoxLayout()
         _layout.setContentsMargins(0,0,0,0)
         self.setLayout(_layout)
         self.scroll_area = QScrollArea(parent)
         _layout.addWidget(self.scroll_area)
         
+        # Create a scrollable area and add it to the main layout
         self.widget = QWidget()
         self.vlayout = QVBoxLayout()
         self.vlayout.setContentsMargins(0,0,0,0)
@@ -31,19 +35,24 @@ class ExpanderBase(QWidget):
         self.scroll_area.setWidget(self.widget)
         self.scroll_area.setWidgetResizable(True)
 
+        # Initialize configuration dict and null transfomer
         self._config = dict()
         self.expander = None
 
+        # Set up configuration
         self.set_config(config=None)
         
     def clear_layout (self):
+        # Remove all child widgets from the layout
         for widget in self.widget.findChildren(QWidget):
             self.vlayout.removeWidget(widget)
     
     def set_config(self, config=None):
+        # Overwrite in subclass
+        # clear_layout is needed before setting up configuration
         self.clear_layout()
 
-class PolynomialFeatures (ExpanderBase):
+class PolynomialFeatures(ExpanderBase):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -51,32 +60,51 @@ class PolynomialFeatures (ExpanderBase):
 
         self.clear_layout()
 
-        if not config: self._config = dict(
-            degree = 2,
-            interaction_only = False,
-            include_bias = True,
-        )
-        else: self._config = config
+        # Default configuration if none provided
+        if not config: 
+            self._config = dict(
+                degree=2,
+                interaction_only=False,
+                include_bias=True,
+            )
+        else: 
+            self._config = config
+        
+        # Initialize the polynomial feature transfomer
         self.scaler = preprocessing.PolynomialFeatures(**self._config)
         
-        self.degree = SpinBox(text="Degree")
-        self.degree.button.setValue(self._config["degree"])
-        self.vlayout.addWidget(self.degree)
-
-        self.interaction_only = Toggle(text="Only interaction features")
-        self.interaction_only.button.setChecked(self._config["interaction_only"])
-        self.interaction_only.button.checkedChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.interaction_only)
-        
-        self.include_bias = Toggle(text="Include bias")
-        self.include_bias.button.setChecked(self._config["include_bias"])
-        self.include_bias.button.checkedChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.include_bias)
+        # UI Components
+        self.degree = TransparentSpinBox(
+            text="Degree", 
+            text2="Maximal degree of the polynomial features",
+            initvalue=self._config["degree"],
+            fvalueChanged=self.set_estimator,
+            layout=self.vlayout
+        )
+        self.interaction_only = Toggle(
+            text="Interaction features",
+            text2="Only interaction features are produced",
+            fcheckedChanged=self.set_estimator,
+            initstate=self._config["interaction_only"],
+            layout=self.vlayout
+        )
+        self.include_bias = Toggle(
+            text="Bias",
+            text2="Add a bias column",
+            initstate=self._config["include_bias"],
+            fcheckedChanged=self.set_estimator,
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
-        self._config["degree"] = self.degree.button.value()
-        self._config["interaction_only"] = self.interaction_only.button.isChecked()
-        self._config["include_bias"] = self.include_bias.button.isChecked()
+        # Update config from UI elements
+        self._config.update(
+            degree=self.degree.button.value(),
+            interaction_only=self.interaction_only.button.isChecked(),
+            include_bias=self.include_bias.button.isChecked()
+        )
+
+        # Reinitialize scaler with updated config
         self.scaler = preprocessing.PolynomialFeatures(**self._config)
 
 class SplineTransfomer(ExpanderBase):
@@ -87,43 +115,63 @@ class SplineTransfomer(ExpanderBase):
 
         self.clear_layout()
 
-        if not config: self._config = dict(
-            n_knots = 5,
-            degree = 3,
-            knots = "uniform",
-            extrapolation = "constant",
-            include_bias = True,
-        )
-        else: self._config = config
+        # Default configuration if none provided
+        if not config: 
+            self._config = dict(
+                n_knots = 5,
+                degree = 3,
+                knots = "uniform",
+                extrapolation = "constant",
+                include_bias = True,
+            )
+        else: 
+            self._config = config
+        
+        # Initialize the Spline transfomer
         self.scaler = preprocessing.SplineTransformer(**self._config)
         
-        self.n_knots = SpinBox(min=1, text="Number of knots")
-        self.n_knots.button.setValue(self._config["n_knots"])
-        self.n_knots.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.n_knots)
-
-        self.degree = SpinBox(text="Degree")
-        self.degree.button.setValue(self._config["degree"])
-        self.degree.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.degree)
-
-        self.knots = ComboBox(items=["uniform","quantile"], text="Knot positions")
-        self.knots.button.setCurrentText(self._config["knots"])
-        self.knots.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.knots)
-
-        self.extrapolation = ComboBox(items=["error","constant","linear","continue","periodic"],
-                                      text="Extrapolation")
-        self.extrapolation.button.setCurrentText(self._config["extrapolation"])
-        self.extrapolation.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.extrapolation)
-
-        self.include_bias = Toggle(text="Include bias")
-        self.include_bias.button.setChecked(self._config["include_bias"])
-        self.include_bias.button.checkedChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.include_bias)
-    
+        # Ui Components 
+        self.n_knots = TransparentSpinBox(
+            min=2, 
+            text="Knots", 
+            text2="Number of knots of the plines",
+            initvalue=self._config["n_knots"],
+            fvalueChanged=self.set_estimator,
+            layout=self.vlayout
+        )
+        self.degree = TransparentSpinBox(
+            text="Degree",
+            text2="The polynomial degree of the spline basis",
+            initvalue=self._config["degree"],
+            fvalueChanged=self.set_estimator,
+            layout=self.vlayout
+        )
+        self.knots = TransparentComboBox(
+            items=["uniform","quantile"], 
+            text="Distribution",
+            text2="How knot positions are distributed along the features",
+            initText=self._config["knots"],
+            fcurrentTextChanged=self.set_estimator,
+            layout=self.vlayout
+        )
+        self.extrapolation = TransparentComboBox(
+            items=["error","constant","linear","continue","periodic"],
+            text="Extrapolation",
+            text2="Type of method to extrapolate values",
+            initText=self._config["extrapolation"],
+            fcurrentTextChanged=self.set_estimator,
+            layout=self.vlayout
+        )
+        self.include_bias = Toggle(
+            text="Bias",
+            text2="Add a bias column",
+            initstate=self._config["include_bias"],
+            fcheckedChanged=self.set_estimator,
+            layout=self.vlayout
+        )
+        
     def set_estimator(self):
+        # Update config from UI elements
         self._config.update(
             n_knots = self.n_knots.button.value(),
             degree = self.degree.button.value(),
@@ -131,6 +179,8 @@ class SplineTransfomer(ExpanderBase):
             extrapolation = self.extrapolation.button.currentText(),
             include_bias = self.include_bias.button.isChecked(),
         )
+
+        # Reinitialize scaler with updated config
         self.scaler = preprocessing.SplineTransformer(**self._config)
 
 class FeatureExpander (NodeContentWidget):
@@ -138,8 +188,8 @@ class FeatureExpander (NodeContentWidget):
         super().__init__(node, parent)
 
         self._config = dict(
-            expander = "Polynomial expansion",
-            config = dict(),
+            expander="Polynomial expansion",
+            config=dict(),
         )
         
         self.expander_list = ["Polynomial expansion","Univariate B-spline"]
@@ -150,11 +200,17 @@ class FeatureExpander (NodeContentWidget):
         return self.stackedlayout.currentWidget()       
 
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
-        expander = PrimaryComboBox(items=self.expander_list,text="Scaler")
+        dialog = Dialog("Feature Expansion", self.parent)
+        
+        expander = PrimaryComboBox(
+            items=self.expander_list,
+            text="Scaler",
+            fcurrentTextChanged=lambda s: self.stackedlayout.setCurrentIndex(self.expander_list.index(s)),
+            initText=self._config["expander"],
+            layout=dialog.main_layout
+        )
         expander.button.setMinimumWidth(250)
-        expander.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.expander_list.index(s)))
-        dialog.main_layout.addWidget(expander)
+
         dialog.main_layout.addWidget(SeparateHLine())
     
         self.stackedlayout = QStackedLayout()

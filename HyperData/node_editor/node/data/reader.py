@@ -49,44 +49,70 @@ class DataReader (NodeContentWidget):
         
     def config(self):
         # Note that this configuration works for csv file
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Data Reading", self.parent)
         dialog.main_layout.addWidget(TitleLabel("File Watcher"))
         dialog.main_layout.addWidget(SeparateHLine())
-        auto_update = Toggle(text="Auto update")
-        dialog.main_layout.addWidget(auto_update)
-        auto_update.button.setChecked(self._config["auto_update"])
+        auto_update = Toggle(
+            text="Auto update", 
+            text2="Update data file automatically when the file is modified externally",
+            getter=lambda: self._config["auto_update"],
+            layout=dialog.main_layout
+        )
+
         dialog.main_layout.addWidget(TitleLabel("Processing"))
         dialog.main_layout.addWidget(SeparateHLine())
+
         hlayout = QHBoxLayout()
         dialog.main_layout.addLayout(hlayout)
-        self.header = Toggle(text="Header")
-        self.header.button.setChecked(not self._config["header"])
-        hlayout.addWidget(self.header)
-        self.header.button.checkedChanged.connect(self.update_preview)
-        self.skip_blank_lines = Toggle(text="Skip blank lines")
-        self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
-        hlayout.addWidget(self.skip_blank_lines)
-        self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
-        self.delimiter = TransparentComboBox(items=["Tab","Semicolon","Comma","Space"],
-                             text="Delimiter",text2="abc")
+        self.header = Toggle(
+            text="Header",
+            getter=lambda: not self._config["header"],
+            setter=self.update_preview,
+            layout=hlayout
+        )
+        self.skip_blank_lines = Toggle(
+            text="Skip blank lines",
+            getter=lambda: self._config["skip_blank_lines"],
+            setter=self.update_preview,
+            layout=hlayout
+        )
+
         self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
-        self.delimiter.button.setCurrentText(list(self._delimiterDict.keys())
-                                        [list(self._delimiterDict.values()).index(self._config["delimiter"])])
-        dialog.main_layout.addWidget(self.delimiter)
-        self.delimiter.button.currentTextChanged.connect(self.update_preview)
-        self.encoding = TransparentComboBox(items=encode,text="Encoding",text2="abc")
-        dialog.main_layout.addWidget(self.encoding)
-        self.encoding.button.setCurrentText(self._config["encoding"])
-        self.encoding.button.currentTextChanged.connect(self.update_preview)
-        nrows = TransparentSpinBox(max=100000, text="Number of rows")
-        dialog.main_layout.addWidget(nrows)
-        nrows.button.setValue(self._config["nrows"])
-        self.sheet_name = TransparentComboBox(text="Sheet name",text2="abc")
-        dialog.main_layout.addWidget(self.sheet_name)
+        self.delimiter = TransparentComboBox(
+            items=["Tab","Semicolon","Comma","Space"],
+            text="Delimiter",
+            text2="Character to treat as the separation",
+            setter=self.update_preview,
+            getter=lambda: list(self._delimiterDict.keys())
+                    [list(self._delimiterDict.values()).index(self._config["delimiter"])],
+            layout=dialog.main_layout
+        )
+        
+        self.encoding = TransparentComboBox(
+            items=encode,text="Encoding",
+            text2="Encoding to use for UTF when reading",
+            getter=lambda: self._config["encoding"],
+            setter=self.update_preview,
+            layout=dialog.main_layout
+        )
+
+        nrows = TransparentSpinBox(
+            max=100000, 
+            text="Number of rows",
+            text2="Maximum lines to read",
+            getter=lambda: self._config["nrows"],
+            layout=dialog.main_layout
+        )
+
+        self.sheet_name = TransparentComboBox(
+            text="Sheet name",
+            text2="Select name of worksheet in the excel file to read",
+            setter=self.update_preview,
+            layout=dialog.main_layout
+        )
         if self.filetype == "excel":
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
             self.sheet_name.button.setCurrentText(self._config["sheet_name"])
-        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
 
         dialog.main_layout.addWidget(TitleLabel("Preview"))
         dialog.main_layout.addWidget(SeparateHLine())

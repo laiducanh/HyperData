@@ -26,7 +26,7 @@ class DataCombiner (NodeContentWidget):
         function = TransparentComboBox(
             items=["addition", "subtraction", "multiplication", "division", 
                    "take smaller","take bigger","minimum","maximum","mean"],
-            text="Function"
+            text="Function",text2="Function to merge DataFrames column by columns"
         )
         dialog.main_layout.addWidget(function)
         function.button.setCurrentText(self._config["func"])

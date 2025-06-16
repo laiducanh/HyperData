@@ -1,10 +1,10 @@
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QVBoxLayout, QScrollArea, QHBoxLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QScrollArea, QHBoxLayout, QWidget, QDialog
 from plot.canvas import Canvas
 from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.button import _ComboBox, _TransparentPushButton, _PrimaryComboBox
-from ui.base_widgets.spinbox import SpinBox, Slider
+from ui.base_widgets.button import _TransparentComboBox, _TransparentPushButton, _PrimaryComboBox
+from ui.base_widgets.spinbox import TransparentSpinBox, Slider
 from node_editor.node_node import Node
 from matplotlib import gridspec
 from mpl_toolkits.mplot3d.axes3d import Axes3D, Axes
@@ -38,12 +38,12 @@ class SubFigure(QWidget):
 
         hlayout2.addWidget(BodyLabel("Row"))
         hlayout2.addStretch()
-        self.row1 = _ComboBox()
+        self.row1 = _TransparentComboBox()
         self.row1.setMinimumWidth(100)
         self.row1.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout2.addWidget(self.row1)
         hlayout2.addWidget(BodyLabel("\u2192"))
-        self.row2 = _ComboBox()
+        self.row2 = _TransparentComboBox()
         self.row2.setMinimumWidth(100)
         self.row2.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout2.addWidget(self.row2)
@@ -53,12 +53,12 @@ class SubFigure(QWidget):
 
         hlayout3.addWidget(BodyLabel("Column"))
         hlayout3.addStretch()
-        self.col1 = _ComboBox()
+        self.col1 = _TransparentComboBox()
         self.col1.setMinimumWidth(100)
         self.col1.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout3.addWidget(self.col1)
         hlayout3.addWidget(BodyLabel("\u2192"))
-        self.col2 = _ComboBox()
+        self.col2 = _TransparentComboBox()
         self.col2.setMinimumWidth(100)
         self.col2.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout3.addWidget(self.col2)
@@ -112,8 +112,8 @@ class Layout(QScrollArea):
         super().__init__(parent)
 
         widget = QWidget()
-        self.vlayout = QVBoxLayout()
-        #layout.setContentsMargins(10,0,10,15)
+        self.vlayout = QVBoxLayout(self)
+        # layout.setContentsMargins(10,0,10,15)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         widget.setLayout(self.vlayout)
         self.setWidget(widget)
@@ -129,13 +129,19 @@ class Layout(QScrollArea):
         self.vlayout.addWidget(TitleLabel("Grid"))
         self.vlayout.addWidget(SeparateHLine())
 
-        self.rows = SpinBox(text="Rows", min=1)
-        self.rows.button.valueChanged.connect(self.update_layout)
-        self.vlayout.addWidget(self.rows)
+        self.rows = TransparentSpinBox(
+            text="Rows", 
+            min=1,
+            setter=self.update_layout,
+            layout=self.vlayout
+        )
 
-        self.cols = SpinBox(text="Columns", min=1)
-        self.cols.button.valueChanged.connect(self.update_layout)
-        self.vlayout.addWidget(self.cols)
+        self.cols = TransparentSpinBox(
+            text="Columns", 
+            min=1,
+            setter=self.update_layout,
+            layout=self.vlayout
+        )
 
         self.vlayout.addWidget(SeparateHLine())
         add_btn = _TransparentPushButton()
@@ -144,7 +150,7 @@ class Layout(QScrollArea):
         self.vlayout.addWidget(add_btn)
 
         self.update_layout()
-    
+  
     def redraw_plot(self):
         for sub in self.findChildren(SubFigure):
             self.redraw_subplot(sub)

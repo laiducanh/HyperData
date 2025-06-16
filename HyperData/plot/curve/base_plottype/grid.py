@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.spinbox import SpinBox
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from plot.insert_plot.insert_plot import NewPlot
@@ -46,36 +46,36 @@ class Contour (PlotConfigBase):
         layout.addWidget(TitleLabel('Contour'))
         layout.addWidget(SeparateHLine())
         
-        self.fillmesh = Toggle(text="Fill Color")
-        self.fillmesh.button.setChecked(self.get_fillmesh())
-        self.fillmesh.button.checkedChanged.connect(self.set_fillmesh)
-        layout.addWidget(self.fillmesh)
+        self.fillmesh = Toggle(
+            text="Fill Color",
+            getter=self.get_fillmesh,
+            setter=self.set_fillmesh,
+            layout=layout
+        )
 
-        self.cmap = ComboBox(
+        self.cmap = TransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap"
+            text  = "Colormap",
+            getter=self.get_cmap,
+            setter=self.set_cmap,
+            layout=layout
         )
-        self.cmap.button.setCurrentText(self.get_cmap())
-        self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        layout.addWidget(self.cmap)
 
-        self.norm = ComboBox(
+        self.norm = TransparentComboBox(
             items = ['linear', 'log', 'logit', 'symlog','asinh'], 
-            text = "Norm"
+            text = "Norm",
+            getter=self.get_norm,
+            setter=self.set_norm,
+            layout=layout
         )
-        self.norm.button.setCurrentText(self.get_norm())
-        self.norm.button.currentTextChanged.connect(self.set_norm)
-        layout.addWidget(self.norm)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min  = 0,
-            max  = 100,
-            step = 10
+            min  = 0, max  = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
 
         line = Line(self.gid, self.canvas)
         line.onChanged.connect(self.onChanged.emit)

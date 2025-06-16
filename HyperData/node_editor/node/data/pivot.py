@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import compress
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, Toggle, ListCheckBox
+from ui.base_widgets.button import TransparentComboBox, Toggle, ListCheckBox
 from ui.base_widgets.window import Dialog
 
 DEBUG = False
@@ -25,19 +25,32 @@ class DataPivot (NodeContentWidget):
     
     def config(self):
         data = self.node.input_sockets[0].socket_data
-        dialog = Dialog(title="configuration", parent=self.parent)
-        aggfunc = ComboBox(items=["mean","sum","min","max"],text="Function")
-        aggfunc.button.setCurrentText(self._config["aggfunc"])
-        dialog.main_layout.addWidget(aggfunc)
-        margins = Toggle(text="Margins")
-        margins.button.setChecked(self._config["margins"])
-        dialog.main_layout.addWidget(margins)
-        dropna = Toggle("Drop NaN")
-        dropna.button.setChecked(self._config["dropna"])
-        dialog.main_layout.addWidget(dropna)
-        sort = Toggle(text="Sort")
-        sort.button.setChecked(self._config["sort"])
-        dialog.main_layout.addWidget(sort)
+        dialog = Dialog(title="Data Pivot", parent=self.parent)
+        aggfunc = TransparentComboBox(
+            items=["mean","sum","min","max"],
+            text="Function",
+            getter=lambda: self._config["aggfunc"],
+            layout=dialog.main_layout
+        )
+
+        margins = Toggle(
+            text="Margins",
+            getter=lambda: self._config["margins"],
+            layout=dialog.main_layout
+        )
+
+        dropna = Toggle(
+            text="Drop NaN",
+            getter=lambda: self._config["dropna"],
+            layout=dialog.main_layout
+        )
+
+        sort = Toggle(
+            text="Sort",
+            getter=lambda: self._config["sort"],
+            layout=dialog.main_layout
+        )
+
         values = ListCheckBox(data.columns, text="Values",
                               states=[i in self._config["values"] for i in data.columns])
         dialog.main_layout.addWidget(values)
@@ -113,18 +126,31 @@ class DataUnpivot(NodeContentWidget):
     
     def config(self):
         data = self.node.input_sockets[0].socket_data
-        dialog = Dialog(title="configuration", parent=self.parent)
-        col_level = ComboBox(items=[str(i) for i in range(-1,data.columns.nlevels)], text="Level")
-        col_level.button.setCurrentText(str(self._config["col_level"]))
-        dialog.main_layout.addWidget(col_level)
-        ignore_index = Toggle(text="Ignore index")
-        ignore_index.button.setChecked(self._config["ignore_index"])
-        dialog.main_layout.addWidget(ignore_index)
-        id_vars = ListCheckBox(data.columns, text="Columns",
-                               states=[i in self._config["id_vars"] for i in data.columns])
+        dialog = Dialog(title="Data Unpivot", parent=self.parent)
+        col_level = TransparentComboBox(
+            items=[str(i) for i in range(-1,data.columns.nlevels)], 
+            text="Level",
+            getter=lambda: str(self._config["col_level"]),
+            layout=dialog.main_layout
+        )
+
+        ignore_index = Toggle(
+            text="Ignore index",
+            getter=lambda: self._config["ignore_index"],
+            layout=dialog.main_layout
+        )
+     
+        id_vars = ListCheckBox(
+            data.columns, 
+            text="Columns",
+            states=[i in self._config["id_vars"] for i in data.columns]
+        )
         dialog.main_layout.addWidget(id_vars)
-        value_vars = ListCheckBox(data.columns, text="Values",
-                                  states=[i in self._config["value_vars"] for i in data.columns])
+        value_vars = ListCheckBox(
+            data.columns, 
+            text="Values",
+            states=[i in self._config["value_vars"] for i in data.columns]
+        )
         dialog.main_layout.addWidget(value_vars)
 
         if dialog.exec():

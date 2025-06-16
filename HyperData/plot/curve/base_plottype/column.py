@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
@@ -34,29 +34,29 @@ class Column (PlotConfigBase):
         layout.addWidget(TitleLabel('Bar'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
-        self.barwidth = DoubleSpinBox(
+        self.barwidth = TransparentDoubleSpinBox(
             text = 'Bar Width',
-            min  = 0, 
-            max  = 5, 
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_barwidth,
+            setter=self.set_barwidth,
+            layout=layout
         )
-        self.barwidth.button.setValue(self.get_barwidth())
-        self.barwidth.button.valueChanged.connect(self.set_barwidth)
-        layout.addWidget(self.barwidth)
 
         rect = Rectangle(self.gid, self.canvas)
         rect.onChanged.connect(self.onChanged.emit)
@@ -121,51 +121,51 @@ class Column3D (PlotConfigBase):
         layout.addWidget(TitleLabel('Column 3D'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["x","y","z"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
-        self.dx = DoubleSpinBox(
+        self.dx = TransparentDoubleSpinBox(
             text = 'Dx',
-            min  = 0,
-            max  = 5,
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_dx,
+            setter=self.set_dx,
+            layout=layout
         )
-        self.dx.button.setValue(self.get_dx())
-        self.dx.button.valueChanged.connect(self.set_dx)
-        layout.addWidget(self.dx)
 
-        self.dy = DoubleSpinBox(
+        self.dy = TransparentDoubleSpinBox(
             text = "Dy",
-            min  = 0,
-            max  = 5,
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_dy,
+            setter=self.set_dy,
+            layout=layout
         )
-        self.dy.button.setValue(self.get_dy())
-        self.dy.button.valueChanged.connect(self.set_dy)
-        layout.addWidget(self.dy)
 
         self.color = ColorDropdown(
             text  = "Color", 
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.color)
 
-        self.shade = Toggle(text="Shade") 
-        self.shade.button.setChecked(self.get_shade())
-        self.shade.button.checkedChanged.connect(self.set_shade)
-        layout.addWidget(self.shade)
+        self.shade = Toggle(
+            text="Shade",
+            getter=self.get_shade,
+            setter=self.set_shade,
+            layout=layout
+        ) 
 
         collection = Poly3DCollection(self.gid, self.canvas)
         collection.onChanged.connect(self.onChanged.emit)
@@ -257,31 +257,33 @@ class Dot (PlotConfigBase):
         layout.addWidget(TitleLabel('Dot'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
         marker = Marker(self.gid, self.canvas)
         marker.onChanged.connect(self.onChanged.emit)
         layout.addWidget(marker)
 
-        alpha = SpinBox(
+        alpha = TransparentSpinBox(
             text = 'Transparent',
-            step = 10
+            step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        alpha.button.setValue(self.get_alpha())
-        alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(alpha)
 
     def find_object(self):
         return find_mpl_object(
@@ -334,39 +336,37 @@ class ClusteredColumn (Column):
         layout.addWidget(TitleLabel('Bar'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
-        self.barwidth = DoubleSpinBox(
+        self.barwidth = TransparentDoubleSpinBox(
             text = 'Bar Width',
-            min  = 0, 
-            max  = 5, 
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_barwidth,
+            setter=self.set_barwidth,
+            layout=layout
         )
-        self.barwidth.button.setValue(self.get_barwidth())
-        self.barwidth.button.valueChanged.connect(self.set_barwidth)
-        layout.addWidget(self.barwidth)
 
-        self.distance = SpinBox(
+        self.distance = TransparentSpinBox(
             min  = 0,
-            max  = 100,
-            step = 10,
-            text = "Distance"
+            max  = 100, step = 10, text = "Distance",
+            getter=self.get_distance,
+            setter=self.set_distance,
+            layout=layout
         )
-        self.distance.button.setValue(self.get_distance())
-        self.distance.button.valueChanged.connect(self.set_distance)
-        layout.addWidget(self.distance)
 
         rect = Rectangle(self.gid, self.canvas)
         rect.onChanged.connect(self.onChanged.emit)
@@ -393,41 +393,41 @@ class ClusteredDot (Dot):
         layout.addWidget(TitleLabel('Dot'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
-        self.distance = SpinBox(
-            min  = 0,
-            max  = 100,
-            step = 10,
-            text = "Distance"
+        self.distance = TransparentSpinBox(
+            min  = 0, max  = 100, step = 10,
+            text = "Distance",
+            getter=self.get_distance,
+            setter=self.set_distance,
+            layout=layout
         )
-        self.distance.button.setValue(self.get_distance())
-        self.distance.button.valueChanged.connect(self.set_distance)
-        layout.addWidget(self.distance)
 
         marker = Marker(self.gid, self.canvas)
         marker.onChanged.connect(self.onChanged.emit)
         layout.addWidget(marker)
 
-        alpha = SpinBox(
+        alpha = TransparentSpinBox(
             text = 'Transparent',
-            step = 10
+            step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        alpha.button.setValue(self.get_alpha())
-        alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(alpha)
     
     def set_distance(self, value:int):
         try:
@@ -457,13 +457,13 @@ class Dumbbell (PlotConfigBase):
         layout.addWidget(TitleLabel('Dumbbell'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
         layout.addWidget(TitleLabel('Lines'))
         layout.addWidget(SeparateHLine())
@@ -510,13 +510,13 @@ class Marimekko (PlotConfigBase):
         layout.addWidget(TitleLabel('Marimekko'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
         rect = Rectangle(self.gid, self.canvas)
         rect.onChanged.connect(self.onChanged.emit)
@@ -553,33 +553,35 @@ class Treemap (PlotConfigBase):
         layout.addWidget(TitleLabel('Treemap'))
         layout.addWidget(SeparateHLine())
 
-        self.rounded = DoubleSpinBox(text="Rounding factor")
-        self.rounded.button.setValue(self.get_rounded())
-        self.rounded.button.valueChanged.connect(self.set_rounded)
-        layout.addWidget(self.rounded)
-
-        self.pad = DoubleSpinBox(
-            min  = 0,
-            max  = 20,
-            step = 0.5,
-            text = "Padding"
+        self.rounded = TransparentDoubleSpinBox(
+            text="Rounding factor",
+            getter=self.get_rounded,
+            setter=self.set_rounded,
+            layout=layout
         )
-        self.pad.button.setValue(self.get_pad())
-        self.pad.button.valueChanged.connect(self.set_pad)
-        layout.addWidget(self.pad)
 
-        self.cmap_on = Toggle(text="Use colormap")
-        self.cmap_on.button.setChecked(self.get_cmap_on())
-        self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
-        layout.addWidget(self.cmap_on)
+        self.pad = TransparentDoubleSpinBox(
+            min  = 0, max  = 20, step = 0.5,
+            text = "Padding",
+            getter=self.get_pad,
+            setter=self.set_pad,
+            layout=layout
+        )
 
-        self.cmap = ComboBox(
+        self.cmap_on = Toggle(
+            text="Use colormap",
+            getter=self.get_cmap_on,
+            setter=self.set_cmap_on,
+            layout=layout
+        )
+
+        self.cmap = TransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap"
+            text  = "Colormap",
+            getter=self.get_cmap,
+            setter=self.set_cmap,
+            layout=layout
         )
-        self.cmap.button.setCurrentText(self.get_cmap())
-        self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        layout.addWidget(self.cmap)
 
         rect = Rectangle(self.gid, self.canvas)
         rect.onChanged.connect(self.onChanged.emit)
@@ -646,29 +648,29 @@ class WaterFall (PlotConfigBase):
         layout.addWidget(TitleLabel('Waterfall'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = LineEdit(text="Bottom")
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=layout
+        )
         self.bottom.button.setFixedWidth(150)
-        self.bottom.button.setText(self.get_bottom())
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
-        layout.addWidget(self.bottom)
 
-        self.barwidth = DoubleSpinBox(
+        self.barwidth = TransparentDoubleSpinBox(
             text = 'Bar Width',
-            min  = 0,
-            max  = 5,
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_barwidth,
+            setter=self.set_barwidth,
+            layout=layout
         )
-        self.barwidth.button.setValue(self.get_barwidth())
-        self.barwidth.button.valueChanged.connect(self.set_barwidth)
-        layout.addWidget(self.barwidth)
 
         layout.addWidget(TitleLabel('Positive Bars'))
         layout.addWidget(SeparateHLine())

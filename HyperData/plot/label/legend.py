@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QStackedLayout, QDialog
 from plot.canvas import Canvas
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.button import ComboBox, SegmentedWidget, Toggle
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import TransparentComboBox, SegmentedWidget, Toggle
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.plotting.plotting import set_legend, get_legend
 from config.settings import font_lib, logger
@@ -41,60 +41,62 @@ class LegendEntries(LegendBase):
 
         layout = QVBoxLayout(self)
         
-        font = ComboBox(
+        font = TransparentComboBox(
             items = font_lib,
-            text  = 'Font'
+            text  = 'Font',
+            setter=self.set_fontname,
+            getter=self.get_fontname,
+            layout=layout
         )
-        font.button.currentTextChanged.connect(self.set_fontname)
-        font.button.setCurrentText(self.get_fontname())
-        layout.addWidget(font)
 
-        size = DoubleSpinBox(
+        size = TransparentDoubleSpinBox(
             text = 'Font size',
-            min = 1, max = 100, step = 1
+            min = 1, max = 100, step = 1,
+            setter=self.set_fontsize,
+            getter=self.get_fontsize,
+            layout=layout
         )
-        size.button.valueChanged.connect(self.set_fontsize)
-        size.button.setValue(self.get_fontsize())
-        layout.addWidget(size)
 
         # # style = FontStyle(obj=self.obj.get_texts(), canvas=self.canvas)
         # # layout.addWidget(style)
 
         color = ColorDropdown(
             text  = 'Font color',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(color)
 
-        markerscale = DoubleSpinBox(
+        markerscale = TransparentDoubleSpinBox(
             text = 'Marker scale',
-            min = 0, max = 5, step = 0.1
+            min = 0, max = 5, step = 0.1,
+            setter=self.set_markerscale,
+            getter=self.get_markerscale,
+            layout=layout
         )
-        markerscale.button.valueChanged.connect(self.set_markerscale)
-        markerscale.button.setValue(self.get_markerscale())
-        layout.addWidget(markerscale)
 
-        ncols = SpinBox(
+        ncols = TransparentSpinBox(
             text = 'Number of columns',
-            min = 1, max = 10, step = 1
+            min = 1, max = 10, step = 1,
+            setter=self.set_ncols,
+            getter=self.get_ncols,
+            layout=layout
         )
-        ncols.button.valueChanged.connect(self.set_ncols)
-        ncols.button.setValue(self.get_ncols())
-        layout.addWidget(ncols)
 
-        npoints = SpinBox(
+        npoints = TransparentSpinBox(
             text = "Marker points",
-            min = 1, max = 10, step = 1
+            min = 1, max = 10, step = 1,
+            setter=self.set_npoints,
+            getter=self.get_npoints,
+            layout=layout
         )
-        npoints.button.valueChanged.connect(self.set_npoints)
-        npoints.button.setValue(self.get_npoins())
-        layout.addWidget(npoints)
 
-        columnspacing = DoubleSpinBox(text="Column spacing")
-        columnspacing.button.valueChanged.connect(self.set_columnspacing)
-        columnspacing.button.setValue(self.get_columnspacing())
-        layout.addWidget(columnspacing)
+        columnspacing = TransparentDoubleSpinBox(
+            text="Column spacing",
+            setter=self.set_columnspacing,
+            getter=self.get_columnspacing,
+            layout=layout
+        )
     
     def set_fontname (self, font:str):
         if self.legend:
@@ -169,7 +171,7 @@ class LegendEntries(LegendBase):
             set_legend(self.canvas)
             self.canvas.draw_idle()
     
-    def get_npoins(self) -> int:
+    def get_npoints(self) -> int:
         return plt.rcParams["legend.numpoints"]
 
     def set_columnspacing(self, value:float):
@@ -192,68 +194,70 @@ class LegendTitle (LegendBase):
 
         layout = QVBoxLayout(self)
 
-        self.title = LineEdit(text='Label')
+        self.title = LineEdit(
+            text='Label',
+            setter=self.set_title,
+            getter=self.get_title,
+            layout=layout
+        )
         self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
-        self.title.button.textChanged.connect(self.set_title)
-        self.title.setText(self.get_title())
-        layout.addWidget(self.title)
 
-        font = ComboBox(
+        font = TransparentComboBox(
             items = font_lib,
-            text  = 'Font'
+            text  = 'Font',
+            setter=self.set_fontname,
+            getter=self.get_fontname,
+            layout=layout
         )
-        font.button.currentTextChanged.connect(self.set_fontname)
-        font.button.setCurrentText(self.get_fontname())
-        layout.addWidget(font)
 
-        size = DoubleSpinBox(
+        size = TransparentDoubleSpinBox(
             text = 'Font size',
-            min = 1, max = 100, step = 1
+            min = 1, max = 100, step = 1,
+            setter=self.set_fontsize,
+            getter=self.get_fontsize,
+            layout=layout
         )
-        size.button.valueChanged.connect(self.set_fontsize)
-        size.button.setValue(self.get_fontsize())
-        layout.addWidget(size)
 
         color = ColorDropdown(
             text  = 'Font color',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(color)
 
         self.backgroundcolor = ColorDropdown(
             text  = 'Background color',
-            color = self.get_backgroundcolor()
+            getter=self.get_backgroundcolor,
+            setter=self.set_backgroundcolor,
+            layout=layout
         )
-        self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        layout.addWidget(self.backgroundcolor)
 
         edgecolor = ColorDropdown(
             text  = 'Edge color',
-            color = self.get_edgecolor()
+            getter = self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(edgecolor)
 
-        align = ComboBox(
+        align = TransparentComboBox(
             text  = "Alignment", 
-            items = ["center","left","right"]
+            items = ["center","left","right"],
+            setter=self.set_alignment,
+            getter=self.get_alignment,
+            layout=layout
         )
-        align.button.currentTextChanged.connect(self.set_alignment)
-        align.button.setCurrentText(self.get_alignment())
-        layout.addWidget(align)
         
         # #pad = DoubleSpinBox(text='label pad',min=-100,max=100,step=5)
         # #pad.button.valueChanged.connect(lambda: self.sig.emit())
         # #layout.addWidget(pad)
 
-        alpha = DoubleSpinBox(
+        alpha = TransparentDoubleSpinBox(
             text = 'transparency',
-            step = 10
+            step = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=layout
         )
-        alpha.button.valueChanged.connect(self.set_alpha)
-        alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
 
     def set_title (self, label:str):
         if self.legend:
@@ -350,69 +354,73 @@ class LegendFrame (LegendBase):
 
         layout = QVBoxLayout(self)
     
-        frameon = Toggle(text='Visible')
-        frameon.button.checkedChanged.connect(self.set_frameon)
-        frameon.button.setChecked(self.get_frameon())
-        layout.addWidget(frameon)
+        frameon = Toggle(
+            text='Visible',
+            setter=self.set_frameon,
+            getter=self.get_frameon,
+            layout=layout
+        )
 
-        shadow = Toggle(text='Shadow')
-        shadow.button.checkedChanged.connect(self.set_shadow)
-        shadow.button.setChecked(self.get_shadow())
-        layout.addWidget(shadow)
+        shadow = Toggle(
+            text='Shadow',
+            setter=self.set_shadow,
+            getter=self.get_shadow,
+            layout=layout
+        )
 
         facecolor = ColorDropdown(
             text  = 'Face Color', 
-            color = self.get_facecolor()
+            getter=self.get_facecolor,
+            setter=self.set_facecolor,
+            layout=layout
         )
-        facecolor.button.colorChanged.connect(self.set_facecolor)
-        layout.addWidget(facecolor)
 
         edgecolor = ColorDropdown(
             text  = 'Edge Color', 
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(edgecolor)
 
-        alpha = DoubleSpinBox(
+        alpha = TransparentDoubleSpinBox(
             text = 'Transparency',
-            step = 10
+            step = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=layout
         )
-        alpha.button.valueChanged.connect(self.set_alpha)
-        alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
 
-        borderpad = DoubleSpinBox(
+        borderpad = TransparentDoubleSpinBox(
             text = 'border pad',
-            min = 0, max = 5, step = 0.1
+            min = 0, max = 5, step = 0.1,
+            setter=self.set_borderpad,
+            getter=self.get_borderpad,
+            layout=layout
         )
-        borderpad.button.valueChanged.connect(self.set_borderpad)
-        borderpad.button.setValue(self.get_borderpad())
-        layout.addWidget(borderpad)
 
-        handlelength = DoubleSpinBox(
+        handlelength = TransparentDoubleSpinBox(
             text = 'handle length',
-            min = 0, max = 10, step = 0.5
+            min = 0, max = 10, step = 0.5,
+            setter=self.set_handlelength,
+            getter=self.get_handlelength,
+            layout=layout
         )
-        handlelength.button.valueChanged.connect(self.set_handlelength)
-        handlelength.button.setValue(self.get_handlelength())
-        layout.addWidget(handlelength)
 
-        handleheight = DoubleSpinBox(
+        handleheight = TransparentDoubleSpinBox(
             text = 'handle height',
-            min = 0, max = 10, step = 0.5
+            min = 0, max = 10, step = 0.5,
+            setter=self.set_handleheight,
+            getter=self.get_handleheight,
+            layout=layout
         )
-        handleheight.button.valueChanged.connect(self.set_handleheight)
-        handleheight.button.setValue(self.get_handleheight())
-        layout.addWidget(handleheight)
 
-        handletextpad = DoubleSpinBox(
+        handletextpad = TransparentDoubleSpinBox(
             text = 'handle text pad',
-            min = 0, max = 10, step = 0.5
+            min = 0, max = 10, step = 0.5,
+            setter=self.set_handletextpad,
+            getter=self.get_handletextpad,
+            layout=layout
         )
-        handletextpad.button.valueChanged.connect(self.set_handletextpad)
-        handletextpad.button.setValue(self.get_handletextpad())
-        layout.addWidget(handletextpad)
     
     def set_frameon(self, value:bool):
         if self.legend:

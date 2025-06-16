@@ -3,7 +3,7 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, encode, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import _ComboBox, _TransparentToolButton, _TransparentPushButton
+from ui.base_widgets.button import _TransparentComboBox, _TransparentToolButton, _TransparentPushButton
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QApplication
 
 DEBUG = False
@@ -17,13 +17,13 @@ class SorterWidget(QWidget):
         idx = parent.main_layout.count()-1
         parent.main_layout.insertWidget(idx, self)
 
-        self.col = _ComboBox(parent=parent)
+        self.col = _TransparentComboBox(parent=parent)
         self.col.setObjectName("by")
         if not data.empty: self.col.addItems(data.columns)
         self.col.setCurrentText(by)
         self.hlayout.addWidget(self.col)
 
-        self.ascending = _ComboBox(["ascending","descending"],parent=parent)
+        self.ascending = _TransparentComboBox(["ascending","descending"],parent=parent)
         self.ascending.setObjectName("ascending")
         if order: self.ascending.setCurrentText("ascending")
         else: self.ascending.setCurrentText("descending")
@@ -58,7 +58,7 @@ class DataSorter (NodeContentWidget):
         )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Sort Data", self.parent)
         
         def add(by="", order=True):
             SorterWidget(self.node.input_sockets[0].socket_data, by, order, dialog)
@@ -74,8 +74,8 @@ class DataSorter (NodeContentWidget):
         if dialog.exec():
             # reset self._config
             self._config = dict(by=[],ascending=[])
-            for btn in dialog.findChildren(_ComboBox):
-                btn : _ComboBox
+            for btn in dialog.findChildren(_TransparentComboBox):
+                btn : _TransparentComboBox
                 if btn.objectName() == "by":
                     self._config["by"].append(btn.currentText())
                 if btn.objectName() == "ascending":

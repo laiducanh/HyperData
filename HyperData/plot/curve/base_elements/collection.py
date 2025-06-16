@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
@@ -25,43 +25,43 @@ class SingleColorCollection (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.edgewidth = DoubleSpinBox(
+        self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
-            min = 0, max = 5, step = 0.1
+            min = 0, max = 5, step = 0.1,
+            getter=self.get_edgewidth,
+            setter=self.set_edgewidth,
+            layout=layout
         )
-        self.edgewidth.button.setValue(self.get_edgewidth())
-        self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(
+        self.edgestyle = TransparentComboBox(
             text  = 'Edge Style',
-            items = linestyle_lib.values()
+            items = linestyle_lib.values(),
+            getter=self.get_edgestyle,
+            setter=self.set_edgestyle,
+            layout=layout
         )
-        self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        layout.addWidget(self.edgestyle)
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
-            color = self.get_facecolor()
+            getter=self.get_facecolor,
+            setter=self.set_facecolor,
+            layout=layout
         )
-        self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        layout.addWidget(self.facecolor)
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(self.edgecolor)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min = 0, max = 100, step = 10
+            min = 0, max = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
     
     def find_object (self) -> List[Union[collections.Collection, collections.PolyCollection]]:
         return find_mpl_object(
@@ -156,64 +156,66 @@ class CmapCollection (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.edgewidth = DoubleSpinBox(
+        self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width'
-            ,min = 0, max = 5, step = 0.1
+            ,min = 0, max = 5, step = 0.1,
+            getter=self.get_edgewidth,
+            setter=self.set_edgewidth,
+            layout=layout
         )
-        self.edgewidth.button.setValue(self.get_edgewidth())
-        self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(
+        self.edgestyle = TransparentComboBox(
             text  = 'Edge Style',
-            items = linestyle_lib.values()
+            items = linestyle_lib.values(),
+            getter=self.edgestyle,
+            setter=self.set_edgestyle,
+            layout=layout
         )
-        self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        layout.addWidget(self.edgestyle)
 
-        self.cmap_on = Toggle(text="Colormap On")
-        self.cmap_on.button.setChecked(self.get_cmap_on())
-        self.cmap_on.button.checkedChanged.connect(self.set_cmap_on)
-        layout.addWidget(self.cmap_on)
+        self.cmap_on = Toggle(
+            text="Colormap On",
+            getter=self.get_cmap_on,
+            setter=self.set_cmap_on,
+            layout=layout
+        )
 
-        self.cmap = ComboBox(
+        self.cmap = TransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap"
+            text  = "Colormap",
+            getter=self.get_cmap,
+            setter=self.set_cmap,
+            layout=layout
         )
-        self.cmap.button.setCurrentText(self.get_cmap())
-        self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        layout.addWidget(self.cmap)
 
-        self.norm = ComboBox(
+        self.norm = TransparentComboBox(
             items = ['linear', 'log', 'logit', 'symlog','asinh'], 
-            text  = "Norm"
+            text  = "Norm",
+            getter=self.get_norm,
+            setter=self.set_norm,
+            layout=layout
         )
-        self.norm.button.setCurrentText(self.get_norm())
-        self.norm.button.currentTextChanged.connect(self.set_norm)
-        layout.addWidget(self.norm)
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
-            color = self.get_facecolor()
+            getter=self.get_facecolor,
+            setter=self.set_facecolor,
+            layout=layout
         )
-        self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        layout.addWidget(self.facecolor)
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(self.edgecolor)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min = 0, max = 100, step = 10
+            min = 0, max = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
     
     def find_object (self) -> list[collections.Collection]:
         return find_mpl_object(
@@ -350,56 +352,52 @@ class QuadMesh (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.edgewidth = DoubleSpinBox(
+        self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
-            min  = 0,
-            max  = 5, 
-            step = 0.1
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_edgewidth,
+            setter=self.set_edgewidth,
+            layout=layout
         )
-        self.edgewidth.button.setValue(self.get_edgewidth())
-        self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(
+        self.edgestyle = TransparentComboBox(
             text  = 'Edge Style',
-            items = linestyle_lib.values()
+            items = linestyle_lib.values(),
+            getter=self.get_edgestyle,
+            setter=self.set_edgestyle,
+            layout=layout
         )
-        self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        layout.addWidget(self.edgestyle)
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(self.edgecolor)
 
-        self.cmap = ComboBox(
+        self.cmap = TransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap"
+            text  = "Colormap",
+            getter=self.get_cmap,
+            setter=self.set_cmap,
+            layout=layout
         )
-        self.cmap.button.setCurrentText(self.get_cmap())
-        self.cmap.button.currentTextChanged.connect(self.set_cmap)
-        layout.addWidget(self.cmap)
 
-        self.norm = ComboBox(
+        self.norm = TransparentComboBox(
             items = ['linear', 'log', 'logit', 'symlog','asinh'], 
-            text  = "Norm"
+            text  = "Norm",
+            getter=self.get_norm,
+            setter=self.set_norm,
+            layout=layout
         )
-        self.norm.button.setCurrentText(self.get_norm())
-        self.norm.button.currentTextChanged.connect(self.set_norm)
-        layout.addWidget(self.norm)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min  = 0,
-            max  = 100,
-            step = 10
+            min  = 0, max  = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
     
     def find_object (self) -> list[collections.QuadMesh]:
         return find_mpl_object(source=self.canvas.fig,
@@ -510,23 +508,21 @@ class Poly3DCollection (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.zsort = ComboBox(
+        self.zsort = TransparentComboBox(
             items = ["average","min","max"], 
-            text  = "Zsort"
+            text  = "Zsort",
+            getter=self.get_zsort,
+            setter=self.set_zsort,
+            layout=layout
         )
-        self.zsort.button.setCurrentText(self.get_zsort())
-        self.zsort.button.currentTextChanged.connect(self.set_zsort)
-        layout.addWidget(self.zsort)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min  = 0,
-            max  = 100,
-            step = 10
+            min  = 0, max  = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
 
     def find_object(self) -> List[art3d.Poly3DCollection]:
         return find_mpl_object(

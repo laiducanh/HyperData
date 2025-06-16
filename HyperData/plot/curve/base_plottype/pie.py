@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.button import Toggle
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
@@ -28,48 +28,56 @@ class Pie (PlotConfigBase):
         layout.addWidget(TitleLabel('Pie'))
         layout.addWidget(SeparateHLine())
 
-        self.explode = LineEdit(text="Explode")
-        self.explode.button.setText(self.get_explode())
-        self.explode.button.textChanged.connect(self.set_explode)
-        layout.addWidget(self.explode)
-
-        self.labels = LineEdit(text="Labels")
-        self.labels.button.setText(self.get_labels())
-        self.labels.button.textChanged.connect(self.set_labels)
-        layout.addWidget(self.labels)
-
-        self.startangle = DoubleSpinBox(
-            min  = 0,
-            max  = 360, 
-            step = 30,
-            text = "Start angle"
+        self.explode = LineEdit(
+            text="Explode",
+            getter=self.get_explode,
+            setter=self.set_explode,
+            layout=layout
         )
-        self.startangle.button.setValue(self.get_startangle())
-        self.startangle.button.valueChanged.connect(self.set_startangle)
-        layout.addWidget(self.startangle)
 
-        self.radius = DoubleSpinBox(
+        self.labels = LineEdit(
+            text="Labels",
+            getter=self.get_labels,
+            setter=self.set_labels,
+            layout=layout
+        )
+
+        self.startangle = TransparentDoubleSpinBox(
+            min  = 0, max  = 360, step = 30,
+            text = "Start angle",
+            getter=self.get_startangle,
+            setter=self.set_startangle,
+            layout=layout
+        )
+
+        self.radius = TransparentDoubleSpinBox(
             text = "Radius",
-            step = 0.2
+            step = 0.2,
+            getter=self.get_radius,
+            setter=self.set_radius,
+            layout=layout
         )
-        self.radius.button.setValue(self.get_radius())
-        self.radius.button.valueChanged.connect(self.set_radius)
-        layout.addWidget(self.radius)
 
-        self.counterclock = Toggle(text="Counterclock")
-        self.counterclock.button.setChecked(self.get_counterclock())
-        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        layout.addWidget(self.counterclock)
+        self.counterclock = Toggle(
+            text="Counterclock",
+            getter=self.get_counterclock,
+            setter=self.set_counterclock,
+            layout=layout
+        )
 
-        self.rotatelabels = Toggle(text="Rotate Labels")
-        self.rotatelabels.button.setChecked(self.get_rotatelabels())
-        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        layout.addWidget(self.rotatelabels)
+        self.rotatelabels = Toggle(
+            text="Rotate Labels",
+            getter=self.get_rotatelabels,
+            setter=self.set_rotatelabels,
+            layout=layout
+        )
 
-        self.normalize = Toggle(text="Normalize")
-        self.normalize.button.setChecked(self.get_normalize())
-        self.normalize.button.checkedChanged.connect(self.set_normalize)
-        layout.addWidget(self.normalize)
+        self.normalize = Toggle(
+            text="Normalize",
+            getter=self.get_normalize,
+            setter=self.set_normalize,
+            layout=layout
+        )
 
         wedge = Wedge(self.gid, self.canvas)
         wedge.onChanged.connect(self.onChanged.emit)
@@ -171,40 +179,49 @@ class Coxcomb (Pie):
         layout.addWidget(TitleLabel('Coxcomb'))
         layout.addWidget(SeparateHLine())
 
-        self.explode = LineEdit(text="Explode")
-        self.explode.button.setText(self.get_explode())
-        self.explode.button.textChanged.connect(self.set_explode)
-        layout.addWidget(self.explode)
-
-        self.labels = LineEdit(text="Labels")
-        self.labels.button.setText(self.get_labels())
-        self.labels.button.textChanged.connect(self.set_labels)
-        layout.addWidget(self.labels)
-
-        self.startangle = DoubleSpinBox(
-            min  = 0,
-            max  = 360, 
-            step = 30,
-            text = "Start angle"
+        self.explode = LineEdit(
+            text="Explode",
+            getter=self.get_explode,
+            setter=self.set_explode,
+            layout=layout
         )
-        self.startangle.button.setValue(self.get_startangle())
-        self.startangle.button.valueChanged.connect(self.set_startangle)
-        layout.addWidget(self.startangle)
 
-        self.radius = DoubleSpinBox(text="Radius",step=0.2)
-        self.radius.button.setValue(self.get_radius())
-        self.radius.button.valueChanged.connect(self.set_radius)
-        layout.addWidget(self.radius)
+        self.labels = LineEdit(
+            text="Labels",
+            getter=self.get_labels,
+            setter=self.set_labels,
+            layout=layout
+        )
 
-        self.counterclock = Toggle(text="Counterclock")
-        self.counterclock.button.setChecked(self.get_counterclock())
-        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        layout.addWidget(self.counterclock)
+        self.startangle = TransparentDoubleSpinBox(
+            min  = 0, max  = 360, step = 30,
+            text = "Start angle",
+            getter=self.get_startangle,
+            setter=self.set_startangle,
+            layout=layout
+        )
 
-        self.rotatelabels = Toggle(text="Rotate Labels")
-        self.rotatelabels.button.setChecked(self.get_rotatelabels())
-        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        layout.addWidget(self.rotatelabels)
+        self.radius = TransparentDoubleSpinBox(
+            text = "Radius",
+            step = 0.2,
+            getter=self.get_radius,
+            setter=self.set_radius,
+            layout=layout
+        )
+
+        self.counterclock = Toggle(
+            text="Counterclock",
+            getter=self.get_counterclock,
+            setter=self.set_counterclock,
+            layout=layout
+        )
+
+        self.rotatelabels = Toggle(
+            text="Rotate Labels",
+            getter=self.get_rotatelabels,
+            setter=self.set_rotatelabels,
+            layout=layout
+        )
 
         wedge = Wedge(self.gid, self.canvas)
         wedge.onChanged.connect(self.onChanged.emit)
@@ -220,58 +237,64 @@ class Doughnut (Pie):
         layout.addWidget(TitleLabel('Doughnut'))
         layout.addWidget(SeparateHLine())
 
-        self.wedgewidth = DoubleSpinBox(
-            min  = 0,
-            max  = 1, 
-            step = 0.1,
-            text = "Width"
+        self.wedgewidth = TransparentDoubleSpinBox(
+            min  = 0, max  = 1, step = 0.1,
+            text = "Width",
+            getter=self.get_wedgewidth,
+            setter=self.set_wedgewidth,
+            layout=layout
         )
-        self.wedgewidth.button.setValue(self.get_wedgewidth())
-        self.wedgewidth.button.valueChanged.connect(self.set_wedgewidth)
-        layout.addWidget(self.wedgewidth)
 
-        self.explode = LineEdit(text="Explode")
-        self.explode.button.setText(self.get_explode())
-        self.explode.button.textChanged.connect(self.set_explode)
-        layout.addWidget(self.explode)
-
-        self.labels = LineEdit(text="Labels")
-        self.labels.button.setText(self.get_labels())
-        self.labels.button.textChanged.connect(self.set_labels)
-        layout.addWidget(self.labels)
-
-        self.startangle = DoubleSpinBox(
-            min  = 0,
-            max  = 360, 
-            step = 30,
-            text = "Start angle"
+        self.explode = LineEdit(
+            text="Explode",
+            getter=self.get_explode,
+            setter=self.set_explode,
+            layout=layout
         )
-        self.startangle.button.setValue(self.get_startangle())
-        self.startangle.button.valueChanged.connect(self.set_startangle)
-        layout.addWidget(self.startangle)
 
-        self.radius = DoubleSpinBox(
+        self.labels = LineEdit(
+            text="Labels",
+            getter=self.get_labels,
+            setter=self.set_labels,
+            layout=layout
+        )
+
+        self.startangle = TransparentDoubleSpinBox(
+            min  = 0, max  = 360, step = 30,
+            text = "Start angle",
+            getter=self.get_startangle,
+            setter=self.set_startangle,
+            layout=layout
+        )
+
+        self.radius = TransparentDoubleSpinBox(
             text = "Radius",
-            step = 0.2
+            step = 0.2,
+            getter=self.get_radius,
+            setter=self.set_radius,
+            layout=layout
         )
-        self.radius.button.setValue(self.get_radius())
-        self.radius.button.valueChanged.connect(self.set_radius)
-        layout.addWidget(self.radius)
 
-        self.counterclock = Toggle(text="Counterclock")
-        self.counterclock.button.setChecked(self.get_counterclock())
-        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        layout.addWidget(self.counterclock)
+        self.counterclock = Toggle(
+            text="Counterclock",
+            getter=self.get_counterclock,
+            setter=self.set_counterclock,
+            layout=layout
+        )
 
-        self.rotatelabels = Toggle(text="Rotate Labels")
-        self.rotatelabels.button.setChecked(self.get_rotatelabels())
-        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        layout.addWidget(self.rotatelabels)
+        self.rotatelabels = Toggle(
+            text="Rotate Labels",
+            getter=self.get_rotatelabels,
+            setter=self.set_rotatelabels,
+            layout=layout
+        )
 
-        self.normalize = Toggle(text="Normalize")
-        self.normalize.button.setChecked(self.get_normalize())
-        self.normalize.button.checkedChanged.connect(self.set_normalize)
-        layout.addWidget(self.normalize)
+        self.normalize = Toggle(
+            text="Normalize",
+            getter=self.get_normalize,
+            setter=self.set_normalize,
+            layout=layout
+        )
 
         wedge = Wedge(self.gid, self.canvas)
         wedge.onChanged.connect(self.onChanged.emit)
@@ -298,43 +321,49 @@ class SemicircleDoughnut (Doughnut):
         layout.addWidget(TitleLabel('Semicircle Doughnut'))
         layout.addWidget(SeparateHLine())
 
-        self.explode = LineEdit(text="Explode")
-        self.explode.button.setText(self.get_explode())
-        self.explode.button.textChanged.connect(self.set_explode)
-        layout.addWidget(self.explode)
+        self.explode = LineEdit(
+            text="Explode",
+            getter=self.get_explode,
+            setter=self.set_explode,
+            layout=layout
+        )
 
-        self.labels = LineEdit(text="Labels")
-        self.labels.button.setText(self.get_labels())
-        self.labels.button.textChanged.connect(self.set_labels)
-        layout.addWidget(self.labels)
+        self.labels = LineEdit(
+            text="Labels",
+            getter=self.get_labels,
+            setter=self.set_labels,
+            layout=layout
+        )
 
-        self.radius = DoubleSpinBox(
+        self.radius = TransparentDoubleSpinBox(
             text = "Radius",
-            step = 0.2
+            step = 0.2,
+            getter=self.get_radius,
+            setter=self.set_radius,
+            layout=layout
         )
-        self.radius.button.setValue(self.get_radius())
-        self.radius.button.valueChanged.connect(self.set_radius)
-        layout.addWidget(self.radius)
 
-        self.startangle = DoubleSpinBox(
-            min  = 0,
-            max  = 360, 
-            step = 30,
-            text = "Start angle"
+        self.counterclock = Toggle(
+            text="Counterclock",
+            getter=self.get_counterclock,
+            setter=self.set_counterclock,
+            layout=layout
         )
-        self.startangle.button.setValue(self.get_startangle())
-        self.startangle.button.valueChanged.connect(self.set_startangle)
-        layout.addWidget(self.startangle)
 
-        self.counterclock = Toggle(text="Counterclock")
-        self.counterclock.button.setChecked(self.get_counterclock())
-        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        layout.addWidget(self.counterclock)
+        self.startangle = TransparentDoubleSpinBox(
+            min  = 0, max  = 360, step = 30,
+            text = "Start angle",
+            getter=self.get_startangle,
+            setter=self.set_startangle,
+            layout=layout
+        )
 
-        self.rotatelabels = Toggle(text="Rotate Labels")
-        self.rotatelabels.button.setChecked(self.get_rotatelabels())
-        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        layout.addWidget(self.rotatelabels)
+        self.rotatelabels = Toggle(
+            text="Rotate Labels",
+            getter=self.get_rotatelabels,
+            setter=self.set_rotatelabels,
+            layout=layout
+        )
 
         wedge = Wedge(self.gid, self.canvas)
         wedge.onChanged.connect(self.onChanged.emit)
@@ -351,68 +380,72 @@ class MultilevelDoughnut (Doughnut):
         layout.addWidget(TitleLabel('Multilevel Doughnut'))
         layout.addWidget(SeparateHLine())
 
-        self.wedgewidth = DoubleSpinBox(
-            min  = 0,
-            max  = 1, 
-            step = 0.1,
-            text = "Width"
+        self.wedgewidth = TransparentDoubleSpinBox(
+            min  = 0, max  = 1, step = 0.1,
+            text = "Width",
+            getter=self.get_wedgewidth,
+            setter=self.set_wedgewidth,
+            layout=layout
         )
-        self.wedgewidth.button.setValue(self.get_wedgewidth())
-        self.wedgewidth.button.valueChanged.connect(self.set_wedgewidth)
-        layout.addWidget(self.wedgewidth)
 
-        self.explode = LineEdit(text="Explode")
-        self.explode.button.setText(self.get_explode())
-        self.explode.button.textChanged.connect(self.set_explode)
-        layout.addWidget(self.explode)
-
-        self.labels = LineEdit(text="Labels")
-        self.labels.button.setText(self.get_labels())
-        self.labels.button.textChanged.connect(self.set_labels)
-        layout.addWidget(self.labels)
-
-        self.startangle = DoubleSpinBox(
-            min  = 0,
-            max  = 360, 
-            step = 30,
-            text = "Start angle"
+        self.explode = LineEdit(
+            text="Explode",
+            getter=self.get_explode,
+            setter=self.set_explode,
+            layout=layout
         )
-        self.startangle.button.setValue(self.get_startangle())
-        self.startangle.button.valueChanged.connect(self.set_startangle)
-        layout.addWidget(self.startangle)
 
-        self.radius = DoubleSpinBox(
+        self.labels = LineEdit(
+            text="Labels",
+            getter=self.get_labels,
+            setter=self.set_labels,
+            layout=layout
+        )
+
+        self.startangle = TransparentDoubleSpinBox(
+            min  = 0, max  = 360, step = 30,
+            text = "Start angle",
+            getter=self.get_startangle,
+            setter=self.set_startangle,
+            layout=layout
+        )
+
+        self.radius = TransparentDoubleSpinBox(
             text = "Radius",
-            step = 0.2
+            step = 0.2,
+            getter=self.get_radius,
+            setter=self.set_radius,
+            layout=layout
         )
-        self.radius.button.setValue(self.get_radius())
-        self.radius.button.valueChanged.connect(self.set_radius)
-        layout.addWidget(self.radius)
 
-        self.counterclock = Toggle(text="Counterclock")
-        self.counterclock.button.setChecked(self.get_counterclock())
-        self.counterclock.button.checkedChanged.connect(self.set_counterclock)
-        layout.addWidget(self.counterclock)
-
-        self.rotatelabels = Toggle(text="Rotate Labels")
-        self.rotatelabels.button.setChecked(self.get_rotatelabels())
-        self.rotatelabels.button.checkedChanged.connect(self.set_rotatelabels)
-        layout.addWidget(self.rotatelabels)
-
-        self.normalize = Toggle(text="Normalize")
-        self.normalize.button.setChecked(self.get_normalize())
-        self.normalize.button.checkedChanged.connect(self.set_normalize)
-        layout.addWidget(self.normalize)
-
-        self.pad = DoubleSpinBox(
-            min  = 0,
-            max  = 1,
-            step = 0.01,
-            text = "Padding"
+        self.counterclock = Toggle(
+            text="Counterclock",
+            getter=self.get_counterclock,
+            setter=self.set_counterclock,
+            layout=layout
         )
-        self.pad.button.setValue(self.get_pad())
-        self.pad.button.valueChanged.connect(self.set_pad)
-        layout.addWidget(self.pad)
+
+        self.rotatelabels = Toggle(
+            text="Rotate Labels",
+            getter=self.get_rotatelabels,
+            setter=self.set_rotatelabels,
+            layout=layout
+        )
+
+        self.normalize = Toggle(
+            text="Normalize",
+            getter=self.get_normalize,
+            setter=self.set_normalize,
+            layout=layout
+        )
+
+        self.pad = TransparentDoubleSpinBox(
+            min  = 0, max  = 1, step = 0.01,
+            text = "Padding",
+            getter=self.get_pad,
+            setter=self.set_pad,
+            layout=layout
+        )
         
         mw = MultiWedges(self.gid, self.canvas)
         mw.onChanged.connect(self.onChanged.emit)

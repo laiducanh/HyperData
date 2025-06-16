@@ -1,9 +1,9 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
+from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import TransparentComboBox
 from ui.base_widgets.line_edit import Completer, TextEdit, CompleterLineEdit
 
 DEBUG = False
@@ -19,7 +19,7 @@ class DataFilter (NodeContentWidget):
             )
     
     def config(self):
-        dialog = Dialog("Configuration", self.parent)
+        dialog = Dialog("Data Filter", self.parent)
 
         def func1():
             try:
@@ -29,14 +29,21 @@ class DataFilter (NodeContentWidget):
                     labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.index])) 
             except: pass
 
-        axis = ComboBox(items=["columns","index"], text="Filter by")
-        axis.button.setCurrentText(self._config["axis"])
-        axis.button.currentTextChanged.connect(func1)
-        dialog.main_layout.addWidget(axis)
+        axis = TransparentComboBox(
+            items=["columns","index"], 
+            text="Filter by",
+            setter=func1,
+            getter=lambda: self._config["axis"],
+            layout=dialog.main_layout
+        )
 
-        type = ComboBox(items=["items","contains","regular expression"], text="filter type")
-        type.button.setCurrentText(self._config["type"])
-        dialog.main_layout.addWidget(type)
+        type = TransparentComboBox(
+            items=["items","contains","regular expression"], 
+            text="filter type",
+            getter=lambda: self._config["type"],
+            setter=func2,
+            layout=dialog.main_layout
+        )
 
         def func2 ():
             if type.button.currentText().lower() == "items":
@@ -55,11 +62,11 @@ class DataFilter (NodeContentWidget):
         func1()
         dialog.main_layout.addWidget(labels)
 
-        apply = TextEdit(text="Keep labels")
-        apply.button.setText(",".join(self._config["apply"]))
-        dialog.main_layout.addWidget(apply)
-
-        
+        apply = TextEdit(
+            text="Keep labels",
+            getter=lambda: ",".join(self._config["apply"]),
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
             self._config["axis"] = axis.button.currentText()

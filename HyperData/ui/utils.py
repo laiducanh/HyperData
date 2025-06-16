@@ -5,8 +5,12 @@ import os, darkdetect, sys
 
 def icon(fileName:str) -> QIcon:
     if isDark():
-        return QIcon(os.path.join(get_path(),"ui","icons","white",fileName))
-    return QIcon(os.path.join(get_path(),"ui","icons","black",fileName))
+        _icon = QIcon(os.path.join(get_path(),"ui","icons","white",fileName))
+        _icon.path = fileName
+    else:
+        _icon = QIcon(os.path.join(get_path(),"ui","icons","black",fileName))
+        _icon.path = fileName
+    return _icon
 
 def isDark() -> bool:
     if config["theme"] == "Dark":

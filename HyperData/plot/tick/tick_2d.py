@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
-from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import DoubleSpinBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
+from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit
 from plot.utilis import find_mpl_object
@@ -8,13 +8,12 @@ from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
 from matplotlib import ticker, spines, lines, colors, rcParams
 from matplotlib.axis import Axis
-from typing import Union
 from plot.canvas import Canvas
 
 DEBUG = False
 
 class TickBase (QWidget):
-    def __init__(self, axis:str, canvas: Canvas, parent=None):
+    def __init__(self, axis:str, canvas:Canvas, parent=None):
         super().__init__(parent)
 
         self.axis = axis
@@ -29,39 +28,37 @@ class TickBase (QWidget):
 
         visible = Toggle(
             text  = "Visible",
-            text2 = f"Toggle {self.axis} ticks' visibility"
+            text2 = f"Toggle {self.axis} ticks' visibility",
+            setter=self.set_visible,
+            getter=self.get_visible,
+            layout=layout
         )
-        visible.button.checkedChanged.connect(self.set_visible)
-        visible.button.setChecked(self.get_visible())
-        layout.addWidget(visible)
 
         self.min = LineEdit(
             text  = "Min Value",
-            text2 = f"Set {self.axis} axis view minimum"
+            text2 = f"Set {self.axis} axis view minimum",
+            setter=self.set_min,
+            getter=self.get_min,
+            layout=layout
         )
-        self.min.button.setFixedWidth(150)
-        self.min.button.textChanged.connect(self.set_min)
-        self.min.button.setText(str(round(self.get_lim()[0],5)))
-        layout.addWidget(self.min)
 
         self.max = LineEdit(
             text  = 'Max Value',
-            text2 = f"Set {self.axis} axis view maximum"
+            text2 = f"Set {self.axis} axis view maximum",
+            setter=self.set_max,
+            getter=self.get_max,
+            layout=layout
         )
-        self.max.button.setFixedWidth(150)
-        self.max.button.textChanged.connect(self.set_max)
-        self.max.button.setText(str(round(self.get_lim()[1],5)))
-        layout.addWidget(self.max)
 
-        scale = ComboBox(
+        scale = TransparentComboBox(
             items = ['linear','log','symlog','logit','asinh'],
             text  = 'Scale',
-            text2 = f"Set {self.axis} axis' scale"
+            text2 = f"Set {self.axis} axis' scale",
+            setter=self.set_scale,
+            getter=self.get_scale,
+            layout=layout
         )
-        scale.button.currentTextChanged.connect(self.set_scale)
-        scale.button.setCurrentText(self.get_scale())
-        layout.addWidget(scale)
-
+        
     def find_obj(self) -> Axis:
         return find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)[0]
     
@@ -94,10 +91,13 @@ class TickBase (QWidget):
 
         self.canvas.draw_idle()
 
-    def get_lim(self):
-        
-        if self.axis in ['bottom','top']: return self.obj.axes.get_xlim()
-        else: return self.obj.axes.get_ylim()
+    def get_min(self):
+        if self.axis in ['bottom','top']: return str(round(self.obj.axes.get_xlim()[0],5))
+        else: return str(round(self.obj.axes.get_ylim()[0],5))
+
+    def get_max(self):
+        if self.axis in ['bottom','top']: return str(round(self.obj.axes.get_xlim()[1],5))
+        else: return str(round(self.obj.axes.get_ylim()[1],5))
     
     def set_scale (self, value:str):
         try:
@@ -121,91 +121,91 @@ class TickBase2 (TickBase):
 
         layout = QVBoxLayout(self)
 
-        self.tickinterval = ComboBox(
-            items = ['Tick Interval','Tick Values'],
-            text  = 'Type' 
+        self.tickinterval = TransparentComboBox(
+            items=['Tick Interval','Tick Values'],
+            text='Type',
+            setter=self.set_tickvalues,
+            layout=layout
         )
-        self.tickinterval.button.setCurrentText('Tick Interval')
-        self.tickinterval.button.currentTextChanged.connect(self.set_tickvalues)
-        layout.addWidget(self.tickinterval)
 
         self.value = LineEdit(
-            text = 'Tick values'
+            text='Tick values',
+            text2=f"Set {self.axis} axis' tick positions",
+            setter=self.set_tickvalues,
+            layout=layout
         )
-        self.value.button.textChanged.connect(self.set_tickvalues)
-        layout.addWidget(self.value)
 
         self.tick_label = LineEdit(
             text  = 'Tick labels',
-            text2 = f"Set {self.axis} axis' {self.ticktype} tick labels"
+            text2 = f"Set {self.axis} axis' {self.ticktype} tick labels",
+            setter=self.set_ticklabels,
+            PlaceholderText=self.get_ticklabels(),
+            layout=layout
         )
-        self.tick_label.button.textChanged.connect(self.set_ticklabels)
-        self.tick_label.button.setPlaceholderText(self.get_ticklabels())
-        layout.addWidget(self.tick_label)
 
-        tick_labelsize = DoubleSpinBox(
+        tick_labelsize = TransparentDoubleSpinBox(
             text  = 'Label size',
             text2 = f"Set {self.axis} axis' {self.ticktype} tick label size",
-            min = 1, max = 100, step = 1
+            min = 1, max = 100, step = 1,
+            setter=self.set_labelsize,
+            getter=self.get_labelsize,
+            layout=layout
         )
-        tick_labelsize.button.valueChanged.connect(self.set_labelsize)
-        tick_labelsize.button.setValue(self.get_labelsize())
-        layout.addWidget(tick_labelsize)
 
-        tick_direction = ComboBox(
+        tick_direction = TransparentComboBox(
             text  = 'Tick direction',
             text2 = f"Put {self.ticktype}ticks inside/outside {self.axis} axis, or both",
-            items = ['In','Out','InOut']
+            items = ['In','Out','InOut'],
+            setter=self.set_tickdir,
+            getter=self.get_tickdir,
+            layout=layout
         )
-        tick_direction.button.currentTextChanged.connect(self.set_tickdir)
-        tick_direction.button.setCurrentText(self.get_tickdir())
-        layout.addWidget(tick_direction)
 
         tick_labelcolor = ColorDropdown(
             text  = 'Label color', 
-            color = self.get_labelcolor()
+            setter=self.set_labelcolor,
+            getter=self.get_labelcolor,
+            layout=layout
         )
-        tick_labelcolor.button.colorChanged.connect(self.set_labelcolor)
-        layout.addWidget(tick_labelcolor)
 
         tickcolor = ColorDropdown(
             text  = 'Tick color', 
-            color = self.get_tickcolor()
+            getter=self.get_tickcolor,
+            setter=self.set_tickcolor,
+            layout=layout
         )
-        tickcolor.button.colorChanged.connect(self.set_tickcolor)
-        layout.addWidget(tickcolor)
 
-        tick_rotation = DoubleSpinBox(
+        tick_rotation = TransparentDoubleSpinBox(
             text = 'Tick label rotation',
-            min = -180, max = 180, step = 10
+            min = -180, max = 180, step = 10,
+            setter=self.set_labelrotation,
+            getter=self.get_labelrotation,
+            layout=layout
         )
-        tick_rotation.button.valueChanged.connect(self.set_labelrotation)
-        tick_rotation.button.setValue(self.get_labelrotation())
-        layout.addWidget(tick_rotation)
 
-        tick_labelpad = DoubleSpinBox(
+        tick_labelpad = TransparentDoubleSpinBox(
             text = 'Tick labelpad',
-            min = 0, max = 50, step = 0.5
+            min = 0, max = 50, step = 0.5,
+            setter=self.set_tickpadding,
+            getter=self.get_tickpadding,
+            layout=layout
         )
-        tick_labelpad.button.valueChanged.connect(self.set_tickpadding)
-        tick_labelpad.button.setValue(self.get_tickpadding())
-        layout.addWidget(tick_labelpad)
 
-        tick_length = DoubleSpinBox(
+        tick_length = TransparentDoubleSpinBox(
             text = 'Tick length',
-            min = 0, max = 50, step = 0.5
+            min = 0, max = 50, step = 0.5,
+            setter=self.set_ticklength,
+            getter=self.get_ticklength,
+            layout=layout
         )
-        tick_length.button.valueChanged.connect(self.set_ticklength)
-        tick_length.button.setValue(self.get_ticklength())
-        layout.addWidget(tick_length)
 
-        tick_width = DoubleSpinBox(
+        tick_width = TransparentDoubleSpinBox(
             text = 'Tick width',
-            min = 0, max = 50, step = 0.5
+            min = 0, max = 50, step = 0.5,
+            setter=self.set_tickwidth,
+            getter=self.get_tickwidth,
+            layout=layout
         )
-        tick_width.button.valueChanged.connect(self.set_tickwidth)
-        tick_width.button.setValue(self.get_tickwidth())
-        layout.addWidget(tick_width)
     
     def set_tickvalues (self, value:str):
         try:
@@ -336,52 +336,58 @@ class SpineBase (QWidget):
 
         layout = QVBoxLayout(self)
 
-        visible = Toggle(text='Spine visible')
-        visible.button.checkedChanged.connect(self.set_visible)
-        visible.button.setChecked(self.get_visible())
-        layout.addWidget(visible)
+        visible = Toggle(
+            text='Spine visible',
+            setter=self.set_visible,
+            getter=self.get_visible,
+            layout=layout
+        )
 
-        arrow = ComboBox(
+        arrow = TransparentComboBox(
             text  = 'Arrow Style',
-            items = marker_lib.values()
+            items = marker_lib.values(),
+            setter=self.set_arrow,
+            getter=self.get_arrow,
+            layout=layout
         )
-        arrow.button.setCurrentText(self.get_arrow())
-        arrow.button.currentTextChanged.connect(self.set_arrow)
-        layout.addWidget(arrow)
 
-        color = ColorDropdown(text='Spine color')
-        color.button.colorChanged.connect(self.set_color)
-        color.button.setColor(self.get_color())
-        layout.addWidget(color)
+        color = ColorDropdown(
+            text='Spine color',
+            setter=self.set_color,
+            getter=self.get_color,
+            layout=layout
+        )
+        
+        arrowcolor = ColorDropdown(
+            text="Arrow color",
+            setter=self.set_arrowcolor,
+            getter=self.get_arrowcolor,
+            layout=layout
+        )
 
-        arrowcolor = ColorDropdown(text="Arrow color")
-        arrowcolor.button.colorChanged.connect(self.set_arrowcolor)
-        arrowcolor.button.setColor(self.get_arrowcolor())
-        layout.addWidget(arrowcolor)
-
-        alpha = DoubleSpinBox(
+        alpha = TransparentDoubleSpinBox(
             text ='Transparent',
-            min = 0, max = 100, step = 10
+            min = 0, max = 100, step = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=layout
         )
-        alpha.button.valueChanged.connect(self.set_alpha)
-        alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
 
-        linestyle = ComboBox(
+        linestyle = TransparentComboBox(
             text  = 'Line style',
-            items = linestyle_lib.values()
+            items = linestyle_lib.values(),
+            setter=self.set_linestyle,
+            getter=self.get_linestyle,
+            layout=layout
         )
-        linestyle.button.currentTextChanged.connect(self.set_linestyle)
-        linestyle.button.setCurrentText(self.get_linestyle())
-        layout.addWidget(linestyle)
 
-        linewidth = DoubleSpinBox(
+        linewidth = TransparentDoubleSpinBox(
             text = 'Line width',
-            min = 0, max = 20, step = 0.5
+            min = 0, max = 20, step = 0.5,
+            setter=self.set_linewidth,
+            getter=self.get_linewidth,
+            layout=layout
         )
-        linewidth.button.valueChanged.connect(self.set_linewidth)
-        linewidth.button.setValue(self.get_linewidth())
-        layout.addWidget(linewidth)
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
         s = find_mpl_object(
@@ -473,62 +479,64 @@ class AxisLabel (QWidget):
 
         layout = QVBoxLayout(self)
 
-        label = LineEdit(text='Label')
+        label = LineEdit(
+            text='Label',
+            getter=self.get_label,
+            setter=self.set_label,
+            layout=layout
+        )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        label.button.setText(self.get_label())
-        label.button.textChanged.connect(self.set_label)
-        layout.addWidget(label)
 
-        font = ComboBox(
+        font = TransparentComboBox(
             items = font_lib,
-            text  = 'Font'
+            text  = 'Font',
+            setter=self.set_fontname,
+            getter=self.get_fontname,
+            layout=layout
         )
-        font.button.currentTextChanged.connect(self.set_fontname)
-        font.button.setCurrentText(self.get_fontname())
-        layout.addWidget(font)
 
-        size = DoubleSpinBox(
+        size = TransparentDoubleSpinBox(
             text = 'Font size',
-            min = 1, max = 100, step = 1
+            min = 1, max = 100, step = 1,
+            setter=self.set_fontsize,
+            getter=self.get_fontsize,
+            layout=layout
         )
-        size.button.valueChanged.connect(self.set_fontsize)
-        size.button.setValue(self.get_fontsize())
-        layout.addWidget(size)
 
         style = FontStyle(
             obj = [self.text], 
-            canvas = self.canvas
+            canvas = self.canvas,
+            layout=layout
         )
-        layout.addWidget(style)
 
         color = ColorDropdown(
             text  = 'Font color',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(color)
 
         self.backgroundcolor = ColorDropdown(
             text  = 'Background color',
-            color = self.get_backgroundcolor()
+            getter=self.get_backgroundcolor,
+            setter=self.set_backgroundcolor,
+            layout=layout
         )
-        self.backgroundcolor.button.colorChanged.connect(self.set_backgroundcolor)
-        layout.addWidget(self.backgroundcolor)
 
         edgecolor = ColorDropdown(
             text  = 'Edge color',
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(edgecolor)
 
-        alpha = DoubleSpinBox(
+        alpha = TransparentDoubleSpinBox(
             text = 'Transparency',
-            step = 10
+            step = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=layout
         )
-        alpha.button.valueChanged.connect(self.set_alpha)
-        alpha.button.setValue(self.get_alpha())
-        layout.addWidget(alpha)
     
     def find_axis(self) -> Axis:
         return find_mpl_object(self.canvas.fig,[Axis], self.axis)[0]

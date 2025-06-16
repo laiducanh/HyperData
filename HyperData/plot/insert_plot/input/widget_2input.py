@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
-from ui.base_widgets.button import _ToolButton
+from ui.base_widgets.button import _TransparentToolButton
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.line_edit import _LineEdit, _CompleterLineEdit
 from data_processing.data_window import DataSelection
@@ -22,7 +22,7 @@ class Widget2D_2input (QWidget):
         from plot.insert_plot.utilis import (icon_axisbot, icon_axisleft, 
                                              icon_axisright, icon_axistop, icon_open)
 
-        self.choose_axis1 = _ToolButton()
+        self.choose_axis1 = _TransparentToolButton()
         self.choose_axis1.setIcon(icon_axisbot)
         self.x_axis = Menu(parent=self)
         self.axis_bottom = Action(icon=icon_axisbot,text='Bottom Axis', parent=self)
@@ -36,11 +36,11 @@ class Widget2D_2input (QWidget):
         self.input1 = _CompleterLineEdit()
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input_func)
-        self.choose_data_1 = _ToolButton()
+        self.choose_data_1 = _TransparentToolButton()
         self.choose_data_1.setIcon(icon_open)
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
         
-        self.choose_axis2 = _ToolButton()
+        self.choose_axis2 = _TransparentToolButton()
         self.choose_axis2.setIcon(icon_axisleft)
         self.y_axis = Menu(parent=self)
         self.axis_left = Action(icon=icon_axisleft,text='Left Axis', parent=self)
@@ -53,7 +53,7 @@ class Widget2D_2input (QWidget):
         self.input2 = _CompleterLineEdit()
         self.input2.setCurrentText(self.input[1])
         self.input2.lineedit.returnPressed.connect(self.input_func)
-        self.choose_data_2 = _ToolButton()
+        self.choose_data_2 = _TransparentToolButton()
         self.choose_data_2.setIcon(icon_open)
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
 

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import TransparentSpinBox
 from ui.base_widgets.button import Toggle
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
@@ -27,15 +27,13 @@ class Scatter (PlotConfigBase):
         layout.addWidget(TitleLabel('Scatter'))
         layout.addWidget(SeparateHLine())
 
-        self.sizes = SpinBox(
-            min  = 1,
-            max  = 1000,
-            step = 2,
-            text = "sizes"
+        self.sizes = TransparentSpinBox(
+            min  = 1, max  = 1000, step = 2,
+            text = "sizes",
+            getter=self.get_sizes,
+            setter=self.set_sizes,
+            layout=layout
         )
-        self.sizes.button.setValue(self.get_sizes())
-        self.sizes.button.valueChanged.connect(self.set_sizes)
-        layout.addWidget(self.sizes)
 
         collection = CmapCollection(self.gid, self.canvas)
         collection.onChanged.connect(self.onChanged.emit)
@@ -72,20 +70,23 @@ class Scatter3D (Scatter):
         layout.addWidget(TitleLabel('3D Scatter'))
         layout.addWidget(SeparateHLine())
 
-        self.depthshade = Toggle(text="Depth Shade")
+        self.depthshade = Toggle(
+            text="Depth Shade",
+            getter=self.get_depthshade,
+            setter=self.set_depthshade,
+            layout=layout
+        )
         self.depthshade.button.setChecked(self.get_depthshade())
         self.depthshade.button.checkedChanged.connect(self.set_depthshade)
         layout.addWidget(self.depthshade)
 
-        self.sizes = SpinBox(
-            min  = 1,
-            max  = 1000,
-            step = 2,
-            text = "sizes"
+        self.sizes = TransparentSpinBox(
+            min  = 1, max = 1000, step = 2,
+            text = "sizes",
+            getter=self.get_sizes,
+            setter=self.set_sizes,
+            layout=layout
         )
-        self.sizes.button.setValue(self.get_sizes())
-        self.sizes.button.valueChanged.connect(self.set_sizes)
-        layout.addWidget(self.sizes)
 
         collection = CmapCollection(self.gid, self.canvas)
         collection.onChanged.connect(self.onChanged.emit)

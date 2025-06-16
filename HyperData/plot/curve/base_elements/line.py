@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib, marker_lib
@@ -21,70 +21,70 @@ class Line (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         
-        self.linestyle = ComboBox(
+        self.linestyle = TransparentComboBox(
             text  = 'Line Style',
-            items = linestyle_lib.values()
+            items = linestyle_lib.values(),
+            getter=self.get_linestyle,
+            setter=self.set_linestyle,
+            layout=layout
         )
-        self.linestyle.button.setCurrentText(self.get_linestyle())
-        self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
-        layout.addWidget(self.linestyle)
 
-        self.solid_capstyle = ComboBox(
+        self.solid_capstyle = TransparentComboBox(
             text  = "Solid Capstyle", 
-            items = ['butt', 'projecting', 'round']
+            items = ['butt', 'projecting', 'round'],
+            setter=self.set_solid_capstyle,
+            getter=self.get_solid_capstyle,
+            layout=layout
         )
-        self.solid_capstyle.button.setCurrentText(self.get_solid_capstyle())
-        self.solid_capstyle.button.currentTextChanged.connect(self.set_solid_capstyle)
-        layout.addWidget(self.solid_capstyle)
-
-        self.solid_joinstyle = ComboBox(
+        
+        self.solid_joinstyle = TransparentComboBox(
             text  = "Solid Joinstyle", 
-            items = ['miter', 'round', 'bevel']
+            items = ['miter', 'round', 'bevel'],
+            setter=self.set_solid_joinstyle,
+            getter=self.get_solid_joinstyle,
+            layout=layout
         )
-        self.solid_joinstyle.button.setCurrentText(self.get_solid_joinstyle())
-        self.solid_joinstyle.button.currentTextChanged.connect(self.set_solid_joinstyle)
-        layout.addWidget(self.solid_joinstyle)
 
-        self.dash_capstyle = ComboBox(
+        self.dash_capstyle = TransparentComboBox(
             text  = "Dash Capstyle", 
-            items = ['butt', 'projecting', 'round']
+            items = ['butt', 'projecting', 'round'],
+            getter=self.get_dash_capstyle,
+            setter=self.set_dash_capstyle,
+            layout=layout
         )
-        self.dash_capstyle.button.setCurrentText(self.get_dash_capstyle())
-        self.dash_capstyle.button.currentTextChanged.connect(self.set_dash_capstyle)
         self.dash_capstyle.hide()
-        layout.addWidget(self.dash_capstyle)
 
-        self.dash_joinstyle = ComboBox(
+        self.dash_joinstyle = TransparentComboBox(
             text  = "Dash Joinstyle", 
-            items = ['miter', 'round', 'bevel']
+            items = ['miter', 'round', 'bevel'],
+            getter=self.get_dash_joinstyle,
+            setter=self.set_dash_joinstyle,
+            layout=layout
         )
-        self.dash_joinstyle.button.setCurrentText(self.get_dash_joinstyle())
-        self.dash_joinstyle.button.currentTextChanged.connect(self.set_dash_joinstyle)
         self.dash_joinstyle.hide()
-        layout.addWidget(self.dash_joinstyle)
 
-        self.linewidth = DoubleSpinBox(
+        self.linewidth = TransparentDoubleSpinBox(
             text = 'Line Width',
-            min = 0, max = 10, step = 0.5
+            min = 0, max = 10, step = 0.5,
+            getter=self.get_linewidth,
+            setter=self.set_linewidth,
+            layout=layout
         )
-        self.linewidth.button.setValue(self.get_linewidth())
-        self.linewidth.button.valueChanged.connect(self.set_linewidth)
-        layout.addWidget(self.linewidth)
 
         self.color = ColorDropdown(
             text  = 'Line Color',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.color)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min = 0, max = 100, step = 10
+            min = 0, max = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
 
     def find_object(self) -> list[lines.Line2D]:
         return find_mpl_object(
@@ -215,45 +215,43 @@ class Marker(ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.marker = ComboBox(
+        self.marker = TransparentComboBox(
             text  = 'Marker Style',
-            items = marker_lib.values()
+            items = marker_lib.values(),
+            getter=self.get_marker,
+            setter=self.set_marker,
+            layout=layout
         )
-        self.marker.button.setCurrentText(self.get_marker())
-        self.marker.button.currentTextChanged.connect(self.set_marker)
-        layout.addWidget(self.marker)
 
-        self.markersize = DoubleSpinBox(
+        self.markersize = TransparentDoubleSpinBox(
             text = 'Marker Size',
-            min = 0, step = 2
+            min = 0, step = 2,
+            getter=self.get_markersize,
+            setter=self.set_markersize,
+            layout=layout
         )
-        self.markersize.button.setValue(self.get_markersize())
-        self.markersize.button.valueChanged.connect(self.set_markersize)
-        layout.addWidget(self.markersize)
 
-        self.markeredgewidth = DoubleSpinBox(
+        self.markeredgewidth = TransparentDoubleSpinBox(
             text = 'Marker Edge Width',
-            min = 0, max = 5, step = 0.5
+            min = 0, max = 5, step = 0.5,
+            getter=self.get_markeredgewidth,
+            setter=self.set_markeredgewidth,
+            layout=layout
         )
-        self.markeredgewidth.button.setValue(self.get_markeredgewidth())
-        self.markeredgewidth.button.valueChanged.connect(self.set_markeredgewidth)
-        layout.addWidget(self.markeredgewidth)
 
         self.markerfacecolor = ColorDropdown(
             text  = 'Marker Face Color',
-            color = self.get_markerfacecolor()
+            getter=self.get_markerfacecolor,
+            setter=self.set_markerfacecolor,
+            layout=layout
         )
-        self.markerfacecolor.button.setColor(self.get_markerfacecolor())
-        self.markerfacecolor.button.colorChanged.connect(self.set_markerfacecolor)
-        layout.addWidget(self.markerfacecolor)
 
         self.markeredgecolor = ColorDropdown(
             text  = 'Marker Edge Color',
-            color = self.get_markeredgecolor()
+            getter=self.get_markeredgecolor,
+            setter=self.set_markeredgecolor,
+            layout=layout
         )
-        self.markeredgecolor.button.setColor(self.get_markeredgecolor())
-        self.markeredgecolor.button.colorChanged.connect(self.set_markeredgecolor)
-        layout.addWidget(self.markeredgecolor)
 
     def find_object (self) -> list[lines.Line2D]:
         return find_mpl_object(
@@ -337,34 +335,35 @@ class LineCollection (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.visible = Toggle(text="Visible")
-        self.visible.button.setChecked(self.get_visible())
-        self.visible.button.checkedChanged.connect(self.set_visible)
-        layout.addWidget(self.visible)
-
-        self.linewidth = DoubleSpinBox(
-            text = 'Line Width',
-            min = 0, max = 10, step = 0.5
+        self.visible = Toggle(
+            text="Visible",
+            getter=self.get_visible,
+            setter=self.set_visible,
+            layout=layout
         )
-        self.linewidth.button.setValue(self.get_linewidth())
-        self.linewidth.button.valueChanged.connect(self.set_linewidth)
-        layout.addWidget(self.linewidth)
+
+        self.linewidth = TransparentDoubleSpinBox(
+            text = 'Line Width',
+            min = 0, max = 10, step = 0.5,
+            getter=self.get_linewidth,
+            setter=self.set_linewidth,
+            layout=layout
+        )
 
         self.color = ColorDropdown(
             text  = 'Line Color',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.color.button.setColor(self.get_color())
-        self.color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.color)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min = 0, max = 100, step = 10
+            min = 0, max = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
         
     def find_object(self) -> list[collections.LineCollection]:
         return find_mpl_object(

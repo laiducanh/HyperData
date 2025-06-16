@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout
 from plot.curve.base_elements import line
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.frame import SeparateHLine
 from matplotlib.collections import Collection
@@ -44,10 +44,13 @@ class Step (PlotConfigBase):
         layout.addWidget(TitleLabel('Step'))
         layout.addWidget(SeparateHLine())
 
-        self.where = ComboBox(items=['pre', 'post', 'mid'], text="Where")
-        self.where.button.setCurrentText(self.get_where())
-        self.where.button.currentTextChanged.connect(self.set_where)
-        layout.addWidget(self.where)
+        self.where = TransparentComboBox(
+            items=['pre', 'post', 'mid'], 
+            text="Where",
+            getter=self.get_where,
+            setter=self.set_where,
+            layout=layout
+        )
 
         layout.addWidget(TitleLabel('Line 2D'))
         layout.addWidget(SeparateHLine())
@@ -92,18 +95,20 @@ class Stem (PlotConfigBase):
         layout.addWidget(TitleLabel('Stemline'))
         layout.addWidget(SeparateHLine())
 
-        self.orientation = ComboBox(
+        self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation"
+            text  = "Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
         )
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
 
-        self.bottom = DoubleSpinBox(text="Bottom")
-        self.bottom.button.setValue(self.get_bottom())
-        self.bottom.button.valueChanged.connect(self.set_bottom)
-        layout.addWidget(self.bottom)
+        self.bottom = TransparentDoubleSpinBox(
+            text="Bottom",
+            getter=self.get_bottom,
+            setter=self.set_bottom,
+            layout=layout
+        )
 
         self.stemline = line.LineCollection(f"{self.gid}/stemlines", self.canvas)
         self.stemline.onChanged.connect(self.onChanged.emit)
@@ -173,15 +178,21 @@ class Area (PlotConfigBase):
         layout.addWidget(TitleLabel('Area'))
         layout.addWidget(SeparateHLine())
 
-        self.step = ComboBox(text='Step',items=['pre','post','mid','none'])
-        self.step.button.setCurrentText(self.get_step())
-        self.step.button.currentTextChanged.connect(self.set_step)
-        layout.addWidget(self.step)
+        self.step = TransparentComboBox(
+            text='Step',
+            items=['pre','post','mid','none'],
+            getter=self.get_step,
+            setter=self.set_step,
+            layout=layout
+        )
 
-        self.orientation = ComboBox(items=["vertical","horizontal"],text="Orientation")
-        self.orientation.button.setCurrentText(self.get_orientation())
-        self.orientation.button.currentTextChanged.connect(self.set_orientation)
-        layout.addWidget(self.orientation)
+        self.orientation = TransparentComboBox(
+            items=["vertical","horizontal"],
+            text="Orientation",
+            getter=self.get_orientation,
+            setter=self.set_orientation,
+            layout=layout
+        )
 
         collection = SingleColorCollection(self.gid, self.canvas)
         collection.onChanged.connect(collection.onChanged.emit)
@@ -229,21 +240,21 @@ class StackedArea (PlotConfigBase):
         layout.addWidget(TitleLabel('Stacked Area'))
         layout.addWidget(SeparateHLine())
 
-        self.baseline = ComboBox(
+        self.baseline = TransparentComboBox(
             text  = 'Baseline',
-            items = ['zero','sym','wiggle','weighted_wiggle']
+            items = ['zero','sym','wiggle','weighted_wiggle'],
+            setter=self.set_baseline,
+            getter=self.get_baseline,
+            layout=layout
         )
-        self.baseline.button.setCurrentText(self.get_baseline())
-        self.baseline.button.currentTextChanged.connect(self.set_baseline)
-        layout.addWidget(self.baseline)
 
-        self.step = ComboBox(
+        self.step = TransparentComboBox(
             text  = 'Step',
-            items = ['pre','post','mid','none']
+            items = ['pre','post','mid','none'],
+            getter=self.get_step,
+            setter=self.set_step,
+            layout=layout
         )
-        self.step.button.setCurrentText(self.get_step())
-        self.step.button.currentTextChanged.connect(self.set_step)
-        layout.addWidget(self.step)
 
         collection = SingleColorCollection(self.gid, self.canvas)
         collection.onChanged.connect(collection.onChanged.emit)

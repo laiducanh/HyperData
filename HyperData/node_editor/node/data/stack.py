@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import compress
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import TransparentComboBox
 from ui.base_widgets.window import Dialog
 
 DEBUG = False
@@ -21,10 +21,13 @@ class DataStack (NodeContentWidget):
     
     def config(self):
         data = self.node.input_sockets[0].socket_data
-        dialog = Dialog(title="configuration", parent=self.parent)
-        level = ComboBox(items=[str(i) for i in range(-1,data.columns.nlevels)], text="Level")
-        level.button.setCurrentText(str(self._config["level"]))
-        dialog.main_layout.addWidget(level)
+        dialog = Dialog(title="Stack Data", parent=self.parent)
+        level = TransparentComboBox(
+            items=[str(i) for i in range(-1,data.columns.nlevels)], 
+            text="Level",
+            getter=lambda: str(self._config["level"]),
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
             self._config.update(level = int(level.button.currentText()))
@@ -77,10 +80,13 @@ class DataUnstack (NodeContentWidget):
     
     def config(self):
         data = self.node.input_sockets[0].socket_data
-        dialog = Dialog(title="configuration", parent=self.parent)
-        level = ComboBox(items=[str(i) for i in range(-1,data.index.nlevels)], text="Level")
-        level.button.setCurrentText(str(self._config["level"]))
-        dialog.main_layout.addWidget(level)
+        dialog = Dialog(title="Unstack Data", parent=self.parent)
+        level = TransparentComboBox(
+            items=[str(i) for i in range(-1,data.index.nlevels)], 
+            text="Level",
+            getter=lambda: str(self._config["level"]),
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
             self._config.update(level = int(level.button.currentText()))

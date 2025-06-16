@@ -1,6 +1,5 @@
 import os
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, 
-                             QGridLayout)
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, QLayout, QGridLayout)
 from PySide6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
 from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize, QPoint
 from PySide6.QtSvg import QSvgRenderer
@@ -9,6 +8,7 @@ from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine
 from ui.utils import get_path
+from typing import Callable
 
 PALETTES = {
     # Matplotlib default
@@ -162,19 +162,22 @@ class PaletteMenu (Menu):
 
 class ColorPickerButton (_PushButton):
     colorChanged = Signal(str)
-    def __init__(self, color: QColor, parent=None):
+    def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent)
         self.setFixedSize(96, 32)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.isHover = False
 
-        if color: self.setColor(color)
+        if getter: self.setColor(getter())
         else: self.setColor("black")
 
         self._menu = PaletteMenu(colors='basic colors',parent=self)
         self._menu._palette.selected.connect(self.__onColorChanged)
         self._menu._palette.sig_openDialog.connect(self.__showColorDialog)
         self.setMenu(self._menu)
+
+        if setter: self.colorChanged.connect(setter)
+        if layout: layout.addWidget(self)
 
     def __showColorDialog(self):
         """ show color dialog """
@@ -235,13 +238,14 @@ class ColorPickerButton (_PushButton):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
         rect = QRectF(self.width()-22, self.height() /
                       2-5, 10, 10)
-        self._drawDropDownIcon(painter, rect)          
+        self._drawDropDownIcon(painter, rect)     
 
 class ColorDropdown (HButton):
-    def __init__(self, text:str=None, text2:str=None, color=None,parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, getter:Callable=None, setter:Callable=None,
+                 layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
-        self.button = ColorPickerButton(color, parent=parent)
+        self.button = ColorPickerButton(setter=setter, getter=getter, parent=parent)
         self.butn_layout.addWidget(self.button)
 
         

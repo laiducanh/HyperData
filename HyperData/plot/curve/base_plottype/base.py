@@ -2,7 +2,6 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from ui.base_widgets.list import TreeWidget
 
 class PlotConfigBase (QWidget):
     onChanged = Signal()

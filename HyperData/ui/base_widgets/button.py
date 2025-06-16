@@ -1,15 +1,15 @@
 from PySide6.QtCore import QObject, Qt, Signal, QEvent, QPoint, QRectF
-from PySide6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, 
-                             QSizePolicy, QGridLayout, QToolButton, QScrollArea, QVBoxLayout)
+from PySide6.QtWidgets import (QHBoxLayout, QMenu, QWidget, QComboBox, QPushButton, QFrame, QSizePolicy,
+                             QSizePolicy, QGridLayout, QToolButton, QScrollArea, QVBoxLayout, QLayout)
 from PySide6.QtGui import QCursor, QPainter, QColor, QIcon
 from PySide6.QtSvg import QSvgRenderer
 from typing import Iterable, Union
-from ui.base_widgets.text import BodyLabel, InfoLabel
+from ui.base_widgets.text import BodyLabel, InfoLabel, TitleLabel
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.utils import icon as Icon
 from config.settings import config
-import os
+from typing import Callable, Union
 
 class _PushButton (QPushButton):
     def __init__(self, parent=None, *args, **kwargs):
@@ -18,9 +18,13 @@ class _PushButton (QPushButton):
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.icon_path = None
     
-    def setIcon(self, icon_path: str) -> None:
-        self.icon_path = icon_path
-        super().setIcon(Icon(self.icon_path))
+    def setIcon(self, icon: Union[str, QIcon]) -> None:
+        if isinstance(icon, str):
+            self.icon_path = icon
+            super().setIcon(Icon(self.icon_path))
+        elif isinstance(icon, QIcon):
+            self.icon_path = icon.path
+            super().setIcon(icon)
             
     def update(self):
         if self.icon_path: super().setIcon(Icon(self.icon_path))
@@ -67,13 +71,6 @@ class _TogglePushButton (_PushButton):
         super().__init__(parent, *args, **kwargs)
 
         self.setCheckable(True)
-        self.textOn = "Enable"
-        self.textOff = "Disable"
-
-    def paintEvent(self, a0):
-        if self.isChecked(): self.setText(self.textOn)
-        else: self.setText(self.textOff)
-        return super().paintEvent(a0)
 
 class _CheckBox(_TransparentPushButton):
     """ checkable button, the same as _TogglePushButton,
@@ -84,12 +81,18 @@ class _CheckBox(_TransparentPushButton):
         self.setCheckable(True)
     
 class _ToolButton (QToolButton):
-    def __init__(self, parent=None, *args, **kwargs):
+    def __init__(self, icon:Union[str, QIcon]=None, setter:Callable=None, getter:Callable=None,
+                 layout:QLayout=None, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
         self.icon_path = None
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+    
+        if layout: layout.addWidget(self)
+        if setter: self.clicked.connect(setter)
+        if getter: self.setChecked(getter())
+        if icon: self.setIcon(icon)
     
     def setMenu(self, menu: QMenu) -> None:
         self.setProperty("hasMenu", True)
@@ -100,9 +103,13 @@ class _ToolButton (QToolButton):
     #     self.pressed.emit()
     #     self.clicked.emit()
 
-    def setIcon(self, icon_path: str) -> None:
-        self.icon_path = icon_path
-        super().setIcon(Icon(self.icon_path))
+    def setIcon(self, icon: Union[str, QIcon]) -> None:
+        if isinstance(icon, str):
+            self.icon_path = icon
+            super().setIcon(Icon(self.icon_path))
+        elif isinstance(icon, QIcon):
+            self.icon_path = icon.path
+            super().setIcon(icon)
     
     def update(self):
         if self.icon_path: super().setIcon(Icon(self.icon_path))
@@ -116,13 +123,15 @@ class _PrimaryToolButton (_ToolButton):
 
 class _ToggleToolButton (_ToolButton):
     """ checkable ToolButton """
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+    def __init__(self, icon:Union[str, QIcon]=None, setter:Callable=None, getter:Callable=None,
+                 layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(icon=icon, setter=setter, getter=getter, layout=layout, parent=parent, *args, **kwargs)
 
         self.setCheckable(True)
 
 class _ComboBox (QComboBox):
-    def __init__(self, items:Iterable[str]=None, parent=None, *args, **kwargs):
+    def __init__(self, items:Iterable[str]=None, getter:Callable=None, setter:Callable=None, 
+                 layout:QLayout=None, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
         # Cursor
@@ -138,6 +147,9 @@ class _ComboBox (QComboBox):
         self.view().window().setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         if items: self.addItems(items)
+        if getter: self.setCurrentText(getter())
+        if setter: self.currentTextChanged.connect(setter)
+        if layout: layout.addWidget(self)
 
 class _TransparentComboBox (_ComboBox):
     """ """
@@ -146,19 +158,23 @@ class _PrimaryComboBox (_ComboBox):
     """ """
 
 class _Toggle(QFrame):
-
     checkedChanged = Signal(bool)
-
-    def __init__(self, width = 60, height = 40, parent=None):
+    def __init__(self, setter:Callable=None, getter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent)
-        self.width = width
-        self.height = height
+
+        self.width = 60
+        self.height = 40
         if self.width < self.height * 2 - 20:
             self.width = self.height * 2 - 20
         self.setFixedSize(self.width, self.height)
         self.toggle_on = False
+
         self.initUI()
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        if setter: self.checkedChanged.connect(setter)
+        if getter: self.setChecked(getter())
+        if layout: layout.addWidget(self)
 
     def initUI(self):
         
@@ -221,8 +237,49 @@ class _Toggle(QFrame):
     def isChecked(self):
         return self.toggle_on
 
-class HButton(Frame): 
-    """" Button Widget in horizontal layout """
+class _RadioButton (QFrame):
+    checkChanged = Signal()
+    def __init__(self, items:dict=dict(), parent=None):
+        super().__init__(parent=parent)
+    
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(30, 2, 0, 2)
+
+        self.buttons = list()
+        for key in items:
+            btn = _TogglePushButton(parent)
+            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            main_label = BodyLabel(key)
+            sub_label = InfoLabel(items[key])
+            sub_label.setWordWrap(True)
+
+            inner_layout = QVBoxLayout()
+            inner_layout.setContentsMargins(5, 5, 5, 5)
+            inner_layout.addWidget(main_label)
+            inner_layout.addWidget(sub_label)
+
+            btn.setLayout(inner_layout)
+            btn.setObjectName(key)
+            
+            layout.addWidget(btn)
+            btn.pressed.connect(lambda key=key: self.setCurrentWidget(key))
+            self.buttons.append(key)
+        
+        self.setCurrentWidget(self.buttons[0])
+        self.currentWidget.setChecked(True)
+
+    def setCurrentWidget (self, button_text:str):
+        for btn in self.findChildren(_TogglePushButton):
+            btn : _TogglePushButton
+            if btn.objectName() == button_text: 
+                self.currentWidget = btn
+            else: btn.setChecked(False)
+            self.checkChanged.emit()
+            self.update()
+
+
+class VButton(Frame):
+    """" Button Widget in vertical layout """
     def __init__(self, text:str=None, text2:str=None, 
                  parent:QWidget=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -233,9 +290,9 @@ class HButton(Frame):
         self.label  = BodyLabel(text, parent)
         self.label2 = InfoLabel(text2, parent)
         self.label2.setWordWrap(True)
-        self.label2.hide()
+        if not text2: self.label2.hide()
 
-        layout = QHBoxLayout(self)
+        layout = QVBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
 
         self.text_layout = QVBoxLayout()
@@ -245,6 +302,41 @@ class HButton(Frame):
 
         self.butn_layout = QVBoxLayout()
         layout.addLayout(self.butn_layout)
+
+    def setText(self, value:str):
+        self.label.setText(value)
+        self.text = value
+    
+    def setText2(self, value:str):
+        self.label2.setText(value)
+        self.text2 = value
+    
+class HButton(Frame): 
+    """" Button Widget in horizontal layout """
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None,
+                 parent:QWidget=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+
+        self.text = text
+        self.text2 = text2
+
+        self.label  = BodyLabel(text, parent)
+        self.label2 = InfoLabel(text2, parent)
+        self.label2.setWordWrap(True)
+        if not text2: self.label2.hide()
+
+        hlayout = QHBoxLayout(self)
+        #layout.setContentsMargins(0,0,0,0)
+
+        self.text_layout = QVBoxLayout()
+        hlayout.addLayout(self.text_layout)
+        self.text_layout.addWidget(self.label)
+        self.text_layout.addWidget(self.label2)
+
+        self.butn_layout = QVBoxLayout()
+        hlayout.addLayout(self.butn_layout)
+
+        if layout: layout.addWidget(self)
 
     def setText(self, value:str):
         self.label.setText(value)
@@ -334,40 +426,51 @@ class PrimaryToolButton (HButton):
 
 class ToggleToolButton (HButton):
     def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+        super().__init__(text=text, text2=text2, parent=parent)
 
         self.button = _ToggleToolButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class ComboBox (HButton):
-    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, 
+                 getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
-        self.button = _ComboBox(items, parent=parent)
+        self.button = _ComboBox(items=items, getter=getter, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)
         self.button.setFixedWidth(150)
 
 class TransparentComboBox (HButton):
-    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None,  
+                 getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
         
-        self.button = _TransparentComboBox(items, parent=parent)
+        self.button = _TransparentComboBox(items=items, getter=getter, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)
         self.button.setFixedWidth(150)
 
 class PrimaryComboBox (HButton):
-    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, items:Iterable[str]=None, text:str=None, text2:str=None, 
+                 setter:Callable=None, getter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
-        self.button = _PrimaryComboBox(items, parent=parent)
+        self.button = _PrimaryComboBox(items=items, getter=getter, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)
         self.button.setFixedWidth(150)
     
 class Toggle (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, setter:Callable=None, 
+                 getter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(text, text2, layout, parent=parent)
         
-        self.button = _Toggle(parent=parent)
+        self.button = _Toggle(setter=setter, getter=getter, parent=parent)
+        self.butn_layout.addWidget(self.button)
+
+class RadioButton (VButton):
+    def __init__(self, text = None, text2 = None, items = dict(), parent = None, *args, **kwargs):
+        super().__init__(text, text2, parent, *args, **kwargs)
+
+        self.button = _RadioButton(items, parent)
         self.butn_layout.addWidget(self.button)
 
 class SegmentedWidget (QWidget):

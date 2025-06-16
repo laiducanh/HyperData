@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
@@ -22,47 +22,43 @@ class Rectangle (ArtistConfigBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
 
-        self.edgewidth = DoubleSpinBox(
+        self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
-            min  = 0, 
-            max  = 5, 
-            step = 0.5
+            min  = 0, max  = 5, step = 0.5,
+            getter=self.get_edgewidth,
+            setter=self.set_edgewidth,
+            layout=layout
         )
-        self.edgewidth.button.setValue(self.get_edgewidth())
-        self.edgewidth.button.valueChanged.connect(self.set_edgewidth)
-        layout.addWidget(self.edgewidth)
 
-        self.edgestyle = ComboBox(
+        self.edgestyle = TransparentComboBox(
             text  = 'Edge Style',
-            items = linestyle_lib.values()
+            items = linestyle_lib.values(),
+            getter=self.get_edgestyle,
+            setter=self.set_edgestyle,
+            layout=layout
         )
-        self.edgestyle.button.setCurrentText(self.get_edgestyle())
-        self.edgestyle.button.currentTextChanged.connect(self.set_edgestyle)
-        layout.addWidget(self.edgestyle)
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
-            color = self.get_facecolor()
+            getter=self.get_facecolor,
+            setter=self.set_facecolor,
+            layout=layout
         )
-        self.facecolor.button.colorChanged.connect(self.set_facecolor)
-        layout.addWidget(self.facecolor)
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
-            color = self.get_edgecolor()
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=layout
         )
-        self.edgecolor.button.colorChanged.connect(self.set_edgecolor)
-        layout.addWidget(self.edgecolor)
 
-        self.alpha = SpinBox(
+        self.alpha = TransparentSpinBox(
             text = 'Transparency',
-            min  = 0, 
-            max  = 100, 
-            step = 10
+            min  = 0, max  = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=layout
         )
-        self.alpha.button.setValue(self.get_alpha())
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        layout.addWidget(self.alpha)
 
     def find_object (self) -> list[patches.Patch]:
         return find_mpl_object(

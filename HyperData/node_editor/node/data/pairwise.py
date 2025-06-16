@@ -1,12 +1,10 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, Toggle, PrimaryComboBox
+from config.settings import logger, GLOBAL_DEBUG
+from ui.base_widgets.button import TransparentComboBox, Toggle, PrimaryComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import DoubleSpinBox
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QStackedLayout
 from PySide6.QtCore import Qt
 from sklearn.metrics import pairwise
@@ -57,14 +55,16 @@ class PairwiseDistances(MethodBase):
         else: self._config = config
         self.method = pairwise.pairwise_distances
 
-        self.metric_ = ComboBox(items=["cityblock","cosine","euclidean","l1","l2","manhattan",
-                                      "braycurtis","canberra","chebyshev","correlation","dice",
-                                      "hamming","jaccard","kulsinski","mahalanobis","rogerstanimoto",
-                                      "russellrao","seuclidean","sokalmichener","sokalsneath","sqeuclidean",
-                                      "yule"], text="Metric")
-        self.metric_.button.setCurrentText(self._config["metric"])
-        self.metric_.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.metric_)
+        self.metric_ = TransparentComboBox(
+            items=["cityblock","cosine","euclidean","l1","l2","manhattan","braycurtis",
+                   "canberra","chebyshev","correlation","dice","hamming","jaccard",
+                   "kulsinski","mahalanobis","rogerstanimoto","russellrao","seuclidean",
+                   "sokalmichener","sokalsneath","sqeuclidean","yule"], 
+            text="Metric",
+            getter=lambda: self._config["metric"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         
     def set_estimator(self):
         self._config.update(
@@ -85,14 +85,16 @@ class PairwiseDistancesArgmin(MethodBase):
         else: self._config = config
         self.method = pairwise.pairwise_distances_argmin
 
-        self.metric_ = ComboBox(items=["cityblock","cosine","euclidean","l1","l2","manhattan",
-                                      "braycurtis","canberra","chebyshev","correlation","dice",
-                                      "hamming","jaccard","kulsinski","mahalanobis","rogerstanimoto",
-                                      "russellrao","seuclidean","sokalmichener","sokalsneath","sqeuclidean",
-                                      "yule"], text="Metric")
-        self.metric_.button.setCurrentText(self._config["metric"])
-        self.metric_.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.metric_)
+        self.metric_ = TransparentComboBox(
+            items=["cityblock","cosine","euclidean","l1","l2","manhattan","braycurtis",
+                   "canberra","chebyshev","correlation","dice","hamming","jaccard",
+                   "kulsinski","mahalanobis","rogerstanimoto","russellrao","seuclidean",
+                   "sokalmichener","sokalsneath","sqeuclidean","yule"], 
+            text="Metric",
+            getter=lambda: self._config["metric"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         
     def set_estimator(self):
         self._config.update(
@@ -113,10 +115,13 @@ class PairedDistances(MethodBase):
         else: self._config = config
         self.method = pairwise.paired_distances
 
-        self.metric_ = ComboBox(items=["cityblock","cosine","euclidean","l1","l2","manhattan"], text="Metric")
-        self.metric_.button.setCurrentText(self._config["metric"])
-        self.metric_.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.metric_)
+        self.metric_ = TransparentComboBox(
+            items=["cityblock","cosine","euclidean","l1","l2","manhattan"], 
+            text="Metric",
+            getter=lambda: self._config["metric"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
         
     def set_estimator(self):
         self._config.update(
@@ -147,12 +152,14 @@ class PairwiseKernel(MethodBase):
         )
         self.method = pairwise.pairwise_kernels
 
-        self.metric_ = ComboBox(items=["additive_chi2","chi2","linear","quadratic","cubic",
-                                         "quartic","rbf","laplacian","sigmoid","cosine"],
-                                         text="Metric")
-        self.metric_.button.setCurrentText(self._config["metric"])
-        self.metric_.button.currentTextChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.metric_)
+        self.metric_ = TransparentComboBox(
+            items=["additive_chi2","chi2","linear","quadratic","cubic",
+                   "quartic","rbf","laplacian","sigmoid","cosine"],
+            text="Metric",
+            getter=lambda: self._config["metric"],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
     
     def set_estimator(self):
         self._config.update(

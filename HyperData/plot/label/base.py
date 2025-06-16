@@ -1,30 +1,36 @@
-from PySide6.QtWidgets import QHBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QWidget, QLayout
 from ui.base_widgets.button import _ComboBox, _ToggleToolButton
 from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.frame import Frame
 from matplotlib.text import Text
 from plot.canvas import Canvas
 
-class FontStyle (QWidget):
-    def __init__(self, obj:list[Text], canvas: Canvas, parent=None):
+class FontStyle (Frame):
+    def __init__(self, obj:list[Text], canvas: Canvas, layout:QLayout=None, parent=None):
         super().__init__(parent)
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        layout.setContentsMargins(0,0,0,0)
+
+        _layout = QHBoxLayout(self)
+        # _layout.setContentsMargins(0,0,0,0)
         self.obj = obj
         self.canvas = canvas
     
-        layout.addWidget(BodyLabel('Font Style'))
-        style = _ToggleToolButton()
-        style.clicked.connect(self.set_italic)
-        style.setChecked(self.get_italic())
-        style.setIcon("text-italic.svg")
-        layout.addWidget(style)
+        _layout.addWidget(BodyLabel('Font Style'))
+
+        style = _ToggleToolButton(
+            setter=self.set_italic,
+            getter=self.get_italic,
+            icon="text-italic.svg",
+            layout=_layout
+        )
         
-        weight = _ToggleToolButton()
-        weight.clicked.connect(self.set_bold)
-        weight.setChecked(self.get_bold())
-        weight.setIcon("text-bold.svg")
-        layout.addWidget(weight)
+        weight = _ToggleToolButton(
+            setter=self.set_bold,
+            getter=self.get_bold,
+            icon="text-bold.svg",
+            layout=_layout
+        )
+
+        if layout: layout.addWidget(self)
     
     def set_italic (self, bool):
         for obj in self.obj:

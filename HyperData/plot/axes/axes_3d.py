@@ -1,9 +1,8 @@
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QDialog, QStackedLayout
-from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.canvas import Canvas
-from plot.utilis import find_mpl_object
 from matplotlib import colors
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
@@ -16,41 +15,41 @@ class Margin3D (QWidget):
         layout = QVBoxLayout(self)
         self.canvas = canvas
 
-        top = DoubleSpinBox(
+        top = TransparentDoubleSpinBox(
             text  = 'Margin top',
             text2 = "The position of the top edge",
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            getter=self.get_top,
+            setter=self.set_top,
+            layout=layout
         )
-        top.button.valueChanged.connect(self.set_top)
-        top.button.setValue(self.get_top())
-        layout.addWidget(top)
 
-        bottom = DoubleSpinBox(
+        bottom = TransparentDoubleSpinBox(
             text  = 'Margin bottom',
             text2 = 'The position of the bottom edge',
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            getter=self.get_bottom,
+            setter=self.set_bottom,
+            layout=layout
         )
-        bottom.button.valueChanged.connect(self.set_bottom)
-        bottom.button.setValue(self.get_bottom())
-        layout.addWidget(bottom)
 
-        left = DoubleSpinBox(
+        left = TransparentDoubleSpinBox(
             text  = 'Margin left',
             text2 ='The position of the left edge',
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            setter=self.set_left,
+            getter=self.get_left,
+            layout=layout
         )
-        left.button.valueChanged.connect(self.set_left)
-        left.button.setValue(self.get_left())
-        layout.addWidget(left)
 
-        right = DoubleSpinBox(
+        right = TransparentDoubleSpinBox(
             text  = 'Margin right',
             text2 = 'The position of the right edge',
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            setter=self.set_right,
+            getter=self.get_right,
+            layout=layout
         )
-        right.button.valueChanged.connect(self.set_right)
-        right.button.setValue(self.get_right())
-        layout.addWidget(right)
     
     def set_top(self,value):
         self.canvas.fig.subplots_adjust(top=value)
@@ -92,31 +91,31 @@ class Grid3D (QWidget):
         elif axis == 'YZ Pane': self.axinfo = self.canvas.axes.xaxis._axinfo['grid']
         elif axis == 'XZ Pane': self.axinfo = self.canvas.axes.yaxis._axinfo['grid']
 
-        self.linewidth = DoubleSpinBox(
+        self.linewidth = TransparentDoubleSpinBox(
             text  = 'Line Width',
             text2 = 'Set the width of the grid lines',
-            min = 0.1, max = 10, step = 0.5
+            min = 0.1, max = 10, step = 0.5,
+            setter=self.set_linewidth,
+            getter=self.get_linewidth,
+            layout=layout
         )
-        self.linewidth.button.valueChanged.connect(self.set_linewidth)
-        self.linewidth.button.setValue(self.get_linewidth())
-        layout.addWidget(self.linewidth)
 
-        self.linestyle = ComboBox(
+        self.linestyle = TransparentComboBox(
             text  = 'Line Style',
             text2 = 'Set the style of the grid lines',
             items = linestyle_lib.values(),
+            getter=self.get_linestyle,
+            setter=self.set_linestyle,
+            layout=layout
         )
-        self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
-        self.linestyle.button.setCurrentText(self.get_linestyle())
-        layout.addWidget(self.linestyle)
 
         self.color = ColorDropdown(
             text  = 'Line Color',
             text2 = 'Set the color of the grid',
-            color = self.get_color(),
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.color)
 
     def set_linewidth(self, value:float):
         self.axinfo.update(linewidth = value)
@@ -153,28 +152,28 @@ class Pane3D(QWidget):
 
         self.visible = Toggle(
             text  = 'Visible',
-            text2 = 'Whether to show the color'
+            text2 = 'Whether to show the color',
+            setter=self.set_visible,
+            getter=self.get_visible,
+            layout=layout
         )
-        layout.addWidget(self.visible)
-        self.visible.button.checkedChanged.connect(self.set_visible)
-        self.visible.button.setChecked(self.get_visible())
 
         self.facecolor = ColorDropdown(
             text  = 'Color',
             text2 = 'Set the color of the Pane',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.facecolor.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.facecolor)
 
-        self.alpha = DoubleSpinBox(
+        self.alpha = TransparentDoubleSpinBox(
             text  = 'Transparency',
             text2 = 'Set the transparency of the Pane',
-            step  = 10
+            step  = 10,
+            setter=self.set_patch_alpha,
+            getter=self.get_patch_alpha,
+            layout=layout
         )
-        self.alpha.button.valueChanged.connect(self.set_patch_alpha)
-        self.alpha.button.setValue(self.get_patch_alpha())
-        layout.addWidget(self.alpha)
     
     def set_visible(self, value:bool):
         self.axis.set_visible(value)

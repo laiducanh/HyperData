@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QStackedLayout
-from ui.base_widgets.button import ComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
@@ -16,41 +16,41 @@ class Margin2D (QWidget):
         layout = QVBoxLayout(self)
         self.canvas = canvas
 
-        top = DoubleSpinBox(
+        top = TransparentDoubleSpinBox(
             text  = 'Margin top',
             text2 = "The position of the top edge",
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            getter=self.get_top,
+            setter=self.set_top,
+            layout=layout
         )
-        top.button.valueChanged.connect(self.set_top)
-        top.button.setValue(self.get_top())
-        layout.addWidget(top)
 
-        bottom = DoubleSpinBox(
+        bottom = TransparentDoubleSpinBox(
             text  = 'Margin bottom',
             text2 = 'The position of the bottom edge',
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            getter=self.get_bottom,
+            setter=self.set_bottom,
+            layout=layout
         )
-        bottom.button.valueChanged.connect(self.set_bottom)
-        bottom.button.setValue(self.get_bottom())
-        layout.addWidget(bottom)
 
-        left = DoubleSpinBox(
+        left = TransparentDoubleSpinBox(
             text  = 'Margin left',
             text2 ='The position of the left edge',
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            setter=self.set_left,
+            getter=self.get_left,
+            layout=layout
         )
-        left.button.valueChanged.connect(self.set_left)
-        left.button.setValue(self.get_left())
-        layout.addWidget(left)
 
-        right = DoubleSpinBox(
+        right = TransparentDoubleSpinBox(
             text  = 'Margin right',
             text2 = 'The position of the right edge',
-            min = 0, max = 1, step = 0.05
+            min = 0, max = 1, step = 0.05,
+            setter=self.set_right,
+            getter=self.get_right,
+            layout=layout
         )
-        right.button.valueChanged.connect(self.set_right)
-        right.button.setValue(self.get_right())
-        layout.addWidget(right)
     
     def set_top(self,value):
         self.canvas.fig.subplots_adjust(top=value)
@@ -89,64 +89,64 @@ class Grid2D (QWidget):
 
         self.visible = Toggle(
             text  = 'Visible',
-            text2 = 'Whether to show the grid lines'
+            text2 = 'Whether to show the grid lines',
+            setter=self.set_grid,
+            getter=self.get_visible,
+            layout=layout
         )
-        self.visible.button.checkedChanged.connect(self.set_grid)
-        self.visible.button.setChecked(self.get_visible())
-        layout.addWidget(self.visible)
 
-        self.which = ComboBox(
+        self.which = TransparentComboBox(
             items = ['Major','Minor','Both'],
             text  = 'Type',
             text2 = 'The grid lines to apply the changes on',
+            setter=self.set_gridtype,
+            getter=self.get_gridtype,
+            layout=layout
         )
-        self.which.button.currentTextChanged.connect(self.set_gridtype)
-        self.which.button.setCurrentText(self.get_gridtype())
-        layout.addWidget(self.which)
 
-        self.axis = ComboBox(
+        self.axis = TransparentComboBox(
             text  = 'Axis',
             text2 = 'The axis to apply the changes on',
-            items = ['X','Y','Both']
+            items = ['X','Y','Both'],
+            getter=self.get_gridaxis,
+            setter=self.set_gridaxis,
+            layout=layout
         )
-        self.axis.button.currentTextChanged.connect(self.set_gridaxis)
-        self.axis.button.setCurrentText(self.get_gridaxis())
-        layout.addWidget(self.axis)
 
-        self.linewidth = DoubleSpinBox(
+        self.linewidth = TransparentDoubleSpinBox(
             text  = 'Line Width',
             text2 = 'Set the width of the grid lines',
-            min = 0.1, max = 10, step = 0.5
+            min = 0.1, max = 10, step = 0.5,
+            setter=self.set_linewidth,
+            getter=self.get_linewidth,
+            layout=layout
         )
-        self.linewidth.button.valueChanged.connect(self.set_linewidth)
-        self.linewidth.button.setValue(self.get_linewidth())
-        layout.addWidget(self.linewidth)
 
-        self.linestyle = ComboBox(
+        self.linestyle = TransparentComboBox(
             text  = 'Line Style',
             text2 = 'Set the style of the grid lines',
             items = linestyle_lib.values(),
+            getter=self.get_linestyle,
+            setter=self.set_linestyle,
+            layout=layout
         )
-        self.linestyle.button.currentTextChanged.connect(self.set_linestyle)
-        self.linestyle.button.setCurrentText(self.get_linestyle())
-        layout.addWidget(self.linestyle)
 
         self.color = ColorDropdown(
             text  = 'Line Color',
             text2 = 'Set the color of the grid',
-            color = self.get_color(),
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.color.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.color)
 
-        self.alpha = DoubleSpinBox(
+        self.alpha = TransparentDoubleSpinBox(
             text  = 'Transparency',
             text2 = 'Set the transparency of the grid lines',
-            step  = 10
+            step  = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=layout
         )
-        self.alpha.button.valueChanged.connect(self.set_alpha)
-        self.alpha.button.setValue(self.get_alpha())
-        layout.addWidget(self.alpha)
     
     def set_grid(self):
         try:
@@ -225,28 +225,28 @@ class Pane2D (QWidget):
 
         self.visible = Toggle(
             text  = 'Visible',
-            text2 = 'Whether to show the color'
+            text2 = 'Whether to show the color',
+            setter=self.set_visible,
+            getter=self.get_visible,
+            layout=layout
         )
-        layout.addWidget(self.visible)
-        self.visible.button.checkedChanged.connect(self.set_visible)
-        self.visible.button.setChecked(self.get_visible())
 
         self.facecolor = ColorDropdown(
             text  = 'Color',
             text2 = 'Set the color of the Pane',
-            color = self.get_color()
+            getter=self.get_color,
+            setter=self.set_color,
+            layout=layout
         )
-        self.facecolor.button.colorChanged.connect(self.set_color)
-        layout.addWidget(self.facecolor)
 
-        self.alpha = DoubleSpinBox(
+        self.alpha = TransparentDoubleSpinBox(
             text  = 'Transparency',
             text2 = 'Set the transparency of the Pane',
-            step  = 10
+            step  = 10,
+            setter=self.set_patch_alpha,
+            getter=self.get_patch_alpha,
+            layout=layout
         )
-        self.alpha.button.valueChanged.connect(self.set_patch_alpha)
-        self.alpha.button.setValue(self.get_patch_alpha())
-        layout.addWidget(self.alpha)
     
     def set_visible(self,value):
         self.canvas.axes.patch.set_visible(value)

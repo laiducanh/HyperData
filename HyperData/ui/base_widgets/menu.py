@@ -15,9 +15,13 @@ class Menu (QMenu):
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.icon_path = None
     
-    def setIcon(self, icon_path: str) -> None:
-        self.icon_path = icon_path
-        super().setIcon(Icon(self.icon_path))
+    def setIcon(self, icon: Union[str, QIcon]) -> None:
+        if isinstance(icon, str):
+            self.icon_path = icon
+            super().setIcon(Icon(self.icon_path))
+        elif isinstance(icon, QIcon):
+            self.icon_path = icon.path
+            super().setIcon(icon)
 
     def update(self):
         if self.icon_path: super().setIcon(Icon(self.icon_path))
@@ -32,14 +36,18 @@ class Action (QAction):
     in cases we need to change the action's icon according to the theme change 
     
     """
-    def __init__(self, icon_path:str=None, *args, **kwargs):
+    def __init__(self, icon:str=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if icon_path: self.setIcon(icon_path)
+        if icon: self.setIcon(icon)
 
-    def setIcon(self, icon_path: str) -> None:
-        self.icon_path = icon_path
-        super().setIcon(Icon(self.icon_path))
+    def setIcon(self, icon: Union[str, QIcon]) -> None:
+        if isinstance(icon, str):
+            self.icon_path = icon
+            super().setIcon(Icon(self.icon_path))
+        elif isinstance(icon, QIcon):
+            self.icon_path = icon.path
+            super().setIcon(icon)
 
     def update(self):
         if self.icon_path: super().setIcon(Icon(self.icon_path))

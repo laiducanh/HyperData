@@ -3,8 +3,10 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import Toggle, ComboBox
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import Toggle, TransparentComboBox
+from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel
 
 DEBUG = False
 
@@ -18,10 +20,15 @@ class DataComputation (NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="Configuration", parent=self.parent)
+        dialog.main_layout.addWidget(TitleLabel("Data Computation"))
+        dialog.main_layout.addWidget(BodyLabel("Arithmetic operation on DataFrame and other, " \
+        "element-wise (binary operator)"))
+        dialog.main_layout.addWidget(SeparateHLine())
         
-        func = ComboBox(items=["addition","subtraction","multiplication","floating division",
-                               "integer division","modulo","exponential power","dot product"],
-                               text="Function")
+        func = TransparentComboBox(
+            items=["addition","subtraction","multiplication","floating division",
+                   "integer division","modulo","exponential power","dot product"],
+            text="Function")
         func.button.setCurrentText(self._config["function"])
         dialog.main_layout.addWidget(func)
 
