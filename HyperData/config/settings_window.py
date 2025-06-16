@@ -32,7 +32,7 @@ def set_stylesheet():
         app.setStyleSheet(qss)
         for widget in app.allWidgets():
             if widget.isVisible():
-                try: widget.update()
+                try: widget._update()
                 except: pass
 
 class Theme (ComboBox):

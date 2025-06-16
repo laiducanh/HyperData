@@ -79,8 +79,8 @@ class NodeContentWidget(ContentItem):
     def onColorChanged(self, color):
         self.node._brush_background = QBrush(color)
 
-    def update(self):
-        self.node.update()
+    def _update(self):
+        self.node._update()
         return super().update()
 
 

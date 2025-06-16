@@ -11,7 +11,7 @@ class NodeItem(QGraphicsItem):
     def __init__(self, title:str, parent=None):
         super().__init__(parent)
 
-        self._title_font = QFont("Montserrat", 10.5, 700)
+        self._title_font = QFont("Arial", 13, 700)
         self.title = title
         self.edge_size = 5.0
         self.title_height = 28.0
@@ -149,7 +149,7 @@ class NodeItem(QGraphicsItem):
     def deserialize(self, data, hashmap={}):
         pass
 
-    def update(self):
+    def _update(self):
         self.setColor()
         return super().update()
 

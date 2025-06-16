@@ -52,10 +52,11 @@ class DataReader (NodeContentWidget):
         dialog = Dialog("Data Reading", self.parent)
         dialog.main_layout.addWidget(TitleLabel("File Watcher"))
         dialog.main_layout.addWidget(SeparateHLine())
-        auto_update = Toggle(
+        self.auto_update = Toggle(
             text="Auto update", 
             text2="Update data file automatically when the file is modified externally",
             getter=lambda: self._config["auto_update"],
+            setter=lambda v: self._config.update({"auto_update":v}),
             layout=dialog.main_layout
         )
 
@@ -64,52 +65,51 @@ class DataReader (NodeContentWidget):
 
         hlayout = QHBoxLayout()
         dialog.main_layout.addLayout(hlayout)
-        self.header = Toggle(
-            text="Header",
-            getter=lambda: not self._config["header"],
-            setter=self.update_preview,
-            layout=hlayout
-        )
-        self.skip_blank_lines = Toggle(
-            text="Skip blank lines",
-            getter=lambda: self._config["skip_blank_lines"],
-            setter=self.update_preview,
-            layout=hlayout
-        )
+        self.header = Toggle(text="Header")
+        self.header.button.setChecked(True if self._config["header"]==0 else False)
+        self.header.button.checkedChanged.connect(self.update_preview)
+        hlayout.addWidget(self.header)
+
+        self.skip_blank_lines = Toggle(text="Skip blank lines")
+        self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
+        self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
+        hlayout.addWidget(self.skip_blank_lines)
 
         self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
         self.delimiter = TransparentComboBox(
             items=["Tab","Semicolon","Comma","Space"],
             text="Delimiter",
-            text2="Character to treat as the separation",
-            setter=self.update_preview,
-            getter=lambda: list(self._delimiterDict.keys())
-                    [list(self._delimiterDict.values()).index(self._config["delimiter"])],
-            layout=dialog.main_layout
+            text2="Character to treat as the separation"
         )
+        self.delimiter.button.setCurrentText(list(self._delimiterDict.keys())
+            [list(self._delimiterDict.values()).index(self._config["delimiter"])])
+        self.delimiter.button.currentTextChanged.connect(self.update_preview)
+        dialog.main_layout.addWidget(self.delimiter)
         
         self.encoding = TransparentComboBox(
-            items=encode,text="Encoding",
+            items=encode,
+            text="Encoding",
             text2="Encoding to use for UTF when reading",
-            getter=lambda: self._config["encoding"],
-            setter=self.update_preview,
-            layout=dialog.main_layout
         )
+        self.encoding.button.setCurrentText(self._config["encoding"])
+        self.encoding.button.currentTextChanged.connect(self.update_preview)
+        dialog.main_layout.addWidget(self.encoding)
 
-        nrows = TransparentSpinBox(
+        self.nrows = TransparentSpinBox(
             max=100000, 
             text="Number of rows",
-            text2="Maximum lines to read",
-            getter=lambda: self._config["nrows"],
-            layout=dialog.main_layout
+            text2="Maximum lines to read"
         )
+        self.nrows.button.setValue(self._config["nrows"])
+        self.nrows.button.valueChanged.connect(self.update_preview)
+        dialog.main_layout.addWidget(self.nrows)
 
         self.sheet_name = TransparentComboBox(
             text="Sheet name",
-            text2="Select name of worksheet in the excel file to read",
-            setter=self.update_preview,
-            layout=dialog.main_layout
+            text2="Select name of worksheet in the excel file to read"
         )
+        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
+        dialog.main_layout.addWidget(self.sheet_name)
         if self.filetype == "excel":
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
             self.sheet_name.button.setCurrentText(self._config["sheet_name"])
@@ -122,24 +122,18 @@ class DataReader (NodeContentWidget):
         
 
         if dialog.exec(): 
-            self._config["nrows"] = nrows.button.value()
-            self._config["delimiter"] = self._delimiterDict[self.delimiter.button.currentText()]
-            self._config["header"] = 0 if self.header.button.isChecked() else None
-            self._config["encoding"] = self.encoding.button.currentText()
-            self._config["sheet_name"] = self.sheet_name.button.currentText()
-            self._config["auto_update"] = auto_update.button.isChecked()
-            self._config["skip_blank_lines"] = self.skip_blank_lines.button.isChecked()
             super().exec()
     
     def update_preview (self):
-        delimiter = self._delimiterDict[self.delimiter.button.currentText()]
-        header = self.header.button.isChecked()
-        skip_blank_lines = self.skip_blank_lines.button.isChecked()
-        encoding = self.encoding.button.currentText()
-        sheet_name = self.sheet_name.button.currentText()
-        
-        if header: header=0
-        else: header=None
+        self._config.update(
+            auto_update=self.auto_update.button.isChecked(),
+            skip_blank_lines=self.skip_blank_lines.button.isChecked(),
+            nrows=self.nrows.button.value(),
+            delimiter=self._delimiterDict[self.delimiter.button.currentText()],
+            header=0 if self.header.button.isChecked() else None,
+            encoding=self.encoding.button.currentText(),
+            sheet_name=self.sheet_name.button.currentText(),
+        )
 
         data = pd.DataFrame()
 
@@ -148,21 +142,21 @@ class DataReader (NodeContentWidget):
                 data = pd.read_csv(
                     self.selectedFiles, 
                     nrows=10,
-                    header=header,
-                    delimiter=delimiter,
-                    skip_blank_lines=skip_blank_lines,
-                    encoding=encoding
+                    header=self._config["header"],
+                    delimiter=self._config["delimiter"],
+                    skip_blank_lines=self._config["skip_blank_lines"],
+                    encoding=self._config["encoding"]
                 )
             elif self.filetype == "excel":
                 data = pd.read_excel(
                     self.selectedFiles, 
                     nrows=10,
-                    header=header,
-                    sheet_name=sheet_name
+                    header=self._config["header"],
+                    sheet_name=self._config["sheet_name"]
                 )
         self.model = TableModel(data, self.parent)
         self.preview.setModel(self.model)
-
+      
     def update_data(self):
         # update the path in case some text editors replace the file with a new one
         # so the watcher will stop watching the old file

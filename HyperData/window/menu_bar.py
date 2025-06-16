@@ -17,11 +17,11 @@ class MenuBar(QMenuBar):
         action = QAction('Save',self)
         action.triggered.connect(self.parent().saveToFile)
         fileMenu.addAction(action)
-        action = QAction('Settings',self)
+        action = QAction('&Settings',self)
         action.triggered.connect(self.setting_onClick)
         fileMenu.addAction(action)
         fileMenu.addSeparator()
-        action = QAction('Quit', self)
+        action = QAction('&Quit', self)
         action.triggered.connect(parent.close)
         fileMenu.addAction(action)       
 

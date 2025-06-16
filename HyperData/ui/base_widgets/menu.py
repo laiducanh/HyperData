@@ -23,7 +23,8 @@ class Menu (QMenu):
             self.icon_path = icon.path
             super().setIcon(icon)
 
-    def update(self):
+    def _update(self):
+        # This function serves as an updater for menu when toggling dark/light mode
         if self.icon_path: super().setIcon(Icon(self.icon_path))
         for action in self.actions():
             if isinstance(action, Action): action.update()
@@ -49,7 +50,8 @@ class Action (QAction):
             self.icon_path = icon.path
             super().setIcon(icon)
 
-    def update(self):
+    def _update(self):
+        # This function serves as an updater for action when toggling dark/light mode
         if self.icon_path: super().setIcon(Icon(self.icon_path))
 
 class LineEdit_Menu (Menu):

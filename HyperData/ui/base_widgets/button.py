@@ -26,7 +26,8 @@ class _PushButton (QPushButton):
             self.icon_path = icon.path
             super().setIcon(icon)
             
-    def update(self):
+    def _update(self):
+        # This function serves as an updater for buttons when toggling dark/light mode
         if self.icon_path: super().setIcon(Icon(self.icon_path))
         super().update()
 
@@ -39,25 +40,25 @@ class _PrimaryPushButton (_PushButton):
 class _DropDownPushButton (_PushButton):
     """ PushButton with dropdown menu """
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+    # def __init__(self, parent=None, *args, **kwargs):
+    #     super().__init__(parent, *args, **kwargs)
 
-        self.setCheckable(True)
-        self._menu = None
+        # self.setCheckable(True)
+        # self._menu = None
     
-    def setMenu(self, menu: QMenu):
-        self._menu = menu
-        return super().setMenu(menu)
+    # def setMenu(self, menu: QMenu):
+    #     self._menu = menu
+    #     return super().setMenu(menu)
     
-    def mousePressEvent(self, e):
-        if self._menu:
-            self._menu.setMinimumWidth(self.width())
-            self._menu.triggered.connect(lambda s: self.setText(s.text()))
-            self._menu.exec(self.mapToGlobal(QPoint(0,self.height())))
-            self.clearFocus()
+    # def mousePressEvent(self, e):
+    #     if self._menu:
+    #         self._menu.setMinimumWidth(self.width())
+    #         self._menu.triggered.connect(lambda s: self.setText(s.text()))
+    #         self._menu.exec(self.mapToGlobal(QPoint(0,self.height())))
+    #         self.clearFocus()
         
-        self.pressed.emit()
-        self.clicked.emit()
+    #     self.pressed.emit()
+    #     self.clicked.emit()
 
 class _DropDownTransparentPushButton (_DropDownPushButton):
     """ DropDownPushButton with no border and background color """
@@ -90,8 +91,8 @@ class _ToolButton (QToolButton):
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
     
         if layout: layout.addWidget(self)
-        if setter: self.clicked.connect(setter)
         if getter: self.setChecked(getter())
+        if setter: self.clicked.connect(setter)
         if icon: self.setIcon(icon)
     
     def setMenu(self, menu: QMenu) -> None:
@@ -111,7 +112,8 @@ class _ToolButton (QToolButton):
             self.icon_path = icon.path
             super().setIcon(icon)
     
-    def update(self):
+    def _update(self):
+        # This function serves as an updater for buttons when toggling dark/light mode
         if self.icon_path: super().setIcon(Icon(self.icon_path))
         super().update()
 
@@ -172,8 +174,8 @@ class _Toggle(QFrame):
         self.initUI()
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        if setter: self.checkedChanged.connect(setter)
         if getter: self.setChecked(getter())
+        if setter: self.checkedChanged.connect(setter)
         if layout: layout.addWidget(self)
 
     def initUI(self):
@@ -287,9 +289,8 @@ class VButton(Frame):
         self.text = text
         self.text2 = text2
 
-        self.label  = BodyLabel(text, parent)
-        self.label2 = InfoLabel(text2, parent)
-        self.label2.setWordWrap(True)
+        self.label  = BodyLabel(parent, text=text)
+        self.label2 = InfoLabel(parent, text=text2, wordWrap=True)
         if not text2: self.label2.hide()
 
         layout = QVBoxLayout(self)
@@ -320,9 +321,8 @@ class HButton(Frame):
         self.text = text
         self.text2 = text2
 
-        self.label  = BodyLabel(text, parent)
-        self.label2 = InfoLabel(text2, parent)
-        self.label2.setWordWrap(True)
+        self.label  = BodyLabel(parent, text=text)
+        self.label2 = InfoLabel(parent, text=text2, wordWrap=True)
         if not text2: self.label2.hide()
 
         hlayout = QHBoxLayout(self)
