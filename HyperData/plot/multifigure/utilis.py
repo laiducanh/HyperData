@@ -2,13 +2,12 @@ from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import lines, patches, collections, text, legend
-from plot.plotting.plotting import update_props, find_mpl_object
+from plot.utilis import update_props, find_mpl_object
 from typing import Union
 
 def copy_objects(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
     
     for artist in find_mpl_object(source_ax):
-        #print(artist, artist.get_gid())
         new_artist = None
         if isinstance(artist, lines.Line2D):
             new_artist = lines.Line2D(
@@ -93,6 +92,9 @@ def copy_objects(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]
             #TO-DO: the legend box actually shifts up and right a little bit
 
         if new_artist:
+            # Update gid
+            new_artist.set_gid(artist.get_gid())
+            # Update props
             update_props(artist, new_artist)
             if not isinstance(new_artist, 
                               (collections.PathCollection, text.Text)):

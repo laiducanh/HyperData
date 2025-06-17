@@ -1,16 +1,8 @@
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-import matplotlib.markers
 from PySide6.QtCore import Signal
-import matplotlib
+import matplotlib, pickle, os
 from matplotlib.figure import Figure
-from matplotlib.legend import Legend
-from matplotlib.text import Annotation, Text
-from mpl_toolkits.mplot3d.proj3d import proj_transform
-from matplotlib.backend_bases import PickEvent, cursors
-from matplotlib.widgets import TextBox, Cursor
-import pandas as pd
-import numpy as np
-import mpld3
+from plot.multifigure.utilis import copy_objects
 
 matplotlib.use("QtAgg")
 #matplotlib.style.use('bmh')
@@ -29,8 +21,16 @@ class Canvas (FigureCanvasQTAgg):
     def __init__(self):
         
         self.fig = Figure()
-        self.fig.set_dpi(150)
-        self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
+        self.id = id(self)
+        self._config = {
+            'dpi': 150,
+            'margin': (0.12, 0.12, 0.9, 0.9),
+            'num_plot': 0, # keep track of the indexes of plots
+
+
+        }
+        self.fig.set_dpi(self._config['dpi'])
+        self.fig.subplots_adjust(*self._config['margin'])
 
         self.initAxes()
         super().__init__(self.fig)
@@ -81,35 +81,49 @@ class Canvas (FigureCanvasQTAgg):
             )
     
     def serialize(self):
-        figure = dict()
-        for i in vars(self.fig).keys(): figure[i] = str(vars(self.fig)[i])
-        axes = dict(ax = {}, axy2 = {}, axx2 = {})
-        axes['ax'] = {
-            "_visible": self.axes.get_visible()
-        }
-        # for i in vars(self.axes).keys(): 
-        #     axes['ax'][i] = (vars(self.axes)[i])
+        # figure = dict()
+        # for i in vars(self.fig).keys(): figure[i] = str(vars(self.fig)[i])
+        # axes = dict(ax = {}, axy2 = {}, axx2 = {})
+        # axes['ax'] = {
+        #     "_visible": self.axes.get_visible()
+        # }
+        # # for i in vars(self.axes).keys(): 
+        # #     axes['ax'][i] = (vars(self.axes)[i])
 
-        for i in vars(self.axesy2).keys(): axes['axy2'][i] = str(vars(self.axesy2)[i])
-        for i in vars(self.axesx2).keys(): axes['axx2'][i] = str(vars(self.axesx2)[i])
+        # for i in vars(self.axesy2).keys(): axes['axy2'][i] = str(vars(self.axesy2)[i])
+        # for i in vars(self.axesx2).keys(): axes['axx2'][i] = str(vars(self.axesx2)[i])
 
-        graph = dict()
-        for obj in self.fig.findobj():
-            if obj._gid != None and "graph" in obj._gid:
-                graph[str(obj)] = dict()
-                for i in vars(obj).keys():
-                    graph[str(obj)][str(i)] = str(vars(obj)[i])
-        print(mpld3.fig_to_dict(self.fig))
-        
-        return {"figure":mpld3.fig_to_dict(self.fig),
-                "label":dict(),
-                "axis":axes,
-                "grid":dict(),
-                "plot":graph,}
+        # graph = dict()
+        # for obj in self.fig.findobj():
+        #     if obj._gid != None and "graph" in obj._gid:
+        #         graph[str(obj)] = dict()
+        #         for i in vars(obj).keys():
+        #             graph[str(obj)][str(i)] = str(vars(obj)[i])            
+
+        with open(f'canvas_{self.id}.pickle', 'wb') as file: 
+            pickle.dump(self.fig, file)
+                
+        return {"id": self.id,
+                "pickle": f'canvas_{self.id}.pickle',
+                'config': self._config}
     
 
     def deserialize(self, data, hashmap={}):
-        pass
+
+        self.id = data['id']
+        hashmap[data['id']] = self
+        self._config = data['config']
+
+        with open(f'canvas_{self.id}.pickle','rb') as file:
+            loaded_fig = pickle.load(file)
+        
+        self.fig.clear()
+        self.initAxes()
+
+        for source_ax, destination_ax in zip(loaded_fig.axes, self.fig.axes):
+            copy_objects(source_ax, destination_ax)
+            
+        self.fig.canvas.draw_idle()
 
 class ExplorerCanvas(FigureCanvasQTAgg):
     def __init__(self):
@@ -117,6 +131,7 @@ class ExplorerCanvas(FigureCanvasQTAgg):
         self.fig = Figure()
         self.fig.set_dpi(150)
         self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
+        self.id = id(self)
 
         super().__init__(self.fig)
         

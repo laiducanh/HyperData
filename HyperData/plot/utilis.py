@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from PySide6.QtCore import QSize
 from typing import Literal, Union
 import numpy as np
+from config.settings import GLOBAL_DEBUG, logger
 
 def get_color(artist:Artist):
     """ get color of a matplotlib artist"""
@@ -54,3 +55,22 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list=None, gid:str=N
                 else: obj_found.append(artist)
         #obj_found += [artist for artist in _found if artist.get_gid() != None]
     return obj_found
+
+def update_props (from_obj: Artist, to_obj: Artist) -> None:  
+    try:      
+        #print("update props")
+        #print(to_obj, from_obj)
+        to_obj_props = to_obj.properties()
+        from_obj_props = from_obj.properties()
+
+        if type(from_obj) == type(to_obj):
+            to_obj.update_from(from_obj)
+
+            # for step plots
+            if isinstance(to_obj, Line2D):
+                to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
+
+        to_obj.update(dict(label=from_obj.get_label()))
+        
+    except Exception as e:
+        logger.exception(e)

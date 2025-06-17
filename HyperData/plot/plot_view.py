@@ -51,7 +51,7 @@ class PlotView (QMainWindow):
         ### Initialize UI components
         self.setup_visual()
         self.setup_sidebar()
-        
+        print('initialize plotview')
         ###
         if GLOBAL_DEBUG or DEBUG: self.debug()
 
@@ -268,6 +268,10 @@ class PlotView (QMainWindow):
             self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock)
             
         return super().paintEvent(a0)
+
+    def serialize(self):
+        return {"canvas": self.canvas.id,
+        }
 
 class PlotViewMultiFig (PlotView):
     def __init__(self, node:Node, canvas:Canvas, parent=None):       

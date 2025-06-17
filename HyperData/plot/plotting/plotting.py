@@ -5,7 +5,7 @@ from plot.plotting.base.pie import *
 from plot.plotting.base.stats import *
 from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
-from plot.utilis import find_mpl_object
+from plot.utilis import find_mpl_object, update_props
 from plot.canvas import Canvas
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -32,25 +32,6 @@ def remove_artist (ax:Axes, gid:str) -> list[Artist]:
         if GLOBAL_DEBUG or DEBUG:
             pass
     return artist_removed
-
-def update_props (from_obj: Artist, to_obj: Artist) -> None:  
-    try:      
-        #print("update props")
-        #print(to_obj, from_obj)
-        to_obj_props = to_obj.properties()
-        from_obj_props = from_obj.properties()
-
-        if type(from_obj) == type(to_obj):
-            to_obj.update_from(from_obj)
-
-            # for step plots
-            if isinstance(to_obj, Line2D):
-                to_obj.set(drawstyle=to_obj_props.get("drawstyle"))
-
-        to_obj.update(dict(label=from_obj.get_label()))
-        
-    except Exception as e:
-        logger.exception(e)
 
 def get_legend(canvas: Canvas) -> Legend:
     try: return canvas.axesleg.get_legend()

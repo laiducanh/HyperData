@@ -74,8 +74,7 @@ class Grid_Plottype (QHBoxLayout):
         add_plot.setToolTip('More Graphs')
         add_plot.setToolTipDuration(1000)
         add_plot.clicked.connect(lambda: self.plottype_window.show()) # open up Plot type window when this button was triggered
-        self.addWidget(add_plot)
-        
+        self.addWidget(add_plot)        
 
 class NewPlot (Frame):
     """ This Widget will be created when creating a new plot to display input fields for the new plot """
@@ -288,7 +287,6 @@ class InsertPlot (QWidget):
         self.setLayout(self.layout)
         self.layout.setContentsMargins(10,0,10,15)
         self.canvas = canvas
-        self.num_plot = 0 # keep track of the indexes of plots
         self.plotlist = list()
         self.plotlist: list[NewPlot]
         self.node = node
@@ -298,6 +296,7 @@ class InsertPlot (QWidget):
 
         plottype = Grid_Plottype(plot3d, parent)
         self.layout.addLayout(plottype)
+        plottype.sig.connect(self._add)
         plottype.sig.connect(self.add_plot)
         
         self.scroll_area = QScrollArea(parent)
@@ -312,11 +311,18 @@ class InsertPlot (QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop|Qt.AlignmentFlag.AlignJustify)
         self.scroll_area.verticalScrollBar().rangeChanged.connect(lambda min, max: self.scroll_area.verticalScrollBar().setSliderPosition(max))
-  
+
+
+
+    def _add(self):
+        self.canvas._config['num_plot'] += 1
+
     def add_plot (self, plot_type):
  
-        self.num_plot += 1   
-        newplot = NewPlot(self.num_plot, plot_type, self.canvas, self.node, self.plot3d)
+        newplot = NewPlot(
+            self.canvas._config['num_plot'],
+            plot_type, self.canvas, self.node, self.plot3d
+        )
         self.plotlist.append(newplot)
         newplot.sig.connect(self.sig.emit)
         newplot.sig_delete.connect(self.delete_plot)

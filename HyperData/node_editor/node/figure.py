@@ -27,11 +27,10 @@ class Figure2D (NodeContentWidget):
         self.eval()
     
     def serialize(self):
-        return {"canvas":self.canvas.serialize(),
-                }
+        return {"canvas":self.canvas.serialize()}
             
     def deserialize(self, data, hashmap={}):
-        pass
+        self.canvas.deserialize(data['canvas'], hashmap)
 
 class Figure3D (Figure2D):
     def __init__(self, node,parent=None):
@@ -39,13 +38,6 @@ class Figure3D (Figure2D):
     
     def initCanvas(self):
         self.canvas = Canvas3D()
-    
-    def serialize(self):
-        return {"figure":self.canvas.serialize(),
-                "data":self.node.data_in.to_json(),}
-            
-    def deserialize(self, data, hashmap={}):
-        pass
 
 class MultiFigure(Figure2D):
     def __init__(self, node,parent=None):
