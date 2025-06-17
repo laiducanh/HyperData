@@ -15,6 +15,7 @@ class NodeContentWidget(ContentItem):
         self.parent = parent
         self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
+        self._config = dict()
 
     def config(self):
         pass
@@ -82,6 +83,12 @@ class NodeContentWidget(ContentItem):
     def _update(self):
         self.node._update()
         return super().update()
+
+    def serialize(self):
+        return {"config": self._config}
+    
+    def deserialize(self, data, hashmap=...):
+        self._config = data['config']
 
 
 

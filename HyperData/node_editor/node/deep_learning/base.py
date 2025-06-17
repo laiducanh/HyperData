@@ -9,6 +9,6 @@ class DLBase (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
         
-        self.label.pressed.disconnect()
+        self.label.clicked.disconnect()
 
         

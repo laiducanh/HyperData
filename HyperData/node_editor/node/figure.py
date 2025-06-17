@@ -27,8 +27,8 @@ class Figure2D (NodeContentWidget):
         self.eval()
     
     def serialize(self):
-        return {"figure":self.canvas.serialize(),
-                "data":self.node.data_in.to_json(),}
+        return {"canvas":self.canvas.serialize(),
+                }
             
     def deserialize(self, data, hashmap={}):
         pass

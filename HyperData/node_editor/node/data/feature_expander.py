@@ -37,16 +37,19 @@ class ExpanderBase(QWidget):
 
         # Initialize configuration dict and null transfomer
         self._config = dict()
-        self.expander = None
 
         # Set up configuration
         self.set_config(config=None)
         
     def clear_layout (self):
         # Remove all child widgets from the layout
-        for widget in self.widget.findChildren(QWidget):
-            self.vlayout.removeWidget(widget)
-    
+        while self.vlayout.count():
+            item = self.vlayout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+
     def set_config(self, config=None):
         # Overwrite in subclass
         # clear_layout is needed before setting up configuration
@@ -69,43 +72,30 @@ class PolynomialFeatures(ExpanderBase):
             )
         else: 
             self._config = config
-        
-        # Initialize the polynomial feature transfomer
-        self.scaler = preprocessing.PolynomialFeatures(**self._config)
-        
+  
         # UI Components
         self.degree = TransparentSpinBox(
             text="Degree", 
             text2="Maximal degree of the polynomial features",
-            initvalue=self._config["degree"],
-            fvalueChanged=self.set_estimator,
+            getter=lambda: self._config["degree"],
+            setter=lambda v: self._config.update({"degree":v}),
             layout=self.vlayout
         )
+        
         self.interaction_only = Toggle(
             text="Interaction features",
             text2="Only interaction features are produced",
-            fcheckedChanged=self.set_estimator,
-            initstate=self._config["interaction_only"],
+            setter=lambda v: self._config.update({"interaction_only":v}),
+            getter=lambda: self._config["interaction_only"],
             layout=self.vlayout
         )
         self.include_bias = Toggle(
             text="Bias",
             text2="Add a bias column",
-            initstate=self._config["include_bias"],
-            fcheckedChanged=self.set_estimator,
+            getter=lambda: self._config["include_bias"],
+            setter=lambda v: self._config.update({"include_bias":v}),
             layout=self.vlayout
         )
-    
-    def set_estimator(self):
-        # Update config from UI elements
-        self._config.update(
-            degree=self.degree.button.value(),
-            interaction_only=self.interaction_only.button.isChecked(),
-            include_bias=self.include_bias.button.isChecked()
-        )
-
-        # Reinitialize scaler with updated config
-        self.scaler = preprocessing.PolynomialFeatures(**self._config)
 
 class SplineTransfomer(ExpanderBase):
     def __init__(self, parent=None):
@@ -127,50 +117,47 @@ class SplineTransfomer(ExpanderBase):
         else: 
             self._config = config
         
-        # Initialize the Spline transfomer
-        self.scaler = preprocessing.SplineTransformer(**self._config)
-        
         # Ui Components 
         self.n_knots = TransparentSpinBox(
             min=2, 
             text="Knots", 
             text2="Number of knots of the plines",
-            initvalue=self._config["n_knots"],
-            fvalueChanged=self.set_estimator,
+            getter=lambda: self._config["n_knots"],
+            setter=self.update_config,
             layout=self.vlayout
         )
         self.degree = TransparentSpinBox(
             text="Degree",
             text2="The polynomial degree of the spline basis",
-            initvalue=self._config["degree"],
-            fvalueChanged=self.set_estimator,
+            getter=lambda: self._config["degree"],
+            setter=self.update_config,
             layout=self.vlayout
         )
         self.knots = TransparentComboBox(
             items=["uniform","quantile"], 
             text="Distribution",
             text2="How knot positions are distributed along the features",
-            initText=self._config["knots"],
-            fcurrentTextChanged=self.set_estimator,
+            getter=lambda: self._config["knots"],
+            setter=self.update_config,
             layout=self.vlayout
         )
         self.extrapolation = TransparentComboBox(
             items=["error","constant","linear","continue","periodic"],
             text="Extrapolation",
             text2="Type of method to extrapolate values",
-            initText=self._config["extrapolation"],
-            fcurrentTextChanged=self.set_estimator,
+            getter=lambda: self._config["extrapolation"],
+            setter=self.update_config,
             layout=self.vlayout
         )
         self.include_bias = Toggle(
             text="Bias",
             text2="Add a bias column",
-            initstate=self._config["include_bias"],
-            fcheckedChanged=self.set_estimator,
+            getter=lambda: self._config["include_bias"],
+            setter=self.update_config,
             layout=self.vlayout
         )
         
-    def set_estimator(self):
+    def update_config(self):
         # Update config from UI elements
         self._config.update(
             n_knots = self.n_knots.button.value(),
@@ -180,22 +167,17 @@ class SplineTransfomer(ExpanderBase):
             include_bias = self.include_bias.button.isChecked(),
         )
 
-        # Reinitialize scaler with updated config
-        self.scaler = preprocessing.SplineTransformer(**self._config)
-
 class FeatureExpander (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
         self._config = dict(
-            expander="Polynomial expansion",
+            estimator="Polynomial expansion",
             config=dict(),
         )
         
-        self.expander_list = ["Polynomial expansion","Univariate B-spline"]
-        
-        self.expander = preprocessing.PolynomialFeatures(**self._config["config"])
-    
+        self.estimator_list = ["Polynomial expansion","Univariate B-spline"]
+            
     def currentWidget(self) -> ExpanderBase:
         return self.stackedlayout.currentWidget()       
 
@@ -203,10 +185,10 @@ class FeatureExpander (NodeContentWidget):
         dialog = Dialog("Feature Expansion", self.parent)
         
         expander = PrimaryComboBox(
-            items=self.expander_list,
+            items=self.estimator_list,
             text="Scaler",
-            fcurrentTextChanged=lambda s: self.stackedlayout.setCurrentIndex(self.expander_list.index(s)),
-            initText=self._config["expander"],
+            setter=lambda s: self.stackedlayout.setCurrentIndex(self.estimator_list.index(s)),
+            getter=lambda: self._config["estimator"],
             layout=dialog.main_layout
         )
         expander.button.setMinimumWidth(250)
@@ -217,14 +199,14 @@ class FeatureExpander (NodeContentWidget):
         dialog.main_layout.addLayout(self.stackedlayout)
         self.stackedlayout.addWidget(PolynomialFeatures())
         self.stackedlayout.addWidget(SplineTransfomer())
-        self.stackedlayout.setCurrentIndex(self.expander_list.index(expander.button.currentText()))
- 
+        self.stackedlayout.setCurrentIndex(self.estimator_list.index(expander.button.currentText()))
+        self.currentWidget().set_config(self._config["config"])
+
         if dialog.exec():
             self._config.update(
                 config    = self.currentWidget()._config,
-                expander = expander.button.currentText()
+                estimator = expander.button.currentText()
             )
-            self.expander = self.currentWidget().expander
             self.exec()
 
     def func(self):
@@ -240,14 +222,20 @@ class FeatureExpander (NodeContentWidget):
         try:
             data = self.node.input_sockets[0].socket_data.copy()
             X = data.to_numpy()
-            data_transformed = self.expander.fit_transform(X, **self._config["config"])
+
+            if self._config["estimator"] == "Polynomial expansion":
+                self.estimator = preprocessing.PolynomialFeatures(**self._config["config"])
+            elif self._config["estimator"] == "Univariate B-spline":
+                self.estimator = preprocessing.SplineTransformer(**self._config["config"])
+            
+            data_transformed = self.estimator.fit_transform(X, **self._config["config"])
             columns = [f"Expanded_feature {i+1}" for i in range(data_transformed.shape[1])]
             data = pd.DataFrame(data_transformed, columns=columns)
             
             # change progressbar's color   
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: {self.expander} run successfully.")
+            logger.info(f"{self.name} {self.node.id}: {self.estimator} run successfully.")
 
             
         except Exception as e:

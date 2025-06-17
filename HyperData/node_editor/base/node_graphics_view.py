@@ -126,7 +126,7 @@ class NodeGraphicsView(QGraphicsView):
             misc.addAction(action)
         
     def addNode(self, node_title:str):
-        node = Node(title=node_title,parent=self)
+        node = Node(title=node_title)
         self.grScene.addNode(node)
         node.setPos(self.last_rmb_click_scene_pos.x(), self.last_rmb_click_scene_pos.y())
 

@@ -69,7 +69,7 @@ class DataReader (NodeContentWidget):
         self.header.button.setChecked(True if self._config["header"]==0 else False)
         self.header.button.checkedChanged.connect(self.update_preview)
         hlayout.addWidget(self.header)
-
+        
         self.skip_blank_lines = Toggle(text="Skip blank lines")
         self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
         self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
@@ -108,19 +108,18 @@ class DataReader (NodeContentWidget):
             text="Sheet name",
             text2="Select name of worksheet in the excel file to read"
         )
-        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
-        dialog.main_layout.addWidget(self.sheet_name)
         if self.filetype == "excel":
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
             self.sheet_name.button.setCurrentText(self._config["sheet_name"])
-
+        self.sheet_name.button.currentTextChanged.connect(self.update_preview)
+        dialog.main_layout.addWidget(self.sheet_name)
+        
         dialog.main_layout.addWidget(TitleLabel("Preview"))
         dialog.main_layout.addWidget(SeparateHLine())
         self.preview = QTableView()
         self.update_preview()
         dialog.main_layout.addWidget(self.preview)
         
-
         if dialog.exec(): 
             super().exec()
     
@@ -223,13 +222,14 @@ class DataReader (NodeContentWidget):
         self.data_to_view = data.copy()
 
     def serialize(self):
-        return {
-            "config": self._config,
-            "selected_files":self.selectedFiles,
-            "file_type":self.filetype,
-            "is_readable":self.isReadable,
-        }
+        return {"config": self._config,
+                "selected_files":self.selectedFiles,
+                "file_type":self.filetype,
+                "is_readable":self.isReadable}
 
     def deserialize(self, data, hashmap={}):
-        print('redaer deserial')
+        super().deserialize(data)
+        self.selectedFiles = data['selected_files']
+        self.filetype = data['file_type']
+        self.isReadable = data['is_readable']
         super().exec()

@@ -3,24 +3,27 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, encode, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import Frame
 from ui.base_widgets.button import _TransparentComboBox, _TransparentToolButton, _TransparentPushButton
-from PySide6.QtWidgets import QHBoxLayout, QWidget, QApplication
+from PySide6.QtWidgets import QHBoxLayout, QApplication
 
 DEBUG = False
 
-class SorterWidget(QWidget):
+class SorterWidget(Frame):
     def __init__(self, data:pd.DataFrame, by:str, order:bool, parent:Dialog):
         super().__init__(parent)
         self.hlayout = QHBoxLayout(self)
-        self.hlayout.setContentsMargins(0,0,0,0)
+        # self.hlayout.setContentsMargins(0,0,0,0)
 
         idx = parent.main_layout.count()-1
         parent.main_layout.insertWidget(idx, self)
 
         self.col = _TransparentComboBox(parent=parent)
         self.col.setObjectName("by")
-        if not data.empty: self.col.addItems(data.columns)
-        self.col.setCurrentText(by)
+        try: self.col.addItems(data.columns)
+        except: pass
+        if by in self.col.items: self.col.setCurrentText(by)
+        else: self.col.setCurrentIndex(-1)
         self.hlayout.addWidget(self.col)
 
         self.ascending = _TransparentComboBox(["ascending","descending"],parent=parent)
@@ -48,9 +51,9 @@ class DataSorter (NodeContentWidget):
         self.initConfig()
     
     def initConfig(self):
-        if self.node.input_sockets[0].socket_data.empty:
-            by = [""]
-        else: by = self.node.input_sockets[0].socket_data.columns[0]
+
+        try: by = self.node.input_sockets[0].socket_data.columns[0]
+        except: by = [""]
 
         self._config = dict(
             by = by,
@@ -59,7 +62,6 @@ class DataSorter (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Sort Data", self.parent)
-        
         def add(by="", order=True):
             SorterWidget(self.node.input_sockets[0].socket_data, by, order, dialog)
 
@@ -68,7 +70,7 @@ class DataSorter (NodeContentWidget):
         add_btn.pressed.connect(add)
         dialog.main_layout.addWidget(add_btn)
 
-        for by, order in zip(self._config.get("by"), self._config.get("ascending")):
+        for by, order in zip(self._config["by"], self._config["ascending"]):
             add(by, order)
 
         if dialog.exec():
@@ -114,5 +116,4 @@ class DataSorter (NodeContentWidget):
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
-
-        self.initConfig()
+        #self.initConfig()

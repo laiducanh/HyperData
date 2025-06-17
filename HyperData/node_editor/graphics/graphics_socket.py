@@ -109,6 +109,9 @@ class SocketItem (QGraphicsItem):
     def hasEdge(self):
         pass
 
+    def setData(self, data):
+        self.socket_data = data 
+
     def getData(self):
         return self.socket_data
 

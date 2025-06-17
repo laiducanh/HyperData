@@ -36,8 +36,13 @@ class ScalerBase(QWidget):
         self.set_config(config=None)
         
     def clear_layout (self):
-        for widget in self.widget.findChildren(QWidget):
-            self.vlayout.removeWidget(widget)
+        # Remove all child widgets from the layout
+        while self.vlayout.count():
+            item = self.vlayout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
     
     def set_config(self, config=None):
         self.clear_layout()
@@ -55,24 +60,24 @@ class StandardScaler (ScalerBase):
             with_std = True
         )
         else: self._config = config
-        self.scaler = preprocessing.StandardScaler(**self._config)
     
         self.with_mean = Toggle(
             text="Center data",
             getter=lambda: self._config["with_mean"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.with_std = Toggle(
             text="Unit variance",
             getter=lambda: self._config["with_std"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
     
     def set_estimator(self):
         self._config["with_mean"] = self.with_mean.button.isChecked()
         self._config["with_std"] = self.with_std.button.isChecked()
-        self.scaler = preprocessing.StandardScaler(**self._config)
 
 class MinMaxScaler(ScalerBase):
     def __init__(self, parent=None):
@@ -87,23 +92,25 @@ class MinMaxScaler(ScalerBase):
             clip = False
         )
         else: self._config = config
-        self.scaler = preprocessing.MinMaxScaler(**self._config)
     
         self.min = TransparentDoubleSpinBox(
             text="Min",
             getter=lambda: self._config["feature_range"][0],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.max = TransparentDoubleSpinBox(
             text="Max",
             getter=lambda: self._config["feature_range"][1],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.clip = Toggle(
             text="Clip",
             getter=lambda: self._config["clip"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
     
@@ -111,17 +118,10 @@ class MinMaxScaler(ScalerBase):
         self._config["feature_range"][0] = self.min.button.value()
         self._config["feature_range"][1] = self.max.button.value()
         self._config["clip"] = self.clip.button.isChecked()
-        self.scaler = preprocessing.MinMaxScaler(**self._config)
 
 class MaxAbsScaler(ScalerBase):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def set_config(self, config=None):
-        self.clear_layout()
-    
-    def set_estimator(self):
-        self.scaler = preprocessing.MaxAbsScaler(**self._config)
 
 class RobustScaler(ScalerBase):
     def __init__(self, parent=None):
@@ -137,23 +137,25 @@ class RobustScaler(ScalerBase):
             unit_variance = False
         )
         else: self._config = config
-        self.scaler = preprocessing.RobustScaler(**self._config)
     
         self.with_centering = Toggle(
             text="Center data",
             getter=lambda: self._config["with_centering"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.unit_variance = Toggle(
             text="Unit variance",
             getter=lambda: self._config["unit_variance"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.with_scaling = Toggle(
             text="Scale to interquartile",
             getter=lambda: self._config["with_scaling"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
     
@@ -161,7 +163,6 @@ class RobustScaler(ScalerBase):
         self._config["with_centering"] = self.with_centering.button.isChecked()
         self._config["with_scaling"] = self.with_scaling.button.isChecked()
         self._config["unit_variance"] = self.unit_variance.button.isChecked()
-        self.scaler = preprocessing.RobustScaler(**self._config)
 
 class QuantileTransfomer(ScalerBase):
     def __init__(self, parent=None):
@@ -177,12 +178,12 @@ class QuantileTransfomer(ScalerBase):
             subsample = 10000
         )
         else: self._config = config
-        self.scaler = preprocessing.QuantileTransformer(**self._config)
     
         self.n_quantiles = TransparentSpinBox(
             min=1, max=10000, step=1000,
             text="Number of quantiles",
             getter=lambda: self._config["n_quantiles"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
@@ -190,13 +191,14 @@ class QuantileTransfomer(ScalerBase):
             items=["uniform","normal"], 
             text="Distribution",
             getter=lambda: self._config["output_distribution"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.subsampleOn = Toggle(
             text="Subsample",
             getter=lambda: True if self._config["subsample"] else False,
-            setter=lambda c: self.subsample.button.setEnabled(c),
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
@@ -204,6 +206,7 @@ class QuantileTransfomer(ScalerBase):
             min=1, max=100000, step=10000, 
             text="Number of subsamples",
             getter=lambda: self._config["subsample"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
     
@@ -211,7 +214,6 @@ class QuantileTransfomer(ScalerBase):
         self._config["n_quantiles"] = self.n_quantiles.button.value()
         self._config["output_distribution"] = self.output_distribution.button.currentText()
         self._config["subsample"] = self.subsample.button.value()
-        self.scaler = preprocessing.QuantileTransformer(**self._config)
 
 class PowerTransformer(ScalerBase):
     def __init__(self, parent=None):
@@ -226,25 +228,25 @@ class PowerTransformer(ScalerBase):
             standardize = True
         )
         else: self._config = config
-        self.scaler = preprocessing.PowerTransformer(**self._config)
     
         self.method = TransparentComboBox(
             items=["yeo-johnson","box-cox"], 
             text="Method",
             getter=lambda: self._config["method"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
 
         self.standardize = Toggle(
             text="Standardize",
             getter=lambda: self._config["standardize"],
+            setter=self.set_estimator,
             layout=self.vlayout
         )
     
     def set_estimator(self):
         self._config["method"] = self.method.button.currentText()
         self._config["standardize"] = self.standardize.button.isChecked()
-        self.scaler = preprocessing.PowerTransformer(**self._config)
 
 class DataScaler (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -257,9 +259,7 @@ class DataScaler (NodeContentWidget):
         
         self.scaler_list = ["Standard Scaler","Min-Max Scaler","Maximum Absolute Scaler",
                             "Robust Scaler","Quantile Transformer","Power Transformer"]
-        
-        self.scaler = preprocessing.StandardScaler(**self._config["config"])
-    
+            
     def currentWidget(self) -> ScalerBase:
         return self.stackedlayout.currentWidget()       
 
@@ -280,13 +280,13 @@ class DataScaler (NodeContentWidget):
         self.stackedlayout.addWidget(QuantileTransfomer())
         self.stackedlayout.addWidget(PowerTransformer())
         self.stackedlayout.setCurrentIndex(self.scaler_list.index(scaler.button.currentText()))
+        self.currentWidget().set_config(self._config["config"])
  
         if dialog.exec():
             self._config.update(
                 config    = self.currentWidget()._config,
                 scaler = scaler.button.currentText()
             )
-            self.scaler = self.currentWidget().scaler
             self.exec()
 
     def func(self):
@@ -303,7 +303,19 @@ class DataScaler (NodeContentWidget):
             data = self.node.input_sockets[0].socket_data.copy()
             columns = data.columns
             X = data.to_numpy()
-            data_transformed = self.scaler.fit_transform(X, **self._config["config"])
+            if self._config["scaler"] == "Standard Scaler":
+                self.scaler = preprocessing.StandardScaler(**self._config["config"])
+            elif self._config["scaler"] == "Min-Max Scaler":
+                self.scaler = preprocessing.MinMaxScaler(**self._config["config"])
+            elif self._config["scaler"] == "Maximum Absolute Scaler":
+                self.scaler = preprocessing.MaxAbsScaler(**self._config["config"])
+            elif self._config["scaler"] == "Robust Scaler":
+                self.scaler = preprocessing.RobustScaler(**self._config["config"])
+            elif self._config["scaler"] == "Quantile Transformer":
+                self.scaler = preprocessing.QuantileTransformer(**self._config["config"])
+            elif self._config["scaler"] == "Power Transformer":
+                self.scaler = preprocessing.PowerTransformer(**self._config["config"])
+            data_transformed = self.scaler.fit_transform(X)
             data = pd.DataFrame(data_transformed, columns=columns)
             
             # change progressbar's color   

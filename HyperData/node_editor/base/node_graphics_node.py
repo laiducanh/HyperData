@@ -132,7 +132,6 @@ class NodeGraphicsNode (GraphicsNode):
     def deserialize(self, data, hashmap={}):
         self.id = data['id']
         hashmap[data['id']] = self
-        print('hasmap',hashmap)
 
         self.setPos(data['pos_x'], data['pos_y'])
         self.title = data['title']
@@ -147,7 +146,6 @@ class NodeGraphicsNode (GraphicsNode):
                 node=self, 
                 index=path['index'], 
                 socket_type=path['socket_type'],
-                data=pd.read_json(path['socket_data']),
                 parent=self
             )
             new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))
@@ -161,7 +159,6 @@ class NodeGraphicsNode (GraphicsNode):
                 node=self, 
                 index=path['index'], 
                 socket_type=path['socket_type'],
-                data=pd.read_json(path['data']),
                 parent=self
             )
             new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneDragDropEvent
 from PySide6.QtGui import QColor, QKeyEvent, QPen
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtCore import Signal, Qt, QThreadPool, QTimer
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
 from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
 from node_editor.node_node import Node
@@ -114,7 +114,7 @@ class NodeGraphicsScene(QGraphicsScene):
         # create nodes
         nodes = data['nodes']
         for node_id in nodes.keys():
-            node = Node(nodes[node_id]['title'],self)
+            node = Node(nodes[node_id]['title'])
             self.addNode(node)
             node.deserialize(nodes[node_id], hashmap)
 
@@ -126,9 +126,7 @@ class NodeGraphicsScene(QGraphicsScene):
             edge = NodeGraphicsEdgeBezier(start_socket, end_socket)
             edge.updatePositions()
             self.addEdge(edge)
-            edge.deserialize(edges[edge_id], hashmap)
-            
-
+            edge.deserialize(edges[edge_id], hashmap)    
 
         return True
 

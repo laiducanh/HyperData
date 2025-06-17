@@ -3,6 +3,7 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.spinbox import TransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.line_edit import CompleterLineEdit
@@ -19,21 +20,25 @@ class DataSplitter (NodeContentWidget):
         self.initConfig()
         
     def initConfig (self):
-        if self.node.input_sockets[0].socket_data.empty:
-            # reset _config if the input data is empty Dataframe
+        try:
+            if self.node.input_sockets[0].socket_data.empty:
+                # reset _config if the input data is empty Dataframe
+                self._config = dict(
+                    type="columns",
+                    idx = -1,
+                )
+            elif not self._data.equals(self.node.input_sockets[0].socket_data):
+                # update _config according to the new input data
+                self._config = dict(
+                    type="columns",
+                    idx=self.node.input_sockets[0].socket_data.shape[0]
+                )
+        except: 
             self._config = dict(
-                type="columns",
-                row = -1,
-                col = -1
-            )
-        elif not self._data.equals(self.node.input_sockets[0].socket_data):
-            # update _config according to the new input data
-            self._config = dict(
-                type="columns",
-                row = self.node.input_sockets[0].socket_data.shape[0],
-                col = self.node.input_sockets[0].socket_data.columns[-1]
-            )
-
+                    type="columns",
+                    idx = -1,
+                )
+            
         self._data = self.node.input_sockets[0].socket_data.copy()
     
     def config(self):
@@ -41,39 +46,24 @@ class DataSplitter (NodeContentWidget):
 
         type = TransparentComboBox(
             items=["columns","rows"], 
-            text="type",
+            text="Type",
             getter=lambda: self._config["type"],
-            setter=lambda: stacklayout.setCurrentIndex(type.button.currentIndex()),
             layout=dialog.main_layout
         )
 
         dialog.main_layout.addWidget(SeparateHLine())
 
-        stacklayout = QStackedLayout()
-        dialog.main_layout.addLayout(stacklayout)
-
-        col = CompleterLineEdit(text="Column")
-        stacklayout.addWidget(col)
-
-        row = CompleterLineEdit(text="Row")
-        stacklayout.addWidget(row)
-        
-        if self.node.input_sockets[0].socket_data.shape[0] < 1000:
-            try: row.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
-            except: pass
-        if self.node.input_sockets[0].socket_data.shape[1] < 1000:
-            try: col.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
-            except: pass
-
-        col.button.setCurrentText(str(self._config["col"]))
-        row.button.setCurrentText(str(self._config["row"]))
-
-        stacklayout.setCurrentIndex(type.button.currentIndex())
+        idx = TransparentSpinBox(
+            min=0, max=1000000,
+            text="Index",
+            text2="Position of the slice",
+            getter=lambda: self._config["idx"],
+            layout=dialog.main_layout
+        )
         
         if dialog.exec():
             self._config["type"] = type.button.currentText()
-            self._config["col"] = col.button.currentText()
-            self._config["row"] = row.button.currentText()
+            self._config["idx"] = idx.button.value()
             self.exec()
 
     def func(self):
@@ -87,16 +77,14 @@ class DataSplitter (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-
+            idx = self._config['idx']
             if self._config["type"] == "columns":
-                col = self.node.input_sockets[0].socket_data.columns.get_loc(self._config["col"])+1
-                data1 = self.node.input_sockets[0].socket_data.iloc[:,:col]
-                data2 = self.node.input_sockets[0].socket_data.iloc[:,col:]
+                data1 = self.node.input_sockets[0].socket_data.iloc[:,:idx]
+                data2 = self.node.input_sockets[0].socket_data.iloc[:,idx:]
 
             elif self._config["type"] == "rows":
-                row = int(self._config["row"])
-                data1 = self.node.input_sockets[0].socket_data.iloc[:row,:]
-                data2 = self.node.input_sockets[0].socket_data.iloc[row:,:]
+                data1 = self.node.input_sockets[0].socket_data.iloc[:idx,:]
+                data2 = self.node.input_sockets[0].socket_data.iloc[idx:,:]
            
             # change progressbar's color
             self.progress.changeColor('success')
@@ -121,5 +109,5 @@ class DataSplitter (NodeContentWidget):
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
-        self.initConfig()
+        #self.initConfig()
     

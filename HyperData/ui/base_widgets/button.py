@@ -126,9 +126,11 @@ class _ToggleToolButton (_ToolButton):
         self.setCheckable(True)
 
 class _ComboBox (QComboBox):
-    def __init__(self, items:Iterable[str]=None, getter:Callable=None, setter:Callable=None, 
+    def __init__(self, items:Iterable[str]=[], getter:Callable=None, setter:Callable=None, 
                  layout:QLayout=None, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+
+        self.items = items
 
         # Cursor
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -146,6 +148,10 @@ class _ComboBox (QComboBox):
         if getter: self.setCurrentText(getter())
         if setter: self.currentTextChanged.connect(setter)
         if layout: layout.addWidget(self)
+    
+    def addItems(self, texts):
+        self.items = texts
+        return super().addItems(texts)
 
 class _TransparentComboBox (_ComboBox):
     """ """

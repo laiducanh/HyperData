@@ -2,7 +2,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, Toggle, PrimaryComboBox
+from ui.base_widgets.button import TransparentComboBox, PrimaryComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QStackedLayout
@@ -35,8 +35,13 @@ class MethodBase(QWidget):
         self.set_config(config=None)
         
     def clear_layout (self):
-        for widget in self.widget.findChildren(QWidget):
-            self.vlayout.removeWidget(widget)
+        # Remove all child widgets from the layout
+        while self.vlayout.count():
+            item = self.vlayout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
     
     def set_config(self, config=None):
         self.clear_layout()
@@ -53,7 +58,6 @@ class PairwiseDistances(MethodBase):
             metric = "euclidean"
         )
         else: self._config = config
-        self.method = pairwise.pairwise_distances
 
         self.metric_ = TransparentComboBox(
             items=["cityblock","cosine","euclidean","l1","l2","manhattan","braycurtis",
@@ -71,35 +75,8 @@ class PairwiseDistances(MethodBase):
             metric = self.metric_.button.currentText()
         )
 
-class PairwiseDistancesArgmin(MethodBase):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def set_config(self, config=None):
-
-        self.clear_layout()
-
-        if not config: self._config = dict(
-            metric = "euclidean"
-        )
-        else: self._config = config
-        self.method = pairwise.pairwise_distances_argmin
-
-        self.metric_ = TransparentComboBox(
-            items=["cityblock","cosine","euclidean","l1","l2","manhattan","braycurtis",
-                   "canberra","chebyshev","correlation","dice","hamming","jaccard",
-                   "kulsinski","mahalanobis","rogerstanimoto","russellrao","seuclidean",
-                   "sokalmichener","sokalsneath","sqeuclidean","yule"], 
-            text="Metric",
-            getter=lambda: self._config["metric"],
-            setter=self.set_estimator,
-            layout=self.vlayout
-        )
-        
-    def set_estimator(self):
-        self._config.update(
-            metric = self.metric_.button.currentText()
-        )
+class PairwiseDistancesArgmin(PairwiseDistances):
+    """ """
 
 class PairedDistances(MethodBase):
     def __init__(self, parent=None):
@@ -113,7 +90,6 @@ class PairedDistances(MethodBase):
             metric = "euclidean"
         )
         else: self._config = config
-        self.method = pairwise.paired_distances
 
         self.metric_ = TransparentComboBox(
             items=["cityblock","cosine","euclidean","l1","l2","manhattan"], 
@@ -131,13 +107,6 @@ class PairedDistances(MethodBase):
 class HaversineDistance(MethodBase):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def set_config(self, config=None):
-
-        self.clear_layout()
-
-        self._config = dict()
-        self.method = pairwise.haversine_distances
    
 class PairwiseKernel(MethodBase):
     def __init__(self, parent=None):
@@ -150,7 +119,6 @@ class PairwiseKernel(MethodBase):
         self._config = dict(
             metric = "linear"
         )
-        self.method = pairwise.pairwise_kernels
 
         self.metric_ = TransparentComboBox(
             items=["additive_chi2","chi2","linear","quadratic","cubic",
@@ -200,13 +168,13 @@ class PairwiseMeasurer (NodeContentWidget):
         self.stackedlayout.addWidget(HaversineDistance())
         self.stackedlayout.addWidget(PairwiseKernel())
         self.stackedlayout.setCurrentIndex(self.method_list.index(method.button.currentText()))
- 
+        self.currentWidget().set_config(self._config["config"])
+
         if dialog.exec():
             self._config.update(
                 config    = self.currentWidget()._config,
                 method = method.button.currentText()
             )
-            self.method = self.currentWidget().method
             self.exec()
 
 
@@ -222,11 +190,20 @@ class PairwiseMeasurer (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
 
         try:
-            data = self.method(
-                self.node.input_sockets[0].socket_data,
-                self.node.input_sockets[1].socket_data,
-                **self._config["config"]
-            )
+            X = self.node.input_sockets[0].socket_data.copy()
+            Y = self.node.input_sockets[1].socket_data.copy()
+            if self._config["method"] == "Pairwise Distances":
+                self.method = pairwise.pairwise_distances
+            elif self._config["method"] == "Pairwise Distances Argmin":
+                self.method = pairwise.pairwise_distances_argmin
+            elif self._config["method"] == "Paired Distances":
+                self.method = pairwise.paired_distances
+            elif self._config["method"] == "Haversine Distances":
+                self.method = pairwise.haversine_distances
+            elif self._config["method"] == "Pairwise Kernel":
+                self.method = pairwise.pairwise_kernels
+            
+            data = self.method(X, Y, **self._config["config"])
             data = pd.DataFrame(data)
             
             # change progressbar's color   

@@ -10,6 +10,7 @@ from matplotlib.backend_bases import PickEvent, cursors
 from matplotlib.widgets import TextBox, Cursor
 import pandas as pd
 import numpy as np
+import mpld3
 
 matplotlib.use("QtAgg")
 #matplotlib.style.use('bmh')
@@ -83,7 +84,12 @@ class Canvas (FigureCanvasQTAgg):
         figure = dict()
         for i in vars(self.fig).keys(): figure[i] = str(vars(self.fig)[i])
         axes = dict(ax = {}, axy2 = {}, axx2 = {})
-        for i in vars(self.axes).keys(): axes['ax'][i] = str(vars(self.axes)[i])
+        axes['ax'] = {
+            "_visible": self.axes.get_visible()
+        }
+        # for i in vars(self.axes).keys(): 
+        #     axes['ax'][i] = (vars(self.axes)[i])
+
         for i in vars(self.axesy2).keys(): axes['axy2'][i] = str(vars(self.axesy2)[i])
         for i in vars(self.axesx2).keys(): axes['axx2'][i] = str(vars(self.axesx2)[i])
 
@@ -93,9 +99,9 @@ class Canvas (FigureCanvasQTAgg):
                 graph[str(obj)] = dict()
                 for i in vars(obj).keys():
                     graph[str(obj)][str(i)] = str(vars(obj)[i])
-            
+        print(mpld3.fig_to_dict(self.fig))
         
-        return {"figure":figure,
+        return {"figure":mpld3.fig_to_dict(self.fig),
                 "label":dict(),
                 "axis":axes,
                 "grid":dict(),
