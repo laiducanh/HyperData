@@ -17,3 +17,8 @@ ListWidget::item, TreeWidget::item {
 ListWidget::item:hover, TreeWidget::item:hover {
     background-color: rgba(222, 222, 222, 1);
 }
+
+ListWidget::item:selected, TreeWidget::item:selected {
+    background-color: --THEMECOLOR-1.0;
+    color: white;
+}

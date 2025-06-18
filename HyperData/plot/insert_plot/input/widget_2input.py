@@ -1,8 +1,10 @@
 from PySide6.QtCore import Signal, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
 from ui.base_widgets.button import _TransparentToolButton
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.line_edit import _LineEdit, _CompleterLineEdit
+from ui.base_widgets.frame import Frame, SeparateHLine
+from ui.base_widgets.text import BodyLabel, TitleLabel
 from data_processing.data_window import DataSelection
 from node_editor.node_node import Node
 
@@ -10,62 +12,78 @@ class Widget2D_2input (QWidget):
     sig = Signal()
     def __init__(self, node:Node, input:list=[str(),str()], parent=None):
         super().__init__(parent)
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout.setContentsMargins(0,0,0,0)
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.vlayout.setContentsMargins(0,0,0,0)
 
         self.input = input
         self.node = node
-        self.axes = ["axis bottom", "axis left"]
+        self.title = TitleLabel(str())
+        self.text = BodyLabel(str(), wordWrap=True)
 
-        from plot.insert_plot.utilis import (icon_axisbot, icon_axisleft, 
-                                             icon_axisright, icon_axistop, icon_open)
-
-        self.choose_axis1 = _TransparentToolButton()
-        self.choose_axis1.setIcon(icon_axisbot)
-        self.x_axis = Menu(parent=self)
-        self.axis_bottom = Action(icon=icon_axisbot,text='Bottom Axis', parent=self)
-        self.axis_bottom.triggered.connect(self.choose_axis_bottom)
-        self.axis_top = Action(icon=icon_axistop,text='Top Axis', parent=self)
-        self.axis_top.triggered.connect(self.choose_axis_top)
-        self.x_axis.addAction(self.axis_bottom)
-        self.x_axis.addAction(self.axis_top)
-        self.choose_axis1.setMenu(self.x_axis)
+        self.initUI()
+    
+    def initUI(self):
         
+        self.vlayout.addWidget(self.title)
+        self.vlayout.addWidget(self.text)
+        self.vlayout.addWidget(SeparateHLine())
+
+        widget = Frame()
+        self.mainlayout = QVBoxLayout(widget)
+        self.vlayout.addWidget(widget)
+
+        
+        # self.axes = ["axis bottom", "axis left"]
+
+        # self.choose_axis1 = _TransparentToolButton()
+        # self.choose_axis1.setIcon(icon_axisbot)
+        # self.x_axis = Menu(parent=self)
+        # self.axis_bottom = Action(icon=icon_axisbot,text='Bottom Axis', parent=self)
+        # self.axis_bottom.triggered.connect(self.choose_axis_bottom)
+        # self.axis_top = Action(icon=icon_axistop,text='Top Axis', parent=self)
+        # self.axis_top.triggered.connect(self.choose_axis_top)
+        # self.x_axis.addAction(self.axis_bottom)
+        # self.x_axis.addAction(self.axis_top)
+        # self.choose_axis1.setMenu(self.x_axis)
+        
+        self.input1_text = BodyLabel('X')
         self.input1 = _CompleterLineEdit()
+        self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_1 = _TransparentToolButton()
-        self.choose_data_1.setIcon(icon_open)
+        self.choose_data_1.setIcon("open.png")
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
         
-        self.choose_axis2 = _TransparentToolButton()
-        self.choose_axis2.setIcon(icon_axisleft)
-        self.y_axis = Menu(parent=self)
-        self.axis_left = Action(icon=icon_axisleft,text='Left Axis', parent=self)
-        self.axis_left.triggered.connect(self.choose_axis_left)
-        self.axis_right = Action(icon=icon_axisright,text='Right Axis', parent=self)
-        self.axis_right.triggered.connect(self.choose_axis_right)
-        self.y_axis.addActions([self.axis_left,self.axis_right])
-        self.choose_axis2.setMenu(self.y_axis)
+        # self.choose_axis2 = _TransparentToolButton()
+        # self.choose_axis2.setIcon(icon_axisleft)
+        # self.y_axis = Menu(parent=self)
+        # self.axis_left = Action(icon=icon_axisleft,text='Left Axis', parent=self)
+        # self.axis_left.triggered.connect(self.choose_axis_left)
+        # self.axis_right = Action(icon=icon_axisright,text='Right Axis', parent=self)
+        # self.axis_right.triggered.connect(self.choose_axis_right)
+        # self.y_axis.addActions([self.axis_left,self.axis_right])
+        # self.choose_axis2.setMenu(self.y_axis)
 
+        self.input2_text = BodyLabel('Y')
         self.input2 = _CompleterLineEdit()
+        self.input2.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input2.setCurrentText(self.input[1])
         self.input2.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_2 = _TransparentToolButton()
-        self.choose_data_2.setIcon(icon_open)
+        self.choose_data_2.setIcon("open.png")
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
 
         layout1 = QHBoxLayout()
-        layout.addLayout(layout1)
-        layout1.addWidget(self.choose_axis1)
+        self.mainlayout.addLayout(layout1)
+        layout1.addWidget(self.input1_text)
         layout1.addWidget(self.input1)
         layout1.addWidget(self.choose_data_1)
 
         layout2 = QHBoxLayout()
-        layout.addLayout(layout2)
-        layout2.addWidget(self.choose_axis2)
+        self.mainlayout.addLayout(layout2)
+        layout2.addWidget(self.input2_text)
         layout2.addWidget(self.input2)
         layout2.addWidget(self.choose_data_2)
         
@@ -138,9 +156,19 @@ class Widget2D_2input (QWidget):
         self.dataview.close()
 
 class Line2D(Widget2D_2input):
-    ''' '''
+    def __init__(self, node, input = [str(), str()], parent=None):
+        super().__init__(node, input, parent)
+        
+        self.title.setText("2D Line plot")
+        self.text.setText('This is intro text')
+
 class Step2D(Widget2D_2input):
-    ''' '''
+    def __init__(self, node, input = [str(), str()], parent=None):
+        super().__init__(node, input, parent)
+        
+        self.title.setText("2D Step plot")
+        self.text.setText('This is intro text')
+
 class Stem2D(Widget2D_2input):
     ''' '''
 class Spline2D(Widget2D_2input):

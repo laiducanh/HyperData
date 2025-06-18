@@ -18,6 +18,7 @@ class Canvas (FigureCanvasQTAgg):
     sig_pickedArtist = Signal(object)
     sig_openMenu = Signal(object)
     sig_hover = Signal() # to use in future
+    sig_serialize = Signal()
     def __init__(self):
         
         self.fig = Figure()
@@ -25,9 +26,8 @@ class Canvas (FigureCanvasQTAgg):
         self._config = {
             'dpi': 150,
             'margin': (0.12, 0.12, 0.9, 0.9),
-            'num_plot': 0, # keep track of the indexes of plots
-
-
+            'plot_type': '2d line',
+            'data_input': [str(), str(), str(), str()],
         }
         self.fig.set_dpi(self._config['dpi'])
         self.fig.subplots_adjust(*self._config['margin'])

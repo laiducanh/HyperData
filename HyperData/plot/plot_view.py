@@ -104,7 +104,7 @@ class PlotView (QMainWindow):
             setter=lambda: self.stackedlayout.setCurrentIndex(0),
             layout=static_layout
         )
-
+ 
         self.search_box = _SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
@@ -124,24 +124,28 @@ class PlotView (QMainWindow):
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
 
-        self.insertplot = InsertPlot (self.canvas, self.node, self.plot3d, self.parent())
-        self.insertplot.sig.connect(self.update_plotlist)
-        self.stackedlayout.addWidget(self.insertplot)
+        # self.insertplot = InsertPlot (self.canvas, self.node, self.plot3d, self.parent())
+        # self.insertplot.sig.connect(self.update_plotlist)
+        # self.stackedlayout.addWidget(self.insertplot)
 
     def treeview_func (self, item:QTreeWidgetItem):
         text = item.text(0).lower()
-        if "graph " in text:
-            _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
-            for pt in self.insertplot.plotlist:
-                if pt.plot_index == _plot_index:
-                    _plot = pt
-                    break
-            curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
+        if text.startswith("graph"):
+            # _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
+            # for pt in self.insertplot.plotlist:
+            #     if pt.plot_index == _plot_index:
+            #         _plot = pt
+            #         break
+            curve = Curve(text, self.plot_visual.canvas, self.insertplot, self.parent())
             curve.sig.connect(self.update_plotlist)
             curve.show()
+            pass
         
         elif "manage graph" == text:
-            self.stackedlayout.setCurrentWidget(self.insertplot)
+            self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
+            self.insertplot.sig.connect(self.update_plotlist)
+            self.insertplot.show()
+            # self.stackedlayout.setCurrentWidget(self.insertplot)
             
         elif text == "bottom axis":
             self.botax = Tick2D('bottom', self.canvas, self.parent())
@@ -201,7 +205,7 @@ class PlotView (QMainWindow):
             self.treeview_data["Objects"] = [item for item in self.treeview_data["Objects"] if "Graph" not in item]
 
             # append list of graphs
-            for obj in find_mpl_object(self.canvas.fig, gid="graph "):
+            for obj in find_mpl_object(self.canvas.fig, gid="graph"):
                 if not obj.get_gid().startswith("_"):
                     if obj.get_gid().split('/')[0].title() not in self.treeview_data["Objects"]:
                         self.treeview_data["Objects"].append(obj.get_gid().split('/')[0].title())

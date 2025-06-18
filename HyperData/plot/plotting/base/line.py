@@ -29,7 +29,7 @@ def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> List[Line2D]:
         _line = ax.plot(_X, _Y,
                         gid=gid, *args, **kwargs)
         artist += _line
-
+   
     return artist
 
 def line3d (X, Y, Z, ax:Axes, gid:str, *args, **kwargs) -> List[Line2D]:

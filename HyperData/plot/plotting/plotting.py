@@ -168,8 +168,8 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     
     # rescale all axes while remove old artists and add new artists
     rescale_plot(ax.figure)
-    
-    if plot_type == "2d line":                   artist = line2d(X, Y, ax, gid, *args, **kwargs)
+    print('plotting', plot_type)
+    if   plot_type == "2d line":                 artist = line2d(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "2d step":                 artist = step2d(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "2d stem":                 artist = stem2d(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "2d spline":               artist = spline2d(X, Y, ax, gid, *args, **kwargs)
