@@ -134,16 +134,11 @@ class Main(QMainWindow):
         return super().closeEvent(a0)
 
     def serialize(self):
-        figures = dict()
-        for idx in range(1, self.mainlayout.count()):
-            figures[idx] = self.mainlayout.widget(idx).serialize()
-        print(figures)
-        
+
         config.update(
             id=id(self),
             screen_size=QGuiApplication.primaryScreen().geometry().getRect(),
             node_view=self.node_view.grScene.serialize(),
-            figure_view=figures
         )
         
     def deserialize(self, data:dict, hashmap={}):

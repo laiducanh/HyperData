@@ -28,6 +28,7 @@ class Canvas (FigureCanvasQTAgg):
             'margin': (0.12, 0.12, 0.9, 0.9),
             'plot_type': '2d line',
             'data_input': [str(), str(), str(), str()],
+            'plot_props': dict(),
         }
         self.fig.set_dpi(self._config['dpi'])
         self.fig.subplots_adjust(*self._config['margin'])

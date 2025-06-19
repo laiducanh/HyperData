@@ -174,6 +174,8 @@ class ColorPickerButton (_PushButton):
         self.setFixedSize(96, 32)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.isHover = False
+        self.setter = setter
+        self.getter = getter
 
         if getter: self.setColor(getter())
         else: self.setColor("black")
@@ -230,6 +232,7 @@ class ColorPickerButton (_PushButton):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
         
+        if self.setter: self.color = self.getter()
         # darker self.color to get edge color
         _pc = QColor(self.color)
         pc = QColor(int(_pc.getRgb()[0]*0.5),
@@ -245,7 +248,7 @@ class ColorPickerButton (_PushButton):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
         rect = QRectF(self.width()-22, self.height() /
                       2-5, 10, 10)
-        self._drawDropDownIcon(painter, rect)     
+        self._drawDropDownIcon(painter, rect)   
 
 class ColorDropdown (HButton):
     def __init__(self, text:str=None, text2:str=None, getter:Callable=None, setter:Callable=None,

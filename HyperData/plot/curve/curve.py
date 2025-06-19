@@ -5,7 +5,7 @@ from ui.base_widgets.frame import SeparateHLine
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import InsertPlot
 from plot.utilis import find_mpl_object
-from plot.curve.base_plottype.line import Line# Step, Stem, Stem3d, Area, StackedArea, StackedArea100)
+from plot.curve.base_plottype.line import Line, Step#, Stem, Stem3d, Area, StackedArea, StackedArea100)
 # from plot.curve.base_plottype.column import (Column, Column3D, Dot, ClusteredColumn, ClusteredDot, Dumbbell,
 #                                              Marimekko, Treemap, WaterFall)
 # from plot.curve.base_plottype.scatter import Scatter, Scatter3D
@@ -27,64 +27,64 @@ class Curve (QDialog):
         self.gid = gid
         self.canvas = canvas
         self.plot = plot
-        self.obj = self.find_object()
+        # self.obj = self.find_object()
 
         self.initUI()
     
-    def find_object (self) -> list[Artist]:
-        return find_mpl_object(
-            self.canvas.fig,
-            match=[Artist],
-            gid=self.gid
-            )
+    # def find_object (self) -> list[Artist]:
+    #     return find_mpl_object(
+    #         self.canvas.fig,
+    #         match=[Artist],
+    #         gid=self.gid
+    #         )
     
     def initUI(self):
     
         self.vlayout = QVBoxLayout(self)
     
     # Timer for updating legend
-        self.timer = QTimer()
-        self.timer.setSingleShot(True)
-        self.timer.timeout.connect(self.set_label)
+        # self.timer = QTimer()
+        # self.timer.setSingleShot(True)
+        # self.timer.timeout.connect(self.set_label)
     
     # Legend
-        self.legend = LineEdit(text='Legend')
-        self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.legend.button.setText(self.get_label())
-        self.legend.button.textChanged.connect(lambda: self.timer.start(300))
-        self.vlayout.addWidget(self.legend)
-        self.vlayout.addWidget(SeparateHLine())
+        # self.legend = LineEdit(text='Legend')
+        # self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # self.legend.button.setText(self.get_label())
+        # self.legend.button.textChanged.connect(lambda: self.timer.start(300))
+        # self.vlayout.addWidget(self.legend)
+        # self.vlayout.addWidget(SeparateHLine())
 
         self.initialize_layout()
 
-    def set_label (self):
-        try:
-            if self.legend.button.text() == "":
-                _label = "_"
-            else: _label = self.legend.button.text()
-            for obj in self.find_object():
-                if not obj.get_gid().startswith('_'):
-                    obj.set_label(_label)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
+    # def set_label (self):
+    #     try:
+    #         if self.legend.button.text() == "":
+    #             _label = "_"
+    #         else: _label = self.legend.button.text()
+    #         for obj in self.find_object():
+    #             if not obj.get_gid().startswith('_'):
+    #                 obj.set_label(_label)
+    #         set_legend(self.canvas)
+    #         self.canvas.draw_idle()
             
-        except Exception as e:
-            logger.exception(e)
+    #     except Exception as e:
+    #         logger.exception(e)
 
-    def get_label (self) -> str:
-        # skip label starting with "_"
-        for obj in self.find_object():
-            if obj.get_label().startswith("_"):
-                return None
-            return obj.get_label()
+    # def get_label (self) -> str:
+    #     # skip label starting with "_"
+    #     for obj in self.find_object():
+    #         if obj.get_label().startswith("_"):
+    #             return None
+    #         return obj.get_label()
     
-    def update_legend (self):
-        try:
-            if get_legend(self.canvas): set_legend(self.canvas)
-            self.canvas.draw_idle()
-            self.sig.emit()
-        except Exception as e:
-            logger.exception(e)
+    # def update_legend (self):
+    #     try:
+    #         if get_legend(self.canvas): set_legend(self.canvas)
+    #         self.canvas.draw_idle()
+    #         self.sig.emit()
+    #     except Exception as e:
+    #         logger.exception(e)
     
     def initialize_layout(self):
         try:
@@ -92,7 +92,7 @@ class Curve (QDialog):
             args = [self.gid.split('/')[0], self.canvas, self.plot]
 
             if   plot_type == '2d line':                widget = Line(*args)
-            # elif plot_type == "2d step":                widget = Step(*args)
+            elif plot_type == "2d step":                widget = Step(*args)
             # elif plot_type == '2d stem':                widget = Stem(*args)
             # elif plot_type == "2d area":                widget = Area(*args)
             # elif plot_type == "fill between":           widget = Area(*args)
@@ -133,7 +133,7 @@ class Curve (QDialog):
             # elif plot_type == "3d scatter":             widget = Scatter3D(*args)
             # elif plot_type == "3d bubble":              widget = Scatter3D(*args)
 
-            widget.onChanged.connect(self.update_legend)
+            widget.onChanged.connect(self.sig.emit)
             self.vlayout.addWidget(widget)
 
         except Exception as e:

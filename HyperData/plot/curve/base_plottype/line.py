@@ -19,51 +19,48 @@ class Line (PlotConfigBase):
     def __init__(self, gid, canvas:Canvas, plot:InsertPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
-        self.segment.addButton(text='General', func=lambda: self.stackedlayout.setCurrentIndex(0))
         self.segment.addButton(text='Line 2D', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(2))
         self.segment.setCurrentIndex(0)
 
         axesplot = AxesPlot(gid, canvas, plot, parent)
-        self.stackedlayout.addWidget(axesplot)
+        self.general.vlayout.addWidget(axesplot)
 
         line2d = line.Line(gid, canvas, parent)
-        line2d.onChanged.connect(self.onChanged.emit)
+        line2d.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(line2d)
 
         marker = line.Marker(gid, canvas, parent)
-        marker.onChanged.connect(self.onChanged.emit)
+        marker.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(marker)
 
 class Step (PlotConfigBase):
     def __init__(self, gid, canvas:Canvas, plot:InsertPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.segment.addButton(text='Line 2D', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.setCurrentIndex(0)
 
-        layout.addWidget(TitleLabel('Step'))
-        layout.addWidget(SeparateHLine())
+        axesplot = AxesPlot(gid, canvas, plot, parent)
+        self.general.vlayout.addWidget(axesplot)
 
         self.where = TransparentComboBox(
             items=['pre', 'post', 'mid'], 
             text="Where",
             getter=self.get_where,
             setter=self.set_where,
-            layout=layout
         )
+        self.general.vlayout.addWidget(SeparateHLine())
+        self.general.vlayout.insertWidget(1, self.where)
 
-        layout.addWidget(TitleLabel('Line 2D'))
-        layout.addWidget(SeparateHLine())
         line2d = line.Line(gid, canvas, parent)
-        line2d.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(line2d)
+        line2d.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(line2d)
 
-        layout.addWidget(TitleLabel('Marker'))
-        layout.addWidget(SeparateHLine())
         marker = line.Marker(gid, canvas, parent)
-        marker.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(marker)
+        marker.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(marker)
 
     def find_object (self) -> list[lines.Line2D]:
         return find_mpl_object(
@@ -74,13 +71,13 @@ class Step (PlotConfigBase):
 
     def set_where (self, value:str):
         try:
-            self.props.update(where = value)
+            self.canvas._config["plot_props"].update(where = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_where (self) -> str:
-        return self.find_object()[0].where
+        return self.canvas._config["plot_props"]["where"]
 
 class Stem (PlotConfigBase):
     def __init__(self, gid, canvas:Canvas, plot:InsertPlot, parent=None):
