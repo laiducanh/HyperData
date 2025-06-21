@@ -1,8 +1,6 @@
 from matplotlib.colors import to_hex
 from matplotlib.artist import Artist
 from matplotlib.figure import Figure
-from matplotlib.legend import Legend
-from matplotlib.text import Text
 from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 from matplotlib.axes import Axes
@@ -40,7 +38,7 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list=None, gid:str=N
 
     obj_found = list()
     if not match:
-        match = [lines.Line2D,collections.Collection,patches.Patch,AxesImage,Legend,Text]
+        match = [lines.Line2D,collections.Collection,patches.Patch,AxesImage,legend.Legend,text.Text]
     
     for artist_class in match:
         _found: list[Artist] = source.findobj(match=artist_class)
@@ -74,7 +72,98 @@ def update_props (from_obj: Artist, to_obj: Artist) -> None:
     except Exception as e:
         logger.exception(e)
 
-def copy_objects(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
+def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
+    # Copy Axes properties
+    destination_ax.set(
+        aspect=source_ax.get_aspect(),
+        title=source_ax.get_title(),
+        xscale=source_ax.get_xscale(),
+        yscale=source_ax.get_yscale(),
+        facecolor=source_ax.get_facecolor(),
+    )
+
+    # Copy tick locations
+    destination_ax.set_xticks(source_ax.get_xticks(), minor=False)
+    destination_ax.set_xticks(source_ax.get_xticks(minor=True), minor=True)
+    destination_ax.set_yticks(source_ax.get_yticks(), minor=False)
+    destination_ax.set_yticks(source_ax.get_yticks(minor=True), minor=True)
+    
+    # Copy tick labels
+    destination_ax.set_xticklabels([label.get_text() for label in source_ax.get_xticklabels(minor=False)], minor=False)
+    destination_ax.set_xticklabels([label.get_text() for label in source_ax.get_xticklabels(minor=True)], minor=True)
+    destination_ax.set_yticklabels([label.get_text() for label in source_ax.get_yticklabels(minor=False)], minor=False)
+    destination_ax.set_yticklabels([label.get_text() for label in source_ax.get_yticklabels(minor=True)], minor=True)
+
+    destination_ax.xaxis.set(
+        visible = source_ax.xaxis.get_visible(),
+        label_text = source_ax.xaxis.get_label_text()
+    )
+    destination_ax.xaxis.get_label().set(
+        fontname = source_ax.xaxis.get_label().get_fontname(),
+        fontsize = source_ax.xaxis.get_label().get_fontsize(),
+        color = source_ax.xaxis.get_label().get_color(),
+        alpha = source_ax.xaxis.get_label().get_alpha()
+    )
+
+    destination_ax.yaxis.set(
+        visible = source_ax.yaxis.get_visible(),
+        label_text = source_ax.yaxis.get_label_text()
+    )
+    destination_ax.yaxis.get_label().set(
+        fontname = source_ax.yaxis.get_label().get_fontname(),
+        fontsize = source_ax.yaxis.get_label().get_fontsize(),
+        color = source_ax.yaxis.get_label().get_color(),
+        alpha = source_ax.yaxis.get_label().get_alpha()
+    )
+
+    # Copy tick parameters
+    for which in ["major","minor"]:
+        destination_ax.xaxis.set_tick_params(which=which, **source_ax.xaxis.get_tick_params(which=which))
+        destination_ax.yaxis.set_tick_params(which=which, **source_ax.yaxis.get_tick_params(which=which))
+
+    # Copy Axes limits
+    destination_ax.set_xlim(source_ax.get_xlim())
+    destination_ax.set_ylim(source_ax.get_ylim())
+    if isinstance(destination_ax, Axes3D):
+        destination_ax.set_zlim(source_ax.get_zlim())
+    
+    # Spines
+    for name, spine in source_ax.spines.items():
+        destination_ax.spines[name].set(
+            visible=spine.get_visible(),
+            alpha=spine.get_alpha(),
+            linestyle=spine.get_linestyle(),
+            linewidth=spine.get_linewidth(),
+            color=spine.get_edgecolor(),
+            gid=spine.get_gid()
+        )
+    for obj in find_mpl_object(source_ax, match=[lines.Line2D], gid="spine"):
+        for new_obj in find_mpl_object(destination_ax, match=[lines.Line2D], gid=obj.get_gid()):
+            new_obj.set(
+                marker=obj.get_marker(),
+                markerfacecolor=obj.get_markerfacecolor(),
+                transform=destination_ax.transAxes,
+                clip_on=obj.get_clip_on(),
+            )
+
+    # Pane
+    destination_ax.patch.set(
+        visible = source_ax.patch.get_visible(),
+        color = source_ax.patch.get_facecolor(),
+        alpha = source_ax.patch.get_alpha(),
+    )
+    destination_ax.figure.set_facecolor(source_ax.figure.get_facecolor())
+
+    # Margins
+    destination_ax.figure.subplots_adjust(
+        left=source_ax.figure.subplotpars.left,
+        right=source_ax.figure.subplotpars.right,
+        bottom=source_ax.figure.subplotpars.bottom,
+        top=source_ax.figure.subplotpars.top,
+        wspace=source_ax.figure.subplotpars.wspace,
+        hspace=source_ax.figure.subplotpars.hspace
+    )
+
     # Recreate artist
     for artist in find_mpl_object(source_ax):
         new_artist = None
@@ -171,83 +260,4 @@ def copy_objects(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]
                 new_artist.set_transform(destination_ax.transData)  
             destination_ax.add_artist(new_artist)
 
-    # Copy Axes properties
-    destination_ax.set(
-        aspect=source_ax.get_aspect(),
-        title=source_ax.get_title(),
-        xscale=source_ax.get_xscale(),
-        yscale=source_ax.get_yscale(),
-        facecolor=source_ax.get_facecolor(),
-    )
-
-    # Copy tick locations
-    destination_ax.set_xticks(source_ax.get_xticks(), minor=False)
-    destination_ax.set_xticks(source_ax.get_xticks(minor=True), minor=True)
-    destination_ax.set_yticks(source_ax.get_yticks(), minor=False)
-    destination_ax.set_yticks(source_ax.get_yticks(minor=True), minor=True)
     
-    # Copy tick labels
-    # destination_ax.set_xticklabels([label.get_text() for label in source_ax.get_xticklabels(minor=False)], minor=False)
-    # destination_ax.set_xticklabels([label.get_text() for label in source_ax.get_xticklabels(minor=True)], minor=True)
-    # destination_ax.set_yticklabels([label.get_text() for label in source_ax.get_yticklabels(minor=False)], minor=False)
-    # destination_ax.set_yticklabels([label.get_text() for label in source_ax.get_yticklabels(minor=True)], minor=True)
-
-    destination_ax.xaxis.set(
-        visible = source_ax.xaxis.get_visible(),
-        # label_text = source_ax.xaxis.get_label_text()
-    )
-    # destination_ax.xaxis.get_label().set(
-    #     fontname = source_ax.xaxis.get_label().get_fontname(),
-    #     fontsize = source_ax.xaxis.get_label().get_fontsize(),
-    #     color = source_ax.xaxis.get_label().get_color(),
-    #     alpha = source_ax.xaxis.get_label().get_alpha()
-    # )
-
-    destination_ax.yaxis.set(
-        visible = source_ax.yaxis.get_visible(),
-        # label_text = source_ax.yaxis.get_label_text()
-    )
-    # destination_ax.yaxis.get_label().set(
-    #     fontname = source_ax.yaxis.get_label().get_fontname(),
-    #     fontsize = source_ax.yaxis.get_label().get_fontsize(),
-    #     color = source_ax.yaxis.get_label().get_color(),
-    #     alpha = source_ax.yaxis.get_label().get_alpha()
-    # )
-
-    # Copy tick parameters
-    destination_ax.xaxis.set_tick_params(**source_ax.xaxis.get_tick_params())
-    destination_ax.yaxis.set_tick_params(**source_ax.yaxis.get_tick_params())
-
-    # Copy Axes limits
-    destination_ax.set_xlim(source_ax.get_xlim())
-    destination_ax.set_ylim(source_ax.get_ylim())
-    if isinstance(destination_ax, Axes3D):
-        destination_ax.set_zlim(source_ax.get_zlim())
-    
-    # Spines
-    for name, spine in source_ax.spines.items():
-        destination_ax.spines[name].set(
-            visible=spine.get_visible(),
-            alpha=spine.get_alpha(),
-            linestyle=spine.get_linestyle(),
-            linewidth=spine.get_linewidth(),
-            color=spine.get_edgecolor()
-        )
-
-    # Pane
-    destination_ax.patch.set(
-        visible = source_ax.patch.get_visible(),
-        color = source_ax.patch.get_facecolor(),
-        alpha = source_ax.patch.get_alpha(),
-    )
-    destination_ax.figure.set_facecolor(source_ax.figure.get_facecolor())
-
-    # Margins
-    destination_ax.figure.subplots_adjust(
-        left=source_ax.figure.subplotpars.left,
-        right=source_ax.figure.subplotpars.right,
-        bottom=source_ax.figure.subplotpars.bottom,
-        top=source_ax.figure.subplotpars.top,
-        wspace=source_ax.figure.subplotpars.wspace,
-        hspace=source_ax.figure.subplotpars.hspace
-    )

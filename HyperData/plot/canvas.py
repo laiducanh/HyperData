@@ -2,7 +2,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
 import matplotlib, pickle
 from matplotlib.figure import Figure
-from plot.utilis import copy_objects
+from plot.utilis import copy_Axes
 from config.settings import config, logger
 
 matplotlib.use("QtAgg")
@@ -86,9 +86,7 @@ class Canvas (FigureCanvasQTAgg):
                      clip_on=False,
                      gid="spine right"
             )
-        
-        self.axes.set_title('Graph Title')
-    
+            
     def serialize(self):
     
         with open(f'canvas_{self.id}.pickle', 'wb') as file: 
@@ -108,7 +106,7 @@ class Canvas (FigureCanvasQTAgg):
                 loaded_fig = pickle.load(file)
 
             for source_ax, destination_ax in zip(loaded_fig.axes, self.figure.axes):
-                copy_objects(source_ax, destination_ax)
+                copy_Axes(source_ax, destination_ax)
             
             self.draw_idle()
         except Exception as e:
@@ -152,7 +150,7 @@ class MultiFigureCanvas(Canvas):
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
 
-        for ax in self.fig.axes:
+        for ax in self.figure.axes:
             # Turn off spines
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)

@@ -101,11 +101,11 @@ class Main(QMainWindow):
             super().keyPressEvent(event)
     
     def saveToFile(self):
-        self.serialize()
         dialog = FileDialog()
         if dialog.exec():
             try:
                 filename = dialog.selectedFiles()[0]
+                self.serialize()
                 with open(filename, "w") as file:
                     file.write(json.dumps(config, indent=4))
                 print("saving to", filename, "was successfull.")

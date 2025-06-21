@@ -8,7 +8,7 @@ from ui.base_widgets.spinbox import TransparentSpinBox, Slider
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
 from mpl_toolkits.mplot3d.axes3d import Axes3D, Axes
-from plot.utilis import copy_objects
+from plot.utilis import copy_Axes
 
 class SubFigure(QWidget):
     sig = Signal()
@@ -217,15 +217,15 @@ class Layout(QScrollArea):
                     if canvas.axespie.axison: axpie.set_axis_on()
                     if canvas.axes.axison: 
                         ax.set_axis_on()
-                        copy_objects(canvas.axes, ax)                    
-                        copy_objects(canvas.axesx2, axx2)
-                        copy_objects(canvas.axesy2, axy2)
-                        copy_objects(canvas.axesleg, axleg)
+                        copy_Axes(canvas.axes, ax)                    
+                        copy_Axes(canvas.axesx2, axx2)
+                        copy_Axes(canvas.axesy2, axy2)
+                        copy_Axes(canvas.axesleg, axleg)
                     else:
-                        copy_objects(canvas.axespie, axpie)
+                        copy_Axes(canvas.axespie, axpie)
                                     
                 else:
-                    copy_objects(canvas.axes, ax)     
+                    copy_Axes(canvas.axes, ax)     
                     ax.set_zlabel(canvas.axes.get_zlabel())             
 
         self.canvas.draw_idle()
