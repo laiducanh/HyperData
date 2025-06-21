@@ -10,11 +10,20 @@ from config.settings import GLOBAL_DEBUG, logger
 DEBUG = True
 
 def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
-         radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:
+         radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> tuple[list[Wedge], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.asarray([1,4])
 
+    props = {
+        "explode": explode,
+        "labels": labels,
+        "startangle": startangle,
+        "radius": radius,
+        "counterclock": counterclock,
+        "rotatelabels": rotatelabels,
+        "normalize": normalize
+    }
     if explode != None and len(explode) != len(X):
         explode = None
     
@@ -30,12 +39,6 @@ def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
 
     # artist has type of [[wedges],[text],[autotexts]]
     for ind, obj in enumerate(artist[0]):
-        obj.explode = explode
-        obj.labels = labels
-        obj.startangle = startangle
-        obj.counterclock = counterclock
-        obj.rotatelabels = rotatelabels
-        obj.normalize = normalize
         obj.Xdata = X[ind]
         obj.Ydata = None
         thetam = np.pi * (obj.theta2 + obj.theta1)/360
@@ -46,16 +49,25 @@ def pie (X, ax: Axes, gid, explode=None, labels=None, startangle=0,
     for ind, obj in enumerate(artist[1]):
         obj.set_gid(f"{gid}.{ind+1}")
 
-    return artist[0]
+    return artist[0], props
 
 def coxcomb(X, ax:Axes, gid, explode=None, labels=None, startangle=0,
-            radius=1, counterclock=True, rotatelabels=True, *args, **kwargs) -> list[Wedge]:
+            radius=1, counterclock=True, rotatelabels=True, *args, **kwargs) -> tuple[list[Wedge], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([10,8,15])
     
     X = np.asarray(X)
     X = (X/np.sum(X))/np.max(X/np.sum(X))
+
+    props = {
+        "explode": explode,
+        "labels": labels,
+        "startangle": startangle,
+        "radius": radius,
+        "counterclock": counterclock,
+        "rotatelabels": rotatelabels
+    }
 
     artist = ax.pie(
         np.repeat([1], len(X)), 
@@ -70,13 +82,6 @@ def coxcomb(X, ax:Axes, gid, explode=None, labels=None, startangle=0,
 
     for ind, obj in enumerate(artist[0]):
         obj.set_radius(X[ind] * radius)
-
-        obj.explode = explode
-        obj.labels = labels
-        obj.startangle = startangle
-        obj.radius = radius
-        obj.counterclock = counterclock
-        obj.rotatelabels = rotatelabels
         obj.Xdata = X[ind]
         obj.Ydata = None
         thetam = np.pi * (obj.theta2 + obj.theta1)/360
@@ -88,13 +93,24 @@ def coxcomb(X, ax:Axes, gid, explode=None, labels=None, startangle=0,
     for ind, obj in enumerate(artist[1]):
         obj.set_gid(f"{gid}.{ind+1}")
 
-    return artist[0]
+    return artist[0], props
 
 def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=0,
-              radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:
+              radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> tuple[list[Wedge], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.asarray([1,4])
+    
+    props = {
+        "width": width,
+        "explode": explode,
+        "labels": labels,
+        "startangle": startangle,
+        "radius": radius,
+        "counterclock": counterclock,
+        "rotatelabels": rotatelabels,
+        "normalize": normalize
+    }
 
     artist = ax.pie(X, wedgeprops=dict(width=width), explode=explode, labels=labels, startangle=startangle,
                     radius=radius, counterclock=counterclock, rotatelabels=rotatelabels, normalize=normalize, *args, **kwargs)
@@ -102,14 +118,6 @@ def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=
     artist = artist[0]
 
     for ind, obj in enumerate(artist):
-        obj.width = width
-        obj.explode = explode
-        obj.labels = labels
-        obj.startangle = startangle
-        obj.radius = radius
-        obj.counterclock = counterclock
-        obj.rotatelabels = rotatelabels
-        obj.normalize = normalize
         obj.Xdata = X[ind]
         obj.Ydata = None
         thetam = np.pi * (obj.theta2 + obj.theta1)/360
@@ -119,13 +127,24 @@ def doughnut (X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=
         obj.set_gid(f"{gid}.{ind+1}")
 
 
-    return artist
+    return artist, props
 
 def multilevel_doughnut(X, ax:Axes, gid, width=0.25, explode=None, labels=None, startangle=0, pad=0.03, 
-                        radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:
+                        radius=1, counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> tuple[list[Wedge], dict]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([[[20, 40], [18, 22]], [[10,12], [8,15]], [[15,14], [2,8]]])
-        
+    
+    props = {
+        "width": width,
+        "explode": explode,
+        "labels": labels,
+        "startangle": startangle,
+        "pad": pad,
+        "radius": radius,
+        "counterclock": counterclock,
+        "rotatelabels": rotatelabels,
+        "normalize": normalize
+    }
     X = np.asarray(X)
     artist: list[Wedge] = list()
     cumshape = np.cumprod(X.shape)
@@ -155,15 +174,6 @@ def multilevel_doughnut(X, ax:Axes, gid, width=0.25, explode=None, labels=None, 
             color_list = np.repeat(color_list, X.shape[dim],axis=0)
         
         for ind, obj in enumerate(art[0]):
-            obj.width = width
-            obj.explode = explode
-            obj.labels = labels
-            obj.startangle = startangle
-            obj.radius = radius
-            obj.counterclock = counterclock
-            obj.rotatelabels = rotatelabels
-            obj.normalize = normalize
-            obj.pad = pad
             obj.Xdata = _x.sum(axis=1)[ind]
             obj.Ydata = None
             thetam = np.pi * (obj.theta2 + obj.theta1)/360
@@ -189,15 +199,26 @@ def multilevel_doughnut(X, ax:Axes, gid, width=0.25, explode=None, labels=None, 
                 obj.set_facecolor(color)
                 i += 1/np.sum(X.shape)
 
-    return artist
+    return artist, props
 
 def semicircle_doughnut(X, ax:Axes, gid, width=0.3, explode=None, labels=None, startangle=0, radius=1, 
-                        counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> list[Wedge]:
+                        counterclock=True, rotatelabels=True, normalize=True, *args, **kwargs) -> tuple[list[Wedge], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([2,3])
     
     X = np.asarray(X)
+
+    props = {
+        "width": width,
+        "explode": explode,
+        "labels": labels,
+        "startangle": startangle,
+        "radius": radius,
+        "counterclock": counterclock,
+        "rotatelabels": rotatelabels,
+        "normalize": normalize
+    }
 
     artist = ax.pie(
         X/(2*np.sum(X)), 
@@ -215,14 +236,6 @@ def semicircle_doughnut(X, ax:Axes, gid, width=0.3, explode=None, labels=None, s
     artist = artist[0]
 
     for ind, obj in enumerate(artist):
-        obj.width = width
-        obj.explode = explode
-        obj.labels = labels
-        obj.startangle = startangle
-        obj.radius = radius
-        obj.counterclock = counterclock
-        obj.rotatelabels = rotatelabels
-        obj.normalize = normalize
         obj.Xdata = X[ind]
         obj.Ydata = None
         thetam = np.pi * (obj.theta2 + obj.theta1)/360
@@ -231,4 +244,4 @@ def semicircle_doughnut(X, ax:Axes, gid, width=0.3, explode=None, labels=None, s
 
         obj.set_gid(f"{gid}.{ind+1}")
     
-    return artist
+    return artist, props

@@ -41,7 +41,7 @@ class Main(QMainWindow):
         menu_bar = MenuBar(self)
         self.setMenuBar(menu_bar)
 
-        self.central_widget = QWidget(self)
+        self.central_widget = QWidget()
         self.mainlayout = QStackedLayout(self.central_widget)
         self.setCentralWidget(self.central_widget)
         
@@ -128,9 +128,6 @@ class Main(QMainWindow):
         return super().paintEvent(a0)
     
     def closeEvent(self, a0: QCloseEvent) -> None:
-        self.serialize()
-        with open(config["config_path"], "w") as file:
-            file.write( json.dumps(config, indent=4))
         return super().closeEvent(a0)
 
     def serialize(self):
@@ -142,13 +139,11 @@ class Main(QMainWindow):
         )
         
     def deserialize(self, data:dict, hashmap={}):
-        print("deserializating data")
+        
         config = data.copy()
-        print(self.mainlayout.count(), self.stack_scene)
         while self.mainlayout.count() > 1:
             self.mainlayout.takeAt(1)
             self.stack_scene.pop(0)
-        print(self.mainlayout.count(), self.stack_scene)
         self.node_view.grScene.deserialize(config["node_view"], hashmap={})
         
      
@@ -157,6 +152,9 @@ if __name__ == "__main__":
         
     logger.info(get_path())
     QDir.addSearchPath('ui', os.path.join(get_path(), 'ui'))
+
+    # QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
+    # QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
     
     app = QApplication(sys.argv)
 

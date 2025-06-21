@@ -67,10 +67,10 @@ class Visualization(QWidget):
     
     def draw_plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         n_clusters = len(set(self.model.labels_))
         colors = plt.cycler("color", plt.cm.viridis(np.linspace(0, 1, n_clusters)))

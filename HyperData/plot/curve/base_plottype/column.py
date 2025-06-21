@@ -20,7 +20,7 @@ import numpy as np
 
 DEBUG = False
 
-class Column (PlotConfigBase):
+class Column(PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
@@ -28,86 +28,81 @@ class Column (PlotConfigBase):
     
     def initUI(self):
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Bar'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Connecting lines', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=layout
+            layout=self.general.vlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
         self.barwidth = TransparentDoubleSpinBox(
-            text = 'Bar Width',
+            text = 'Column Width',
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
-        rect.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(rect)
-
-        layout.addWidget(TitleLabel('Connecting lines'))
-        layout.addWidget(SeparateHLine())
+        rect.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(rect)
         
         collection = LineCollection(f"_{self.gid.split('.')[0]}", self.canvas)
-        collection.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(collection)
+        collection.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(collection)
         
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.Rectangle],
             gid=self.gid
         )
 
     def set_orientation(self, value:str):
         try:
-            self.props.update(orientation = value.lower())
+            self.plot.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
             self.plot.progressbar.changeColor()
     
     def get_orientation(self) -> str:
-        return self.find_object()[0].orientation
+        return self.plot.props["orientation"]
     
     def set_bottom (self, value:str):
         try:
-            self.props.update(bottom = float(value))
+            self.plot.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_bottom (self) -> str:
-        return str(self.find_object()[0].bottom)
+        return str(self.plot.props["bottom"])
 
     def set_barwidth (self, value:float):
         try: 
-            self.props.update(width = value)
+            self.plot.props.update(width = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_barwidth (self) -> float:
-        return self.find_object()[0].width
+        return self.plot.props["width"]
 
-class Column3D (PlotConfigBase):
+class Column3D(PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
@@ -115,24 +110,21 @@ class Column3D (PlotConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Column 3D'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["x","y","z"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=layout
+            layout=self.general.vlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -142,7 +134,7 @@ class Column3D (PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_dx,
             setter=self.set_dx,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.dy = TransparentDoubleSpinBox(
@@ -150,84 +142,84 @@ class Column3D (PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_dy,
             setter=self.set_dy,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.color = ColorDropdown(
             text  = "Color", 
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.shade = Toggle(
             text="Shade",
             getter=self.get_shade,
             setter=self.set_shade,
-            layout=layout
+            layout=self.general.vlayout
         ) 
 
         collection = Poly3DCollection(self.gid, self.canvas)
-        collection.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(collection)
+        collection.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(collection)
     
     def find_object (self) -> list[Poly3D]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[Poly3D],
             gid=self.gid
         )
         
     def set_orientation(self, value:str):
         try:
-            self.props.update(orientation = value.lower())
+            self.plot.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_orientation(self) -> str:
-        return self.find_object()[0].orientation
+        return self.plot.props["orientation"]
     
     def set_bottom (self, value:str):
         try:
             if value == "": value = 0
-            self.props.update(bottom = float(value))
+            self.plot.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_bottom (self) -> str:
-        return str(self.find_object()[0].bottom)
+        return str(self.plot.props["bottom"])
 
     def set_dx (self, value:float):
         try: 
-            self.props.update(Dx = value)
+            self.plot.props.update(Dx = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_dx (self) -> float:
-        return self.find_object()[0].Dx
+        return self.plot.props["Dx"]
     
     def set_dy(self, value:float):
         try:
-            self.props.update(Dy = value)
+            self.plot.props.update(Dy = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_dy(self) -> float:
-        return self.find_object()[0].Dy
+        return self.plot.props["Dy"]
     
     def set_color(self, value:str):
         try:
-            self.props.update(color = value)
+            self.plot.props.update(color = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
 
     def get_color(self) -> str:
-        _color = self.find_object()[0].color
+        _color = self.plot.props["color"]
         if not _color:
             color = np.max(self.find_object()[0].get_facecolor(),axis=0)
             return colors.to_hex(color)
@@ -235,15 +227,15 @@ class Column3D (PlotConfigBase):
     
     def set_shade(self, value:bool):
         try:
-            self.props.update(shade = value)
+            self.plot.props.update(shade = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_shade(self) -> bool:
-        return self.find_object()[0].shade
+        return self.plot.props["shade"]
     
-class Dot (PlotConfigBase):
+class Dot(PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
@@ -251,72 +243,69 @@ class Dot (PlotConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Dot'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=layout
+            layout=self.general.vlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
         marker = Marker(self.gid, self.canvas)
-        marker.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(marker)
+        marker.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(marker)
 
         alpha = TransparentSpinBox(
             text = 'Transparent',
             step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=marker.mainlayout
         )
 
     def find_object(self):
         return find_mpl_object(
-            self.canvas.fig,
+            self.canvas.figure,
             [lines.Line2D],
             gid=self.gid
         )
     
     def set_orientation(self, value:str):
         try:
-            self.props.update(orientation = value.lower())
+            self.plot.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_orientation(self) -> str:
-        return self.find_object()[0].orientation
+        return self.plot.props["orientation"]
     
     def set_bottom (self, value:str):
         try:
             if value == "": value = 0
-            self.props.update(bottom = float(value))
+            self.plot.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_bottom (self) -> str:
-        return str(self.find_object()[0].bottom)
+        return str(self.plot.props["bottom"])
     
     def set_alpha(self, value:int):
         for obj in self.find_object():
             obj.set_alpha(value/100)
-        self.onChanged.emit()
+        self._onChange()
         self.canvas.draw_idle()
     
     def get_alpha(self) -> int:
@@ -324,30 +313,27 @@ class Dot (PlotConfigBase):
             return 100
         return int(self.find_object()[0].get_alpha()*100)
 
-class ClusteredColumn (Column):
+class ClusteredColumn(Column):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Bar'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=layout
+            layout=self.general.vlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -357,7 +343,7 @@ class ClusteredColumn (Column):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.distance = TransparentSpinBox(
@@ -365,46 +351,43 @@ class ClusteredColumn (Column):
             max  = 100, step = 10, text = "Distance",
             getter=self.get_distance,
             setter=self.set_distance,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
-        rect.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(rect)
+        rect.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(rect)
     
     def set_distance(self, value:int):
         try:
-            self.props.update(distance = float(value/100))
+            self.plot.props.update(distance = float(value/100))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_distance(self) -> int:
-        return int(self.find_object()[0].distance*100)
+        return int(self.plot.props["distance"]*100)
 
-class ClusteredDot (Dot):
+class ClusteredDot(Dot):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
     def initUI(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Dot'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=layout
+            layout=self.general.vlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -414,32 +397,32 @@ class ClusteredDot (Dot):
             text = "Distance",
             getter=self.get_distance,
             setter=self.set_distance,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         marker = Marker(self.gid, self.canvas)
-        marker.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(marker)
+        marker.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(marker)
 
         alpha = TransparentSpinBox(
             text = 'Transparent',
             step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=marker.mainlayout
         )
     
     def set_distance(self, value:int):
         try:
-            self.props.update(distance = float(value/100))
+            self.plot.props.update(distance = float(value/100))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_distance(self) -> int:
-        return int(self.find_object()[0].distance*100)
+        return int(self.plot.props["distance"]*100)
 
-class Dumbbell (PlotConfigBase):
+class Dumbbell(PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
@@ -451,52 +434,47 @@ class Dumbbell (PlotConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Dumbbell'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Line', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Head 1', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.addButton(text='Head 2', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.segment.setCurrentIndex(0)
+        self.segment.setCurrentIndex(0)
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
-        layout.addWidget(TitleLabel('Lines'))
-        layout.addWidget(SeparateHLine())
         line = Line(f"{self.gid}/0", self.canvas)
-        line.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(line)
+        line.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(line)
 
-        layout.addWidget(TitleLabel('Head 1'))
-        layout.addWidget(SeparateHLine())
         head1 = Marker(f"_{self.gid}/1", self.canvas)
-        head1.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(head1)
+        head1.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(head1)
 
-        layout.addWidget(TitleLabel('Head 2'))
-        layout.addWidget(SeparateHLine())
         head2 = Marker(f"_{self.gid}/2", self.canvas)
-        head2.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(head2)
+        head2.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(head2)
 
     def find_object(self):
-        return find_mpl_object(self.canvas.fig, [lines.Line2D], self.gid)
+        return find_mpl_object(self.canvas.figure, [lines.Line2D], self.gid)
 
     def set_orientation(self, value:str):
         try:
-            self.props.update(orientation = value.lower())
+            self.plot.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_orientation(self) -> str:
-        return self.find_object()[0].orientation
+        return self.plot.props["orientation"]
 
-class Marimekko (PlotConfigBase):
+class Marimekko(PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
@@ -504,40 +482,37 @@ class Marimekko (PlotConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Marimekko'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
-        rect.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(rect)
+        rect.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(rect)
         
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.Rectangle],
             gid=self.gid
         )
     
     def set_orientation(self, value:str):
         try:
-            self.props.update(orientation = value.lower())
+            self.plot.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
 
     def get_orientation(self) -> str:
-        return self.find_object()[0].orientation
+        return self.plot.props["orientation"]
 
 class Treemap (PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
@@ -547,17 +522,14 @@ class Treemap (PlotConfigBase):
     
     def initUI(self):
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Treemap'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.rounded = TransparentDoubleSpinBox(
             text="Rounding factor",
             getter=self.get_rounded,
             setter=self.set_rounded,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.pad = TransparentDoubleSpinBox(
@@ -565,14 +537,14 @@ class Treemap (PlotConfigBase):
             text = "Padding",
             getter=self.get_pad,
             setter=self.set_pad,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.cmap_on = Toggle(
             text="Use colormap",
             getter=self.get_cmap_on,
             setter=self.set_cmap_on,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.cmap = TransparentComboBox(
@@ -580,59 +552,59 @@ class Treemap (PlotConfigBase):
             text  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
-        rect.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(rect)
+        rect.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(rect)
     
     def find_object(self) -> list[patches.FancyBboxPatch]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.FancyBboxPatch],
             gid=self.gid,
         )
     
     def set_rounded(self, value:float):
         try:
-            self.props.update(rounded=value)
+            self.plot.props.update(rounded=value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_rounded(self) -> float:
-        return self.find_object()[0].rounded
-
+        return self.plot.props["rounded"]
+    
     def set_pad(self, value:float):
         try:
-            self.props.update(pad = value)
+            self.plot.props.update(pad = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_pad(self) -> float:
-        return float(self.find_object()[0].pad)
+        return float(self.plot.props["pad"])
     
     def set_cmap_on(self, value:bool):
         try:
-            self.props.update(cmap_on=value)
+            self.plot.props.update(cmap_on=value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_cmap_on(self) -> bool:
-        return self.find_object()[0].cmap_on
+        return self.plot.props["cmap_on"]
           
     def set_cmap(self, value:str):
         try:
-            self.props.update(cmap = value)
+            self.plot.props.update(cmap = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
 
     def get_cmap(self) -> str:
-        return self.find_object()[0].cmap
+        return self.plot.props["cmap"]
 
 class WaterFall (PlotConfigBase):
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
@@ -642,24 +614,23 @@ class WaterFall (PlotConfigBase):
     
     def initUI(self):
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Waterfall'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Positive Columns', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Negative Columns', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.addButton(text='Connecting lines', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.segment.setCurrentIndex(0)
 
         self.orientation = TransparentComboBox(
             items = ["vertical","horizontal"],
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=layout
+            layout=self.general.vlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -669,61 +640,55 @@ class WaterFall (PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
-            layout=layout
+            layout=self.general.vlayout
         )
 
-        layout.addWidget(TitleLabel('Positive Bars'))
-        layout.addWidget(SeparateHLine())
         pbars = Rectangle(f"{self.gid}/positive", self.canvas)
-        pbars.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(pbars)
+        pbars.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(pbars)
 
-        layout.addWidget(TitleLabel('Negative Bars'))
-        layout.addWidget(SeparateHLine())
         nbars = Rectangle(f"{self.gid}/negative", self.canvas)
-        nbars.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(nbars)
+        nbars.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(nbars)
 
-        layout.addWidget(TitleLabel('Connected Lines'))
-        layout.addWidget(SeparateHLine())
         cline = LineCollection(f"_{self.gid}/line", self.canvas)
-        cline.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(cline)
+        cline.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(cline)
     
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.Rectangle],
             gid=self.gid
         )
     
     def set_orientation(self, value:str):
         try:
-            self.props.update(orientation = value.lower())
+            self.plot.props.update(orientation = value.lower())
             self.update_plot()
         except Exception as e:
             logger.exception(e)
             self.plot.progressbar.changeColor()
     
     def get_orientation(self) -> str:
-        return self.find_object()[0].orientation
+        return self.plot.props["orientation"]
     
     def set_bottom (self, value:str):
         try:
-            self.props.update(bottom = float(value))
+            self.plot.props.update(bottom = float(value))
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_bottom (self) -> str:
-        return str(self.find_object()[0].bottom)
+        return str(self.plot.props["bottom"])
 
     def set_barwidth (self, value:float):
         try: 
-            self.props.update(width = value)
+            self.plot.props.update(width = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_barwidth (self) -> float:
-        return self.find_object()[0].width
+        return self.plot.props["width"]

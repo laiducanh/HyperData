@@ -18,15 +18,15 @@ class Line (ArtistConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
         
         self.linestyle = TransparentComboBox(
             text  = 'Line Style',
             items = linestyle_lib.values(),
             getter=self.get_linestyle,
             setter=self.set_linestyle,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.solid_capstyle = TransparentComboBox(
@@ -34,7 +34,7 @@ class Line (ArtistConfigBase):
             items = ['butt', 'projecting', 'round'],
             setter=self.set_solid_capstyle,
             getter=self.get_solid_capstyle,
-            layout=layout
+            layout=self.mainlayout
         )
         
         self.solid_joinstyle = TransparentComboBox(
@@ -42,7 +42,7 @@ class Line (ArtistConfigBase):
             items = ['miter', 'round', 'bevel'],
             setter=self.set_solid_joinstyle,
             getter=self.get_solid_joinstyle,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.dash_capstyle = TransparentComboBox(
@@ -50,7 +50,7 @@ class Line (ArtistConfigBase):
             items = ['butt', 'projecting', 'round'],
             getter=self.get_dash_capstyle,
             setter=self.set_dash_capstyle,
-            layout=layout
+            layout=self.mainlayout
         )
         self.dash_capstyle.hide()
 
@@ -59,7 +59,7 @@ class Line (ArtistConfigBase):
             items = ['miter', 'round', 'bevel'],
             getter=self.get_dash_joinstyle,
             setter=self.set_dash_joinstyle,
-            layout=layout
+            layout=self.mainlayout
         )
         self.dash_joinstyle.hide()
 
@@ -68,14 +68,14 @@ class Line (ArtistConfigBase):
             min = 0, max = 10, step = 0.5,
             getter=self.get_linewidth,
             setter=self.set_linewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.color = ColorDropdown(
             text  = 'Line Color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -83,12 +83,12 @@ class Line (ArtistConfigBase):
             min = 0, max = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
 
     def find_object(self) -> list[lines.Line2D]:
         return find_mpl_object(
-            self.canvas.fig, 
+            self.canvas.figure, 
             match=[lines.Line2D], 
             gid=self.gid
         )
@@ -212,15 +212,15 @@ class Marker(ArtistConfigBase):
     
     def initUI(self):
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.marker = TransparentComboBox(
             text  = 'Marker Style',
             items = marker_lib.values(),
             getter=self.get_marker,
             setter=self.set_marker,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.markersize = TransparentDoubleSpinBox(
@@ -228,7 +228,7 @@ class Marker(ArtistConfigBase):
             min = 0, step = 2,
             getter=self.get_markersize,
             setter=self.set_markersize,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.markeredgewidth = TransparentDoubleSpinBox(
@@ -236,26 +236,26 @@ class Marker(ArtistConfigBase):
             min = 0, max = 5, step = 0.5,
             getter=self.get_markeredgewidth,
             setter=self.set_markeredgewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.markerfacecolor = ColorDropdown(
             text  = 'Marker Face Color',
             getter=self.get_markerfacecolor,
             setter=self.set_markerfacecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.markeredgecolor = ColorDropdown(
             text  = 'Marker Edge Color',
             getter=self.get_markeredgecolor,
             setter=self.set_markeredgecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
     def find_object (self) -> list[lines.Line2D]:
         return find_mpl_object(
-            self.canvas.fig, 
+            self.canvas.figure, 
             [lines.Line2D], 
             gid=self.gid
         )
@@ -332,14 +332,14 @@ class LineCollection (ArtistConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.visible = Toggle(
             text="Visible",
             getter=self.get_visible,
             setter=self.set_visible,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.linewidth = TransparentDoubleSpinBox(
@@ -347,14 +347,14 @@ class LineCollection (ArtistConfigBase):
             min = 0, max = 10, step = 0.5,
             getter=self.get_linewidth,
             setter=self.set_linewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.color = ColorDropdown(
             text  = 'Line Color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -362,12 +362,12 @@ class LineCollection (ArtistConfigBase):
             min = 0, max = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
         
     def find_object(self) -> list[collections.LineCollection]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[collections.LineCollection],
             gid=self.gid,
         )
@@ -432,7 +432,7 @@ class LineCollection (ArtistConfigBase):
     
     def get_color(self):
         try:
-            return colors.to_hex(self.find_object()[0].get_edgecolor()[0])
+            return colors.to_hex(self.find_object()[0].get_color()[0])
         except: return "black"
 
 class ErrorBarCollection (LineCollection):
@@ -441,7 +441,7 @@ class ErrorBarCollection (LineCollection):
     
     def find_object(self) -> list[collections.LineCollection, lines.Line2D]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[collections.LineCollection, lines.Line2D],
             gid=self.gid,
         )

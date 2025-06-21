@@ -1,10 +1,11 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QStackedLayout
+from PySide6.QtGui import QColor
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
-from matplotlib import lines, rcParams
+from matplotlib import lines, rcParams, colors
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
 DEBUG = False
@@ -53,32 +54,32 @@ class Margin2D (QWidget):
         )
     
     def set_top(self,value):
-        self.canvas.fig.subplots_adjust(top=value)
+        self.canvas.figure.subplots_adjust(top=value)
         self.canvas.draw_idle()
     
     def get_top(self):
-        return self.canvas.fig.subplotpars.top
+        return self.canvas.figure.subplotpars.top
     
     def set_bottom(self,value):
-        self.canvas.fig.subplots_adjust(bottom=value)
+        self.canvas.figure.subplots_adjust(bottom=value)
         self.canvas.draw_idle()
     
     def get_bottom(self):
-        return self.canvas.fig.subplotpars.bottom
+        return self.canvas.figure.subplotpars.bottom
     
     def set_left(self,value):
-        self.canvas.fig.subplots_adjust(left=value)
+        self.canvas.figure.subplots_adjust(left=value)
         self.canvas.draw_idle()
     
     def get_left(self):
-        return self.canvas.fig.subplotpars.left
+        return self.canvas.figure.subplotpars.left
     
     def set_right(self,value):
-        self.canvas.fig.subplots_adjust(right=value)
+        self.canvas.figure.subplots_adjust(right=value)
         self.canvas.draw_idle()
     
     def get_right(self):
-        return self.canvas.fig.subplotpars.right
+        return self.canvas.figure.subplotpars.right
 
 class Grid2D (QWidget):
     def __init__(self, canvas: Canvas, parent=None):
@@ -90,7 +91,7 @@ class Grid2D (QWidget):
         self.visible = Toggle(
             text  = 'Visible',
             text2 = 'Whether to show the grid lines',
-            setter=self.set_grid,
+            setter=self.set_visible,
             getter=self.get_visible,
             layout=layout
         )
@@ -150,18 +151,19 @@ class Grid2D (QWidget):
     
     def set_grid(self):
         try:
+            self.canvas._config["grid"].update(
+                visible   = self.visible.button.isChecked(),
+                which     = self.which.button.currentText().lower(), 
+                axis      = self.axis.button.currentText().lower(), 
+                alpha     = self.alpha.button.value()/100,
+                linewidth = self.linewidth.button.value(),
+                linestyle = self.linestyle.button.currentText().lower(), 
+                color     = QColor(self.color.button.color).name(),
+            )
         # Need to redraw grid after any changes
             self.canvas.axes.grid(visible=False)
             if self.visible.button.isChecked():
-                self.canvas.axes.grid(
-                    which     = self.which.button.currentText().lower(), 
-                    axis      = self.axis.button.currentText().lower(), 
-                    alpha     = self.alpha.button.value()/100,
-                    linewidth = self.linewidth.button.value(),
-                    linestyle = self.linestyle.button.currentText().lower(), 
-                    color     = self.color.button.color.name(),
-                    gid       = "_grid"
-                )
+                self.canvas.axes.grid(gid = "_grid", **self.canvas._config["grid"])
 
         # Idle Redraw
             self.canvas.draw_idle()
@@ -169,52 +171,53 @@ class Grid2D (QWidget):
         except Exception as e:
             logger.exception(e)
     
+    def set_visible(self, value:bool):
+        self.set_grid()
+    
     def get_visible(self) -> bool:
-        for obj in find_mpl_object(self.canvas.fig, [lines.Line2D], gid='_grid'):
-            return obj.get_visible()
-        return False
+        return self.canvas._config["grid"]["visible"]
 
     def set_gridtype(self, value:str):
         #rcParams['axes.grid.which'] = value.lower()
         self.set_grid()
     
     def get_gridtype (self) -> str:
-        return rcParams['axes.grid.which'].title()
+        return self.canvas._config["grid"]["which"].title()
     
     def set_gridaxis(self, value:str):
         #rcParams['axes.grid.axis'] = value.lower()
         self.set_grid()
 
     def get_gridaxis (self):
-        return rcParams['axes.grid.axis'].title()
+        return self.canvas._config["grid"]["axis"].title()
 
     def set_alpha(self, value:int):
         #rcParams['grid.alpha'] = value/100
         self.set_grid()
 
     def get_alpha(self):
-        return int(rcParams['grid.alpha']*100)
+        return int(self.canvas._config["grid"]["alpha"]*100)
     
     def set_linewidth(self, value:float):
         #rcParams['grid.linewidth'] = value
         self.set_grid()
     
     def get_linewidth(self) -> float:
-        return rcParams['grid.linewidth']
+        return self.canvas._config["grid"]["linewidth"]
     
     def set_linestyle(self, value:str):
         #linestyle_lib[rcParams['grid.linestyle']] = value
         self.set_grid()
 
     def get_linestyle (self) -> str:
-        return linestyle_lib[rcParams['grid.linestyle']].lower()
+        return self.canvas._config["grid"]["linestyle"].lower()
 
     def set_color(self, color):
         #rcParams['grid.color'] = color
         self.set_grid()
        
     def get_color(self) -> str:
-        return rcParams['grid.color']
+        return self.canvas._config["grid"]["color"]
     
 class Pane2D (QWidget):
     def __init__(self, canvas: Canvas, parent=None):
@@ -239,6 +242,14 @@ class Pane2D (QWidget):
             layout=layout
         )
 
+        self.edgecolor = ColorDropdown(
+            text='Frame color',
+            text2='Set the frame color of the Figure',
+            getter=self.get_framecolor,
+            setter=self.set_framecolor,
+            layout=layout
+        )
+
         self.alpha = TransparentDoubleSpinBox(
             text  = 'Transparency',
             text2 = 'Set the transparency of the Pane',
@@ -260,7 +271,7 @@ class Pane2D (QWidget):
         self.canvas.draw_idle()
     
     def get_color(self):
-        try: return self.canvas.axes.patch.get_color()
+        try: return colors.to_hex(self.canvas.axes.patch.get_facecolor())
         except: return rcParams['axes.facecolor']
 
     def set_patch_alpha (self, value):
@@ -270,6 +281,13 @@ class Pane2D (QWidget):
     def get_patch_alpha (self):
         if self.canvas.axes.patch.get_alpha() != None: return int(self.canvas.axes.patch.get_alpha()*100)
         else: return 100
+    
+    def set_framecolor(self, color):
+        self.canvas.figure.set_facecolor(color)
+        self.canvas.draw_idle()
+    
+    def get_framecolor(self):
+        return colors.to_hex(self.canvas.figure.get_facecolor())
 
 class Axes2D (QDialog):
     def __init__(self, canvas:Canvas, parent=None):
@@ -281,7 +299,7 @@ class Axes2D (QDialog):
         self.choose_axis = SegmentedWidget()
         layout.addWidget(self.choose_axis)
 
-        self.choose_axis.addButton(text='Margins', func=lambda: self.stackedlayout.setCurrentIndex(0))
+        self.choose_axis.addButton(text='Plot size', func=lambda: self.stackedlayout.setCurrentIndex(0))
         self.choose_axis.addButton(text='Grid', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.choose_axis.addButton(text='Pane', func=lambda: self.stackedlayout.setCurrentIndex(2))
 

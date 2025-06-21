@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal, QSize, Qt, QPropertyAnimation
 from PySide6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QAbstractItemView, 
-                               QDockWidget, QMainWindow, QTreeWidgetItem)
+                               QDockWidget, QMainWindow, QDialog)
 from PySide6.QtGui import QCursor, QPaintEvent
 import os
 from matplotlib.artist import Artist
@@ -11,7 +11,7 @@ from plot.insert_plot.input.widget_1input import *
 from plot.insert_plot.input.widget_2input import *
 from plot.insert_plot.input.widget_3input import *
 from plot.insert_plot.input.widget_4input import *
-from ui.base_widgets.button import _TransparentPushButton, DropDownPrimaryPushButton
+from ui.base_widgets.button import _TransparentPushButton, DropDownPrimaryPushButton, _DropDownPrimaryPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.window import ProgressBar
 from ui.base_widgets.frame import Frame
@@ -20,87 +20,74 @@ from ui.base_widgets.line_edit import _SearchBox
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import rescale_plot, plotting
-from node_editor.node_node import Node
+from node_editor.base.node_graphics_node import NodeGraphicsNode
+from plot.insert_plot.utilis import load_InputIcon, load_MenuIcon
 from config.settings import GLOBAL_DEBUG, logger, config
 
 DEBUG = False
 
-AXES = 0
-AXES_Y2 = 1
-AXES_X2 = 2
-AXES_PIE = 3
+class NewPlot (Frame):
+    """ This Widget will be created when creating a new plot to display input fields for the new plot """
 
-class InsertPlot (QMainWindow):
-    sig = Signal() # emit when new plot was created, also when a plot needs to be updated
+    sig = Signal()
+    sig_delete = Signal(object)
 
-    def __init__(self, canvas:Canvas, node:Node, plot3d=False, parent=None):
-        super().__init__(parent=parent)
-
+    def __init__(self, plot_index, plot_type, canvas: Canvas, node:NodeGraphicsNode, plot3d=False, parent=None):
+        super().__init__(parent)
+        #self.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.plot_index = plot_index
+        self.plot_type = plot_type
         self.canvas = canvas
+        self.artist = list()
+        try: self.props = self.canvas._config[str(plot_index)]["plot_props"]
+        except: self.props = dict()
+        #self.widget = QWidget()
         self.node = node
         self.plot3d = plot3d
-        self.plot_type = '2d line'
-        self.widget = None
 
-        self.mainlayout = QHBoxLayout()
-        self.central_widget = QWidget()
-        self.central_widget.setLayout(self.mainlayout)
-        self.setCentralWidget(self.central_widget)
+        effect = QGraphicsOpacityEffect(self)
+        effect.setOpacity(0.5)
+        ani = QPropertyAnimation(effect, b'opacity', self)
+        ani.setDuration(100)
+        self.setGraphicsEffect(effect)
+        ani.setStartValue(0)
+        ani.setEndValue(1)
+        ani.start()
 
-        self.sidebar = QWidget()
-        self.sidebar_layout = QVBoxLayout()
-        self.sidebar.setLayout(self.sidebar_layout)
+        mainlayout = QVBoxLayout()
+        self.setLayout(mainlayout)
 
-        if plot3d:
-            self.plot_list = {
-                "Line": ['3d line','3d step','3d stem'],
-                "Column": ['3d column'],
-                "Scatter": ['3d scatter','3d bubble'],
-                "Pie": ['pie','doughnut'],
-                "Statistics": ['histogram','stacked histogram','boxplot','violinplot'],
-                "Surface": ['3d surface','triangular 3d surface']
-            }
-        else:
-            self.plot_list = {
-                "Line": ['2d line','2d step','2d stem'],
-                "Area": ['fill between','2d area','2d stacked area','2d 100% stacked area'],
-                "Column": ['2d column','2d clustered column','2d stacked column', 
-                           '2d 100% stacked column','2d waterfall column'],
-                "Dot": ['dot','clustered dot','stacked dot','dumbbell'],
-                "Treemap": ['marimekko','treemap'],
-                "Scatter": ['2d scatter','2d bubble'],
-                "Pie": ['pie','coxcomb','doughnut','multilevel doughnut','semicircle doughnut'],
-                "Statistics": ['histogram','stacked histogram','hist2d','error bar','boxplot', 
-                               'violinplot','eventplot'],
-                "Mesh": ['heatmap','contour']
-            }
+        layout = QHBoxLayout()
+        mainlayout.addLayout(layout)
+        self.text = TitleLabel(f"Graph {self.plot_index+1}")
+        layout.addWidget(self.text)
+        layout.addStretch()
+        self.type = _DropDownPrimaryPushButton()
+        self.type.setText(self.plot_type)
+        
 
-        self.search_box = _SearchBox(parent=self.parent())
-        self.search_box.setPlaceholderText("Type / to search")
-        self.sidebar_layout.addWidget(self.search_box)
+        if plot3d: self.menu = Menu_type_3D(self)
+        else: self.menu = Menu_type_2D(self)
+        self.menu.sig.connect(self.update_layout)
+        self.type.setMenu(self.menu)
+        layout.addWidget(self.type)
 
-        self.treeview = TreeWidget()
-        self.treeview.currentItemChanged.connect(self.treeview_func)
-        self.treeview.setData(self.plot_list)
-        self.sidebar_layout.addWidget(self.treeview)
-        self.search_box.set_TreeView(self.treeview)
+        self.progressbar = ProgressBar()
+        mainlayout.addWidget(self.progressbar)
 
-        self.dock = QDockWidget('Insert_plot')
-        self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
-        self.dock.setWidget(self.sidebar)
-        self.dock.setTitleBarWidget(QWidget())
-    
-    def treeview_func(self, item:QTreeWidgetItem):
+        self.layout_input = QVBoxLayout()
+        mainlayout.addLayout(self.layout_input) 
 
-        if item.text(0) not in self.plot_list.keys():
-            self.canvas._config["plot_type"] = item.text(0).lower()
-            if self.widget: self.widget.deleteLater()
-            self.initUI()
-            self.plotting()
+        self.initUI()
 
-    def initUI(self):
-        self.plot_type = self.canvas._config["plot_type"]
-        args = [self.node, self.canvas._config["data_input"], self.parent()]
+    def initUI(self, input=None):
+
+        if not input: 
+            try: input = self.canvas._config[str(self.plot_index)]["data_input"]
+            except: input = [str(), str(), str(), str()]
+
+        args = [self.node, input, self.parent()]
 
         if   self.plot_type == "2d line":                   self.widget = Line2D(*args)
         elif self.plot_type == "2d step":                   self.widget = Step2D(*args)
@@ -146,13 +133,41 @@ class InsertPlot (QMainWindow):
         elif self.plot_type == "3d bubble":                 self.widget = Bubble3D(*args)
 
         self.widget.sig.connect(self.plotting)
-        self.mainlayout.addWidget(self.widget)
+        self.layout_input.addWidget(self.widget)
 
-    def plotting(self, _ax:int=AXES, **kwargs):
-        for idx, inp in enumerate(self.widget.input):
-            self.canvas._config["data_input"][idx] = inp
+        self.update_config()
 
-        input = self.canvas._config["data_input"]
+    def update_layout (self, plot_type:str):
+        
+        self.plot_type = plot_type
+        self.props = dict()
+        self.type.setText(plot_type.title())
+
+        try: self.widget.deleteLater()
+        except Exception as e: logger.exception(e)
+
+        if plot_type == "delete":
+            for obj in self.artist:
+                obj.remove()
+            rescale_plot(self.canvas.axes.figure)
+            self.canvas.draw_idle()
+            self.sig_delete.emit(self)
+            self.deleteLater()
+            self.canvas._config.pop(self.plot_index)
+            self.canvas._config["num_graph"] -= 1
+            return None
+        else:
+            self.initUI()
+
+        self.update_config()
+        self.plotting()
+
+
+    def plotting (self):
+        self.progressbar.setValue(0)
+        self.progressbar._setValue(0)
+
+        _ax = self.widget.axes
 
         if self.plot3d:
             ax = self.canvas.axes
@@ -161,31 +176,149 @@ class InsertPlot (QMainWindow):
             self.canvas.axesx2.set_axis_on()
             self.canvas.axesy2.set_axis_on()
             self.canvas.axespie.set_axis_off()
-            
-            if _ax == AXES:    ax = self.canvas.axes
-            elif _ax == AXES_Y2: ax = self.canvas.axesy2
-            elif _ax == AXES_X2:     ax = self.canvas.axesx2
-            elif _ax == AXES_PIE: 
+
+            if _ax == ["axis bottom", "axis left"]:    ax = self.canvas.axes
+            elif _ax == ["axis bottom", "axis right"]: ax = self.canvas.axesy2
+            elif _ax == ["axis top", "axis left"]:     ax = self.canvas.axesx2
+            elif _ax == "pie": 
                 ax = self.canvas.axespie
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
-            
+
 
         X, Y, Z, T  = list(), list(), list(), list()
-        if len(input) >= 1:
-            X = split_input(input[0], self.node.input_sockets[0].socket_data)
-        if len(input) >= 2:
-            Y = split_input(input[1], self.node.input_sockets[0].socket_data)
-        if len(input) >= 3:
-            Z = split_input(input[2], self.node.input_sockets[0].socket_data)
-        if len(input) >= 4:
-            T = split_input(input[3], self.node.input_sockets[0].socket_data)
+        if len(self.widget.input) >= 1:
+            X = split_input(self.widget.input[0], self.node.input_sockets[0].socket_data)
+        if len(self.widget.input) >= 2:
+            Y = split_input(self.widget.input[1], self.node.input_sockets[0].socket_data)
+        if len(self.widget.input) >= 3:
+            Z = split_input(self.widget.input[2], self.node.input_sockets[0].socket_data)
+        if len(self.widget.input) >= 4:
+            T = split_input(self.widget.input[3], self.node.input_sockets[0].socket_data)
         try:
-            self.artist = plotting(X, Y, Z, T, ax=ax, gid="graph", plot_type=self.canvas._config["plot_type"], **kwargs)
+            self.artist, self.props = plotting(
+                X, Y, Z, T, ax=ax, gid=f"graph {self.plot_index+1}", 
+                plot_type=self.plot_type, 
+                **self.props
+            )
+
+            # Update local variable after plotting
+            # self.props = self.canvas._config[str(self.plot_index)]["plot_props"]
+            self.update_config()
         except Exception as e:
             logger.exception(e)
+        
+        self.sig.emit()
+        self.progressbar.setValue(100)
 
+    def update_config(self):
+        self.canvas._config[str(self.plot_index)] = {
+            "plot_type": self.plot_type,
+            "axes": self.widget.axes,
+            "data_input": [str(),str(),str(),str()],
+            "plot_props": self.props,
+        }
+        
+        for idx in range(len(self.widget.input)):
+            self.canvas._config[str(self.plot_index)]["data_input"][idx] = self.widget.input[idx]
+
+class InsertPlot (QMainWindow):
+    sig = Signal() # emit when new plot was created, also when a plot needs to be updated
+
+    def __init__(self, canvas:Canvas, node:NodeGraphicsNode, plot3d=False, parent=None):
+        super().__init__(parent=parent)
+
+        self.canvas = canvas
+        self.node = node
+        self.plot3d = plot3d
+        self.plot_idx = 0
+        self.widget = None
+        self.plot_list: list[NewPlot] = list()
+
+        self.mainlayout = QHBoxLayout()
+        self.central_widget = QWidget()
+        self.central_widget.setLayout(self.mainlayout)
+        self.setCentralWidget(self.central_widget)
+
+        self.sidebar = QWidget()
+        self.sidebar_layout = QVBoxLayout()
+        self.sidebar.setLayout(self.sidebar_layout)
+
+        if plot3d:
+            self.type_list = {
+                "Line": ['3d line','3d step','3d stem'],
+                "Column": ['3d column'],
+                "Scatter": ['3d scatter','3d bubble'],
+                "Pie": ['pie','doughnut'],
+                "Statistics": ['histogram','stacked histogram','boxplot','violinplot'],
+                "Surface": ['3d surface','triangular 3d surface']
+            }
+        else:
+            self.type_list = {
+                "Line": ['2d line','2d step','2d stem'],
+                "Area": ['fill between','2d area','2d stacked area','2d 100% stacked area'],
+                "Column": ['2d column','2d clustered column','2d stacked column', 
+                           '2d 100% stacked column','2d waterfall column'],
+                "Dot": ['dot','clustered dot','stacked dot','dumbbell'],
+                "Treemap": ['marimekko','treemap'],
+                "Scatter": ['2d scatter','2d bubble'],
+                "Pie": ['pie','coxcomb','doughnut','multilevel doughnut','semicircle doughnut'],
+                "Statistics": ['histogram','stacked histogram','hist2d','error bar','boxplot', 
+                               'violinplot','eventplot'],
+                "Mesh": ['heatmap','contour']
+            }
+
+        self.search_box = _SearchBox(parent=self.parent())
+        self.search_box.setPlaceholderText("Type / to search")
+        self.sidebar_layout.addWidget(self.search_box)
+
+        self.treeview = TreeWidget()
+        self.treeview.itemPressed.connect(lambda item: self.add_plot(item.text(0).lower()))
+        self.treeview.itemPressed.connect(self.update_num_graph)
+        self.treeview.setData(self.type_list)
+        self.sidebar_layout.addWidget(self.treeview)
+        self.search_box.set_TreeView(self.treeview)
+
+        self.dock = QDockWidget('Insert_plot')
+        self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
+        self.dock.setWidget(self.sidebar)
+        self.dock.setTitleBarWidget(QWidget())
+
+        self.graph_layout = QVBoxLayout()
+        self.mainlayout.addLayout(self.graph_layout)
+
+        load_InputIcon()
+        load_MenuIcon()
+        
+        for idx in range(self.canvas._config["num_graph"]):
+            self.add_plot(self.canvas._config[str(idx)]["plot_type"], idx)
+        
+        self.setMinimumSize(800, 500)
+    
+    def add_plot(self, plot_type:str, plot_idx:int=None):
+        # this function can be either called when a new plot added, or 
+        # reconstruction of NewPlot class when QMainWindow is recontructed
+        
+        if plot_type.title() not in self.type_list.keys():
+            if not plot_idx: plot_idx = self.plot_idx
+        
+            newplot = NewPlot(plot_idx, plot_type, self.canvas, self.node, self.plot3d)
+            self.plot_list.append(newplot)
+            newplot.sig.connect(self.sig.emit)
+            newplot.sig_delete.connect(self.delete_plot)
+            self.graph_layout.addWidget(newplot)
+
+            # keep track of current plot index
+            if plot_idx: self.plot_idx = plot_idx + 1
+            else: self.plot_idx += 1
+    
+    def update_num_graph(self):
+        # this function is only called when adding new plot, not reconstruction
+        self.canvas._config["num_graph"] += 1
+        
+    def delete_plot(self, plot:NewPlot):
+        self.plot_list.remove(plot)
         self.sig.emit()
     
     def paintEvent(self, a0: QPaintEvent) -> None:

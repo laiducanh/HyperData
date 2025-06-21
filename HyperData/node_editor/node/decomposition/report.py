@@ -34,10 +34,10 @@ class Variance(QWidget):
     
     def draw_plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         n_components = self.model.n_components_
         if self.plot.button.currentText() == "Explained variance":
@@ -114,14 +114,14 @@ class Projection(QWidget):
     
     def change_plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         if self.plot.button.currentText() == "2D projection":
             self.z_btn.hide()
-            self.ax = self.canvas.fig.add_subplot()
+            self.ax = self.canvas.figure.add_subplot()
         elif self.plot.button.currentText() == "3D projection":
             self.z_btn.show()
-            self.ax = self.canvas.fig.add_subplot(projection="3d")
+            self.ax = self.canvas.figure.add_subplot(projection="3d")
 
         self.draw_plot()
     

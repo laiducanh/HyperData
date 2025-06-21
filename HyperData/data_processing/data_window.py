@@ -461,10 +461,10 @@ class ExploreView (QWidget):
             vary = self.vary.button.currentText()
             
             if self.data.empty:
-                self.canvas.fig.clear()
+                self.canvas.figure.clear()
             else:
-                self.canvas.fig.clear()
-                ax = self.canvas.fig.add_subplot()
+                self.canvas.figure.clear()
+                ax = self.canvas.figure.add_subplot()
                 
                 if plottype == "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
                 elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)

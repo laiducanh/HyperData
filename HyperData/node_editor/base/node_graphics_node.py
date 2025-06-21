@@ -164,7 +164,7 @@ class NodeGraphicsNode (GraphicsNode):
             new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))
             new_socket.deserialize(path, hashmap)
             self.output_sockets.append(new_socket)
-
+       
         self.content.deserialize(data['content'])
 
         return True

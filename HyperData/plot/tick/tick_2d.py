@@ -60,7 +60,7 @@ class TickBase (QWidget):
         )
         
     def find_obj(self) -> Axis:
-        return find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)[0]
+        return find_mpl_object(self.canvas.figure, match=[Axis], gid=self.axis)[0]
     
     def set_visible(self, value):
         self.obj.set_visible(value)
@@ -391,12 +391,12 @@ class SpineBase (QWidget):
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
         s = find_mpl_object(
-            self.canvas.fig, 
+            self.canvas.figure, 
             [spines.Spine],
             gid = f"spine {self.axis}",
         )
         a = find_mpl_object(
-            self.canvas.fig, 
+            self.canvas.figure, 
             [lines.Line2D],
             gid = f"spine {self.axis}",
         )
@@ -539,7 +539,7 @@ class AxisLabel (QWidget):
         )
     
     def find_axis(self) -> Axis:
-        return find_mpl_object(self.canvas.fig,[Axis], self.axis)[0]
+        return find_mpl_object(self.canvas.figure,[Axis], self.axis)[0]
     
     def set_label(self, value:str):
         self.ax.set_label_text(value)
@@ -549,7 +549,7 @@ class AxisLabel (QWidget):
         return self.ax.get_label_text()
 
     def set_fontname (self, font:str):
-        self.text.set_fontfamily(font)
+        self.text.set_fontname(font)
         self.canvas.draw_idle()
     
     def get_fontname(self):
@@ -584,7 +584,7 @@ class AxisLabel (QWidget):
         self.canvas.draw_idle()
     
     def get_edgecolor(self):
-        if self.text.get_bbox_patch() != None:
+        if self.text.get_bbox_patch():
             return self.text.get_bbox_patch().get_edgecolor()
         return 'white'
     

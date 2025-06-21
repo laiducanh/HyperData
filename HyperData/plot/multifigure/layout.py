@@ -5,10 +5,10 @@ from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.button import _TransparentComboBox, _TransparentPushButton, _PrimaryComboBox
 from ui.base_widgets.spinbox import TransparentSpinBox, Slider
-from node_editor.node_node import Node
+from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
 from mpl_toolkits.mplot3d.axes3d import Axes3D, Axes
-from plot.multifigure.utilis import copy_objects
+from plot.utilis import copy_objects
 
 class SubFigure(QWidget):
     sig = Signal()
@@ -108,7 +108,7 @@ class SubFigure(QWidget):
         self.col2.currentTextChanged.connect(lambda: self.sig.emit())
     
 class Layout(QScrollArea):
-    def __init__(self, node: Node, canvas:Canvas, parent=None):
+    def __init__(self, node: NodeGraphicsNode, canvas:Canvas, parent=None):
         super().__init__(parent)
 
         widget = QWidget()
@@ -157,7 +157,7 @@ class Layout(QScrollArea):
                     
     def redraw_subplot(self, sub:SubFigure):
 
-        for ax in self.canvas.fig.axes:
+        for ax in self.canvas.figure.axes:
             if ax.get_gid() and "subax" in ax.get_gid():
                 ax.remove()
         
@@ -177,13 +177,13 @@ class Layout(QScrollArea):
         
         if row2 >= row1 and col2 >= col2:
             if row1 == row2 and col1 == col2:
-                ax = self.canvas.fig.add_subplot(gs[row1, col1], projection=proj)
+                ax = self.canvas.figure.add_subplot(gs[row1, col1], projection=proj)
             elif row1 == row2:
-                ax = self.canvas.fig.add_subplot(gs[row1, col1:col2+1], projection=proj)
+                ax = self.canvas.figure.add_subplot(gs[row1, col1:col2+1], projection=proj)
             elif col1 == col2:
-                ax = self.canvas.fig.add_subplot(gs[row1:row2+1, col1], projection=proj)
+                ax = self.canvas.figure.add_subplot(gs[row1:row2+1, col1], projection=proj)
             else:
-                ax = self.canvas.fig.add_subplot(gs[row1:row2+1, col1:col2+1], projection=proj)                    
+                ax = self.canvas.figure.add_subplot(gs[row1:row2+1, col1:col2+1], projection=proj)                    
             
             ax.set_gid(f"subax {sub.subfig_idx}")
 
@@ -195,8 +195,8 @@ class Layout(QScrollArea):
                 if not proj:
                     axy2 = ax.twinx()
                     axx2 = ax.twiny()
-                    axpie: Axes = self.canvas.fig.add_subplot(ax.get_subplotspec())
-                    axleg: Axes = self.canvas.fig.add_subplot(ax.get_subplotspec())
+                    axpie: Axes = self.canvas.figure.add_subplot(ax.get_subplotspec())
+                    axleg: Axes = self.canvas.figure.add_subplot(ax.get_subplotspec())
 
                     axy2.set_ylabel(canvas.axesy2.get_ylabel())
                     axx2.set_xlabel(canvas.axesx2.get_xlabel())

@@ -3,9 +3,11 @@ from plot.canvas import Canvas, Canvas3D, MultiFigureCanvas
 import pandas as pd
 from ui.base_widgets.menu import Action
 from config.settings import logger
+from plot.plot_view import PlotView
+import pickle
 
 class Figure2D (NodeContentWidget):
-    def __init__(self, node,parent=None):
+    def __init__(self, node, parent=None):
         super().__init__(node,parent)
 
         self.initCanvas()
@@ -32,15 +34,16 @@ class Figure2D (NodeContentWidget):
     def deserialize(self, data, hashmap={}):
         self.canvas.deserialize(data['canvas'], hashmap)
 
+
 class Figure3D (Figure2D):
-    def __init__(self, node,parent=None):
+    def __init__(self, node, parent=None):
         super().__init__(node,parent)
     
     def initCanvas(self):
         self.canvas = Canvas3D()
 
 class MultiFigure(Figure2D):
-    def __init__(self, node,parent=None):
+    def __init__(self, node, parent=None):
         super().__init__(node,parent)
 
         self.label.hide()

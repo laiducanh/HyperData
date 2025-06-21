@@ -3,11 +3,11 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout
 from data_processing.data_window import DataSelection
 from ui.base_widgets.line_edit import _CompleterLineEdit
 from ui.base_widgets.button import _TransparentToolButton
-from node_editor.node_node import Node
+from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class WidgetPie (QWidget):
     sig = Signal()
-    def __init__(self, node:Node,input:list=[str()],parent=None):
+    def __init__(self, node:NodeGraphicsNode,input:list=[str()],parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()
         self.setLayout(layout)

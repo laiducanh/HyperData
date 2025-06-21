@@ -24,6 +24,7 @@ class NodeGraphicsView(QGraphicsView):
     def __init__(self, grScene:NodeGraphicsScene, parent=None):
         super().__init__(parent)
         self.grScene = grScene
+        self.parent = parent
         self.initUI()
         self.initMenu()
 
@@ -56,6 +57,14 @@ class NodeGraphicsView(QGraphicsView):
         self.menu.addAction(action)
         action = Action(text="Zoom out", shortcut="Ctrl+Down", parent=self.menu)
         action.triggered.connect(lambda: self.scaling_time(0.8))
+        self.menu.addAction(action)
+        self.menu.addSeparator()
+
+        action = Action(text="Save", shortcut="Ctrl+S", parent=self.menu)
+        action.triggered.connect(lambda: self.parent.saveToFile())
+        self.menu.addAction(action)
+        action = Action(text="Load", shortcut="Ctrl+L", parent=self.menu)
+        action.triggered.connect(lambda: self.parent.loadFromFile())
         self.menu.addAction(action)
         self.menu.addSeparator()
 
@@ -297,7 +306,7 @@ class NodeGraphicsView(QGraphicsView):
         """
         if not factor: factor = 1.0 + self._numScheduledScalings / 300.0
         
-        if self.currentScale*factor <= 2 and self.currentScale*factor >= 0.5:
+        if self.currentScale*factor <= 1 and self.currentScale*factor >= 0.5:
             self.currentScale *= factor
             self.scale(factor, factor)
             

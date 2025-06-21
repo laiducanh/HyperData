@@ -32,7 +32,7 @@ class ConfusionMatrix (QWidget):
         layout.addWidget(_fold)
 
         self.canvas = Canvas()
-        for _ax in self.canvas.fig.axes: _ax.remove()
+        for _ax in self.canvas.figure.axes: _ax.remove()
         layout.addWidget(self.canvas)
 
         btn_layout = QHBoxLayout()
@@ -66,10 +66,10 @@ class ConfusionMatrix (QWidget):
 
     def draw_plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         # Compute confusion matrix
         cm = self.compute_matrix()
@@ -99,7 +99,7 @@ class ConfusionMatrix (QWidget):
                 self.ax.text(j, i, format(cm[i, j], fmt),
                         ha="center", va="center",
                         color="white" if cm[i, j] > thresh else "black")
-        self.canvas.fig.set_tight_layout("rect")
+        self.canvas.figure.set_tight_layout("rect")
         self.canvas.draw_idle()
 
 
@@ -134,7 +134,7 @@ class ROC(QWidget):
         btn_layout2.addWidget(self.class_)
 
         self.canvas = Canvas()
-        for _ax in self.canvas.fig.axes: _ax.remove()
+        for _ax in self.canvas.figure.axes: _ax.remove()
         layout.addWidget(self.canvas)
 
         btn_layout1 = QHBoxLayout()
@@ -268,10 +268,10 @@ class ROC(QWidget):
     def draw_plot(self): 
 
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         # compute metrics
         tprs, aucs = self.compute_metrics()
@@ -322,7 +322,7 @@ class ROC(QWidget):
         self.ax.set_title('Receiver Operating Characteristic (ROC) Curve')
         self.ax.legend()
 
-        # self.canvas.fig.set_tight_layout("rect")
+        # self.canvas.figure.set_tight_layout("rect")
         self.canvas.draw_idle()
 
 class PrecisionRecall(ROC):
@@ -335,10 +335,10 @@ class PrecisionRecall(ROC):
     
     def draw_plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         # compute metrics
         precs, aucs = self.compute_metrics()
@@ -387,7 +387,7 @@ class PrecisionRecall(ROC):
         self.ax.set_title('Precision Recall (PR) Curve')
         self.ax.legend()
 
-        # self.canvas.fig.set_tight_layout("rect")
+        # self.canvas.figure.set_tight_layout("rect")
         self.canvas.draw_idle()
 
 class DET(ROC):
@@ -404,10 +404,10 @@ class DET(ROC):
     def draw_plot(self): 
 
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         # compute metrics
         tnrs, _ = self.compute_metrics()
@@ -453,7 +453,7 @@ class DET(ROC):
         self.ax.set_title("Detection Error Tradeoff (DET) Curve")
         self.ax.legend()
 
-        # self.canvas.fig.set_tight_layout("rect")
+        # self.canvas.figure.set_tight_layout("rect")
         self.canvas.draw_idle()
 
 class DecisionBoundary(QWidget):
@@ -500,10 +500,10 @@ class DecisionBoundary(QWidget):
 
         self.estimator.fit(X, self.Y)
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        self.ax = self.canvas.fig.add_subplot()
+        self.ax = self.canvas.figure.add_subplot()
 
         DecisionBoundaryDisplay.from_estimator(
             self.estimator,

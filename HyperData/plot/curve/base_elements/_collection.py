@@ -124,7 +124,7 @@ class SingleColorCollection (ArtistConfigBase):
     def get_edgecolor (self):
         try:
             return colors.to_hex(self.obj[0].get_edgecolor()[0])
-        except: return "black"
+        except: self.get_facecolor()
 
     def set_alpha (self, value):
         try: 

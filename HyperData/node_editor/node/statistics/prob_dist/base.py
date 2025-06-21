@@ -59,18 +59,18 @@ class ResultDialog(Dialog):
         self.pl.button.currentTextChanged.connect(self.plot)
         self.main_layout.addWidget(self.pl)
         self.canvas = Canvas()
-        for _ax in self.canvas.fig.axes: _ax.remove()
+        for _ax in self.canvas.figure.axes: _ax.remove()
         self.plot()
         self.main_layout.addWidget(self.canvas)
         
     def plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        ax = self.canvas.fig.add_subplot()
+        ax = self.canvas.figure.add_subplot()
         ax2 = ax.twinx()
-        axleg = self.canvas.fig.add_subplot()
+        axleg = self.canvas.figure.add_subplot()
         axleg.set_axis_off()
 
         x = np.linspace(self.dist.ppf(0.01), self.dist.ppf(0.99), 1000)

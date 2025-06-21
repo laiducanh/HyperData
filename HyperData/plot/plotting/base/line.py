@@ -1,8 +1,6 @@
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.collections import PolyCollection, PathCollection
-from typing import List
-import pandas as pd
 import numpy as np
 from scipy import interpolate
 import random
@@ -10,7 +8,7 @@ from config.settings import GLOBAL_DEBUG, config
 
 DEBUG = True
 
-def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> List[Line2D]:
+def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> tuple[list[Line2D], dict]:
 
     if DEBUG:
         X = [1,2]
@@ -19,22 +17,23 @@ def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> List[Line2D]:
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
+    props = dict()
 
     if _Y.ndim > 1:
         for ind, y in enumerate(_Y):
-            _line = ax.plot(_X, y,  
-                            gid=f"{gid}.{ind+1}", *args, **kwargs)
+            _line = ax.plot(_X, y, gid=f"{gid}.{ind+1}", *args, **kwargs, **props)
             artist += _line
     else:
-        _line = ax.plot(_X, _Y,
-                        gid=gid, *args, **kwargs)
+        _line = ax.plot(_X, _Y, gid=gid, *args, **kwargs, **props)
         artist += _line
    
-    return artist
+    return artist, props
 
-def line3d (X, Y, Z, ax:Axes, gid:str, *args, **kwargs) -> List[Line2D]:
+def line3d (X, Y, Z, ax:Axes, gid:str, *args, **kwargs) -> tuple[list[Line2D], dict]:
 
-    artist = ax.plot(X, Y, Z, gid=gid, *args, **kwargs)
+    props = dict()
+
+    artist = ax.plot(X, Y, Z, gid=gid, *args, **kwargs, **props)
 
     for ind, obj in enumerate(artist):
         if len(artist) > 1:
@@ -42,9 +41,9 @@ def line3d (X, Y, Z, ax:Axes, gid:str, *args, **kwargs) -> List[Line2D]:
         else:
             obj.set_gid(gid)
 
-    return artist
+    return artist, props
 
-def step2d (X, Y, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
+def step2d (X, Y, ax:Axes, gid:str, where="pre", *args, **kwargs) -> tuple[list[Line2D], dict]:
     
     if DEBUG:
         X = [1,2]
@@ -53,37 +52,33 @@ def step2d (X, Y, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
+    props = {"where":where}
 
     if _Y.ndim > 1:
         for ind, y in enumerate(_Y):
-            _step = ax.step(_X, y, where=where,
-                            gid=f"{gid}.{ind+1}", *args, **kwargs)
+            _step = ax.step(_X, y, gid=f"{gid}.{ind+1}", *args, **kwargs, **props)
             artist += _step
     else:
-        _step = ax.step(_X, _Y, where=where, 
-                        gid=gid, *args, **kwargs)
+        _step = ax.step(_X, _Y, gid=gid, *args, **kwargs, **props)
         artist += _step
-    
-    for art in artist:
-        art.where = where
             
-    return artist
+    return artist, props
 
-def step3d (X, Y, Z, ax:Axes, gid, where="pre", *args, **kwargs) -> List[Line2D]:
+def step3d (X, Y, Z, ax:Axes, gid, where="pre", *args, **kwargs) -> tuple[list[Line2D], dict]:
 
-    artist = ax.step(X, Y, Z, where=where, *args, **kwargs)
+    props = {"where":where}
+
+    artist = ax.step(X, Y, Z, *args, **kwargs, **props)
     
     for ind, obj in enumerate(artist):
         if len(artist) > 1:
             obj.set_gid(f"{gid}.{ind+1}")
         else:
             obj.set_gid(gid)
-        
-        obj.where = where
 
-    return artist
+    return artist, props
 
-def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs) -> List[Line2D]:
+def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs) -> tuple[list[Line2D], dict]:
 
     if DEBUG:
         X = [1,2]
@@ -92,8 +87,12 @@ def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
-    markerline, stemlines, baseline = ax.stem(_X, _Y, orientation=orientation,
-                                              bottom=bottom, *args, **kwargs)
+    props = {
+        "orientation": orientation,
+        "bottom": bottom
+    }
+
+    markerline, stemlines, baseline = ax.stem(_X, _Y, *args, **kwargs, **props)
 
     markerline.set_gid(f"{gid}/markerline")
     stemlines.set_gid(f"{gid}/stemlines")
@@ -102,20 +101,21 @@ def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs
     artist.append(markerline)
     artist.append(baseline)
     artist.append(stemlines)
-
-    for art in artist:        
-        art.orientation = orientation
-        art.bottom = bottom
     
-    return artist
+    return artist, props
 
-def stem3d (X, Y, Z, ax:Axes, gid, orientation="z",bottom=0, *args, **kwargs) -> List[Line2D]:
+def stem3d (X, Y, Z, ax:Axes, gid, orientation="z",bottom=0, *args, **kwargs) -> tuple[list[Line2D], dict]:
     X = np.linspace(0.1, 2 * np.pi, 41)
     Y = np.exp(np.sin(X))
     Z = np.linspace(0,1,41)
 
     artist = list()
-    markerline, stemlines, baseline = ax.stem(X, Y, Z, orientation=orientation,bottom=bottom, *args, **kwargs)
+    props = {
+        "orientation": orientation,
+        "bottom": bottom
+    }
+
+    markerline, stemlines, baseline = ax.stem(X, Y, Z, *args, **kwargs, **props)
 
     markerline.set_gid(f"{gid}/markerline")
     stemlines.set_gid(f"{gid}/stemlines")
@@ -124,18 +124,18 @@ def stem3d (X, Y, Z, ax:Axes, gid, orientation="z",bottom=0, *args, **kwargs) ->
     artist.append(markerline)
     artist.append(baseline)
     artist.append(stemlines)
-
-    for art in artist:        
-        art.orientation = orientation
-        art.bottom = bottom
     
-    return artist
+    return artist, props
 
-def spline2d(X, Y, ax:Axes, gid, num:int=1000, order:int=3, bc_type="not-a-knot", *args, **kwargs) -> list[Line2D]:
+def spline2d(X, Y, ax:Axes, gid:str, num=1000, order=3, bc_type="not-a-knot", *args, **kwargs) -> tuple[list[Line2D], dict]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(5)
         Y = random.sample(range(1,100), len(X))
-    
+    props = {
+        "num": num,
+        "order": order,
+        "bc_type": bc_type
+    }
     xs = np.linspace(X[0], X[-1], num=num)
     interp = interpolate.make_interp_spline(
         X,
@@ -152,15 +152,10 @@ def spline2d(X, Y, ax:Axes, gid, num:int=1000, order:int=3, bc_type="not-a-knot"
     art = ax.plot(xs, ys, gid=f"{gid}/interp")
     artist += art
 
-    for art in artist:
-        art.num = num
-        art.order = order
-        art.bc_type = bc_type
-
-    return artist
+    return artist, props
     
 
-def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *args, **kwargs) -> List[PolyCollection]:
+def fill_between (X, Y, Z, ax:Axes, gid:str, step=None, orientation='vertical', *args, **kwargs) -> tuple[list[PolyCollection], dict]:
 
     if DEBUG:
         X = [1, 2]
@@ -170,6 +165,11 @@ def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *arg
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     _Z = np.asarray(Z)
+
+    props = {
+        "step": step if step else 'none',
+        "orientation": orientation
+    }
 
     if orientation == "vertical":
         artist = ax.fill_between(_X, _Y, _Z, step=step, gid=gid, *args, **kwargs)
@@ -191,15 +191,10 @@ def fill_between (X, Y, Z, ax:Axes, gid, step=None, orientation='vertical', *arg
         artist.Ydata = np.asarray(Y).copy()
         artist.Xshow = _X.copy()
         artist.Yshow = _Y.copy()
-    
-    artist.orientation = orientation
-    if step == None:
-        artist.step = 'none' 
-    else: artist.step = step
 
-    return [artist]
+    return [artist], props
 
-def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs) -> List[PolyCollection]:
+def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs) -> tuple[list[PolyCollection], dict]:
     
     if DEBUG:
         X = [1, 2]
@@ -208,6 +203,11 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     stack = np.cumsum(_Y, axis=0)
+
+    props = {
+        "step": step if step else 'none',
+        "baseline": baseline
+    }
     
     artist = ax.stackplot(_X, _Y, baseline=baseline, step=step, *args, **kwargs)
 
@@ -226,9 +226,9 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
         else:
             art.set_gid(gid)  
         
-    return artist
+    return artist, props
 
-def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> List[PolyCollection]:
+def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> tuple[list[PolyCollection], dict]:
 
     if DEBUG:
         X = [1, 2]
@@ -238,6 +238,8 @@ def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> List[PolyCollection]
     _Y = np.asarray(Y)
     _Y = _Y/np.sum(_Y, axis=0)
     stack = np.cumsum(_Y, axis=0)
+
+    props = dict()
 
     artist = ax.stackplot(_X, _Y, *args, **kwargs)
 
@@ -251,4 +253,4 @@ def stackedarea100 (X, Y, ax:Axes, gid, *args, **kwargs) -> List[PolyCollection]
         else:
             art.set_gid(gid)  
     
-    return artist
+    return artist, props

@@ -19,15 +19,15 @@ class Rectangle (ArtistConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
             min  = 0, max  = 5, step = 0.5,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.edgestyle = TransparentComboBox(
@@ -35,21 +35,21 @@ class Rectangle (ArtistConfigBase):
             items = linestyle_lib.values(),
             getter=self.get_edgestyle,
             setter=self.set_edgestyle,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
             getter=self.get_facecolor,
             setter=self.set_facecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -57,12 +57,12 @@ class Rectangle (ArtistConfigBase):
             min  = 0, max  = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
 
     def find_object (self) -> list[patches.Patch]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.Rectangle, patches.PathPatch, patches.FancyBboxPatch],
             gid=self.gid,
         )
@@ -125,13 +125,12 @@ class Rectangle (ArtistConfigBase):
         return colors.to_hex(self.find_object()[0].get_edgecolor())
 
 class Wedge (Rectangle):
-    """ same as Rectangle, but overwrite find_object() """
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
     def find_object(self) -> list[patches.Wedge]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.Wedge],
             gid=self.gid
         )

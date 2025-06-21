@@ -13,13 +13,19 @@ from typing import Union
 
 DEBUG = True
 
-def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
+def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> tuple[list[Union[Rectangle, LineCollection]], dict]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
         Y = np.array([2,4,7])
 
     segments = list()
     artist = list()
+    props = {
+        "orientation": orientation,
+        "width": width,
+        "bottom": bottom,
+        "align": align
+    }
 
     if orientation == "vertical":
         bars = ax.bar(X, Y, gid=gid, width=width, bottom=bottom, align=align, *args, **kwargs)
@@ -48,10 +54,6 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, a
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
     
     for ind, art in enumerate(artist):
-        art.orientation = orientation
-        art.bottom = bottom
-        art.align = align
-        art.width = width
         art.Xdata = X[ind]
         art.Ydata = Y[ind]
         art.Xshow = art.get_center()[0]
@@ -70,15 +72,25 @@ def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, a
     art.Xshow = None
     art.Yshow = None
 
-    return artist
+    return artist, props
 
 def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
-              orientation="z", zsort="average", shade=True, *args, **kwargs) -> list[Poly3DCollection]:
+              orientation="z", zsort="average", shade=True, *args, **kwargs) -> tuple[list[Poly3DCollection], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
         Y = np.array([1,3,5])
         Z = np.array([2,4,7])
+
+    props = {
+        "Dx": Dx,
+        "Dy": Dy,
+        "bottom": bottom,
+        "color": color,
+        "orientation": orientation,
+        "zsort": zsort,
+        "shade": shade
+    }
 
     if orientation == "x": x, y, z, dx, dy, dz = bottom, X, Y, Z, Dx, Dy
     elif orientation == "y":   x, y, z, dx, dy, dz = X, bottom, Y, Dx, Z, Dy
@@ -86,16 +98,8 @@ def column3d (X, Y, Z, ax:Axes3D, gid, Dx=0.5, Dy=0.5, bottom=0, color = None,
    
     artist = ax.bar3d(x, y, z, dx, dy, dz, gid=gid,
                       zsort=zsort, shade=shade, color=color, *args, **kwargs)
-    
-    artist.Dx = Dx
-    artist.Dy = Dy
-    artist.bottom = bottom
-    artist.orientation = orientation
-    artist.zsort = zsort
-    artist.shade = shade
-    artist.color = color
 
-    return [artist]
+    return [artist], props
 
 def _dotstep(arr) -> Union[float,int]:
     """ thif function auto calculates the step between dots to draw on Canvas,  
@@ -114,7 +118,7 @@ def _dotstep(arr) -> Union[float,int]:
         step = (1/fac) * np.gcd.reduce(np.asarray(Y*fac, dtype=np.int32))
     return step
 
-def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -> list[Line2D]:
+def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -> tuple[list[Line2D], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(0,2)
@@ -125,6 +129,10 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
     
     step = _dotstep(Y)
     artist = list()
+    props = {
+        "orientation": orientation,
+        "bottom": bottom
+    }
     for _x, _y in zip(X, Y):
         if orientation == "vertical":
             x = np.repeat(_x, int(_y*(1/step)))
@@ -142,12 +150,8 @@ def dot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, *args, **kwargs) -
             *args, **kwargs
         )
         artist += _line
-        
-    for ind, art in enumerate(artist):
-        art.orientation = orientation
-        art.bottom = bottom
     
-    return artist
+    return artist, props
 
 def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=20,
            sizes=0.1, distance=0.05, *args, **kwargs) -> list[PathCollection]:
@@ -207,7 +211,7 @@ def _waffle(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, cols=3, rows=2
     
     return artist
 
-def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> list[Union[Line2D,PathCollection]]:
+def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> tuple[list[Union[Line2D,PathCollection]], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -218,6 +222,7 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
     Y = np.asarray(Y)
     Z = np.asarray(Z)
     artist = list()
+    props = {"orientation": orientation}
 
     if orientation == "vertical":
         # connecting lines
@@ -282,15 +287,12 @@ def dumbbell(X, Y, Z, ax:Axes, gid, orientation='vertical', *args, **kwargs) -> 
         )
         artist += p1
         artist += p2
-    
-    for art in artist:
-        art.orientation = orientation
 
-    return artist
+    return artist, props
 
 
 def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
-                       width=0.8, bottom=0, distance=1, *args, **kwargs) -> list[Rectangle]:
+                       width=0.8, bottom=0, distance=1, *args, **kwargs) -> tuple[list[Rectangle], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -301,6 +303,12 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
 
     multiplier = 0
     artist = list()
+    props = {
+        "orientation": orientation,
+        "width": width,
+        "bottom": bottom,
+        "distance": distance
+    }
 
     for idx, y in enumerate(Y):
         offset = width*multiplier
@@ -320,19 +328,15 @@ def clusteredcolumn2d (X, Y, ax:Axes, gid, orientation="vertical",
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
     
     for ind, art in enumerate(artist):
-        art.orientation = orientation
-        art.bottom = bottom
-        art.width = width
-        art.distance = distance
         art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
 
-    return artist
+    return artist, props
 
 def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0, 
-                 distance=0.2, *args, **kwargs) -> list[Line2D]:
+                 distance=0.2, *args, **kwargs) -> tuple[list[Line2D], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -343,6 +347,11 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
     multiplier = 0
     step = _dotstep(Y)
     artist = list()
+    props = {
+        "orientation": orientation,
+        "bottom": bottom,
+        "distance": distance
+    }
 
     for idx, _Y in enumerate(Y):
         offset = multiplier
@@ -369,10 +378,10 @@ def clustereddot(X, Y, ax:Axes, gid, orientation='vertical', bottom=0,
         art.bottom = bottom
         art.distance = distance
     
-    return artist
+    return artist, props
 
 def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, 
-                     bottom=0, *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
+                     bottom=0, *args, **kwargs) -> tuple[list[Union[Rectangle, LineCollection]], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -384,6 +393,11 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8,
     artist = list()
     _bottom = bottom
     segments = list()
+    props = {
+        "orientation": orientation,
+        "width": width,
+        "bottom": bottom
+    }
     
     for idx, y in enumerate(Y):
         if orientation == "vertical":
@@ -417,9 +431,6 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8,
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
     
     for ind, art in enumerate(artist):
-        art.orientation = orientation
-        art.bottom = _bottom
-        art.width = width
         art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
@@ -438,9 +449,9 @@ def stackedcolumn2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8,
     art.Xshow = None
     art.Yshow = None
 
-    return artist
+    return artist, props
 
-def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kwargs) -> list[Line2D]:
+def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kwargs) -> tuple[list[Line2D], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -450,6 +461,10 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
     Y = np.asarray(Y)
     step = _dotstep(Y)
     artist = list()
+    props = {
+        "orientation": orientation,
+        "bottom": bottom
+    }
     _bottom = bottom
     bottom = np.repeat([bottom], X.size)
 
@@ -479,9 +494,9 @@ def stackeddot(X, Y, ax:Axes, gid, orientation="vertical", bottom=0, *args, **kw
         art.orientation = orientation
         art.bottom = _bottom
         
-    return artist
+    return artist, props
 
-def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
+def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> tuple[list[Union[Rectangle, LineCollection]], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(3)
@@ -492,6 +507,11 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, b
     Y = Y/np.sum(Y, axis=0)
 
     artist = list()
+    props = {
+        "orientation": orientation,
+        "width": width,
+        "bottom": bottom
+    }
     _bottom = bottom
     segments = list()
 
@@ -529,9 +549,6 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, b
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
     
     for ind, art in enumerate(artist):
-        art.orientation = orientation
-        art.bottom = _bottom
-        art.width = width
         art.Xdata = np.repeat(X, len(Y))[ind]
         art.Ydata = np.asarray(Y).flatten()[ind]
         art.Xshow = art.get_center()[0]
@@ -550,9 +567,9 @@ def stackedcolumn2d100 (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, b
     art.Xshow = None
     art.Yshow = None
 
-    return artist
+    return artist, props
 
-def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list[Rectangle]:
+def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> tuple[list[Rectangle], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([[2,4,7],[1,5,3]])
@@ -566,7 +583,7 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list
    
     bottom = 0
     artist = list()
-
+    props = {"orientation": orientation}
    
     for idx, x in enumerate(X):
         if orientation == "vertical":
@@ -580,7 +597,6 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list
     
     for ind, art in enumerate(artist):
         art.set_edgecolor(colors.to_hex(art.get_edgecolor()))
-        art.orientation = orientation
         art.Xdata = np.asarray(X).flatten()[ind]
         art.Ydata = None
         art.Xshow = art.get_center()[0]
@@ -590,9 +606,9 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> list
     ax.set_ylim(0,1)
     ax.set_axis_on()
 
-    return artist
+    return artist, props
 
-def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=True, cmap="tab10", alpha=1, rounded=0, *args, **kwargs) -> list[FancyBboxPatch]:
+def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=True, cmap="tab10", alpha=1, rounded=0, *args, **kwargs) -> tuple[list[FancyBboxPatch], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([1,2,6])
@@ -611,6 +627,13 @@ def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=
     # colors = matplotlib.pyplot.get_cmap(cmap)
     #print(pad, cmap, rounded)
     artist = list()
+    props = {
+        "pad": pad,
+        "cmap_on": cmap_on,
+        "cmap": cmap,
+        "alpha": alpha,
+        "rounded": rounded
+    }
     for ind, _rect in enumerate(rects):
         
         if _rect["dx"] > 2*pad:
@@ -642,11 +665,6 @@ def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=
                 boxstyle="square,pad=0",
             )
         
-        
-        rect.pad = pad
-        rect.cmap_on = cmap_on
-        rect.cmap = cmap
-        rect.rounded = rounded
         rect.Xdata = X[ind]
         rect.Ydata = None
         x, y, w, h = rect.get_bbox().bounds
@@ -674,14 +692,19 @@ def treemap (X, ax:Axes, gid, artist_old:list[FancyBboxPatch], pad=0.0, cmap_on=
     ax.set_ylim(0,100)
     ax.set_aspect('auto')
         
-    return artist
+    return artist, props
 
-def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> list[Union[Rectangle, LineCollection]]:
+def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, *args, **kwargs) -> tuple[list[Union[Rectangle, LineCollection]], dict]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(5)
         Y = np.array([3,-1,2,-3,5])
     
     artist = list()
+    props = {
+        "orientation": orientation,
+        "width": width,
+        "bottom": bottom
+    }
     _bottom = bottom
     segments = list() # for linecollection plot
     idx = 0
@@ -737,9 +760,6 @@ def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=
             artist.append(rect)
     
     for ind, art in enumerate(artist):
-        art.orientation = orientation
-        art.bottom = bottom
-        art.width = width
         art.Xdata = X[ind]
         art.Ydata = Y[ind]
         art.Xshow = art.get_center()[0]
@@ -760,4 +780,4 @@ def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=
     ax.relim()
     
     #print(artist)
-    return artist
+    return artist, props

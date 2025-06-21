@@ -60,7 +60,7 @@ class TickBase (QWidget):
         )
 
     def find_obj(self) -> Axis:
-        return find_mpl_object(self.canvas.fig, match=[Axis], gid=self.axis)[0]
+        return find_mpl_object(self.canvas.figure, match=[Axis], gid=self.axis)[0]
     
     def set_visible(self, value):
         try:
@@ -367,7 +367,7 @@ class SpineBase (QWidget):
 
     def find_object (self) -> lines.Line2D:
         return find_mpl_object(
-            self.canvas.fig, 
+            self.canvas.figure, 
             match=[Axis], 
             gid=self.axis
         )[0].line
@@ -503,7 +503,7 @@ class AxisLabel (QWidget):
         )
     
     def find_axis(self) -> Axis:
-        return find_mpl_object(self.canvas.fig,[Axis], self.axis)[0]
+        return find_mpl_object(self.canvas.figure,[Axis], self.axis)[0]
     
     def set_label(self, value:str):
         self.ax.set_label_text(value)

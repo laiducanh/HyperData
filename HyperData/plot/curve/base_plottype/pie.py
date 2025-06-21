@@ -11,7 +11,6 @@ from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import patches
-from typing import List
 
 DEBUG = False
 
@@ -23,23 +22,28 @@ class Pie (PlotConfigBase):
     
     def initUI(self):   
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Pie'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=layout
+            layout=self.general.vlayout
+        )
+
+        self.radius = TransparentDoubleSpinBox(
+            text='Radius',
+            getter=self.get_radius,
+            setter=self.set_radius,
+            layout=self.general.vlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -47,45 +51,37 @@ class Pie (PlotConfigBase):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=layout
-        )
-
-        self.radius = TransparentDoubleSpinBox(
-            text = "Radius",
-            step = 0.2,
-            getter=self.get_radius,
-            setter=self.set_radius,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.normalize = Toggle(
             text="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
-        wedge.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(wedge)
+        wedge.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(wedge)
     
-    def find_object (self) -> List[patches.Wedge]:
+    def find_object (self) -> list[patches.Wedge]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[patches.Wedge],
             gid=self.gid
         )
@@ -94,79 +90,79 @@ class Pie (PlotConfigBase):
         try:
             if value == "": value = None
             else: value = [float(i) for i in value.split(",")]
-            self.props.update(explode = value)
+            self.plot.props.update(explode = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_explode(self) -> str:
-        if not self.find_object()[0].explode:
+        if not self.plot.props["explode"]:
             return str()
-        else: return str(self.find_object()[0].explode)
+        return str(self.plot.props["explode"])
     
     def set_labels(self, value:str) -> None:
         try:
             if value == "": value = None
             else: value = value.split(",")
-            self.props.update(labels = value)
+            self.plot.props.update(labels = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_labels(self) -> str:
-        if not self.find_object()[0].labels:
+        if not self.plot.props["labels"]:
             return str()
-        else: return str(self.find_object()[0].labels)
+        return str(self.plot.props["labels"])
+
+    def get_radius(self) -> float:
+        return self.find_object()[0].r
+    
+    def set_radius(self, value: float):
+        try:
+            self.plot.props.update(radius = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
     
     def set_startangle(self, value:float) -> None:
         try:
-            self.props.update(startangle = value)
+            self.plot.props.update(startangle = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_startangle(self) -> float:
-        return float(self.find_object()[0].startangle)
-    
-    def set_radius(self, value:float) -> None:
-        try:
-            self.props.update(radius = value)
-            self.update_plot()
-        except Exception as e:
-            logger.exception(e)
-    
-    def get_radius(self) -> float:
-        return float(self.find_object()[0].r)
+        return float(self.plot.props["startangle"])
     
     def set_counterclock(self, value:bool) -> None:
         try:
-            self.props.update(counterclock = value)
+            self.plot.props.update(counterclock = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_counterclock(self) -> bool:
-        return self.find_object()[0].counterclock
+        return self.plot.props["counterclock"]
 
     def set_rotatelabels(self, value:bool) -> None:
         try:
-            self.props.update(rotatelabels = value)
+            self.plot.props.update(rotatelabels = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_rotatelabels(self) -> bool:
-        return self.find_object()[0].rotatelabels
+        return self.plot.props["rotatelabels"]
     
     def set_normalize(self, value:bool) -> None:
         try:
-            self.props.update(normalize = value)
+            self.plot.props.update(normalize = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_normalize(self) -> bool:
-        return self.find_object()[0].normalize
+        return self.plot.props["normalize"]
 
 class Coxcomb (Pie):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
@@ -174,23 +170,21 @@ class Coxcomb (Pie):
     
     def initUI(self):   
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Coxcomb'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -198,7 +192,7 @@ class Coxcomb (Pie):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -206,57 +200,55 @@ class Coxcomb (Pie):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
-        wedge.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(wedge)
+        wedge.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(wedge)
 
 class Doughnut (Pie):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Doughnut'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.wedgewidth = TransparentDoubleSpinBox(
             min  = 0, max  = 1, step = 0.1,
             text = "Width",
             getter=self.get_wedgewidth,
             setter=self.set_wedgewidth,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -264,7 +256,7 @@ class Doughnut (Pie):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -272,43 +264,43 @@ class Doughnut (Pie):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.normalize = Toggle(
             text="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
-        wedge.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(wedge)
+        wedge.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(wedge)
     
     def set_wedgewidth(self, value:float):
         try:
-            self.props.update(width = value)
+            self.plot.props.update(width = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
 
     def get_wedgewidth(self) -> float:
-        return self.find_object()[0].width
+        return self.plot.props["width"]
 
 class SemicircleDoughnut (Doughnut):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
@@ -316,23 +308,21 @@ class SemicircleDoughnut (Doughnut):
     
     def initUI(self):
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Semicircle Doughnut'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -340,14 +330,14 @@ class SemicircleDoughnut (Doughnut):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -355,19 +345,19 @@ class SemicircleDoughnut (Doughnut):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
-        wedge.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(wedge)
+        wedge.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(wedge)
     
 class MultilevelDoughnut (Doughnut):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
@@ -375,31 +365,29 @@ class MultilevelDoughnut (Doughnut):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Multilevel Doughnut'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.wedgewidth = TransparentDoubleSpinBox(
             min  = 0, max  = 1, step = 0.1,
             text = "Width",
             getter=self.get_wedgewidth,
             setter=self.set_wedgewidth,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -407,7 +395,7 @@ class MultilevelDoughnut (Doughnut):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -415,28 +403,28 @@ class MultilevelDoughnut (Doughnut):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.normalize = Toggle(
             text="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.pad = TransparentDoubleSpinBox(
@@ -444,19 +432,19 @@ class MultilevelDoughnut (Doughnut):
             text = "Padding",
             getter=self.get_pad,
             setter=self.set_pad,
-            layout=layout
+            layout=self.general.vlayout
         )
         
         mw = MultiWedges(self.gid, self.canvas)
-        mw.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(mw)
+        mw.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(mw)
     
     def set_pad(self, pad:float):
         try:
-            self.props.update(pad=pad)
+            self.plot.props.update(pad=pad)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_pad(self) -> float:
-        return self.find_object()[0].pad
+        return self.plot.props["pad"]

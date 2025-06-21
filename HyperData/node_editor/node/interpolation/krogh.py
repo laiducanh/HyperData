@@ -28,7 +28,7 @@ class ResultDialog(Dialog):
             self.main_layout.addWidget(smooth)
 
             self.canvas = Canvas()
-            for _ax in self.canvas.fig.axes: _ax.remove()
+            for _ax in self.canvas.figure.axes: _ax.remove()
             self.plot()
             self.main_layout.addWidget(self.canvas)
     
@@ -38,10 +38,10 @@ class ResultDialog(Dialog):
 
     def plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        ax = self.canvas.fig.add_subplot()
+        ax = self.canvas.figure.add_subplot()
 
         ax.plot(self.xi, self.interpolator.__call__(self.xi),label="fit",color="r",marker='',lw=2)
         ax.plot(self.xdata, self.ydata, label="data", color="b", lw=0)

@@ -52,32 +52,32 @@ class PlotSize2D (Frame):
         #layout.addStretch()
     
     def set_top(self,value):
-        self.canvas.fig.subplots_adjust(top=value)
+        self.canvas.figure.subplots_adjust(top=value)
         self.canvas.draw_idle()
     
     def get_top(self):
-        return self.canvas.fig.subplotpars.top
+        return self.canvas.figure.subplotpars.top
     
     def set_bottom(self,value):
-        self.canvas.fig.subplots_adjust(bottom=value)
+        self.canvas.figure.subplots_adjust(bottom=value)
         self.canvas.draw_idle()
     
     def get_bottom(self):
-        return self.canvas.fig.subplotpars.bottom
+        return self.canvas.figure.subplotpars.bottom
     
     def set_left(self,value):
-        self.canvas.fig.subplots_adjust(left=value)
+        self.canvas.figure.subplots_adjust(left=value)
         self.canvas.draw_idle()
     
     def get_left(self):
-        return self.canvas.fig.subplotpars.left
+        return self.canvas.figure.subplotpars.left
     
     def set_right(self,value):
-        self.canvas.fig.subplots_adjust(right=value)
+        self.canvas.figure.subplots_adjust(right=value)
         self.canvas.draw_idle()
     
     def get_right(self):
-        return self.canvas.fig.subplotpars.right
+        return self.canvas.figure.subplotpars.right
 
     
 class Grid2D (Frame):
@@ -148,7 +148,7 @@ class Grid2D (Frame):
             logger.exception(e)
     
     def get_visible(self):
-        for obj in self.canvas.fig.findobj(match=matplotlib.lines.Line2D):
+        for obj in self.canvas.figure.findobj(match=matplotlib.lines.Line2D):
             if obj._gid != None and '_grid' in obj._gid:
                 return obj.get_visible()
         return False

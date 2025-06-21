@@ -33,6 +33,7 @@ class NodeContentWidget(ContentItem):
         self.num_signal_pipeline = 0 # reset number of pipeline signal
         for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
             edge.end_socket.node.content.resetStatus()
+        self.exec_btn.setIcon("stop.png")
         self.timerStart()
         self.run_threadpool(*args, **kwargs)
 
@@ -61,6 +62,7 @@ class NodeContentWidget(ContentItem):
         
         self.pipeline()
         self.progress.setValue(100)
+        self.exec_btn.setIcon("play.png")
 
     def pipeline (self):
 

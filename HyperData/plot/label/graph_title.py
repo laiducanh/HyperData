@@ -17,7 +17,7 @@ class GraphTitle (QDialog):
 
         self.setWindowTitle('Graph Title')
         self.canvas = canvas
-        self.obj = self.canvas.axes.set_title('Graph Title')
+        self.obj = self.canvas.axes.set_title(self.get_title())
         self.initUI()
     
     def initUI(self):  

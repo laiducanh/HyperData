@@ -12,7 +12,7 @@ DEBUG = True
 
 """ Data input X in these function are 2D arrays """
 
-def heatmap(X, ax:Axes, gid, *args, **kwargs) -> list[QuadMesh]:
+def heatmap(X, ax:Axes, gid, *args, **kwargs) -> tuple[list[QuadMesh], dict]:
     if DEBUG or GLOBAL_DEBUG:
         X = np.array([[0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
                     [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0],
@@ -21,21 +21,26 @@ def heatmap(X, ax:Axes, gid, *args, **kwargs) -> list[QuadMesh]:
                     [0.7, 1.7, 0.6, 2.6, 2.2, 6.2, 0.0],
                     [1.3, 1.2, 0.0, 0.0, 0.0, 3.2, 5.1],
                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
-    
+    props = dict()
     artist = ax.pcolormesh(
         X,
         gid=gid,
     )
-    return [artist]
+    return [artist], props
 
 def contour(X, ax:Axes, gid, fill=False, cmap=matplotlib.rcParams["image.cmap"], 
-            norm="linear", *args, **kwargs) -> list[Union[QuadMesh, Line2D]]:
+            norm="linear", *args, **kwargs) -> tuple[list[Union[QuadMesh, Line2D]], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X, Y = np.meshgrid(np.linspace(-3, 3, 256), np.linspace(-3, 3, 256))
         X = (1 - X/2 + X**5 + Y**3) * np.exp(-X**2 - Y**2)
    
     artist = list()
+    props = {
+        "fill": fill,
+        "cmap": cmap,
+        "norm": norm
+    }
     contours = QuadContourSet(ax, X, cmap=cmap, norm=norm)
     
     if fill: 
@@ -62,12 +67,8 @@ def contour(X, ax:Axes, gid, fill=False, cmap=matplotlib.rcParams["image.cmap"],
 
     contours.remove()
     ax.set_axis_on()
-
-    for art in artist:
-        art.norm_ = norm
-        art.fill = fill
        
     #print(artist)
-    return artist
+    return artist, props
         
         

@@ -1,8 +1,9 @@
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
-import matplotlib, pickle, os
+import matplotlib, pickle
 from matplotlib.figure import Figure
-from plot.multifigure.utilis import copy_objects
+from plot.utilis import copy_objects
+from config.settings import config, logger
 
 matplotlib.use("QtAgg")
 #matplotlib.style.use('bmh')
@@ -20,28 +21,33 @@ class Canvas (FigureCanvasQTAgg):
     sig_hover = Signal() # to use in future
     sig_serialize = Signal()
     def __init__(self):
-        
-        self.fig = Figure()
         self.id = id(self)
         self._config = {
-            'dpi': 150,
-            'margin': (0.12, 0.12, 0.9, 0.9),
-            'plot_type': '2d line',
-            'data_input': [str(), str(), str(), str()],
-            'plot_props': dict(),
-        }
-        self.fig.set_dpi(self._config['dpi'])
-        self.fig.subplots_adjust(*self._config['margin'])
-
+                # 'margin': (0.12, 0.12, 0.9, 0.9),
+                "grid": {
+                    "visible": False,
+                    "which": matplotlib.rcParams['axes.grid.which'],
+                    "axis": matplotlib.rcParams['axes.grid.axis'],
+                    "alpha": matplotlib.rcParams['grid.alpha'],
+                    "linewidth": matplotlib.rcParams['grid.linewidth'],
+                    "linestyle": matplotlib.rcParams['grid.linestyle'],
+                    "color": matplotlib.rcParams['grid.color']
+                },
+                "num_graph": 0,
+            }
+        self.figure = Figure()
+        self.figure.set_dpi(config['plot_dpi'])
+        # self.fig.subplots_adjust(*self._config['margin'])
         self.initAxes()
-        super().__init__(self.fig)
+        
+        super().__init__(self.figure)
     
     def initAxes (self):
-        self.axes = self.fig.add_subplot()
+        self.axes = self.figure.add_subplot()
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
-        self.axespie = self.fig.add_subplot()
-        self.axesleg = self.fig.add_subplot()
+        self.axespie = self.figure.add_subplot()
+        self.axesleg = self.figure.add_subplot()
 
         self.axespie.set_axis_off()
         self.axesleg.set_axis_off()
@@ -51,7 +57,7 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
         
-        for _ax in self.fig.axes:     
+        for _ax in self.figure.axes:     
             _ax.spines["bottom"].set_gid("spine bottom")
             _ax.plot(1, 0, marker=",", 
                      color=matplotlib.colors.rgb2hex(_ax.spines["bottom"].get_edgecolor()),
@@ -80,68 +86,52 @@ class Canvas (FigureCanvasQTAgg):
                      clip_on=False,
                      gid="spine right"
             )
+        
+        self.axes.set_title('Graph Title')
     
     def serialize(self):
-        # figure = dict()
-        # for i in vars(self.fig).keys(): figure[i] = str(vars(self.fig)[i])
-        # axes = dict(ax = {}, axy2 = {}, axx2 = {})
-        # axes['ax'] = {
-        #     "_visible": self.axes.get_visible()
-        # }
-        # # for i in vars(self.axes).keys(): 
-        # #     axes['ax'][i] = (vars(self.axes)[i])
-
-        # for i in vars(self.axesy2).keys(): axes['axy2'][i] = str(vars(self.axesy2)[i])
-        # for i in vars(self.axesx2).keys(): axes['axx2'][i] = str(vars(self.axesx2)[i])
-
-        # graph = dict()
-        # for obj in self.fig.findobj():
-        #     if obj._gid != None and "graph" in obj._gid:
-        #         graph[str(obj)] = dict()
-        #         for i in vars(obj).keys():
-        #             graph[str(obj)][str(i)] = str(vars(obj)[i])            
-
+    
         with open(f'canvas_{self.id}.pickle', 'wb') as file: 
-            pickle.dump(self.fig, file)
-                
+            pickle.dump(self.figure, file)
+
         return {"id": self.id,
                 "pickle": f'canvas_{self.id}.pickle',
                 'config': self._config}
-    
-
+        
     def deserialize(self, data, hashmap={}):
 
         self.id = data['id']
         hashmap[data['id']] = self
         self._config = data['config']
+        try:
+            with open(f'canvas_{self.id}.pickle','rb') as file:
+                loaded_fig = pickle.load(file)
 
-        with open(f'canvas_{self.id}.pickle','rb') as file:
-            loaded_fig = pickle.load(file)
-        
-        self.fig.clear()
-        self.initAxes()
-
-        for source_ax, destination_ax in zip(loaded_fig.axes, self.fig.axes):
-            copy_objects(source_ax, destination_ax)
+            for source_ax, destination_ax in zip(loaded_fig.axes, self.figure.axes):
+                copy_objects(source_ax, destination_ax)
             
-        self.fig.canvas.draw_idle()
+            self.draw_idle()
+        except Exception as e:
+            logger.exception(e)
+            
 
+        
 class ExplorerCanvas(FigureCanvasQTAgg):
     def __init__(self):
         
-        self.fig = Figure()
-        self.fig.set_dpi(150)
-        self.fig.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
+        self.figure = Figure()
+        self.figure.set_dpi(150)
+        self.figure.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
         self.id = id(self)
 
-        super().__init__(self.fig)
+        super().__init__(self.figure)
         
 class Canvas3D (Canvas):
     def __init__(self):
         super().__init__()
 
     def initAxes(self):
-        self.axes = self.fig.add_subplot(projection='3d')  
+        self.axes = self.figure.add_subplot(projection='3d')  
         self.axesleg = None
 
         self.axes.xaxis.set_gid("x3d")
@@ -153,7 +143,7 @@ class MultiFigureCanvas(Canvas):
         super().__init__()
 
     def initAxes(self):
-        self.axes = self.fig.add_subplot()
+        self.axes = self.figure.add_subplot()
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
 

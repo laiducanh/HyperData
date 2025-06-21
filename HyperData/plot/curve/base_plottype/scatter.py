@@ -21,27 +21,24 @@ class Scatter (PlotConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('Scatter'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Scatter', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.sizes = TransparentSpinBox(
             min  = 1, max  = 1000, step = 2,
             text = "sizes",
             getter=self.get_sizes,
             setter=self.set_sizes,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         collection = CmapCollection(self.gid, self.canvas)
-        collection.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(collection)
+        collection.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(collection)
     
     def find_obj (self) -> list[PathCollection]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[PathCollection],
             gid=self.gid
         )
@@ -51,53 +48,47 @@ class Scatter (PlotConfigBase):
     
     def set_sizes(self, value:int):
         try:
-            self.props.update(sizes = value)
+            self.plot.props.update(sizes = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_sizes(self) -> int:
-        return int(self.find_obj()[0].sizes)
+        return int(self.plot.props["sizes"])
 
 class Scatter3D (Scatter):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
     def initUI(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-
-        layout.addWidget(TitleLabel('3D Scatter'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Scatter', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         self.depthshade = Toggle(
             text="Depth Shade",
             getter=self.get_depthshade,
             setter=self.set_depthshade,
-            layout=layout
+            layout=self.general.vlayout
         )
-        self.depthshade.button.setChecked(self.get_depthshade())
-        self.depthshade.button.checkedChanged.connect(self.set_depthshade)
-        layout.addWidget(self.depthshade)
 
         self.sizes = TransparentSpinBox(
             min  = 1, max = 1000, step = 2,
             text = "sizes",
             getter=self.get_sizes,
             setter=self.set_sizes,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         collection = CmapCollection(self.gid, self.canvas)
-        collection.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(collection)
+        collection.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(collection)
     
     def set_depthshade(self, value:bool):
         try:
-            self.props.update(depthshade = value)
+            self.plot.props.update(depthshade = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_depthshade(self) -> bool:
-        return self.find_obj()[0].depthshade
+        return self.plot.props["depthshade"]

@@ -22,15 +22,15 @@ class SingleColorCollection (ArtistConfigBase):
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
             min = 0, max = 5, step = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.edgestyle = TransparentComboBox(
@@ -38,21 +38,21 @@ class SingleColorCollection (ArtistConfigBase):
             items = linestyle_lib.values(),
             getter=self.get_edgestyle,
             setter=self.set_edgestyle,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
             getter=self.get_facecolor,
             setter=self.set_facecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -60,12 +60,12 @@ class SingleColorCollection (ArtistConfigBase):
             min = 0, max = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
     
     def find_object (self) -> List[Union[collections.Collection, collections.PolyCollection]]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[collections.Collection, collections.PolyCollection],
             gid=self.gid
         )
@@ -128,7 +128,7 @@ class SingleColorCollection (ArtistConfigBase):
     def get_edgecolor (self):
         try:
             return colors.to_hex(self.find_object()[0].get_edgecolor()[0])
-        except: return "black"
+        except: self.get_facecolor()
 
     def set_alpha (self, value):
         try: 
@@ -153,30 +153,30 @@ class CmapCollection (ArtistConfigBase):
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width'
             ,min = 0, max = 5, step = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.edgestyle = TransparentComboBox(
             text  = 'Edge Style',
             items = linestyle_lib.values(),
-            getter=self.edgestyle,
+            getter=self.get_edgestyle,
             setter=self.set_edgestyle,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.cmap_on = Toggle(
             text="Colormap On",
             getter=self.get_cmap_on,
             setter=self.set_cmap_on,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.cmap = TransparentComboBox(
@@ -184,7 +184,7 @@ class CmapCollection (ArtistConfigBase):
             text  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.norm = TransparentComboBox(
@@ -192,21 +192,21 @@ class CmapCollection (ArtistConfigBase):
             text  = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
             getter=self.get_facecolor,
             setter=self.set_facecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -214,12 +214,12 @@ class CmapCollection (ArtistConfigBase):
             min = 0, max = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
     
     def find_object (self) -> list[collections.Collection]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[collections.Collection],
             gid=self.gid
         )
@@ -349,30 +349,31 @@ class QuadMesh (ArtistConfigBase):
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
-            layout=layout
+            layout=self.mainlayout
         )
 
-        self.edgestyle = TransparentComboBox(
-            text  = 'Edge Style',
-            items = linestyle_lib.values(),
-            getter=self.get_edgestyle,
-            setter=self.set_edgestyle,
-            layout=layout
-        )
+        # linestyle in QuadMesh is a bug
+        # self.edgestyle = TransparentComboBox(
+        #     text  = 'Edge Style',
+        #     items = linestyle_lib.values(),
+        #     getter=self.get_edgestyle,
+        #     setter=self.set_edgestyle,
+        #     layout=self.mainlayout
+        # )
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.cmap = TransparentComboBox(
@@ -380,7 +381,7 @@ class QuadMesh (ArtistConfigBase):
             text  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.norm = TransparentComboBox(
@@ -388,7 +389,7 @@ class QuadMesh (ArtistConfigBase):
             text  = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -396,11 +397,11 @@ class QuadMesh (ArtistConfigBase):
             min  = 0, max  = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
     
     def find_object (self) -> list[collections.QuadMesh]:
-        return find_mpl_object(source=self.canvas.fig,
+        return find_mpl_object(source=self.canvas.figure,
                                match=[collections.QuadMesh],
                                gid=self.gid)
     
@@ -421,6 +422,7 @@ class QuadMesh (ArtistConfigBase):
         try: 
             for obj in self.find_object():
                 obj.set_linestyle(value.lower())
+                print(obj, value, obj.get_linestyle())
             self.prepare_update()
         except Exception as e:
             logger.exception(e)
@@ -436,7 +438,8 @@ class QuadMesh (ArtistConfigBase):
                 return "dotted"
             else:
                 return "solid"
-        except: return "solid"
+        except Exception as e:
+            logger.exception(e)
     
     def set_edgecolor (self, value):
         try: 
@@ -448,10 +451,11 @@ class QuadMesh (ArtistConfigBase):
     
     def get_edgecolor (self):
         try:
-            if len(self.find_object()[0].get_edgecolor()) > 1:
-                return colors.to_hex(self.find_object()[0].get_edgecolor()[0])
-            return colors.to_hex(self.find_object()[0].get_facecolor()[0])
-        except: "black"
+            if len(self.find_object()[0].get_edgecolor()) == 0:
+                return colors.to_hex(self.find_object()[0].get_facecolor()[0])
+            return colors.to_hex(self.find_object()[0].get_edgecolor()[0])
+        except Exception as e:
+            logger.exception(e)
     
     def set_cmap(self, value:str):
         try:
@@ -505,15 +509,15 @@ class Poly3DCollection (ArtistConfigBase):
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        self.mainlayout = QVBoxLayout(self)
+        self.mainlayout.setContentsMargins(0,0,0,0)
 
         self.zsort = TransparentComboBox(
             items = ["average","min","max"], 
             text  = "Zsort",
             getter=self.get_zsort,
             setter=self.set_zsort,
-            layout=layout
+            layout=self.mainlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -521,12 +525,12 @@ class Poly3DCollection (ArtistConfigBase):
             min  = 0, max  = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.mainlayout
         )
 
     def find_object(self) -> List[art3d.Poly3DCollection]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[art3d.Poly3DCollection],
             gid=self.gid
         )

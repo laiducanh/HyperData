@@ -24,14 +24,12 @@ class Heatmap (PlotConfigBase):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Heatmap'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Mesh', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
 
         qm = QuadMesh(self.gid, self.canvas)
-        qm.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(qm)
+        qm.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(qm)
 
 class Contour (PlotConfigBase):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
@@ -41,16 +39,14 @@ class Contour (PlotConfigBase):
     
     def initUI(self):
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(TitleLabel('Contour'))
-        layout.addWidget(SeparateHLine())
+        self.segment.addButton(text='Line', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
         
         self.fillmesh = Toggle(
             text="Fill Color",
             getter=self.get_fillmesh,
             setter=self.set_fillmesh,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.cmap = TransparentComboBox(
@@ -58,7 +54,7 @@ class Contour (PlotConfigBase):
             text  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.norm = TransparentComboBox(
@@ -66,7 +62,7 @@ class Contour (PlotConfigBase):
             text = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -74,52 +70,52 @@ class Contour (PlotConfigBase):
             min  = 0, max  = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=layout
+            layout=self.general.vlayout
         )
 
         line = Line(self.gid, self.canvas)
-        line.onChanged.connect(self.onChanged.emit)
-        layout.addWidget(line)
+        line.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(line)
 
     def find_object(self) -> list[collections.QuadMesh]:
         return find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[collections.QuadMesh],
             gid=self.gid,
         )
 
     def set_fillmesh(self, value:bool):
         try:
-            self.props.update(fill = value)
+            self.plot.props.update(fill = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_fillmesh(self) -> bool:
-        try: return self.find_object()[0].fill
+        try: return self.plot.props["fill"]
         except: return False
     
     def set_cmap (self, value:str):
         try:
-            self.props.update(cmap = value)
+            self.plot.props.update(cmap = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_cmap(self) -> str:
         try:
-            return self.find_object()[0].cmap.name
+            return self.plot.props["cmap"].name
         except: return matplotlib.rcParams["image.cmap"]
     
     def set_norm(self, value:str):
         try:
-            self.props.update(norm = value)
+            self.plot.props.update(norm = value)
             self.update_plot()
         except Exception as e:
             logger.exception(e)
     
     def get_norm(self) -> str:
-        try: return self.find_object()[0].norm_
+        try: return self.plot.props["norm"]
         except: return "linear"
     
     def set_alpha(self, value: float):

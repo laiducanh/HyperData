@@ -25,14 +25,14 @@ from plot.axes.axes_3d import Axes3D
 from plot.label.graph_title import GraphTitle
 from plot.label.legend import LegendLabel
 from config.settings import GLOBAL_DEBUG, logger, config
-from node_editor.node_node import Node
+from node_editor.base.node_graphics_node import NodeGraphicsNode
 from plot.utilis import get_color, find_mpl_object
 
 DEBUG = False
 
 class PlotView (QMainWindow):
     sig_back_to_grScene = Signal()
-    def __init__(self, node:Node, canvas:Canvas, parent=None):
+    def __init__(self, node:NodeGraphicsNode, canvas:Canvas, parent=None):
         super().__init__(parent)
         
         ### 
@@ -51,7 +51,7 @@ class PlotView (QMainWindow):
         ### Initialize UI components
         self.setup_visual()
         self.setup_sidebar()
-        print('initialize plotview')
+        
         ###
         if GLOBAL_DEBUG or DEBUG: self.debug()
 
@@ -62,7 +62,6 @@ class PlotView (QMainWindow):
         self.plot_visual = GraphicsView(self.canvas,parent=self.parent())
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
         self.plot_visual.save_figure.connect(self.save_figure)
-        self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.main_layout.addWidget(self.plot_visual)
     
@@ -70,7 +69,7 @@ class PlotView (QMainWindow):
 
         if self.plot3d:
             self.treeview_data = {
-                "Manage graph":[],
+                "Manage graph":["Add graph"],
                 "Label":["Data annotation"],
                 "Objects":["X Axis","Y Axis","Z Axis","XY Pane","YZ Pane","XZ Pane",
                            "Title","Legend"]
@@ -78,7 +77,7 @@ class PlotView (QMainWindow):
 
         else:
             self.treeview_data = {
-                "Manage graph":[],
+                "Manage graph":["Add graph"],
                 "Label":["Data annotation"],
                 "Objects":["Bottom Axis","Left Axis","Top Axis","Right Axis",
                            "Axes","Title","Legend"],
@@ -98,25 +97,19 @@ class PlotView (QMainWindow):
             setter=self.sig_back_to_grScene.emit,
             layout=static_layout
         )
-        
-        self.treeview_btn = _TransparentToolButton(
-            icon="home.svg",
-            setter=lambda: self.stackedlayout.setCurrentIndex(0),
-            layout=static_layout
-        )
  
         self.search_box = _SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
         
 
-        self.stackedlayout = QStackedLayout()
-        self.sidebar_layout.addLayout(self.stackedlayout)
+        # self.stackedlayout = QStackedLayout()
+        # self.sidebar_layout.addLayout(self.stackedlayout)
 
         self.treeview = TreeWidget()
         self.treeview.itemPressed.connect(self.treeview_func)
         self.treeview.setData(self.treeview_data)
-        self.stackedlayout.addWidget(self.treeview)
+        self.sidebar_layout.addWidget(self.treeview)
         self.search_box.set_TreeView(self.treeview)
 
         self.dock = QDockWidget('Figure')
@@ -124,104 +117,102 @@ class PlotView (QMainWindow):
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
 
-        # self.insertplot = InsertPlot (self.canvas, self.node, self.plot3d, self.parent())
-        # self.insertplot.sig.connect(self.update_plotlist)
-        # self.stackedlayout.addWidget(self.insertplot)
+        self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
+        self.insertplot.sig.connect(self.update_plotlist)
 
     def treeview_func (self, item:QTreeWidgetItem):
         text = item.text(0).lower()
         if text.startswith("graph"):
-            # _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
-            # for pt in self.insertplot.plotlist:
-            #     if pt.plot_index == _plot_index:
-            #         _plot = pt
-            #         break
-            curve = Curve(text, self.plot_visual.canvas, self.insertplot, self.parent())
+            _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
+            for pt in self.insertplot.plot_list:
+                if pt.plot_index + 1 == _plot_index:
+                    _plot = pt
+                    break
+            curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
             curve.sig.connect(self.update_plotlist)
-            curve.show()
+            curve.exec()
             pass
         
-        elif "manage graph" == text:
-            self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
-            self.insertplot.sig.connect(self.update_plotlist)
+        elif "add graph" == text:
+            # self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
+            # self.insertplot.sig.connect(self.update_plotlist)
             self.insertplot.show()
-            # self.stackedlayout.setCurrentWidget(self.insertplot)
             
         elif text == "bottom axis":
             self.botax = Tick2D('bottom', self.canvas, self.parent())
-            self.botax.show()
+            self.botax.exec()
         
         elif text == "left axis":
             self.lefax = Tick2D('left', self.canvas, self.parent())
-            self.lefax.show()
+            self.lefax.exec()
 
         elif text == "top axis":
             self.topax = Tick2D('top', self.canvas, self.parent())
-            self.topax.show()
+            self.topax.exec()
 
         elif text == "right axis":
             self.rigax = Tick2D('right', self.canvas, self.parent())
-            self.rigax.show()
+            self.rigax.exec()
         
         elif text == 'x axis':
             self.xax = Tick3D('x3d', self.canvas, self.parent())
-            self.xax.show()
+            self.xax.exec()
         
         elif text == 'y axis':
             self.yax = Tick3D('y3d', self.canvas, self.parent())
-            self.yax.show()
+            self.yax.exec()
         
         elif text == 'z axis':
             self.zax = Tick3D('z3d', self.canvas, self.parent())
-            self.zax.show()
+            self.zax.exec()
         
         elif text == 'xy pane':
             self.zpane = Axes3D('XY Pane', self.canvas, self.parent())
-            self.zpane.show()
+            self.zpane.exec()
         
         elif text == 'xz pane':
             self.ypane = Axes3D('XZ Pane', self.canvas, self.parent())
-            self.ypane.show()
+            self.ypane.exec()
         
         elif text == 'yz pane':
             self.xpane = Axes3D('YZ Pane', self.canvas, self.parent())
-            self.xpane.show()
+            self.xpane.exec()
         
         elif text == 'axes':
             self.axes  = Axes2D(self.canvas, self.parent())
-            self.axes.show()
+            self.axes.exec()
         
         elif text == 'title':
             self.title = GraphTitle(self.canvas, self.parent())
-            self.title.show()
+            self.title.exec()
         
         elif text == 'legend':
             self.legendlabel = LegendLabel(self.canvas, self.parent())
-            self.legendlabel.show()
+            self.legendlabel.exec()
     
     def update_plotlist(self):
         try:
             # reset treeview items
-            self.treeview_data["Objects"] = [item for item in self.treeview_data["Objects"] if "Graph" not in item]
+            self.treeview_data["Manage graph"] = ["Add graph"]
 
             # append list of graphs
-            for obj in find_mpl_object(self.canvas.fig, gid="graph"):
+            for obj in find_mpl_object(self.canvas.figure, gid="graph"):
                 if not obj.get_gid().startswith("_"):
-                    if obj.get_gid().split('/')[0].title() not in self.treeview_data["Objects"]:
-                        self.treeview_data["Objects"].append(obj.get_gid().split('/')[0].title())
+                    if obj.get_gid().split('/')[0].title() not in self.treeview_data["Manage graph"]:
+                        self.treeview_data["Manage graph"].append(obj.get_gid().split('/')[0].title())
             self.treeview.setData(self.treeview_data)
 
             # update color icon for each graph
             pixmap = QPixmap(12,12)
-            for item in self.treeview.findItems("Objects",Qt.MatchFlag.MatchExactly):
+            for item in self.treeview.findItems("Manage graph",Qt.MatchFlag.MatchExactly):
                 for child in range(item.childCount()):
                     name = item.child(child).text(0).lower()
-                    if "graph " in name:
+                    if name.startswith("graph"):
                         color = 'white' # whenever color changes to white, there is an error!
-                        if find_mpl_object(self.canvas.fig,gid=name,rule="exact"):
-                            color = get_color(find_mpl_object(self.canvas.fig,gid=name,rule="exact")[0])
+                        if find_mpl_object(self.canvas.figure,gid=name,rule="exact"):
+                            color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="exact")[0])
                         else:
-                            color = get_color(find_mpl_object(self.canvas.fig,gid=name,rule="contain")[0])
+                            color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="contain")[0])
                         pixmap.fill(QColor(color))
                         item.child(child).setIcon(0,QIcon(pixmap))  
         except Exception as e: 
@@ -234,7 +225,7 @@ class PlotView (QMainWindow):
                       PDF (*.pdf);;Scalable Vector Graphics (*.svg);;PostScript formats (*.ps *.eps)"""
         )
         if dialog.exec():
-            self.canvas.fig.savefig(
+            self.canvas.figure.savefig(
                 fname=dialog.selectedFiles()[0], 
                 dpi=config["plot_dpi"]
             )
@@ -243,7 +234,6 @@ class PlotView (QMainWindow):
 
         if key.key() == Qt.Key.Key_Slash:
             self.search_box.setFocus()
-            self.stackedlayout.setCurrentWidget(self.treeview)
         
         elif key.key() == Qt.Key.Key_M:
             point_to_show = self.mapToGlobal(self.plot_visual.scene().sceneRect().center().toPoint())
@@ -251,9 +241,6 @@ class PlotView (QMainWindow):
         
         elif key.key() == Qt.Key.Key_N and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.sig_back_to_grScene.emit()
-        
-        elif key.key() == Qt.Key.Key_H and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            self.stackedlayout.setCurrentIndex(0)
         
         elif key.key() == Qt.Key.Key_F and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.save_figure()
@@ -273,19 +260,19 @@ class PlotView (QMainWindow):
             
         return super().paintEvent(a0)
 
-    def serialize(self):
-        return {"canvas": self.canvas.id,
-        }
-
+    def showEvent(self, event):
+        self.update_plotlist()
+        return super().showEvent(event)
+    
 class PlotViewMultiFig (PlotView):
-    def __init__(self, node:Node, canvas:Canvas, parent=None):       
+    def __init__(self, node:NodeGraphicsNode, canvas:Canvas, parent=None):       
         super().__init__(node, canvas, parent)
     
     def setup_visual (self):
         self.plot_visual = GraphicsViewMultiFig(self.canvas,parent=self.parent())
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
         self.plot_visual.save_figure.connect(self.save_figure)
-        self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
+        #self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.main_layout.addWidget(self.plot_visual)
 

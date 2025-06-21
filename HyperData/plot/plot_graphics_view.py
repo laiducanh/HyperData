@@ -109,7 +109,6 @@ class GraphicsView (QGraphicsView):
     key_pressed = Signal(object)
     mouse_released = Signal(object)
     backtoScene = Signal()
-    backtoHome = Signal()
     mpl_pressed = Signal(str)
     save_figure = Signal()
     def __init__(self, canvas:Canvas,parent=None):
@@ -150,9 +149,6 @@ class GraphicsView (QGraphicsView):
         nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
         nodeview.triggered.connect(self.backtoScene.emit)
         self.menu.addAction(nodeview)
-        home = Action(text="&Home", shortcut="Ctrl+H", parent=self.menu)
-        home.triggered.connect(self.backtoHome.emit)
-        self.menu.addAction(home)
         self.menu.addSeparator()
 
         save = Action(text="Save Figure", shortcut="Ctrl+F", parent=self.menu)
@@ -163,14 +159,14 @@ class GraphicsView (QGraphicsView):
 
         graph = Menu(text="&Graph", parent=self.menu)
         self.menu.addMenu(graph)
-        plot_list = [s for s in find_mpl_object(self.canvas.fig,gid="graph ")]
+        plot_list = [s for s in find_mpl_object(self.canvas.figure,gid="graph ")]
         plot_list = list()
-        for obj in find_mpl_object(self.canvas.fig,gid="graph "):
+        for obj in find_mpl_object(self.canvas.figure,gid="graph "):
             if not obj.get_gid().startswith("_"):
-                plot_list.append(obj.get_gid())
+                plot_list.append(obj.get_gid().split('/')[0])
         _graph_list = list()
         for gid in set(plot_list):
-            _graph_list.append(gid.split("/")[0].title())
+            _graph_list.append(gid.title())
         for text in ["Manage Graph"] + _graph_list:
             action = Action(text=text, parent=graph)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
@@ -239,7 +235,7 @@ class GraphicsView (QGraphicsView):
     
     def tooltip_onShow(self, event: MouseEvent):
         stack = find_mpl_object(
-            source=self.canvas.fig,
+            source=self.canvas.figure,
             match=[Line2D,Collection,Rectangle,Wedge,
                    PathPatch,FancyBboxPatch]
         )
@@ -358,7 +354,7 @@ class GraphicsView (QGraphicsView):
         
     
     def save_mpl_bg(self, event=None):
-        self.mpl_background = self.canvas.copy_from_bbox(self.canvas.fig.bbox)
+        self.mpl_background = self.canvas.copy_from_bbox(self.canvas.figure.bbox)
         
     def mpl_enterFigure(self, event:MouseEvent):
         """ save original figure when mouse enters the figure """
@@ -379,11 +375,11 @@ class GraphicsView (QGraphicsView):
         if not self.legend_picked and config["plot_tooltip"]:
             self.tooltip_onShow(event)
             
-        self.canvas.blit(self.canvas.fig.bbox)
+        self.canvas.blit(self.canvas.figure.bbox)
         #self.canvas.flush_events()
 
     def mpl_mousePress(self, event: MouseEvent):
-        stack = find_mpl_object(source=self.canvas.fig,
+        stack = find_mpl_object(source=self.canvas.figure,
                                 match=[Artist])
         
         self.legend_picked = legend_onPress(event, self.canvas)

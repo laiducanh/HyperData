@@ -10,12 +10,24 @@ DEBUG = True
 
 def histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=False,
               bottom=0, histtype="bar", align="mid", orientation="vertical",
-              rwidth=None, log=False, *args, **kwargs) -> list[Rectangle]:
+              rwidth=None, log=False, *args, **kwargs) -> tuple[list[Rectangle], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(1000, 3)
     
     X = np.asarray(X)
+
+    props = {
+        "bins": bins,
+        "density": density,
+        "cumulative": cumulative,
+        "bottom": bottom,
+        "histtype": histtype,
+        "align": align,
+        "orientation": orientation,
+        "rwidth": rwidth,
+        "log": log
+    }
 
     _artist = ax.hist(
         X, 
@@ -37,15 +49,6 @@ def histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=False,
     if np.ndim(_artist[0]) == 1:
         for y, x, art in zip(*_artist):
             art.set_gid(gid=gid)
-            art.bins = bins
-            art.density = density
-            art.cumulative = cumulative
-            art.bottom = bottom
-            art.histtype = histtype
-            art.align = align
-            art.orientation = orientation
-            art.rwidth = rwidth
-            art.log = log
             art.Xdata = x
             art.Ydata = y
             art.Xshow = art.get_center()[0]
@@ -55,15 +58,6 @@ def histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=False,
         for idx in range(len(_artist[0])):
             for y, x, art in zip(_artist[0][idx],_artist[1],_artist[2][idx]):
                 art.set_gid(gid=f"{gid}.{idx+1}")
-                art.bins = bins
-                art.density = density
-                art.cumulative = cumulative
-                art.bottom = bottom
-                art.histtype = histtype
-                art.align = align
-                art.orientation = orientation
-                art.rwidth = rwidth
-                art.log = log
                 art.Xdata = x
                 art.Ydata = y
                 art.Xshow = art.get_center()[0]
@@ -72,16 +66,28 @@ def histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=False,
 
     ax.set_axis_on()
     
-    return artist
+    return artist, props
 
 def stacked_histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=False,
                       bottom=0, histtype="bar", align="mid", orientation="vertical",
-                      rwidth=None, log=False, *args, **kwargs) -> list[Rectangle]:
+                      rwidth=None, log=False, *args, **kwargs) -> tuple[list[Rectangle], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(1000, 3)
     
     X = np.asarray(X)
+
+    props = {
+        "bins": bins,
+        "density": density,
+        "cumulative": cumulative,
+        "bottom": bottom,
+        "histtype": histtype,
+        "align": align,
+        "orientation": orientation,
+        "rwidth": rwidth,
+        "log": log
+    }
     
     _artist = ax.hist(
         X, 
@@ -103,15 +109,6 @@ def stacked_histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=Fa
     if np.ndim(_artist[0]) == 1:
         for y, x, art in zip(*_artist):
             art.set_gid(gid=gid)
-            art.bins = bins
-            art.density = density
-            art.cumulative = cumulative
-            art.bottom = bottom
-            art.histtype = histtype
-            art.align = align
-            art.orientation = orientation
-            art.rwidth = rwidth
-            art.log = log
             art.Xdata = x
             art.Ydata = y
             art.Xshow = art.get_center()[0]
@@ -121,15 +118,6 @@ def stacked_histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=Fa
         for idx in range(len(_artist[0])):
             for y, x, art in zip(_artist[0][idx],_artist[1],_artist[2][idx]):
                 art.set_gid(gid=f"{gid}.{idx+1}")
-                art.bins = bins
-                art.density = density
-                art.cumulative = cumulative
-                art.bottom = bottom
-                art.histtype = histtype
-                art.align = align
-                art.orientation = orientation
-                art.rwidth = rwidth
-                art.log = log
                 art.Xdata = x
                 art.Ydata = y
                 art.Xshow = art.get_center()[0]
@@ -138,17 +126,32 @@ def stacked_histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=Fa
         
     ax.set_axis_on()
     
-    return artist
+    return artist, props
 
 def boxplot(X, ax:Axes, gid:str, showbox = True, notch = False,
             vert = True, widths = 0.5, whis = 1.5, autorange = False,
             showcaps = True, capwidths = 0, showfliers = True,
-            bootstrap = 1000, showmeans = False, meanline = False, *args, **kwargs) -> list[Union[Line2D,PathPatch]]:
+            bootstrap = 1000, showmeans = False, meanline = False, *args, **kwargs) -> tuple[list[Union[Line2D,PathPatch]], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(1000, 1)
 
     X = np.asarray(X)
+
+    props = {
+        "showbox": showbox,
+        "notch": notch,
+        "vert": vert,
+        "widths": widths,
+        "whis": whis,
+        "autorange": autorange,
+        "showcaps": showcaps,
+        "capwidths": capwidths,
+        "showfliers": showfliers,
+        "bootstrap": bootstrap,
+        "showmeans": showmeans,
+        "meanline": meanline,
+    }
 
     artist = list()
     _artist = ax.boxplot(
@@ -192,34 +195,30 @@ def boxplot(X, ax:Axes, gid:str, showbox = True, notch = False,
     for art in _artist.get("means"):
         artist.append(art)
         art.set_gid(gid=f"_{gid}/means")
-
-    for art in artist:
-       # print("abc", art, art.get_gid())
-        art.showbox = showbox
-        art.notch = notch
-        art.vert = vert
-        art.widths = widths
-        art.whis = whis
-        art.autorange = autorange
-        art.showcaps = showcaps
-        art.capwidths = capwidths
-        art.showfliers = showfliers
-        art.bootstrap = bootstrap
-        art.showmeans = showmeans
-        art.meanline = meanline
     
     ax.set_axis_on()
    
-    return artist
+    return artist, props
 
 def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
                showmeans=False, showextrema=True, showmedians=False,
-               points=100, bw_method="scott", quantiles=None, *args, **kwargs) -> list[Union[PolyCollection, LineCollection]]:
+               points=100, bw_method="scott", quantiles=None, *args, **kwargs) -> tuple[list[Union[PolyCollection, LineCollection]], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(1000, 3)
     
     X = np.asarray(X)
+
+    props = {
+        "orientation": orientation,
+        "widths": widths,
+        "showmeans": showmeans,
+        "showextrema": showextrema,
+        "showmedians": showmedians,
+        "points": points,
+        "bw_method": bw_method,
+        "quantiles": quantiles
+    }
 
     artist = list()
     _artist = ax.violinplot(
@@ -268,14 +267,6 @@ def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
         cquantiles.set_gid(gid=f"_{gid}/cquantiles")
     
     for art in artist:
-        art.orientation = orientation
-        art.widths = widths
-        art.showmeans = showmeans
-        art.showextrema = showextrema
-        art.showmedians = showmedians
-        art.quantiles = quantiles
-        art.points = points
-        art.bw_method = bw_method
         art.Xdata = None
         art.Ydata = None
         p = np.array(art.get_paths()[0].vertices).mean(axis=0)
@@ -284,15 +275,21 @@ def violinplot(X, ax:Axes, gid:str, orientation='vertical', widths=0.5,
 
     ax.set_axis_on()
 
-    return artist
+    return artist, props
 
 def eventplot(X, ax:Axes, gid:str, orientation="horizontal",
-              lineoffsets=1, linelengths=1, *args, **kwargs) -> list[EventCollection]:
+              lineoffsets=1, linelengths=1, *args, **kwargs) -> tuple[list[EventCollection], dict]:
     
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.gamma(4, size=(3, 50))
 
     X = np.asarray(X)
+
+    props = {
+        "orientation": orientation,
+        "lineoffsets": lineoffsets,
+        "linelengths": linelengths
+    }
 
     artist = ax.eventplot(
         X, 
@@ -304,9 +301,6 @@ def eventplot(X, ax:Axes, gid:str, orientation="horizontal",
     )
     
     for art in artist:
-        art.orientation = orientation
-        art.lineoffsets = lineoffsets
-        art.linelengths = linelengths
         art.Xdata = None
         art.Ydata = None
         p = np.array(art.get_paths()[0].vertices).mean(axis=0)
@@ -315,9 +309,9 @@ def eventplot(X, ax:Axes, gid:str, orientation="horizontal",
     
     ax.set_axis_on()
 
-    return artist
+    return artist, props
 
-def hist2d(X, Y, ax:Axes, gid:str, binx=10, biny=10, density=False, *args, **kwargs) -> list[QuadMesh]:
+def hist2d(X, Y, ax:Axes, gid:str, binx=10, biny=10, density=False, *args, **kwargs) -> tuple[list[QuadMesh], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.random.randn(5000)
@@ -326,15 +320,17 @@ def hist2d(X, Y, ax:Axes, gid:str, binx=10, biny=10, density=False, *args, **kwa
     X = np.asarray(X)
     Y = np.asarray(Y)
 
+    props = {
+        "binx": binx,
+        "biny": biny,
+        "density": density
+    }
+
     _, _, _, artist = ax.hist2d(X, Y, gid=gid, bins=(binx, biny), density=density, *args, **kwargs)
 
-    artist.binx = binx
-    artist.biny = biny
-    artist.density = density
+    return [artist], props
 
-    return [artist]
-
-def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args, **kwargs) -> list[Line2D]:
+def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args, **kwargs) -> tuple[list[Line2D], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
         X = np.arange(0.1, 4, 0.5)
@@ -347,6 +343,10 @@ def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args
     Yerr = np.asarray(Yerr)
     Xerr = np.asarray(Xerr)
     artist = list()
+    props = {
+        "capsize": capsize,
+        "errorevery": errorevery
+    }
 
     art = ax.errorbar(
         X, Y, Yerr, Xerr, 
@@ -358,8 +358,6 @@ def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args
     data_line = art.lines[0]
     artist.append(data_line)
     data_line.set_gid(f'{gid}/dataline')
-    data_line.capsize = capsize
-    data_line.errorevery = errorevery
 
     for cap in art.lines[1]:
         artist.append(cap)
@@ -368,4 +366,4 @@ def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args
         artist.append(err)
         err.set_gid(f'_{gid}/err')
 
-    return artist
+    return artist, props

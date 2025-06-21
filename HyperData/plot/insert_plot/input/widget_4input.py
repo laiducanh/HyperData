@@ -4,11 +4,11 @@ from data_processing.data_window import DataSelection
 from ui.base_widgets.button import _TransparentToolButton, _DropDownPushButton
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.line_edit import _LineEdit, BodyLabel, _CompleterLineEdit
-from node_editor.node_node import Node
+from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class Widget2D_4input (QWidget):
     sig = Signal()
-    def __init__(self,node:Node,input:list=[str(),str(),str(),str()],parent=None):
+    def __init__(self,node:NodeGraphicsNode,input:list=[str(),str(),str(),str()],parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -160,7 +160,7 @@ class Widget2D_4input (QWidget):
 
 class Widget3D_4input (QWidget):
     sig = Signal()
-    def __init__(self,node:Node,input:list=[str(),str(),str(),str()],parent=None):
+    def __init__(self,node:NodeGraphicsNode,input:list=[str(),str(),str(),str()],parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)

@@ -46,7 +46,7 @@ class ResultDialog(Dialog):
                 self.main_layout.addWidget(smooth)
                 
                 self.canvas = Canvas()
-                for _ax in self.canvas.fig.axes: _ax.remove()
+                for _ax in self.canvas.figure.axes: _ax.remove()
                 self.plot()
                 self.main_layout.addWidget(self.canvas)
     
@@ -56,10 +56,10 @@ class ResultDialog(Dialog):
 
     def plot(self):
         # clear plot
-        self.canvas.fig.clear()
+        self.canvas.figure.clear()
 
         # add axis
-        ax = self.canvas.fig.add_subplot()
+        ax = self.canvas.figure.add_subplot()
 
         label = "fit: "
         for p, v in zip(self.params.split(","),self.popt):
