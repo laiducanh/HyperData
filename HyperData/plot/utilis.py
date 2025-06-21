@@ -63,10 +63,6 @@ def update_props (from_obj: Artist, to_obj: Artist) -> None:
         if type(from_obj) == type(to_obj):
             to_obj.update_from(from_obj)
 
-            # for step plots
-            if isinstance(to_obj, lines.Line2D):
-                to_obj.set(drawstyle=from_obj_props.get("drawstyle"))
-
         to_obj.update(dict(label=from_obj.get_label()))
         
     except Exception as e:
@@ -76,10 +72,19 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
     # Copy Axes properties
     destination_ax.set(
         aspect=source_ax.get_aspect(),
-        title=source_ax.get_title(),
         xscale=source_ax.get_xscale(),
         yscale=source_ax.get_yscale(),
         facecolor=source_ax.get_facecolor(),
+    )
+    
+    destination_ax.title.set(
+        text=source_ax.get_title(),
+        fontname=source_ax.title.get_fontname(),
+        fontsize=source_ax.title.get_fontsize(),
+        color=source_ax.title.get_color(),
+        alpha=source_ax.title.get_alpha(),
+        fontstyle=source_ax.title.get_fontstyle(),
+        fontweight=source_ax.title.get_fontweight()
     )
 
     # Copy tick locations
@@ -98,22 +103,26 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
         visible = source_ax.xaxis.get_visible(),
         label_text = source_ax.xaxis.get_label_text()
     )
-    destination_ax.xaxis.get_label().set(
-        fontname = source_ax.xaxis.get_label().get_fontname(),
-        fontsize = source_ax.xaxis.get_label().get_fontsize(),
-        color = source_ax.xaxis.get_label().get_color(),
-        alpha = source_ax.xaxis.get_label().get_alpha()
+    destination_ax.xaxis.label.set(
+        fontname = source_ax.xaxis.label.get_fontname(),
+        fontsize = source_ax.xaxis.label.get_fontsize(),
+        color = source_ax.xaxis.label.get_color(),
+        alpha = source_ax.xaxis.label.get_alpha(),
+        fontstyle=source_ax.xaxis.label.get_fontstyle(),
+        fontweight=source_ax.xaxis.label.get_fontweight()
     )
 
     destination_ax.yaxis.set(
         visible = source_ax.yaxis.get_visible(),
         label_text = source_ax.yaxis.get_label_text()
     )
-    destination_ax.yaxis.get_label().set(
-        fontname = source_ax.yaxis.get_label().get_fontname(),
-        fontsize = source_ax.yaxis.get_label().get_fontsize(),
-        color = source_ax.yaxis.get_label().get_color(),
-        alpha = source_ax.yaxis.get_label().get_alpha()
+    destination_ax.yaxis.label.set(
+        fontname = source_ax.yaxis.label.get_fontname(),
+        fontsize = source_ax.yaxis.label.get_fontsize(),
+        color = source_ax.yaxis.label.get_color(),
+        alpha = source_ax.yaxis.label.get_alpha(),
+        fontstyle=source_ax.yaxis.label.get_fontstyle(),
+        fontweight=source_ax.yaxis.label.get_fontweight()
     )
 
     # Copy tick parameters

@@ -123,9 +123,10 @@ class PlotView (QMainWindow):
     def treeview_func (self, item:QTreeWidgetItem):
         text = item.text(0).lower()
         if text.startswith("graph"):
-            _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
+            plot_gid = text.split("/")[0].split(".")[0]
+            # _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
             for pt in self.insertplot.plot_list:
-                if pt.plot_index + 1 == _plot_index:
+                if pt.plot_gid == plot_gid:
                     _plot = pt
                     break
             curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
@@ -339,4 +340,6 @@ class PlotViewMultiFig (PlotView):
         
         elif text == 'axis label':
             self.stackedlayout.setCurrentWidget(self.axeslabel)
-        
+    
+    def showEvent(self, event):
+        return super().showEvent(event)

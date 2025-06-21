@@ -32,8 +32,7 @@ class Canvas (FigureCanvasQTAgg):
                     "linewidth": matplotlib.rcParams['grid.linewidth'],
                     "linestyle": matplotlib.rcParams['grid.linestyle'],
                     "color": matplotlib.rcParams['grid.color']
-                },
-                "num_graph": 0,
+                }
             }
         self.figure = Figure()
         self.figure.set_dpi(config['plot_dpi'])
@@ -88,7 +87,7 @@ class Canvas (FigureCanvasQTAgg):
             )
             
     def serialize(self):
-    
+        
         with open(f'canvas_{self.id}.pickle', 'wb') as file: 
             pickle.dump(self.figure, file)
 
@@ -109,6 +108,7 @@ class Canvas (FigureCanvasQTAgg):
                 copy_Axes(source_ax, destination_ax)
             
             self.draw_idle()
+            
         except Exception as e:
             logger.exception(e)
             

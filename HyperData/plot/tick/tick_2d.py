@@ -516,19 +516,19 @@ class AxisLabel (QWidget):
             layout=layout
         )
 
-        self.backgroundcolor = ColorDropdown(
-            text  = 'Background color',
-            getter=self.get_backgroundcolor,
-            setter=self.set_backgroundcolor,
-            layout=layout
-        )
+        # self.backgroundcolor = ColorDropdown(
+        #     text  = 'Background color',
+        #     getter=self.get_backgroundcolor,
+        #     setter=self.set_backgroundcolor,
+        #     layout=layout
+        # )
 
-        edgecolor = ColorDropdown(
-            text  = 'Edge color',
-            getter=self.get_edgecolor,
-            setter=self.set_edgecolor,
-            layout=layout
-        )
+        # edgecolor = ColorDropdown(
+        #     text  = 'Edge color',
+        #     getter=self.get_edgecolor,
+        #     setter=self.set_edgecolor,
+        #     layout=layout
+        # )
 
         alpha = TransparentDoubleSpinBox(
             text = 'Transparency',

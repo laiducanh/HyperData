@@ -32,15 +32,15 @@ class NewPlot (Frame):
     sig = Signal()
     sig_delete = Signal(object)
 
-    def __init__(self, plot_index, plot_type, canvas: Canvas, node:NodeGraphicsNode, plot3d=False, parent=None):
+    def __init__(self, plot_gid:str, plot_type:str, canvas: Canvas, node:NodeGraphicsNode, plot3d=False, parent=None):
         super().__init__(parent)
         #self.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        self.plot_index = plot_index
+        self.plot_gid = plot_gid
         self.plot_type = plot_type
         self.canvas = canvas
         self.artist = list()
-        try: self.props = self.canvas._config[str(plot_index)]["plot_props"]
+        try: self.props = self.canvas._config[plot_gid]["plot_props"]
         except: self.props = dict()
         #self.widget = QWidget()
         self.node = node
@@ -60,7 +60,7 @@ class NewPlot (Frame):
 
         layout = QHBoxLayout()
         mainlayout.addLayout(layout)
-        self.text = TitleLabel(f"Graph {self.plot_index+1}")
+        self.text = TitleLabel(self.plot_gid.title())
         layout.addWidget(self.text)
         layout.addStretch()
         self.type = _DropDownPrimaryPushButton()
@@ -84,7 +84,7 @@ class NewPlot (Frame):
     def initUI(self, input=None):
 
         if not input: 
-            try: input = self.canvas._config[str(self.plot_index)]["data_input"]
+            try: input = self.canvas._config[self.plot_gid]["data_input"]
             except: input = [str(), str(), str(), str()]
 
         args = [self.node, input, self.parent()]
@@ -153,8 +153,7 @@ class NewPlot (Frame):
             self.canvas.draw_idle()
             self.sig_delete.emit(self)
             self.deleteLater()
-            self.canvas._config.pop(self.plot_index)
-            self.canvas._config["num_graph"] -= 1
+            self.canvas._config.pop(self.plot_gid)
             return None
         else:
             self.initUI()
@@ -198,7 +197,7 @@ class NewPlot (Frame):
             T = split_input(self.widget.input[3], self.node.input_sockets[0].socket_data)
         try:
             self.artist, self.props = plotting(
-                X, Y, Z, T, ax=ax, gid=f"graph {self.plot_index+1}", 
+                X, Y, Z, T, ax=ax, gid=self.plot_gid, 
                 plot_type=self.plot_type, 
                 **self.props
             )
@@ -213,7 +212,7 @@ class NewPlot (Frame):
         self.progressbar.setValue(100)
 
     def update_config(self):
-        self.canvas._config[str(self.plot_index)] = {
+        self.canvas._config[self.plot_gid] = {
             "plot_type": self.plot_type,
             "axes": self.widget.axes,
             "data_input": [str(),str(),str(),str()],
@@ -221,7 +220,7 @@ class NewPlot (Frame):
         }
         
         for idx in range(len(self.widget.input)):
-            self.canvas._config[str(self.plot_index)]["data_input"][idx] = self.widget.input[idx]
+            self.canvas._config[self.plot_gid]["data_input"][idx] = self.widget.input[idx]
 
 class InsertPlot (QMainWindow):
     sig = Signal() # emit when new plot was created, also when a plot needs to be updated
@@ -232,8 +231,8 @@ class InsertPlot (QMainWindow):
         self.canvas = canvas
         self.node = node
         self.plot3d = plot3d
-        self.plot_idx = 0
         self.widget = None
+        self.plot_idx = 1
         self.plot_list: list[NewPlot] = list()
 
         self.mainlayout = QHBoxLayout()
@@ -275,7 +274,6 @@ class InsertPlot (QMainWindow):
 
         self.treeview = TreeWidget()
         self.treeview.itemPressed.connect(lambda item: self.add_plot(item.text(0).lower()))
-        self.treeview.itemPressed.connect(self.update_num_graph)
         self.treeview.setData(self.type_list)
         self.sidebar_layout.addWidget(self.treeview)
         self.search_box.set_TreeView(self.treeview)
@@ -291,31 +289,28 @@ class InsertPlot (QMainWindow):
         load_InputIcon()
         load_MenuIcon()
         
-        for idx in range(self.canvas._config["num_graph"]):
-            self.add_plot(self.canvas._config[str(idx)]["plot_type"], idx)
+        for key in self.canvas._config.keys():
+            if key.startswith("graph"):
+                self.add_plot(self.canvas._config[key]["plot_type"], key)
         
         self.setMinimumSize(800, 500)
     
-    def add_plot(self, plot_type:str, plot_idx:int=None):
+    def add_plot(self, plot_type:str, plot_gid:str=None):
         # this function can be either called when a new plot added, or 
         # reconstruction of NewPlot class when QMainWindow is recontructed
         
         if plot_type.title() not in self.type_list.keys():
-            if not plot_idx: plot_idx = self.plot_idx
+            if not plot_gid: plot_gid = f"graph {self.plot_idx}"
         
-            newplot = NewPlot(plot_idx, plot_type, self.canvas, self.node, self.plot3d)
+            newplot = NewPlot(plot_gid, plot_type, self.canvas, self.node, self.plot3d)
             self.plot_list.append(newplot)
             newplot.sig.connect(self.sig.emit)
             newplot.sig_delete.connect(self.delete_plot)
             self.graph_layout.addWidget(newplot)
 
             # keep track of current plot index
-            if plot_idx: self.plot_idx = plot_idx + 1
+            if plot_gid: self.plot_idx = int(plot_gid.split()[1])+1
             else: self.plot_idx += 1
-    
-    def update_num_graph(self):
-        # this function is only called when adding new plot, not reconstruction
-        self.canvas._config["num_graph"] += 1
         
     def delete_plot(self, plot:NewPlot):
         self.plot_list.remove(plot)

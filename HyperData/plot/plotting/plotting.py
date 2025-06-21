@@ -171,7 +171,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     rescale_plot(ax.figure)
     
     if   plot_type == "2d line":                 artist, props = line2d(X, Y, ax, gid, *args, **kwargs)
-    elif plot_type == "2d step":                 artist, props = step2d(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "2d step":                 artist, props = step2d(X, Y, ax, gid, artist_old, *args, **kwargs)
     elif plot_type == "2d stem":                 artist, props = stem2d(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "2d spline":               artist, props = spline2d(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "2d area":                 artist, props = fill_between(X, Y, 0, ax, gid, *args, **kwargs)

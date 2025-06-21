@@ -31,9 +31,8 @@ def set_stylesheet():
                      f"rgba({color[0]}, {color[1]}, {color[2]}, {color[3]})", qss)
         app.setStyleSheet(qss)
         for widget in app.allWidgets():
-            if widget.isVisible():
-                try: widget._update()
-                except: pass
+            try: widget._update()
+            except: pass
 
 class Theme (ComboBox):
     def __init__(self, parent:QMainWindow=None):

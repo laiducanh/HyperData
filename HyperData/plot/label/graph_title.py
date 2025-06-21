@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QDialog
+from PySide6.QtGui import QColor
 from plot.canvas import Canvas
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.button import TransparentComboBox
@@ -8,6 +9,7 @@ from ui.base_widgets.frame import SeparateHLine
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import font_lib
+from matplotlib import colors
 
 DEBUG = False
 
@@ -61,19 +63,19 @@ class GraphTitle (QDialog):
             layout=layout
         )
 
-        self.backgroundcolor = ColorDropdown(
-            text  = 'Background color',
-            getter=self.get_backgroundcolor,
-            setter=self.set_backgroundcolor,
-            layout=layout
-        )
+        # self.backgroundcolor = ColorDropdown(
+        #     text  = 'Background color',
+        #     getter=self.get_backgroundcolor,
+        #     setter=self.set_backgroundcolor,
+        #     layout=layout
+        # )
 
-        edgecolor = ColorDropdown(
-            text  = 'Edge color',
-            getter=self.get_edgecolor,
-            setter=self.set_edgecolor,
-            layout=layout
-        )
+        # edgecolor = ColorDropdown(
+        #     text  = 'Edge color',
+        #     getter=self.get_edgecolor,
+        #     setter=self.set_edgecolor,
+        #     layout=layout
+        # )
 
         # #align = FontAlignment(type='graph')
         # #align.sig.connect(lambda: self.sig.emit())
@@ -117,7 +119,7 @@ class GraphTitle (QDialog):
         self.canvas.draw_idle()
     
     def get_color (self):
-        return self.obj.get_color()
+        return colors.to_hex(self.obj.get_color())
 
     def set_backgroundcolor (self, color):
         self.obj.set_backgroundcolor(color)
@@ -125,20 +127,18 @@ class GraphTitle (QDialog):
     
     def get_backgroundcolor(self):
         if self.obj.get_bbox_patch():
-            return self.obj.get_bbox_patch().get_facecolor()
+            return colors.to_hex(self.obj.get_bbox_patch().get_facecolor())
         return 'white'
 
     def set_edgecolor (self, color):
         self.obj.set_bbox(
-            {"edgecolor" : color,
-            "facecolor"  : self.backgroundcolor.button.color.name()
-            }
+            {"edgecolor" : color}
         )
         self.canvas.draw_idle()
     
     def get_edgecolor(self):
         if self.obj.get_bbox_patch():
-            return self.obj.get_bbox_patch().get_edgecolor()
+            return colors.to_hex(self.obj.get_bbox_patch().get_edgecolor())
         return 'white'
 
     def set_pad (self, value):

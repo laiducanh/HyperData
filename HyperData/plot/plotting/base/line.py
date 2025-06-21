@@ -43,7 +43,7 @@ def line3d (X, Y, Z, ax:Axes, gid:str, *args, **kwargs) -> tuple[list[Line2D], d
 
     return artist, props
 
-def step2d (X, Y, ax:Axes, gid:str, where="pre", *args, **kwargs) -> tuple[list[Line2D], dict]:
+def step2d (X, Y, ax:Axes, gid:str, artist_old:list[Line2D], where="pre", *args, **kwargs) -> tuple[list[Line2D], dict]:
     
     if DEBUG:
         X = [1,2]
@@ -52,6 +52,8 @@ def step2d (X, Y, ax:Axes, gid:str, where="pre", *args, **kwargs) -> tuple[list[
     _X = np.asarray(X)
     _Y = np.asarray(Y)
     artist = list()
+    for art in artist_old:
+        art.set_drawstyle(f'steps-{where}')
     props = {"where":where}
 
     if _Y.ndim > 1:
