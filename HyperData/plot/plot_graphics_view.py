@@ -109,6 +109,7 @@ class GraphicsView (QGraphicsView):
     key_pressed = Signal(object)
     mouse_released = Signal(object)
     backtoScene = Signal()
+    backtoHome = Signal()
     mpl_pressed = Signal(str)
     save_figure = Signal()
     def __init__(self, canvas:Canvas,parent=None):
@@ -145,7 +146,10 @@ class GraphicsView (QGraphicsView):
 
     def Menu(self):
         self.menu.clear()
-  
+
+        home = Action(text="&Home", shortcut="Ctrl+H", parent=self.menu)
+        home.triggered.connect(self.backtoHome.emit)
+        self.menu.addAction(home)
         nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
         nodeview.triggered.connect(self.backtoScene.emit)
         self.menu.addAction(nodeview)
@@ -482,7 +486,6 @@ class GraphicsViewMultiFig(GraphicsView):
     def mpl_mousePress(self, event: MouseEvent):
         if event.inaxes:
             ax = event.inaxes
-            print(ax)
     
     def mpl_mouseRelease(self, event: MouseEvent):
         pass

@@ -1,8 +1,9 @@
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
-from matplotlib.collections import PolyCollection, PathCollection
+from matplotlib.collections import PolyCollection, PathCollection, LineCollection
 import numpy as np
 from scipy import interpolate
+from typing import Union
 import random
 from config.settings import GLOBAL_DEBUG, config
 
@@ -80,11 +81,11 @@ def step3d (X, Y, Z, ax:Axes, gid, where="pre", *args, **kwargs) -> tuple[list[L
 
     return artist, props
 
-def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs) -> tuple[list[Line2D], dict]:
+def stem2d (X, Y, ax:Axes, gid, orientation="vertical",bottom=0, *args, **kwargs) -> tuple[list[Union[Line2D, LineCollection]], dict]:
 
     if DEBUG:
-        X = [1,2]
-        Y = [1,3]
+        X = [1,2,3]
+        Y = [1,3,8]
         
     _X = np.asarray(X)
     _Y = np.asarray(Y)

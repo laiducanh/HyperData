@@ -228,7 +228,7 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
                 )
             elif isinstance(artist, collections.LineCollection):
                 new_artist = collections.LineCollection(
-                    [artist.get_paths()[0].vertices]
+                    [path.vertices for path in artist.get_paths()]
                 )
             elif isinstance(artist, collections.QuadMesh):
                 new_artist = collections.QuadMesh(

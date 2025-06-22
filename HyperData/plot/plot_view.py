@@ -273,7 +273,7 @@ class PlotViewMultiFig (PlotView):
         self.plot_visual = GraphicsViewMultiFig(self.canvas,parent=self.parent())
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
         self.plot_visual.save_figure.connect(self.save_figure)
-        #self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
+        # self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.main_layout.addWidget(self.plot_visual)
 
@@ -337,9 +337,6 @@ class PlotViewMultiFig (PlotView):
         elif text == 'title':
             self.title = GraphTitle(self.canvas, self.parent())
             self.title.show()
-        
-        elif text == 'axis label':
-            self.stackedlayout.setCurrentWidget(self.axeslabel)
     
     def showEvent(self, event):
-        return super().showEvent(event)
+        return QMainWindow().showEvent(event)

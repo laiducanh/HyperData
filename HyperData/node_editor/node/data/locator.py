@@ -112,5 +112,5 @@ class DataLocator (NodeContentWidget):
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
 
-        self.initConfig()
+        #self.initConfig()
     

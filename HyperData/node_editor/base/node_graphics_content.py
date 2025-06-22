@@ -91,7 +91,7 @@ class NodeContentWidget(ContentItem):
     
     def deserialize(self, data, hashmap=...):
         self._config = data['config']
-
+        print(self._config)
 
 
 
