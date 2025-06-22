@@ -5,7 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.deep_learning.base import DLBase
 from config.settings import logger, GLOBAL_DEBUG
 
-DEBUG = True
+DEBUG = False
 
 class ModelCompiler (DLBase):
     def __init__(self, node: NodeGraphicsNode, parent=None):

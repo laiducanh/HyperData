@@ -34,7 +34,7 @@ from scipy.stats import (ttest_ind, mannwhitneyu, bws_test, ranksums, brunnermun
                          dunnett, kruskal, alexandergovern, fligner, levene, bartlett, median_test,
                          friedmanchisquare)
 
-DEBUG = True
+DEBUG = False
 
 class MultiSampleTest (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

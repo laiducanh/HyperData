@@ -7,7 +7,7 @@ from typing import Union
 import random
 from config.settings import GLOBAL_DEBUG, config
 
-DEBUG = True
+DEBUG = False
 
 def line2d (X, Y, ax: Axes, gid, *args, **kwargs) -> tuple[list[Line2D], dict]:
 

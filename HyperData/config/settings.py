@@ -3,6 +3,7 @@ import string, itertools, matplotlib, os, logging, json, tensorflow
 from PySide6.QtCore import QStandardPaths, QDir
 
 GLOBAL_DEBUG = False
+DEBUG = False
 
 # list_name is replaced by column_labels
 # can handle maximum of 475281 columns
@@ -137,21 +138,30 @@ if not dataPathDir.exists():
 
 appName = 'HyperData'
 configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
-configFile = "config.json.txt"
-new_version = True
-if os.path.exists(configFile) and not new_version:
+logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
+if DEBUG or GLOBAL_DEBUG:
+    configFile = "config.json.txt"
+    logFile = "debug.txt"
+
+config = {
+    "config_path":configFile, 
+    "theme":"Light", 
+    "themecolor":"#0078d7", 
+    "dock area":"Left",  
+    "plot_tooltip":False, 
+    "plot_dpi":100, 
+    "plot_style":"default",
+    "plot_palette":["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
+    "version": "0.9.4"
+}
+
+if os.path.exists(configFile):
     with open(configFile, "r") as file:
         raw_data = file.read()
-        config = json.loads(raw_data)
-else: 
-    config = {"config_path":configFile, "theme":"Light", "themecolor":"#0078d7", "dock area":"Left",  
-              "plot_tooltip":False, "plot_dpi":100, "plot_style":"default",
-              "plot_palette":["#1a1a2e","#16213e","#0f3460","#e94560","#f6d55c"],
-              }
+        tmp_config = json.loads(raw_data)
+    if config["version"] == tmp_config["version"]:
+        config.update(**tmp_config)
 
-config["version"] = "0.9.31"
-logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
-logFile = "debug.txt"
 logging.getLogger('matplotlib.font_manager').disabled = True
 # Create and configure logger
 logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='w')

@@ -4,7 +4,7 @@ from matplotlib.collections import PathCollection
 import matplotlib
 from config.settings import GLOBAL_DEBUG
 
-DEBUG = True
+DEBUG = False
 
 def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> tuple[list[PathCollection], dict]:
 

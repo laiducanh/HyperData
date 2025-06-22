@@ -100,7 +100,7 @@ from node_editor.node.statistics.prob_dist.weibull_min import Weibullmin
 from node_editor.node.statistics.prob_dist.weibull_max import Weibullmax
 from node_editor.node.statistics.prob_dist.wrapcauchy import WrapCauchy
 
-DEBUG = True
+DEBUG = False
 
 class ProbDist (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

@@ -9,7 +9,7 @@ from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QStackedLayout)
 from PySide6.QtCore import Qt
 
-DEBUG = True
+DEBUG = False
 
 class LayerBase (QWidget):
     def __init__(self, parent=None):

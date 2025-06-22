@@ -8,7 +8,7 @@ from ui.base_widgets.button import ComboBox
 from config.settings import logger, GLOBAL_DEBUG
 import numpy as np
 
-DEBUG = True
+DEBUG = False
 
 class FeatureEncoder (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

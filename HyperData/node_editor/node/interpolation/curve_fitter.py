@@ -18,7 +18,7 @@ from node_editor.node.interpolation.lagrange import Lagrange
 import pandas as pd
 import numpy as np
 
-DEBUG = True
+DEBUG = False
 
 class CurveFitter (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

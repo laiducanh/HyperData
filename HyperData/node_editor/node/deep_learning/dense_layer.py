@@ -8,7 +8,7 @@ from ui.base_widgets.button import ComboBox, Toggle
 from ui.base_widgets.spinbox import SpinBox
 from config.settings import logger, GLOBAL_DEBUG
 
-DEBUG = True
+DEBUG = False
 
 class DenseLayer (DLBase):
     def __init__(self, node: NodeGraphicsNode, parent=None):

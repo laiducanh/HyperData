@@ -8,7 +8,7 @@ from skimage import measure
 from config.settings import logger, GLOBAL_DEBUG
 from typing import Union
 
-DEBUG = True
+DEBUG = False
 
 """ Data input X in these function are 2D arrays """
 

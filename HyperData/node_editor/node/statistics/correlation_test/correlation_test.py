@@ -18,7 +18,7 @@ from node_editor.node.statistics.correlation_test.mgc import MGC
 from scipy.stats import (pearsonr, spearmanr, pointbiserialr, kendalltau, somersd, siegelslopes,
                          theilslopes, multiscale_graphcorr)
 
-DEBUG = True
+DEBUG = False
 
 class CorrelationTest (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

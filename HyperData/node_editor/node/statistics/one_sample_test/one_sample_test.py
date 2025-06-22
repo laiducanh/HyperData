@@ -18,7 +18,7 @@ from node_editor.node.statistics.one_sample_test.kolmogorov import Kolmogorov
 from node_editor.node.statistics.one_sample_test.chisquare import Chisquare
 from node_editor.node.statistics.one_sample_test.base import TestBase
 
-DEBUG = True
+DEBUG = False
 
 class OneSampleTest (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):

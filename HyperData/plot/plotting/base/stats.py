@@ -6,7 +6,7 @@ import numpy as np
 from config.settings import logger, GLOBAL_DEBUG
 from typing import Union
 
-DEBUG = True
+DEBUG = False
 
 def histogram(X, ax:Axes, gid:str, bins=10, density=False, cumulative=False,
               bottom=0, histtype="bar", align="mid", orientation="vertical",

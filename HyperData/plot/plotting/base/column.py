@@ -11,7 +11,7 @@ import squarify, matplotlib, fractions, math
 from config.settings import logger, GLOBAL_DEBUG
 from typing import Union
 
-DEBUG = True
+DEBUG = False
 
 def column2d (X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=0, align="center", *args, **kwargs) -> tuple[list[Union[Rectangle, LineCollection]], dict]:
     if DEBUG or GLOBAL_DEBUG:

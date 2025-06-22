@@ -14,7 +14,7 @@ from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.window import ProgressDialog, FileDialog
 from config.settings import GLOBAL_DEBUG, logger, config
 
-DEBUG = True
+DEBUG = False
 
 class PlotView (QMainWindow):
     sig_back_to_grScene = Signal()
