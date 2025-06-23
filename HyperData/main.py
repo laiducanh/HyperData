@@ -5,7 +5,7 @@ import sys, os, json, logging
 os.environ["QT_QUICK_BACKEND"] = "software"
 
 from PySide6.QtCore import QThreadPool, Qt, QDir
-from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory)
+from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
 from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
 
 from plot.plot_view import PlotView, PlotViewMultiFig
@@ -102,24 +102,32 @@ class Main(QMainWindow):
     
     def saveToFile(self):
         dialog = FileDialog()
+        dialog.setFileMode(QFileDialog.FileMode.Directory)
+        dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
         if dialog.exec():
             try:
-                filename = dialog.selectedFiles()[0]
+                dir = dialog.selectedFiles()[0]
+                config['save_path'] = dir
                 self.serialize()
-                with open(filename, "w") as file:
+                with open(os.path.join(dir, 'config.json.txt'), "w") as file:
                     file.write(json.dumps(config, indent=4))
-                logger.info(f"saving to {filename} was successfull.")
+                logger.info(f"saving to {dir} was successfull.")
+                config['save_path'] = str()
             except Exception as e:
                 logger.exception(e)
     
     def loadFromFile(self):
         dialog = FileDialog()
+        dialog.setFileMode(QFileDialog.FileMode.Directory)
+        dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
         if dialog.exec():
-            filename = dialog.selectedFiles()[0]
-            with open(filename, "r") as file:
+            dir = dialog.selectedFiles()[0]
+            config['save_path'] = dir
+            with open(os.path.join(dir, 'config.json.txt'), "r") as file:
                 raw_data = file.read()
                 data = json.loads(raw_data)
                 self.deserialize(data)
+            config['save_path'] = str()
     
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
         return super().mouseMoveEvent(a0)
@@ -128,8 +136,8 @@ class Main(QMainWindow):
         return super().paintEvent(a0)
     
     def closeEvent(self, a0: QCloseEvent) -> None:
-        
-        with open(config["config_path"], 'w') as file:
+        self.serialize()
+        with open(os.path.join(config["root_path"], "config.json.txt"), 'w') as file:
             file.write(json.dumps(config, indent=4))
         return super().closeEvent(a0)
 

@@ -150,6 +150,7 @@ class Figure_Colors(Frame):
         layout = QVBoxLayout()
         self.setLayout(layout)
         self.palette_dict = {
+            "default": config['plot_palette'],
             "red": ["#03071e","#6a040f","#d00000","#e85d04","#faa307"], 
             "blue": ["#03045e","#0077b6","#00b4d8","#90e0ef","#caf0f8"],
             "black": ["#212529","#343a40","#495057","#6c757d","#adb5bd"],

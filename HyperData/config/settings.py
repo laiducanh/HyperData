@@ -145,9 +145,6 @@ if DEBUG or GLOBAL_DEBUG:
 configFile = os.path.join(root,"config.json.txt")
 logFile = os.path.join(root,"debug.txt")
 
-if not os.path.exists(os.path.join(root, 'tmp')):
-    os.mkdir(os.path.join(root, 'tmp'))
-
 config = {
     "root_path":root, 
     "theme":"Light", 
@@ -157,7 +154,8 @@ config = {
     "plot_dpi":100, 
     "plot_style":"default",
     "plot_palette":["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
-    "version": "0.9.31"
+    "version": "0.9.31",
+    "save_path": str(),
 }
 
 if os.path.exists(configFile):

@@ -87,12 +87,12 @@ class Canvas (FigureCanvasQTAgg):
             )
             
     def serialize(self):
-        
-        with open(os.path.join(config['root_path'], 'tmp', f'canvas_{self.id}.pickle'), 'wb') as file: 
-            pickle.dump(self.figure, file)
+
+        if config['save_path'] != "":
+            with open(os.path.join(config['save_path'], f'canvas_{self.id}.pickle'), 'wb') as file:
+                pickle.dump(self.figure, file)
 
         return {"id": self.id,
-                "pickle": f'canvas_{self.id}.pickle',
                 'config': self._config}
         
     def deserialize(self, data, hashmap={}):
@@ -101,8 +101,9 @@ class Canvas (FigureCanvasQTAgg):
         hashmap[data['id']] = self
         self._config = data['config']
         try:
-            with open(os.path.join(config['root_path'], 'tmp', f'canvas_{self.id}.pickle'),'rb') as file:
-                loaded_fig = pickle.load(file)
+            if config['save_path'] != "":
+                with open(os.path.join(config['save_path'], f'canvas_{self.id}.pickle'),'rb') as file:
+                    loaded_fig = pickle.load(file)
 
             for source_ax, destination_ax in zip(loaded_fig.axes, self.figure.axes):
                 copy_Axes(source_ax, destination_ax)
