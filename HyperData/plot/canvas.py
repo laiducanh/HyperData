@@ -1,6 +1,6 @@
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
-import matplotlib, pickle
+import matplotlib, pickle, os
 from matplotlib.figure import Figure
 from plot.utilis import copy_Axes
 from config.settings import config, logger
@@ -88,7 +88,7 @@ class Canvas (FigureCanvasQTAgg):
             
     def serialize(self):
         
-        with open(f'canvas_{self.id}.pickle', 'wb') as file: 
+        with open(os.path.join(config['root_path'], 'tmp', f'canvas_{self.id}.pickle'), 'wb') as file: 
             pickle.dump(self.figure, file)
 
         return {"id": self.id,
@@ -101,7 +101,7 @@ class Canvas (FigureCanvasQTAgg):
         hashmap[data['id']] = self
         self._config = data['config']
         try:
-            with open(f'canvas_{self.id}.pickle','rb') as file:
+            with open(os.path.join(config['root_path'], 'tmp', f'canvas_{self.id}.pickle'),'rb') as file:
                 loaded_fig = pickle.load(file)
 
             for source_ax, destination_ax in zip(loaded_fig.axes, self.figure.axes):

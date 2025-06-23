@@ -3,7 +3,7 @@ import string, itertools, matplotlib, os, logging, json, tensorflow
 from PySide6.QtCore import QStandardPaths, QDir
 
 GLOBAL_DEBUG = False
-DEBUG = False
+DEBUG = True
 
 # list_name is replaced by column_labels
 # can handle maximum of 475281 columns
@@ -137,14 +137,19 @@ if not dataPathDir.exists():
     dataPathDir.mkpath('.')  
 
 appName = 'HyperData'
-configFile = os.path.join(dataPathDir.absolutePath(),appName,"config.json.txt")
-logFile = os.path.join(dataPathDir.absolutePath(),appName,"debug.txt")
+root = os.path.join(dataPathDir.absolutePath(), appName)
+
 if DEBUG or GLOBAL_DEBUG:
-    configFile = "config.json.txt"
-    logFile = "debug.txt"
+    root = os.getcwd()
+
+configFile = os.path.join(root,"config.json.txt")
+logFile = os.path.join(root,"debug.txt")
+
+if not os.path.exists(os.path.join(root, 'tmp')):
+    os.mkdir(os.path.join(root, 'tmp'))
 
 config = {
-    "config_path":configFile, 
+    "root_path":root, 
     "theme":"Light", 
     "themecolor":"#0078d7", 
     "dock area":"Left",  
