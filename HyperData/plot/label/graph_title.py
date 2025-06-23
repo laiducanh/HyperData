@@ -1,36 +1,33 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QDialog
-from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QVBoxLayout, QSizePolicy, QDialog
 from plot.canvas import Canvas
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.button import TransparentComboBox
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.frame import SeparateHLine
-from plot.utilis import find_mpl_object
+from ui.base_widgets.frame import ScrollArea
 from plot.label.base import FontStyle
 from config.settings import font_lib
 from matplotlib import colors
 
 DEBUG = False
 
-class GraphTitle (QDialog):
+class GraphTitle(QDialog):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle('Graph Title')
         self.canvas = canvas
         self.obj = self.canvas.axes.set_title(self.get_title())
-        self.initUI()
-    
-    def initUI(self):  
-
+            
         layout = QVBoxLayout(self)
+        scrollarea = ScrollArea()
+        layout.addWidget(scrollarea)
 
         label = LineEdit(
             text='Label',
             getter=self.get_title,
             setter=self.set_title,
-            layout=layout
+            layout=scrollarea.vlayout
         )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -39,7 +36,7 @@ class GraphTitle (QDialog):
             text  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=layout
+            layout=scrollarea.vlayout
         )
 
         size = TransparentDoubleSpinBox(
@@ -47,20 +44,20 @@ class GraphTitle (QDialog):
             min = 1, max = 100, step = 2,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=layout
+            layout=scrollarea.vlayout
         )
         
         style = FontStyle(
             obj = [self.obj], 
             canvas = self.canvas,
-            layout=layout
+            layout=scrollarea.vlayout
         )
 
         color = ColorDropdown(
             text  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=scrollarea.vlayout
         )
 
         # self.backgroundcolor = ColorDropdown(
@@ -90,7 +87,7 @@ class GraphTitle (QDialog):
             step = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=layout
+            layout=scrollarea.vlayout
         )
     
     def set_title (self, title:str):

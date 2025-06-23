@@ -1,20 +1,16 @@
-from PySide6.QtCore import Signal, QSize, Qt, QPropertyAnimation
-from PySide6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, QAbstractItemView, 
+from PySide6.QtCore import Signal, Qt, QPropertyAnimation
+from PySide6.QtWidgets import (QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect, 
                                QDockWidget, QMainWindow, QDialog)
-from PySide6.QtGui import QCursor, QPaintEvent
-import os
-from matplotlib.artist import Artist
-from plot.plot_plottype_window import Plottype_Window
+from PySide6.QtGui import QPaintEvent
 from plot.insert_plot.menu import Menu_type_2D, Menu_type_3D
-from plot.insert_plot.input import widget_2input, widget_1input, widget_3input, widget_4input
 from plot.insert_plot.input.widget_1input import *
 from plot.insert_plot.input.widget_2input import *
 from plot.insert_plot.input.widget_3input import *
 from plot.insert_plot.input.widget_4input import *
-from ui.base_widgets.button import _TransparentPushButton, DropDownPrimaryPushButton, _DropDownPrimaryPushButton
+from ui.base_widgets.button import _DropDownPrimaryPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.window import ProgressBar
-from ui.base_widgets.frame import Frame
+from ui.base_widgets.frame import Frame, ScrollArea
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.line_edit import _SearchBox
 from plot.canvas import Canvas
@@ -26,7 +22,7 @@ from config.settings import GLOBAL_DEBUG, logger, config
 
 DEBUG = False
 
-class NewPlot (Frame):
+class NewPlot(Frame):
     """ This Widget will be created when creating a new plot to display input fields for the new plot """
 
     sig = Signal()
@@ -46,14 +42,14 @@ class NewPlot (Frame):
         self.node = node
         self.plot3d = plot3d
 
-        effect = QGraphicsOpacityEffect(self)
-        effect.setOpacity(0.5)
-        ani = QPropertyAnimation(effect, b'opacity', self)
-        ani.setDuration(100)
-        self.setGraphicsEffect(effect)
-        ani.setStartValue(0)
-        ani.setEndValue(1)
-        ani.start()
+        # effect = QGraphicsOpacityEffect(self)
+        # effect.setOpacity(0.5)
+        # ani = QPropertyAnimation(effect, b'opacity', self)
+        # ani.setDuration(100)
+        # self.setGraphicsEffect(effect)
+        # ani.setStartValue(0)
+        # ani.setEndValue(1)
+        # ani.start()
 
         mainlayout = QVBoxLayout()
         self.setLayout(mainlayout)
@@ -202,8 +198,6 @@ class NewPlot (Frame):
                 **self.props
             )
 
-            # Update local variable after plotting
-            # self.props = self.canvas._config[str(self.plot_index)]["plot_props"]
             self.update_config()
         except Exception as e:
             logger.exception(e)
@@ -222,7 +216,7 @@ class NewPlot (Frame):
         for idx in range(len(self.widget.input)):
             self.canvas._config[self.plot_gid]["data_input"][idx] = self.widget.input[idx]
 
-class InsertPlot (QMainWindow):
+class InsertPlot(QMainWindow):
     sig = Signal() # emit when new plot was created, also when a plot needs to be updated
 
     def __init__(self, canvas:Canvas, node:NodeGraphicsNode, plot3d=False, parent=None):
@@ -273,7 +267,7 @@ class InsertPlot (QMainWindow):
         self.sidebar_layout.addWidget(self.search_box)
 
         self.treeview = TreeWidget()
-        self.treeview.itemPressed.connect(lambda item: self.add_plot(item.text(0).lower()))
+        self.treeview.itemPressed.connect(lambda item: self.add_plot(item.text(0)))
         self.treeview.setData(self.type_list)
         self.sidebar_layout.addWidget(self.treeview)
         self.search_box.set_TreeView(self.treeview)
@@ -283,9 +277,12 @@ class InsertPlot (QMainWindow):
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
 
-        self.graph_layout = QVBoxLayout()
-        self.mainlayout.addLayout(self.graph_layout)
+        self.graph_widget = ScrollArea()
+        self.graph_widget.verticalScrollBar().rangeChanged.connect(lambda min, max: 
+            self.graph_widget.verticalScrollBar().setSliderPosition(max))
+        self.mainlayout.addWidget(self.graph_widget)
 
+        # preload icons
         load_InputIcon()
         load_MenuIcon()
         
@@ -299,14 +296,14 @@ class InsertPlot (QMainWindow):
         # this function can be either called when a new plot added, or 
         # reconstruction of NewPlot class when QMainWindow is recontructed
         
-        if plot_type.title() not in self.type_list.keys():
+        if plot_type not in self.type_list.keys():
             if not plot_gid: plot_gid = f"graph {self.plot_idx}"
         
             newplot = NewPlot(plot_gid, plot_type, self.canvas, self.node, self.plot3d)
             self.plot_list.append(newplot)
             newplot.sig.connect(self.sig.emit)
             newplot.sig_delete.connect(self.delete_plot)
-            self.graph_layout.addWidget(newplot)
+            self.graph_widget.vlayout.addWidget(newplot)
 
             # keep track of current plot index
             if plot_gid: self.plot_idx = int(plot_gid.split()[1])+1

@@ -29,7 +29,7 @@ class Scatter (PlotConfigBase):
             text = "sizes",
             getter=self.get_sizes,
             setter=self.set_sizes,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         collection = CmapCollection(self.gid, self.canvas)
@@ -68,7 +68,7 @@ class Scatter3D (Scatter):
             text="Depth Shade",
             getter=self.get_depthshade,
             setter=self.set_depthshade,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.sizes = TransparentSpinBox(
@@ -76,7 +76,7 @@ class Scatter3D (Scatter):
             text = "sizes",
             getter=self.get_sizes,
             setter=self.set_sizes,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         collection = CmapCollection(self.gid, self.canvas)

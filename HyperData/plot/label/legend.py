@@ -1,18 +1,19 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QSizePolicy, QWidget, QStackedLayout, QDialog
+from PySide6.QtWidgets import QVBoxLayout, QSizePolicy, QStackedLayout, QDialog
 from plot.canvas import Canvas
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.button import TransparentComboBox, SegmentedWidget, Toggle
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.frame import ScrollArea
 from plot.plotting.plotting import set_legend, get_legend
 from config.settings import font_lib, logger
 import matplotlib.pyplot as plt
 
 DEBUG = False
 
-class LegendBase (QWidget):
+class LegendBase(ScrollArea):
     def __init__(self, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.setWindowTitle('Legend settings')
         self.canvas = canvas
@@ -38,15 +39,13 @@ class LegendEntries(LegendBase):
         super().__init__(canvas, parent)
 
     def initUI(self):
-
-        layout = QVBoxLayout(self)
         
         font = TransparentComboBox(
             items = font_lib,
             text  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=layout
+            layout=self.vlayout
         )
 
         size = TransparentDoubleSpinBox(
@@ -54,7 +53,7 @@ class LegendEntries(LegendBase):
             min = 1, max = 100, step = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=layout
+            layout=self.vlayout
         )
 
         # # style = FontStyle(obj=self.obj.get_texts(), canvas=self.canvas)
@@ -64,7 +63,7 @@ class LegendEntries(LegendBase):
             text  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.vlayout
         )
 
         markerscale = TransparentDoubleSpinBox(
@@ -72,7 +71,7 @@ class LegendEntries(LegendBase):
             min = 0, max = 5, step = 0.1,
             setter=self.set_markerscale,
             getter=self.get_markerscale,
-            layout=layout
+            layout=self.vlayout
         )
 
         ncols = TransparentSpinBox(
@@ -80,7 +79,7 @@ class LegendEntries(LegendBase):
             min = 1, max = 10, step = 1,
             setter=self.set_ncols,
             getter=self.get_ncols,
-            layout=layout
+            layout=self.vlayout
         )
 
         npoints = TransparentSpinBox(
@@ -88,14 +87,14 @@ class LegendEntries(LegendBase):
             min = 1, max = 10, step = 1,
             setter=self.set_npoints,
             getter=self.get_npoints,
-            layout=layout
+            layout=self.vlayout
         )
 
         columnspacing = TransparentDoubleSpinBox(
             text="Column spacing",
             setter=self.set_columnspacing,
             getter=self.get_columnspacing,
-            layout=layout
+            layout=self.vlayout
         )
     
     def set_fontname (self, font:str):
@@ -186,19 +185,17 @@ class LegendEntries(LegendBase):
     def get_columnspacing(self) -> float:
         return plt.rcParams["legend.columnspacing"]
 
-class LegendTitle (LegendBase):
+class LegendTitle(LegendBase):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(canvas, parent)
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-
         self.title = LineEdit(
             text='Label',
             setter=self.set_title,
             getter=self.get_title,
-            layout=layout
+            layout=self.vlayout
         )
         self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
@@ -207,7 +204,7 @@ class LegendTitle (LegendBase):
             text  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=layout
+            layout=self.vlayout
         )
 
         size = TransparentDoubleSpinBox(
@@ -215,28 +212,28 @@ class LegendTitle (LegendBase):
             min = 1, max = 100, step = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=layout
+            layout=self.vlayout
         )
 
         color = ColorDropdown(
             text  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.backgroundcolor = ColorDropdown(
             text  = 'Background color',
             getter=self.get_backgroundcolor,
             setter=self.set_backgroundcolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         edgecolor = ColorDropdown(
             text  = 'Edge color',
             getter = self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         align = TransparentComboBox(
@@ -244,7 +241,7 @@ class LegendTitle (LegendBase):
             items = ["center","left","right"],
             setter=self.set_alignment,
             getter=self.get_alignment,
-            layout=layout
+            layout=self.vlayout
         )
         
         # #pad = DoubleSpinBox(text='label pad',min=-100,max=100,step=5)
@@ -252,11 +249,11 @@ class LegendTitle (LegendBase):
         # #layout.addWidget(pad)
 
         alpha = TransparentDoubleSpinBox(
-            text = 'transparency',
+            text = 'Transparency',
             step = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=layout
+            layout=self.vlayout
         )
 
     def set_title (self, label:str):
@@ -346,40 +343,38 @@ class LegendTitle (LegendBase):
                 return int(self.legend_text.get_alpha()*100)
         return 100
 
-class LegendFrame (LegendBase):
+class LegendFrame(LegendBase):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(canvas, parent)
     
     def initUI(self):
-
-        layout = QVBoxLayout(self)
     
         frameon = Toggle(
             text='Visible',
             setter=self.set_frameon,
             getter=self.get_frameon,
-            layout=layout
+            layout=self.vlayout
         )
 
         shadow = Toggle(
             text='Shadow',
             setter=self.set_shadow,
             getter=self.get_shadow,
-            layout=layout
+            layout=self.vlayout
         )
 
         facecolor = ColorDropdown(
             text  = 'Face Color', 
             getter=self.get_facecolor,
             setter=self.set_facecolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         edgecolor = ColorDropdown(
             text  = 'Edge Color', 
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         alpha = TransparentDoubleSpinBox(
@@ -387,39 +382,39 @@ class LegendFrame (LegendBase):
             step = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=layout
+            layout=self.vlayout
         )
 
         borderpad = TransparentDoubleSpinBox(
-            text = 'border pad',
+            text = 'Border pad',
             min = 0, max = 5, step = 0.1,
             setter=self.set_borderpad,
             getter=self.get_borderpad,
-            layout=layout
+            layout=self.vlayout
         )
 
         handlelength = TransparentDoubleSpinBox(
-            text = 'handle length',
+            text = 'Handle length',
             min = 0, max = 10, step = 0.5,
             setter=self.set_handlelength,
             getter=self.get_handlelength,
-            layout=layout
+            layout=self.vlayout
         )
 
         handleheight = TransparentDoubleSpinBox(
-            text = 'handle height',
+            text = 'Handle height',
             min = 0, max = 10, step = 0.5,
             setter=self.set_handleheight,
             getter=self.get_handleheight,
-            layout=layout
+            layout=self.vlayout
         )
 
         handletextpad = TransparentDoubleSpinBox(
-            text = 'handle text pad',
+            text = 'Handle text pad',
             min = 0, max = 10, step = 0.5,
             setter=self.set_handletextpad,
             getter=self.get_handletextpad,
-            layout=layout
+            layout=self.vlayout
         )
     
     def set_frameon(self, value:bool):
@@ -521,7 +516,7 @@ class LegendFrame (LegendBase):
     def get_handletextpad(self) -> float:
         return plt.rcParams["legend.handletextpad"]
     
-class LegendLabel (QDialog):
+class LegendLabel(QDialog):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 

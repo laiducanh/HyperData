@@ -5,7 +5,7 @@ from ui.base_widgets.frame import Frame
 from matplotlib.text import Text
 from plot.canvas import Canvas
 
-class FontStyle (Frame):
+class FontStyle(Frame):
     def __init__(self, obj:list[Text], canvas: Canvas, layout:QLayout=None, parent=None):
         super().__init__(parent)
 
@@ -56,7 +56,7 @@ class FontStyle (Frame):
                 return False
         return True
 
-class FontAlignment (QWidget):
+class FontAlignment(QWidget):
     def __init__(self, obj: list[Text], canvas:Canvas, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()

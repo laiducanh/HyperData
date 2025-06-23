@@ -1,11 +1,12 @@
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QWidget
+from ui.base_widgets.frame import ScrollArea
 from plot.canvas import Canvas
 
-class ArtistConfigBase (QWidget):
+class ArtistConfigBase(ScrollArea):
     onChanged = Signal()
     def __init__(self, gid:str, canvas:Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.gid = gid
         self.canvas = canvas

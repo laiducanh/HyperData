@@ -1,14 +1,14 @@
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QVBoxLayout, QScrollArea, QHBoxLayout, QWidget, QDialog
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout
 from plot.canvas import Canvas
 from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.button import _TransparentComboBox, _TransparentPushButton, _PrimaryComboBox
-from ui.base_widgets.spinbox import TransparentSpinBox, Slider
-from ui.base_widgets.frame import Frame
+from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.frame import Frame, ScrollArea
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
-from mpl_toolkits.mplot3d.axes3d import Axes3D, Axes
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.utilis import copy_Axes
 
 class SubFigure(Frame):
@@ -108,19 +108,11 @@ class SubFigure(Frame):
         self.col1.currentTextChanged.connect(lambda: self.sig.emit())
         self.col2.currentTextChanged.connect(lambda: self.sig.emit())
     
-class Layout(QScrollArea):
+class Layout(ScrollArea):
     def __init__(self, node: NodeGraphicsNode, canvas:Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        widget = QWidget()
-        self.vlayout = QVBoxLayout(self)
-        # layout.setContentsMargins(10,0,10,15)
-        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        widget.setLayout(self.vlayout)
-        self.setWidget(widget)
-        self.setWidgetResizable(True)
-        self.verticalScrollBar().setValue(1900)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # self.verticalScrollBar().setValue(1900)
         self.verticalScrollBar().rangeChanged.connect(lambda min, max: self.verticalScrollBar().setSliderPosition(max))
         self.canvas = canvas
         self.node = node

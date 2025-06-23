@@ -41,7 +41,7 @@ class Step (PlotConfigBase):
             text="Where",
             getter=self.get_where,
             setter=self.set_where,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         line2d = line.Line(gid, canvas, parent)
@@ -92,7 +92,7 @@ class Stem (PlotConfigBase):
             getter=self.get_orientation,
             setter=self.set_orientation,
         )
-        self.stemline.mainlayout.insertWidget(0, self.orientation)
+        self.stemline.vlayout.insertWidget(0, self.orientation)
 
         line2d = line.Line(f"{self.gid}/baseline", self.canvas)
         line2d.onChanged.connect(self._onChange)
@@ -103,7 +103,7 @@ class Stem (PlotConfigBase):
             getter=self.get_bottom,
             setter=self.set_bottom,
         )
-        line2d.mainlayout.insertWidget(0, self.bottom)
+        line2d.vlayout.insertWidget(0, self.bottom)
 
         marker = line.Marker(f"{self.gid}/markerline", self.canvas)
         marker.onChanged.connect(self._onChange)
@@ -167,7 +167,7 @@ class Area (PlotConfigBase):
             items=['pre','post','mid','none'],
             getter=self.get_step,
             setter=self.set_step,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.orientation = TransparentComboBox(
@@ -175,7 +175,7 @@ class Area (PlotConfigBase):
             text="Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
     def find_obj (self) -> list[Collection]:
@@ -226,7 +226,7 @@ class StackedArea (PlotConfigBase):
             items = ['zero','sym','wiggle','weighted_wiggle'],
             setter=self.set_baseline,
             getter=self.get_baseline,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.step = TransparentComboBox(
@@ -234,7 +234,7 @@ class StackedArea (PlotConfigBase):
             items = ['pre','post','mid','none'],
             getter=self.get_step,
             setter=self.set_step,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
     def find_obj (self) -> list[Collection]:

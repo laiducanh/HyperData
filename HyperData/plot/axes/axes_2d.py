@@ -3,6 +3,7 @@ from PySide6.QtGui import QColor
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.frame import ScrollArea
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
 from matplotlib import lines, rcParams, colors
@@ -10,11 +11,10 @@ from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
 DEBUG = False
 
-class Margin2D (QWidget):
+class Margin2D(ScrollArea):
     def __init__(self, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        layout = QVBoxLayout(self)
         self.canvas = canvas
 
         top = TransparentDoubleSpinBox(
@@ -23,7 +23,7 @@ class Margin2D (QWidget):
             min = 0, max = 1, step = 0.05,
             getter=self.get_top,
             setter=self.set_top,
-            layout=layout
+            layout=self.vlayout
         )
 
         bottom = TransparentDoubleSpinBox(
@@ -32,7 +32,7 @@ class Margin2D (QWidget):
             min = 0, max = 1, step = 0.05,
             getter=self.get_bottom,
             setter=self.set_bottom,
-            layout=layout
+            layout=self.vlayout
         )
 
         left = TransparentDoubleSpinBox(
@@ -41,7 +41,7 @@ class Margin2D (QWidget):
             min = 0, max = 1, step = 0.05,
             setter=self.set_left,
             getter=self.get_left,
-            layout=layout
+            layout=self.vlayout
         )
 
         right = TransparentDoubleSpinBox(
@@ -50,7 +50,7 @@ class Margin2D (QWidget):
             min = 0, max = 1, step = 0.05,
             setter=self.set_right,
             getter=self.get_right,
-            layout=layout
+            layout=self.vlayout
         )
     
     def set_top(self,value):
@@ -81,11 +81,10 @@ class Margin2D (QWidget):
     def get_right(self):
         return self.canvas.figure.subplotpars.right
 
-class Grid2D (QWidget):
+class Grid2D(ScrollArea):
     def __init__(self, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        layout = QVBoxLayout(self)
         self.canvas = canvas
 
         self.visible = Toggle(
@@ -93,7 +92,7 @@ class Grid2D (QWidget):
             text2 = 'Whether to show the grid lines',
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.which = TransparentComboBox(
@@ -102,7 +101,7 @@ class Grid2D (QWidget):
             text2 = 'The grid lines to apply the changes on',
             setter=self.set_gridtype,
             getter=self.get_gridtype,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.axis = TransparentComboBox(
@@ -111,7 +110,7 @@ class Grid2D (QWidget):
             items = ['X','Y','Both'],
             getter=self.get_gridaxis,
             setter=self.set_gridaxis,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.linewidth = TransparentDoubleSpinBox(
@@ -120,7 +119,7 @@ class Grid2D (QWidget):
             min = 0.1, max = 10, step = 0.5,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.linestyle = TransparentComboBox(
@@ -129,7 +128,7 @@ class Grid2D (QWidget):
             items = linestyle_lib.values(),
             getter=self.get_linestyle,
             setter=self.set_linestyle,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.color = ColorDropdown(
@@ -137,7 +136,7 @@ class Grid2D (QWidget):
             text2 = 'Set the color of the grid',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.alpha = TransparentDoubleSpinBox(
@@ -146,7 +145,7 @@ class Grid2D (QWidget):
             step  = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=layout
+            layout=self.vlayout
         )
     
     def set_grid(self):
@@ -219,11 +218,10 @@ class Grid2D (QWidget):
     def get_color(self) -> str:
         return self.canvas._config["grid"]["color"]
     
-class Pane2D (QWidget):
+class Pane2D(ScrollArea):
     def __init__(self, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        layout = QVBoxLayout(self)
         self.canvas = canvas
 
         self.visible = Toggle(
@@ -231,7 +229,7 @@ class Pane2D (QWidget):
             text2 = 'Whether to show the color',
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.facecolor = ColorDropdown(
@@ -239,7 +237,7 @@ class Pane2D (QWidget):
             text2 = 'Set the color of the Pane',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.edgecolor = ColorDropdown(
@@ -247,7 +245,7 @@ class Pane2D (QWidget):
             text2='Set the frame color of the Figure',
             getter=self.get_framecolor,
             setter=self.set_framecolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.alpha = TransparentDoubleSpinBox(
@@ -256,7 +254,7 @@ class Pane2D (QWidget):
             step  = 10,
             setter=self.set_patch_alpha,
             getter=self.get_patch_alpha,
-            layout=layout
+            layout=self.vlayout
         )
     
     def set_visible(self,value):
@@ -289,7 +287,7 @@ class Pane2D (QWidget):
     def get_framecolor(self):
         return colors.to_hex(self.canvas.figure.get_facecolor())
 
-class Axes2D (QDialog):
+class Axes2D(QDialog):
     def __init__(self, canvas:Canvas, parent=None):
         super().__init__(parent)
 

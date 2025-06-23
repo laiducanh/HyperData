@@ -1,10 +1,8 @@
-from PySide6.QtCore import Signal, QTimer
-from PySide6.QtWidgets import QVBoxLayout, QDialog, QWidget, QSizePolicy
-from ui.base_widgets.line_edit import TextEdit, LineEdit
-from ui.base_widgets.frame import SeparateHLine
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QVBoxLayout, QDialog
+from ui.base_widgets.frame import ScrollArea
 from plot.canvas import Canvas
 from plot.insert_plot.insert_plot import NewPlot
-from plot.utilis import find_mpl_object
 from plot.curve.base_plottype.line import Line, Step, Stem, Stem3d, Area, StackedArea, StackedArea100
 from plot.curve.base_plottype.column import (Column, Column3D, Dot, ClusteredColumn, ClusteredDot, Dumbbell,
                                              Marimekko, Treemap, WaterFall)
@@ -13,13 +11,10 @@ from plot.curve.base_plottype.pie import Pie, Doughnut, Coxcomb, SemicircleDough
 from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d, ErrorBar
 from plot.curve.base_plottype.grid import Heatmap, Contour
 from config.settings import GLOBAL_DEBUG, logger
-from plot.plotting.plotting import set_legend, get_legend
-from matplotlib.artist import Artist
-from matplotlib import legend
 
 DEBUG = False
 
-class Curve (QDialog):
+class Curve(QDialog):
     sig = Signal() # fire signal when plot updated
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
@@ -27,66 +22,12 @@ class Curve (QDialog):
         self.gid = gid
         self.canvas = canvas
         self.plot = plot
-        # self.obj = self.find_object()
         self.setWindowTitle(self.plot.plot_type.title())
         self.initUI()
     
-    # def find_object (self) -> list[Artist]:
-    #     return find_mpl_object(
-    #         self.canvas.fig,
-    #         match=[Artist],
-    #         gid=self.gid
-    #         )
-    
     def initUI(self):
-    
         self.vlayout = QVBoxLayout(self)
-    
-    # Timer for updating legend
-        # self.timer = QTimer()
-        # self.timer.setSingleShot(True)
-        # self.timer.timeout.connect(self.set_label)
-    
-    # Legend
-        # self.legend = LineEdit(text='Legend')
-        # self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        # self.legend.button.setText(self.get_label())
-        # self.legend.button.textChanged.connect(lambda: self.timer.start(300))
-        # self.vlayout.addWidget(self.legend)
-        # self.vlayout.addWidget(SeparateHLine())
-
-        self.initialize_layout()
-
-    # def set_label (self):
-    #     try:
-    #         if self.legend.button.text() == "":
-    #             _label = "_"
-    #         else: _label = self.legend.button.text()
-    #         for obj in self.find_object():
-    #             if not obj.get_gid().startswith('_'):
-    #                 obj.set_label(_label)
-    #         set_legend(self.canvas)
-    #         self.canvas.draw_idle()
-            
-    #     except Exception as e:
-    #         logger.exception(e)
-
-    # def get_label (self) -> str:
-    #     # skip label starting with "_"
-    #     for obj in self.find_object():
-    #         if obj.get_label().startswith("_"):
-    #             return None
-    #         return obj.get_label()
-    
-    # def update_legend (self):
-    #     try:
-    #         if get_legend(self.canvas): set_legend(self.canvas)
-    #         self.canvas.draw_idle()
-    #         self.sig.emit()
-    #     except Exception as e:
-    #         logger.exception(e)
-    
-    def initialize_layout(self):
+        self.vlayout.setContentsMargins(0,0,0,0)
         try:
             plot_type = self.plot.plot_type
             args = [self.gid.split('/')[0], self.canvas, self.plot]

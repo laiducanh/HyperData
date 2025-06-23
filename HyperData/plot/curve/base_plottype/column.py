@@ -37,13 +37,13 @@ class Column(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -53,7 +53,7 @@ class Column(PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
@@ -118,13 +118,13 @@ class Column3D(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -134,7 +134,7 @@ class Column3D(PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_dx,
             setter=self.set_dx,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.dy = TransparentDoubleSpinBox(
@@ -142,21 +142,21 @@ class Column3D(PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_dy,
             setter=self.set_dy,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.color = ColorDropdown(
             text  = "Color", 
             getter=self.get_color,
             setter=self.set_color,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.shade = Toggle(
             text="Shade",
             getter=self.get_shade,
             setter=self.set_shade,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         ) 
 
         collection = Poly3DCollection(self.gid, self.canvas)
@@ -251,13 +251,13 @@ class Dot(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -271,7 +271,7 @@ class Dot(PlotConfigBase):
             step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=marker.mainlayout
+            layout=marker.vlayout
         )
 
     def find_object(self):
@@ -327,13 +327,13 @@ class ClusteredColumn(Column):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -343,7 +343,7 @@ class ClusteredColumn(Column):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.distance = TransparentSpinBox(
@@ -351,7 +351,7 @@ class ClusteredColumn(Column):
             max  = 100, step = 10, text = "Distance",
             getter=self.get_distance,
             setter=self.set_distance,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
@@ -381,13 +381,13 @@ class ClusteredDot(Dot):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -397,7 +397,7 @@ class ClusteredDot(Dot):
             text = "Distance",
             getter=self.get_distance,
             setter=self.set_distance,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         marker = Marker(self.gid, self.canvas)
@@ -409,7 +409,7 @@ class ClusteredDot(Dot):
             step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=marker.mainlayout
+            layout=marker.vlayout
         )
     
     def set_distance(self, value:int):
@@ -446,7 +446,7 @@ class Dumbbell(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         line = Line(f"{self.gid}/0", self.canvas)
@@ -490,7 +490,7 @@ class Marimekko(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
@@ -529,7 +529,7 @@ class Treemap (PlotConfigBase):
             text="Rounding factor",
             getter=self.get_rounded,
             setter=self.set_rounded,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.pad = TransparentDoubleSpinBox(
@@ -537,14 +537,14 @@ class Treemap (PlotConfigBase):
             text = "Padding",
             getter=self.get_pad,
             setter=self.set_pad,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.cmap_on = Toggle(
             text="Use colormap",
             getter=self.get_cmap_on,
             setter=self.set_cmap_on,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.cmap = TransparentComboBox(
@@ -552,7 +552,7 @@ class Treemap (PlotConfigBase):
             text  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
@@ -624,13 +624,13 @@ class WaterFall (PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -640,7 +640,7 @@ class WaterFall (PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         pbars = Rectangle(f"{self.gid}/positive", self.canvas)

@@ -152,7 +152,7 @@ config = {
     "plot_dpi":100, 
     "plot_style":"default",
     "plot_palette":["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
-    "version": "0.9.4"
+    "version": "0.9.31"
 }
 
 if os.path.exists(configFile):

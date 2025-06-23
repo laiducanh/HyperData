@@ -33,27 +33,27 @@ class Histogram(PlotConfigBase):
             min=1, 
             getter=self.get_bins,
             setter=self.set_bins,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.density = Toggle(
             text="Density",
             getter=self.get_density,
             setter=self.set_density,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.cumulative = Toggle(
             text="Cumulative",
             getter=self.get_cumulative,
             setter=self.set_cumulative,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.bottom = LineEdit(
             text="Bottom",
             getter=self.get_bottom,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
@@ -71,7 +71,7 @@ class Histogram(PlotConfigBase):
             text  = "Alignment",
             getter=self.get_alignment,
             setter=self.set_alignment,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.orientation = TransparentComboBox(
@@ -79,7 +79,7 @@ class Histogram(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.rwidth = TransparentDoubleSpinBox(
@@ -87,14 +87,14 @@ class Histogram(PlotConfigBase):
             min  = 0, max  = 5, step = 0.1,
             getter=self.get_rwidth,
             setter=self.set_rwidth,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.log = Toggle(
             text="Log",
             getter=self.get_log,
             setter=self.set_log,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         rect = Rectangle(self.gid, self.canvas)
@@ -725,14 +725,14 @@ class Eventplot(PlotConfigBase):
             text  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.lineoffsets = TransparentDoubleSpinBox(
             text="Line Offsets",
             getter=self.get_lineoffsets,
             setter=self.set_lineoffsets,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.linelengths = TransparentDoubleSpinBox(
@@ -740,7 +740,7 @@ class Eventplot(PlotConfigBase):
             step = 0.25,
             getter=self.get_linelengths,
             setter=self.set_linelengths,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         collection = LineCollection(self.gid, self.canvas)
@@ -799,21 +799,21 @@ class Hist2d(PlotConfigBase):
             text="Bins X",
             getter=self.get_binx,
             setter=self.set_binx,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.biny = TransparentSpinBox(
             text="Spin Y",
             getter=self.get_biny,
             setter=self.set_biny,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.density = Toggle(
             text="Density",
             getter=self.get_density,
             setter=self.set_density,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         qm = QuadMesh(self.gid, self.canvas)

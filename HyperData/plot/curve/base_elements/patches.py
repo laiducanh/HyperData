@@ -11,7 +11,7 @@ import numpy as np
 
 DEBUG = False
 
-class Rectangle (ArtistConfigBase):
+class Rectangle(ArtistConfigBase):
     def __init__(self, gid:str, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -19,15 +19,12 @@ class Rectangle (ArtistConfigBase):
     
     def initUI(self):
 
-        self.mainlayout = QVBoxLayout(self)
-        self.mainlayout.setContentsMargins(0,0,0,0)
-
         self.edgewidth = TransparentDoubleSpinBox(
             text = 'Edge Width',
             min  = 0, max  = 5, step = 0.5,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
 
         self.edgestyle = TransparentComboBox(
@@ -35,21 +32,21 @@ class Rectangle (ArtistConfigBase):
             items = linestyle_lib.values(),
             getter=self.get_edgestyle,
             setter=self.set_edgestyle,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
 
         self.facecolor = ColorDropdown(
             text  = 'Face Color',
             getter=self.get_facecolor,
             setter=self.set_facecolor,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
 
         self.edgecolor = ColorDropdown(
             text  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -57,7 +54,7 @@ class Rectangle (ArtistConfigBase):
             min  = 0, max  = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
 
     def find_object (self) -> list[patches.Patch]:
@@ -124,7 +121,7 @@ class Rectangle (ArtistConfigBase):
     def get_edgecolor (self):
         return colors.to_hex(self.find_object()[0].get_edgecolor())
 
-class Wedge (Rectangle):
+class Wedge(Rectangle):
     def __init__(self, gid, canvas:Canvas, parent=None):
         super().__init__(gid, canvas, parent)
 
@@ -135,7 +132,7 @@ class Wedge (Rectangle):
             gid=self.gid
         )
 
-class MultiWedges (Wedge):
+class MultiWedges(Wedge):
     """ 
         this class behaves the same as Wedge except for 
         set_facecolor function lightenes the color to 

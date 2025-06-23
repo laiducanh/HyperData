@@ -1,8 +1,9 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
+from PySide6.QtWidgets import QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.frame import ScrollArea
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
@@ -12,9 +13,9 @@ from plot.canvas import Canvas
 
 DEBUG = False
 
-class TickBase (QWidget):
+class TickBase(ScrollArea):
     def __init__(self, axis:str, canvas:Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.axis = axis
         self.canvas = canvas
@@ -24,14 +25,12 @@ class TickBase (QWidget):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-
         visible = Toggle(
             text  = "Visible",
             text2 = f"Toggle {self.axis} ticks' visibility",
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.min = LineEdit(
@@ -39,7 +38,7 @@ class TickBase (QWidget):
             text2 = f"Set {self.axis} axis view minimum",
             setter=self.set_min,
             getter=self.get_min,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.max = LineEdit(
@@ -47,7 +46,7 @@ class TickBase (QWidget):
             text2 = f"Set {self.axis} axis view maximum",
             setter=self.set_max,
             getter=self.get_max,
-            layout=layout
+            layout=self.vlayout
         )
 
         scale = TransparentComboBox(
@@ -56,7 +55,7 @@ class TickBase (QWidget):
             text2 = f"Set {self.axis} axis' scale",
             setter=self.set_scale,
             getter=self.get_scale,
-            layout=layout
+            layout=self.vlayout
         )
         
     def find_obj(self) -> Axis:
@@ -110,7 +109,7 @@ class TickBase (QWidget):
         if self.axis in ['bottom','top']: return self.obj.axes.get_xscale()
         else: return self.obj.axes.get_yscale()
 
-class TickBase2 (TickBase):
+class TickBase2(TickBase):
     def __init__(self, axis:str, type:str, canvas: Canvas, parent=None):
 
         self.ticktype = type
@@ -119,20 +118,18 @@ class TickBase2 (TickBase):
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-
         self.tickinterval = TransparentComboBox(
             items=['Tick Interval','Tick Values'],
             text='Type',
             setter=self.set_tickvalues,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.value = LineEdit(
             text='Tick values',
             text2=f"Set {self.axis} axis' tick positions",
             setter=self.set_tickvalues,
-            layout=layout
+            layout=self.vlayout
         )
 
         self.tick_label = LineEdit(
@@ -140,7 +137,7 @@ class TickBase2 (TickBase):
             text2 = f"Set {self.axis} axis' {self.ticktype} tick labels",
             setter=self.set_ticklabels,
             PlaceholderText=self.get_ticklabels(),
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_labelsize = TransparentDoubleSpinBox(
@@ -149,7 +146,7 @@ class TickBase2 (TickBase):
             min = 1, max = 100, step = 1,
             setter=self.set_labelsize,
             getter=self.get_labelsize,
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_direction = TransparentComboBox(
@@ -158,21 +155,21 @@ class TickBase2 (TickBase):
             items = ['In','Out','InOut'],
             setter=self.set_tickdir,
             getter=self.get_tickdir,
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_labelcolor = ColorDropdown(
             text  = 'Label color', 
             setter=self.set_labelcolor,
             getter=self.get_labelcolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         tickcolor = ColorDropdown(
             text  = 'Tick color', 
             getter=self.get_tickcolor,
             setter=self.set_tickcolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_rotation = TransparentDoubleSpinBox(
@@ -180,7 +177,7 @@ class TickBase2 (TickBase):
             min = -180, max = 180, step = 10,
             setter=self.set_labelrotation,
             getter=self.get_labelrotation,
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_labelpad = TransparentDoubleSpinBox(
@@ -188,7 +185,7 @@ class TickBase2 (TickBase):
             min = 0, max = 50, step = 0.5,
             setter=self.set_tickpadding,
             getter=self.get_tickpadding,
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_length = TransparentDoubleSpinBox(
@@ -196,7 +193,7 @@ class TickBase2 (TickBase):
             min = 0, max = 50, step = 0.5,
             setter=self.set_ticklength,
             getter=self.get_ticklength,
-            layout=layout
+            layout=self.vlayout
         )
 
         tick_width = TransparentDoubleSpinBox(
@@ -204,7 +201,7 @@ class TickBase2 (TickBase):
             min = 0, max = 50, step = 0.5,
             setter=self.set_tickwidth,
             getter=self.get_tickwidth,
-            layout=layout
+            layout=self.vlayout
         )
     
     def set_tickvalues (self, value:str):
@@ -322,9 +319,9 @@ class TickBase2 (TickBase):
             try: return self.obj.get_minor_ticks()[0]._width
             except: return rcParams['ytick.minor.width']
 
-class SpineBase (QWidget):
+class SpineBase(ScrollArea):
     def __init__(self, axis:str, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.axis = axis
         self.canvas = canvas
@@ -334,13 +331,11 @@ class SpineBase (QWidget):
 
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-
         visible = Toggle(
             text='Spine visible',
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=layout
+            layout=self.vlayout
         )
 
         arrow = TransparentComboBox(
@@ -348,21 +343,21 @@ class SpineBase (QWidget):
             items = marker_lib.values(),
             setter=self.set_arrow,
             getter=self.get_arrow,
-            layout=layout
+            layout=self.vlayout
         )
 
         color = ColorDropdown(
             text='Spine color',
             setter=self.set_color,
             getter=self.get_color,
-            layout=layout
+            layout=self.vlayout
         )
         
         arrowcolor = ColorDropdown(
             text="Arrow color",
             setter=self.set_arrowcolor,
             getter=self.get_arrowcolor,
-            layout=layout
+            layout=self.vlayout
         )
 
         alpha = TransparentDoubleSpinBox(
@@ -370,7 +365,7 @@ class SpineBase (QWidget):
             min = 0, max = 100, step = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=layout
+            layout=self.vlayout
         )
 
         linestyle = TransparentComboBox(
@@ -378,7 +373,7 @@ class SpineBase (QWidget):
             items = linestyle_lib.values(),
             setter=self.set_linestyle,
             getter=self.get_linestyle,
-            layout=layout
+            layout=self.vlayout
         )
 
         linewidth = TransparentDoubleSpinBox(
@@ -386,7 +381,7 @@ class SpineBase (QWidget):
             min = 0, max = 20, step = 0.5,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
-            layout=layout
+            layout=self.vlayout
         )
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
@@ -464,9 +459,9 @@ class SpineBase (QWidget):
     def get_arrowcolor(self):
         return colors.rgb2hex(self.arrows[0].get_markerfacecolor())
 
-class AxisLabel (QWidget):
+class AxisLabel(ScrollArea):
     def __init__(self, axis:str, canvas: Canvas, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.canvas = canvas
         self.axis = axis
@@ -477,13 +472,11 @@ class AxisLabel (QWidget):
     
     def initUI(self):
 
-        layout = QVBoxLayout(self)
-
         label = LineEdit(
             text='Label',
             getter=self.get_label,
             setter=self.set_label,
-            layout=layout
+            layout=self.vlayout
         )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -492,7 +485,7 @@ class AxisLabel (QWidget):
             text  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=layout
+            layout=self.vlayout
         )
 
         size = TransparentDoubleSpinBox(
@@ -500,20 +493,20 @@ class AxisLabel (QWidget):
             min = 1, max = 100, step = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=layout
+            layout=self.vlayout
         )
 
         style = FontStyle(
             obj = [self.text], 
             canvas = self.canvas,
-            layout=layout
+            layout=self.vlayout
         )
 
         color = ColorDropdown(
             text  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=layout
+            layout=self.vlayout
         )
 
         # self.backgroundcolor = ColorDropdown(
@@ -535,7 +528,7 @@ class AxisLabel (QWidget):
             step = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=layout
+            layout=self.vlayout
         )
     
     def find_axis(self) -> Axis:
@@ -597,7 +590,7 @@ class AxisLabel (QWidget):
             return int(self.text.get_alpha()*100)
         return 100
     
-class Tick2D (QDialog):
+class Tick2D(QDialog):
     def __init__(self, axis:str, canvas: Canvas, parent=None):
         super().__init__(parent)
 

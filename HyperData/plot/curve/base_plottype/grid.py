@@ -46,7 +46,7 @@ class Contour (PlotConfigBase):
             text="Fill Color",
             getter=self.get_fillmesh,
             setter=self.set_fillmesh,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.cmap = TransparentComboBox(
@@ -54,7 +54,7 @@ class Contour (PlotConfigBase):
             text  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.norm = TransparentComboBox(
@@ -62,7 +62,7 @@ class Contour (PlotConfigBase):
             text = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.alpha = TransparentSpinBox(
@@ -70,7 +70,7 @@ class Contour (PlotConfigBase):
             min  = 0, max  = 100, step = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         line = Line(self.gid, self.canvas)

@@ -29,21 +29,21 @@ class Pie (PlotConfigBase):
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
             text='Radius',
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -51,28 +51,28 @@ class Pie (PlotConfigBase):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.normalize = Toggle(
             text="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
@@ -177,14 +177,14 @@ class Coxcomb (Pie):
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -192,7 +192,7 @@ class Coxcomb (Pie):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -200,21 +200,21 @@ class Coxcomb (Pie):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
@@ -234,21 +234,21 @@ class Doughnut (Pie):
             text = "Width",
             getter=self.get_wedgewidth,
             setter=self.set_wedgewidth,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -256,7 +256,7 @@ class Doughnut (Pie):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -264,28 +264,28 @@ class Doughnut (Pie):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.normalize = Toggle(
             text="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
@@ -315,14 +315,14 @@ class SemicircleDoughnut (Doughnut):
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -330,14 +330,14 @@ class SemicircleDoughnut (Doughnut):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -345,14 +345,14 @@ class SemicircleDoughnut (Doughnut):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         wedge = Wedge(self.gid, self.canvas)
@@ -373,21 +373,21 @@ class MultilevelDoughnut (Doughnut):
             text = "Width",
             getter=self.get_wedgewidth,
             setter=self.set_wedgewidth,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.explode = LineEdit(
             text="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.labels = LineEdit(
             text="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.startangle = TransparentDoubleSpinBox(
@@ -395,7 +395,7 @@ class MultilevelDoughnut (Doughnut):
             text = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.radius = TransparentDoubleSpinBox(
@@ -403,28 +403,28 @@ class MultilevelDoughnut (Doughnut):
             step = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.counterclock = Toggle(
             text="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.rotatelabels = Toggle(
             text="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.normalize = Toggle(
             text="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
 
         self.pad = TransparentDoubleSpinBox(
@@ -432,7 +432,7 @@ class MultilevelDoughnut (Doughnut):
             text = "Padding",
             getter=self.get_pad,
             setter=self.set_pad,
-            layout=self.general.vlayout
+            layout=self.general.addlayout
         )
         
         mw = MultiWedges(self.gid, self.canvas)

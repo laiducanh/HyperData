@@ -1,5 +1,4 @@
 ### Import libraries from Python
-import matplotlib
 from mpl_toolkits import mplot3d
 
 ### Import libraries from PySide6
@@ -30,7 +29,7 @@ from plot.utilis import get_color, find_mpl_object
 
 DEBUG = False
 
-class PlotView (QMainWindow):
+class PlotView(QMainWindow):
     sig_back_to_grScene = Signal()
     def __init__(self, node:NodeGraphicsNode, canvas:Canvas, parent=None):
         super().__init__(parent)

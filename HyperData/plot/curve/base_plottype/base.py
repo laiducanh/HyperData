@@ -2,16 +2,16 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QSizePolicy
 from PySide6.QtCore import Signal, QTimer
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from ui.base_widgets.button import SegmentedWidget, TransparentComboBox, Toggle
+from ui.base_widgets.button import SegmentedWidget, Toggle
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, ScrollArea
 from ui.base_widgets.spinbox import TransparentSpinBox
 from plot.utilis import find_mpl_object
 from plot.plotting.plotting import set_legend, get_legend
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import artist
 
-class PlotConfigBase (QWidget):
+class PlotConfigBase(QWidget):
     onChanged = Signal()
     def __init__(self, gid:str, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(parent)
@@ -19,9 +19,8 @@ class PlotConfigBase (QWidget):
         self.gid = gid
         self.canvas = canvas
         self.plot = plot
-
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(0,0,0,0)
+        # self.vlayout.setContentsMargins(0,0,0,0)
         self.segment = SegmentedWidget(parent)
         self.vlayout.addWidget(self.segment)
 
@@ -44,15 +43,12 @@ class PlotConfigBase (QWidget):
         self.onChanged.emit()
         self.general.update_legend()
 
-class GeneralPlot(QWidget):
+class GeneralPlot(ScrollArea):
     def __init__(self, gid:str, canvas:Canvas, parent=None):
-        super().__init__(parent)
-        
+        super().__init__(parent=parent)
+
         self.gid = gid
         self.canvas = canvas
-
-        self.mainlayout = QVBoxLayout(self)
-        self.mainlayout.setContentsMargins(0,0,0,0)
 
     # Timer for updating legend
         self.timer = QTimer()
@@ -64,26 +60,25 @@ class GeneralPlot(QWidget):
         self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.legend.button.setText(self.get_label())
         self.legend.button.textChanged.connect(lambda: self.timer.start(300))
-        self.mainlayout.addWidget(self.legend)
-        self.mainlayout.addWidget(SeparateHLine())
+        self.vlayout.addWidget(self.legend)
+        self.vlayout.addWidget(SeparateHLine())
 
-        self.vlayout = QVBoxLayout()
-        self.vlayout.setContentsMargins(0,0,0,0)
-        self.mainlayout.addLayout(self.vlayout)
-
+        # self.addlayout = QVBoxLayout()
+        # self.addlayout.setContentsMargins(0,0,0,0)
+        # self.vlayout.addLayout(self.addlayout)
 
         clip = Toggle(
             text="Clipping",
             setter=self.set_clip,
             getter=self.get_clip,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
 
         zorder = TransparentSpinBox(
             text="Z-order",
             setter=self.set_zorder,
             getter=self.get_zorder,
-            layout=self.mainlayout
+            layout=self.vlayout
         )
     
     def find_obj(self):
