@@ -127,6 +127,7 @@ class NodeGraphicsNode (GraphicsNode):
                 "pos_y":self.scenePos().y(),
                 "input sockets":inputs,
                 "output sockets":outputs,
+                "color": self._brush_background.color().name(),
                 "content":self.content.serialize()}
     
     def deserialize(self, data, hashmap={}):
@@ -135,6 +136,7 @@ class NodeGraphicsNode (GraphicsNode):
 
         self.setPos(data['pos_x'], data['pos_y'])
         self.title = data['title']
+        self._brush_background = QBrush(data['color'])
 
         #data['inputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
         #data['outputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )

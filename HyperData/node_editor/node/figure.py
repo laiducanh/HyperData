@@ -29,10 +29,12 @@ class Figure2D (NodeContentWidget):
         self.eval()
     
     def serialize(self):
-        return {"canvas":self.canvas.serialize()}
+        return {"canvas":self.canvas.serialize(),
+                "comment": self.comment.toPlainText()}
             
     def deserialize(self, data, hashmap={}):
         self.canvas.deserialize(data['canvas'], hashmap)
+        self.comment.setText(data['comment'])
 
 
 class Figure3D (Figure2D):

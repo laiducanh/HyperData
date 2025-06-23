@@ -223,6 +223,7 @@ class DataReader (NodeContentWidget):
 
     def serialize(self):
         return {"config": self._config,
+                "comment": self.comment.toPlainText(),
                 "selected_files":self.selectedFiles,
                 "file_type":self.filetype,
                 "is_readable":self.isReadable}
@@ -232,4 +233,5 @@ class DataReader (NodeContentWidget):
         self.selectedFiles = data['selected_files']
         self.filetype = data['file_type']
         self.isReadable = data['is_readable']
+        self.comment.setText(data['comment'])
         super().exec()

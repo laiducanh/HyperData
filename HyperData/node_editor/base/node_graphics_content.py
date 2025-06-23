@@ -87,11 +87,12 @@ class NodeContentWidget(ContentItem):
         return super().update()
 
     def serialize(self):
-        return {"config": self._config}
+        return {"config": self._config,
+                "comment": self.comment.toPlainText()}
     
     def deserialize(self, data, hashmap=...):
         self._config = data['config']
-        print(self._config)
+        self.comment.setText(data['comment'])
 
 
 
