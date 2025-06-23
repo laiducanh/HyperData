@@ -119,7 +119,7 @@ class ExplorerCanvas(FigureCanvasQTAgg):
     def __init__(self):
         
         self.figure = Figure()
-        self.figure.set_dpi(150)
+        self.figure.set_dpi(100)
         self.figure.subplots_adjust(left=0.12,right=0.9,top=0.9,bottom=0.12)
         self.id = id(self)
 

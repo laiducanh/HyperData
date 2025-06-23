@@ -355,78 +355,78 @@ class HButton(Frame):
         return super().leaveEvent(a0)
 
 class PushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _PushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
            
 class TransparentPushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
         
         self.button = _TransparentPushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
         
 class PrimaryPushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
         
         self.button = _PrimaryPushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class DropDownPushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _DropDownPushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class DropDownTransparentPushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _DropDownTransparentPushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class DropDownPrimaryPushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _DropDownPrimaryPushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class TogglePushButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _TogglePushButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class ToolButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _ToolButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class TransparentToolButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _TransparentToolButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class PrimaryToolButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text, text2, parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _PrimaryToolButton(parent=parent)
         self.butn_layout.addWidget(self.button)
 
 class ToggleToolButton (HButton):
-    def __init__(self, text:str=None, text2:str=None, parent=None):
-        super().__init__(text=text, text2=text2, parent=parent)
+    def __init__(self, text:str=None, text2:str=None, layout:QLayout=None, parent=None):
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
 
         self.button = _ToggleToolButton(parent=parent)
         self.butn_layout.addWidget(self.button)
@@ -461,7 +461,7 @@ class PrimaryComboBox (HButton):
 class Toggle (HButton):
     def __init__(self, text:str=None, text2:str=None, setter:Callable=None, 
                  getter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(text, text2, layout, parent=parent)
+        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
         
         self.button = _Toggle(setter=setter, getter=getter, parent=parent)
         self.butn_layout.addWidget(self.button)

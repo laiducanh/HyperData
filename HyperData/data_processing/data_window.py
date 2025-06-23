@@ -6,11 +6,13 @@ from time import gmtime, strftime, time
 import pandas as pd
 import numpy as np
 from config.settings import list_name, GLOBAL_DEBUG, logger
-from ui.base_widgets.button import (_DropDownPushButton, _PrimaryPushButton, ComboBox, Toggle, _ComboBox,
-                                    _TransparentPushButton, _TransparentToolButton)
+from ui.base_widgets.button import (DropDownPushButton, _PrimaryPushButton, ComboBox, Toggle, _ComboBox,
+                                    _TransparentPushButton, _TransparentToolButton, TransparentComboBox)
+from ui.base_widgets.spinbox import TransparentSpinBox, TransparentDoubleSpinBox
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.menu import Menu, Action
-from ui.base_widgets.window import Dialog
+from ui.base_widgets.window import Dialog, FileDialog
+from ui.base_widgets.color import ColorDropdown
 from ui.utils import get_path, isDark
 from plot.canvas import ExplorerCanvas
 from data_processing.utlis import check_float, check_integer
@@ -140,13 +142,14 @@ class TableView (QWidget):
 
         self.setWindowTitle("Data")
         self.model = TableModel(data, self.parent())
+        self.data = data
         
         self.clipboard = QApplication.clipboard()
         self.selected_values = list()
 
-        self.initUI(data)
+        self.initUI()
     
-    def initUI (self, data:pd.DataFrame):
+    def initUI(self):
 
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -157,14 +160,17 @@ class TableView (QWidget):
         self.decorate = Toggle(text="Decoration")
         self.decorate.button.setChecked(False)
         self.decorate.button.checkedChanged.connect(lambda c: self.model.toggleDecoration(c))
-        
         self.hlayout.addWidget(self.decorate)
+        self.savedata = _TransparentPushButton()
+        self.savedata.setText('Save data')
+        self.savedata.pressed.connect(self.save_data)
+        self.hlayout.addWidget(self.savedata)
         self.hlayout.addStretch()
         self.time_update = BodyLabel()
         self.hlayout.addWidget(self.time_update)
         
         self.view = QTableView(self.parent())
-        self.update_data(data)
+        self.update_data(self.data)
         self.vlayout.addWidget(self.view)
         #view.setVerticalScrollBar(widget)
         
@@ -209,14 +215,14 @@ class TableView (QWidget):
 
     def on_selection (self):
 
-        self.data = self.model.getArray()
+        data = self.model.getArray()
 
         # selected cell values
         selectedIndexes=self.view.selectionModel().selectedIndexes()
         
         selectedAll = False
         # check if all cells are selected
-        if len(selectedIndexes) == self.data.size: 
+        if len(selectedIndexes) == data.size: 
             selectedAll = True
         
         _datapoints = 0
@@ -224,8 +230,8 @@ class TableView (QWidget):
         self.selected_values = np.array([])
         
         if selectedAll:
-            _datapoints = self.data.size
-            self.selected_values = self.data.copy()
+            _datapoints = data.size
+            self.selected_values = data.copy()
         elif selectedIndexes:
             _datapoints = len(selectedIndexes)
             for i in selectedIndexes:
@@ -262,11 +268,18 @@ class TableView (QWidget):
         self.clipboard.setText(', '.join(string))
     
     def update_data (self, data: pd.DataFrame):
+        self.data = data
         self.model = TableModel(data, self.parent())
         self.view.setModel(self.model)
         self.view.selectionModel().selectionChanged.connect(self.on_selection)
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         self.time_update.setText(f"Updated: {time}")
+    
+    def save_data(self):
+        dialog = FileDialog()
+        if dialog.exec():
+            file = dialog.selectedFiles()[0]
+            self.data.to_csv(file)
             
 class ExploreView (QWidget):
     def __init__(self, data, parent=None):
@@ -278,6 +291,7 @@ class ExploreView (QWidget):
         self.nan_plot = ["NaNs matrix","NaNs bar"]
 
         self.grouplist = []
+        self.config = dict()
         
         self.initUI()
         self.initMenu()
@@ -292,8 +306,9 @@ class ExploreView (QWidget):
         self.groupby.button.checkedChanged.connect(self.update_describe)
         self.groupby.button.checkedChanged.connect(lambda c: self.groupby2.setEnabled(c))
         self.describe_layout.addWidget(self.groupby)
-        self.groupby2 = _TransparentPushButton(text="Choose group" if not self.grouplist else str(self.grouplist))
+        self.groupby2 = _TransparentPushButton()
         self.groupby2.setEnabled(False)
+        self.groupby2.setText("Choose group" if not self.grouplist else str(self.grouplist))
         self.groupby2.pressed.connect(self.groupbyDialog)
         self.describe_layout.addWidget(self.groupby2)
         self.describe_layout.addStretch()
@@ -303,20 +318,24 @@ class ExploreView (QWidget):
         self.plot_selection = QHBoxLayout(self.plot_widget)
         self.plot_selection.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.vlayout.addWidget(self.plot_widget)
-        self.btn = _DropDownPushButton(self)
-        self.btn.setFixedWidth(150)
+        self.btn = DropDownPushButton(text='Plot type', parent=self)
+        self.btn.button.setFixedWidth(150)
         self.plot_selection.addWidget(self.btn)
         menu = self.initMenu()
-        self.btn.setMenu(menu)
-        self.btn.setText("NaNs matrix")
+        self.btn.button.setMenu(menu)
+        self.btn.button.setText("NaNs matrix")
         self.varx = ComboBox(text="X")
         self.plot_selection.addWidget(self.varx)
         self.vary = ComboBox(text="Y")
         self.plot_selection.addWidget(self.vary)
+        self.plot_config = _TransparentPushButton(text='Config')
+        self.plot_config.pressed.connect(self.open_plotConfig)
+        self.plot_selection.addWidget(self.plot_config)
+        self.plot_selection.addWidget(self.plot_config)
         self.plot_btn = _PrimaryPushButton(self)
         self.plot_btn.setText("Apply")
         self.plot_btn.pressed.connect(self.update_plot)
-        self.vlayout.addWidget(self.plot_btn)
+        self.plot_selection.addWidget(self.plot_btn)
         self.canvas = ExplorerCanvas()
         self.vlayout.addWidget(self.canvas)
     
@@ -325,28 +344,28 @@ class ExploreView (QWidget):
         menu_univar = Menu("Univariate analysis", self)
         for i in self.univar_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda _, s=i: self.btn.setText(s))
+            action.triggered.connect(lambda _, s=i: self.btn.button.setText(s))
             action.triggered.connect(self.update_selection)
             menu_univar.addAction(action)
         menu.addMenu(menu_univar)
         menu_bivar = Menu("Bivariate analysis", self)
         for i in self.bivar_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda _, s=i: self.btn.setText(s))
+            action.triggered.connect(lambda _, s=i: self.btn.button.setText(s))
             action.triggered.connect(self.update_selection)
             menu_bivar.addAction(action)
         menu.addMenu(menu_bivar)
         menu_multivar = Menu("Multivariate analysis", self)
         for i in self.multivar_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda _, s=i: self.btn.setText(s))
+            action.triggered.connect(lambda _, s=i: self.btn.button.setText(s))
             action.triggered.connect(self.update_selection)
             menu_multivar.addAction(action)
         menu.addMenu(menu_multivar)
         menu_nan = Menu("Missing values", self)
         for i in self.nan_plot:
             action = Action(text=i, parent=self)
-            action.triggered.connect(lambda _, s=i: self.btn.setText(s))
+            action.triggered.connect(lambda _, s=i: self.btn.button.setText(s))
             action.triggered.connect(self.update_selection)
             menu_nan.addAction(action)
         menu.addMenu(menu_nan)
@@ -410,7 +429,7 @@ class ExploreView (QWidget):
             self.varx.button.clear()
             self.vary.button.clear()
 
-            plottype = self.btn.text()
+            plottype = self.btn.button.text()
 
             self.varx.button.addItems(self.data.columns)
             self.vary.button.addItems(self.data.columns)
@@ -455,7 +474,7 @@ class ExploreView (QWidget):
     
     def update_plot(self):
         try:
-            plottype = self.btn.text()
+            plottype = self.btn.button.text()
             
             varx = self.varx.button.currentText()
             vary = self.vary.button.currentText()
@@ -466,7 +485,7 @@ class ExploreView (QWidget):
                 self.canvas.figure.clear()
                 ax = self.canvas.figure.add_subplot()
                 
-                if plottype == "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax)
+                if plottype == "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax, **self.config)
                 elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
                 elif plottype == "histogram": self.data.hist(varx, ax=ax)
                 elif plottype == "boxplot": self.data.boxplot(varx, ax=ax)
@@ -488,11 +507,66 @@ class ExploreView (QWidget):
             #             xticks.append("")
             #         else: xticks.append(label)
             #     ax.set_xticks(ax.get_xticks(), xticks)
-                
+            self.canvas.figure.tight_layout()
             self.canvas.draw_idle() 
             
         except Exception as e:
             logger.exception(e)
+    
+    def open_plotConfig(self):
+        dialog = Dialog(title='Plot configuration', parent=self.parent())
+        plottype = self.btn.button.text()
+        config = dict()
+
+        if plottype == "NaNs matrix": 
+            n = TransparentSpinBox(
+                text='Columns',
+                text2='Maximum number of columns to include',
+                getter=lambda: self.config.get('n') if self.config.get('n') else 0,
+                setter=lambda value: config.update(n=value),
+                layout=dialog.main_layout
+            )
+            p = TransparentSpinBox(
+                text='Percentage',
+                text2='Maximum percentage fill of the columns',
+                getter=lambda: self.config.get('p') if self.config.get('p') else 0,
+                setter=lambda value: config.update(p=value),
+                layout=dialog.main_layout
+            )
+            sort = TransparentComboBox(
+                items=["ascending","descending"],
+                text='Sort',
+                text2='The row sort order to apply',
+                getter=lambda: self.config.get('sort') if self.config.get('sort') else 'ascending',
+                setter=lambda value: config.update(sort=value),
+                layout=dialog.main_layout
+            )
+            color = ColorDropdown(
+                text='Color',
+                text2='The color of the filled columns',
+                getter=lambda: self.config.get('color') if self.config.get('color') else '#404040',
+                setter=lambda value: config.update(color=value),
+                layout=dialog.main_layout,
+            )
+
+        # elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
+        # elif plottype == "histogram": self.data.hist(varx, ax=ax)
+        # elif plottype == "boxplot": self.data.boxplot(varx, ax=ax)
+        # elif plottype == "density": self.data[varx].plot.density(ax=ax)
+        # elif plottype == "kde": self.data[varx].plot.kde(ax=ax)
+        # elif plottype == "line": self.data.plot.line(varx, vary, ax=ax)
+        # elif plottype == "scatter": self.data.plot.scatter(varx, vary, ax=ax)
+        # elif plottype == "bar": self.data.plot.bar(varx, vary, ax=ax)
+        # elif plottype == "area": self.data.plot.area(varx, vary, ax=ax)
+        # elif plottype == "hexbin": self.data.plot.hexbin(varx, vary, ax=ax)
+        # elif plottype == "heatmap": ax.imshow(self.data.select_dtypes(include="number"), aspect="auto")
+        # elif plottype == "correlation": ax.imshow(self.data.corr(numeric_only=True), aspect="auto")
+        # elif plottype == "covariance": ax.imshow(self.data.cov(numeric_only=True), aspect="auto")
+
+        if dialog.exec():
+            self.config = config
+            print(self.config)
+            self.update_plot()
         
 class DataView (QWidget):
     def __init__(self, data, parent=None):
