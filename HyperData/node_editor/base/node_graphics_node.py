@@ -91,7 +91,7 @@ class NodeGraphicsNode (GraphicsNode):
         return [x, y]
     
     def addSocket (self, index, socket_type):
-
+      
         # add data sockets
         index += 1
         socket = NodeGraphicsSocket(node=self, index=index, socket_type=socket_type, parent=self)
@@ -141,31 +141,13 @@ class NodeGraphicsNode (GraphicsNode):
         #data['inputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
         #data['outputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
 
-        self.input_sockets = []
-        for socket_data in data['input sockets'].keys():
+        for socket_data, socket in zip(data['input sockets'].keys(), self.input_sockets):
             path = data['input sockets'][socket_data]
-            new_socket = NodeGraphicsSocket(
-                node=self, 
-                index=path['index'], 
-                socket_type=path['socket_type'],
-                parent=self
-            )
-            new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))
-            new_socket.deserialize(path, hashmap)
-            self.input_sockets.append(new_socket)
+            socket.deserialize(path, hashmap)
 
-        self.output_sockets = []
-        for socket_data in data['output sockets'].keys():
+        for socket_data, socket in zip(data['output sockets'].keys(), self.output_sockets):
             path = data['output sockets'][socket_data]
-            new_socket = NodeGraphicsSocket(
-                node=self, 
-                index=path['index'], 
-                socket_type=path['socket_type'],
-                parent=self
-            )
-            new_socket.setPos(*self.getSocketPosition(index=path['index'], socket_type=path['socket_type']))
-            new_socket.deserialize(path, hashmap)
-            self.output_sockets.append(new_socket)
+            socket.deserialize(path, hashmap)
        
         self.content.deserialize(data['content'])
 

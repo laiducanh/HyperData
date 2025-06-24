@@ -1,5 +1,6 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
+import os
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog, FileDialog
 from ui.base_widgets.button import Toggle, TransparentComboBox
@@ -8,7 +9,7 @@ from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from data_processing.data_window import TableModel
 from config.settings import logger, encode, GLOBAL_DEBUG
-from PySide6.QtWidgets import QTableView, QHBoxLayout
+from PySide6.QtWidgets import QTableView, QHBoxLayout, QFileDialog
 from PySide6.QtCore import QFileSystemWatcher
 
 DEBUG = False
@@ -168,8 +169,11 @@ class DataReader (NodeContentWidget):
         
         dialog = FileDialog(
             caption="Import data",
-            filter="""Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)"""
+            filter="""All Files (*);;Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)"""
         )
+        if self.selectedFiles: 
+            dialog.setDirectory(os.path.dirname(self.selectedFiles))
+            dialog.selectFile(self.selectedFiles)
         if dialog.exec():
             self.selectedFiles = dialog.selectedFiles()[0]
             # add file path for watcher
@@ -234,4 +238,3 @@ class DataReader (NodeContentWidget):
         self.filetype = data['file_type']
         self.isReadable = data['is_readable']
         self.comment.setText(data['comment'])
-        super().exec()

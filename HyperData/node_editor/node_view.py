@@ -104,11 +104,17 @@ class NodeView (QMainWindow):
             
         return super().keyPressEvent(event)
 
-    def addNode (self, title):
+    def addNode(self, title):
         try:
             node = Node(title,self.node_view)
             self.grScene.addNode(node)
         except:pass
+    
+    def serialize(self):
+        return self.node_view.serialize()
+
+    def deserialize(self, data:dict, hashmap={}):
+        return self.node_view.deserialize(data, hashmap)
 
 
 class NodeUserDefine (NodeView):

@@ -29,6 +29,7 @@ class NodeGraphicsView(QGraphicsView):
         self.initMenu()
 
         self.setScene(self.grScene)
+        self.id = id(self)
 
         self.drag_mode = False
 
@@ -135,7 +136,7 @@ class NodeGraphicsView(QGraphicsView):
             misc.addAction(action)
         
     def addNode(self, node_title:str):
-        node = Node(title=node_title)
+        node = Node(title=node_title, parent=self)
         self.grScene.addNode(node)
         node.setPos(self.last_rmb_click_scene_pos.x(), self.last_rmb_click_scene_pos.y())
 
@@ -321,7 +322,7 @@ class NodeGraphicsView(QGraphicsView):
     
     def edgeDragStart(self, item:NodeGraphicsSocket):
 
-        logger.info('View::edgeDragStart: start dragging edge.')
+        logger.info(f'View::edgeDragStart: start dragging edge {item}.')
         logger.info(f'View::edgeDragStart: assign start socket to socket index {item.index} of node {item.node.id}.')
         
         #self.last_start_socket = item
@@ -417,6 +418,40 @@ class NodeGraphicsView(QGraphicsView):
             if isinstance(item, NodeGraphicsEdge):
                 if item.start_socket not in self.grScene.items() or item.end_socket not in self.grScene.items():
                     self.grScene.removeEdge(item)
+    
+    def serialize(self):
+        nodes, edges = dict(), dict()
+        for node in self.grScene.nodes: nodes[node.id] = node.serialize()
+        for edge in self.grScene.edges: edges[edge.id] = edge.serialize()
+
+        return {"id":self.id,
+                "scene_width":self.grScene.scene_width,
+                "scene_height":self.grScene.scene_height,
+                "nodes":nodes,
+                "edges":edges}
+
+    def deserialize(self, data, hashmap={}):
+        self.grScene.clear()
+        hashmap = {}
+        self.id = data['id']
+        
+        # create nodes
+        nodes:dict = data['nodes']
+        for node_id in nodes.keys():
+            node = Node(nodes[node_id]['title'], parent=self)
+            self.grScene.addNode(node)
+            node.deserialize(nodes[node_id], hashmap)
+
+        # create edges
+        edges:dict = data['edges']
+        for edge_id in edges.keys():
+            start_socket = hashmap[edges[edge_id]['start']]
+            end_socket = hashmap[edges[edge_id]['end']]
+            edge = NodeGraphicsEdgeBezier(start_socket, end_socket)
+            edge.updatePositions()
+            self.grScene.addEdge(edge)
+            edge.deserialize(edges[edge_id], hashmap)    
+
     
     def paintEvent(self, event: QPaintEvent) -> None:
         self.grScene.setBackgroundColor()

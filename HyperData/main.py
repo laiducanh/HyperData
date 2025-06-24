@@ -146,7 +146,7 @@ class Main(QMainWindow):
         config.update(
             id=id(self),
             screen_size=QGuiApplication.primaryScreen().geometry().getRect(),
-            node_view=self.node_view.grScene.serialize(),
+            node_view=self.node_view.serialize(),
         )
         
     def deserialize(self, data:dict, hashmap={}):
@@ -155,7 +155,7 @@ class Main(QMainWindow):
         while self.mainlayout.count() > 1:
             self.mainlayout.takeAt(1)
             self.stack_scene.pop(0)
-        self.node_view.grScene.deserialize(config["node_view"], hashmap={})
+        self.node_view.deserialize(config["node_view"], hashmap={})
         
      
 

@@ -9,8 +9,8 @@ from config.settings import logger
 class NodeContentWidget(ContentItem):
     sig = Signal()
     def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsView"
-        super().__init__()
-        
+        super().__init__(parent)
+  
         self.node = node
         self.parent = parent
         self.threadpool = QThreadPool().globalInstance()

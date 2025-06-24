@@ -95,38 +95,4 @@ class NodeGraphicsScene(QGraphicsScene):
         self.edges = []
         logger.info(f"Scene::clear: reset self.nodes and self.edges.")
 
-    def serialize(self):
-        nodes, edges = dict(), dict()
-        for node in self.nodes: nodes[node.id] = node.serialize()
-        for edge in self.edges: edges[edge.id] = edge.serialize()
-
-        return {"id":self.id,
-                "scene_width":self.scene_width,
-                "scene_height":self.scene_height,
-                "nodes":nodes,
-                "edges":edges}
-
-    def deserialize(self, data, hashmap={}):
-        self.clear()
-        hashmap = {}
-        self.id = data['id']
-        
-        # create nodes
-        nodes = data['nodes']
-        for node_id in nodes.keys():
-            node = Node(nodes[node_id]['title'])
-            self.addNode(node)
-            node.deserialize(nodes[node_id], hashmap)
-
-        # create edges
-        edges = data['edges']
-        for edge_id in edges.keys():
-            start_socket = hashmap[edges[edge_id]['start']]
-            end_socket = hashmap[edges[edge_id]['end']]
-            edge = NodeGraphicsEdgeBezier(start_socket, end_socket)
-            edge.updatePositions()
-            self.addEdge(edge)
-            edge.deserialize(edges[edge_id], hashmap)    
-
-        return True
-
+    

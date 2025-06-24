@@ -17,7 +17,7 @@ class NodeComment (_TextEdit):
 class ContentItem(QWidget):
     sig = Signal()
     def __init__(self, parent=None): # parent is an instance of "NodeGraphicsView"
-        super().__init__(parent)
+        super().__init__()
 
         self.view = DataView(pandas.DataFrame(),parent)
         self.menu = Menu()
