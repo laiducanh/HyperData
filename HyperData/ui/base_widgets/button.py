@@ -473,12 +473,12 @@ class RadioButton (VButton):
         self.button = _RadioButton(items, parent)
         self.butn_layout.addWidget(self.button)
 
-class SegmentedWidget (QWidget):
+class SegmentedWidget (Frame):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(0,0,0,5)
+        # self._layout.setContentsMargins(0,0,0,5)
         self._layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.buttons = list()
@@ -500,35 +500,47 @@ class SegmentedWidget (QWidget):
     def setCurrentWidget (self, button_text:str):
         for btn in self.findChildren(_TransparentPushButton):
             btn : _TransparentPushButton
-            btn.setStyleSheet("font-weight:normal")
+            # btn.setStyleSheet("font-weight:normal")
+            btn.setStyleSheet(f"""
+                background-color: transparent;
+                color: black""")
             if btn.text() == button_text:
                 self.currentWidget = btn
-                btn.setStyleSheet("font-weight:bold")
+                # btn.setStyleSheet("font-weight:bold")
+                btn.setStyleSheet(f"""
+                    background-color: {config['themecolor']};
+                    color: white""")
                 self.update()
     
     def setCurrentIndex (self, index:int):
         for idx, btn in enumerate(self.findChildren(_TransparentPushButton)):
             btn : _TransparentPushButton
-            btn.setStyleSheet("font-weight:normal")
+            # btn.setStyleSheet("font-weight:normal")
+            btn.setStyleSheet(f"""
+                background-color: transparent;
+                color: black""")
             if idx == index:
                 self.currentWidget = btn
-                btn.setStyleSheet("font-weight:bold")
+                # btn.setStyleSheet("font-weight:bold")
+                btn.setStyleSheet(f"""
+                    background-color: {config['themecolor']};
+                    color: white""")
                 self.update()
 
     def paintEvent(self, e):
         super().paintEvent(e)
 
-        painter = QPainter(self)
-        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(0, 120, 215))
+        # painter = QPainter(self)
+        # painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+        # painter.setPen(Qt.PenStyle.NoPen)
+        # painter.setBrush(QColor(0, 120, 215))
 
-        x = int(self.currentWidget.x())
-        y = int(self.currentWidget.y())
-        h = int(self.currentWidget.height())
-        w = int(self.currentWidget.width())
+        # x = int(self.currentWidget.x())
+        # y = int(self.currentWidget.y())
+        # h = int(self.currentWidget.height())
+        # w = int(self.currentWidget.width())
        
-        painter.drawRoundedRect(x, y+h+2, w, 3, 1.5, 1.5)
+        # painter.drawRoundedRect(x, y+h+2, w, 3, 1.5, 1.5)
 
 class ListCheckBox(QWidget):
     def __init__(self, list_btn=list(), states=list(), text:str=None, parent=None):
