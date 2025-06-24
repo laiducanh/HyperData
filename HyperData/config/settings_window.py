@@ -34,7 +34,7 @@ def set_stylesheet():
             try: widget._update()
             except: pass
 
-class Theme (ComboBox):
+class Theme(ComboBox):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent=parent)
 
@@ -72,60 +72,55 @@ class ThemeColor(ColorDropdown):
         return config["themecolor"]
 
 
-class DockWidget_Position (Frame):
+class DockWidget_Position(ComboBox):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-
-        layout.addWidget(BodyLabel("Panel Position"))
-        button = _ComboBox(items=["Left","Right","Top","Bottom"])
-        button.currentTextChanged.connect(self.setPos)
-        button.setCurrentText(config["dock area"])
-        layout.addWidget(button)
-    
+        self.setText("Panel Position")
+        self.button.addItems(["Left","Right","Top","Bottom"])
+        self.button.setCurrentText(config["dock area"])
+        self.button.currentTextChanged.connect(self.setPos)
+            
     def setPos (self, pos):
         config["dock area"] = pos
 
-class Figure_Tooltip(Frame):
+class Figure_Tooltip(Toggle):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self.setText("Show Tooltip")
+        self.button.setChecked(config["plot_tooltip"])
+        self.button.checkedChanged.connect(self.setTooltip)
+    
+    def setTooltip(self, checked):
+        config["plot_tooltip"] = checked
 
-        button = Toggle(text="Show Tooltip")
-        button.button.setChecked(config["plot_tooltip"])
-        button.button.checkedChanged.connect(lambda s: config.update(plot_tooltip=s))
-        layout.addWidget(button)
-
-class Figure_Dpi(Frame):
+class Figure_Dpi(SpinBox):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self.setText("DPI")
+        self.button.setMinimum(50)
+        self.button.setMaximum(3000)
+        self.button.setSingleStep(50)
+        self.button.setValue(config["plot_dpi"])
+        self.button.valueChanged.connect(self.setDPI)
 
-        button = SpinBox(text="DPI", min=50,max=3000,step=50)
-        button.button.setValue(config["plot_dpi"])
-        button.button.valueChanged.connect(lambda s: config.update(plot_dpi=s))
-        layout.addWidget(button)
+    def setDPI(self, value:int):
+        config['plot_dpi'] = value
 
-class Figure_Style(Frame):
+class Figure_Style(ComboBox):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self._parent: QMainWindow = parent
-        layout = QHBoxLayout()
-        self.setLayout(layout)
         style_list = ["default", "matplotlib default"] + matplotlib.style.available
-        button = ComboBox(items=style_list, text="Style")
-        button.button.currentTextChanged.connect(self.changeStyle)
-        button.button.setCurrentText(config["plot_style"])
-        layout.addWidget(button)
+        self.setText("Style")
+        self.button.addItems(style_list)
+        self.button.setCurrentText(config["plot_style"])
+        self.button.currentTextChanged.connect(self.changeStyle)
 
-        self.changeStyle(button.button.currentText())
+        self.changeStyle(self.button.currentText())
     
     def changeStyle(self, value:str):
         config.update(plot_style = value)
@@ -150,7 +145,7 @@ class Figure_Colors(Frame):
         layout = QVBoxLayout()
         self.setLayout(layout)
         self.palette_dict = {
-            "default": config['plot_palette'],
+            "default": ["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
             "red": ["#03071e","#6a040f","#d00000","#e85d04","#faa307"], 
             "blue": ["#03045e","#0077b6","#00b4d8","#90e0ef","#caf0f8"],
             "black": ["#212529","#343a40","#495057","#6c757d","#adb5bd"],
@@ -170,12 +165,13 @@ class Figure_Colors(Frame):
 
         layout1 = QHBoxLayout()
         layout.addLayout(layout1)
-        self._palette = ComboBox(text="Color Palette", items=self.palette_dict.keys())
-        self._palette.button.setCurrentText("custom")
+        layout1.addWidget(BodyLabel("Color Palette"))
+        self._palette = _ComboBox(items=self.palette_dict.keys())
+        self._palette.setCurrentText("custom")
         for key, value in self.palette_dict.items():
             if config["plot_palette"] == value:
-                self._palette.button.setCurrentText(key)
-        self._palette.button.currentTextChanged.connect(self.changePalette)
+                self._palette.setCurrentText(key)
+        self._palette.currentTextChanged.connect(self.changePalette)
         layout1.addWidget(self._palette)
 
         layout2 = QHBoxLayout()
@@ -204,11 +200,11 @@ class Figure_Colors(Frame):
         self.createPalette()
         
     def changeColor(self, color:str, idx:int):
-        custom = self.palette_dict[self._palette.button.currentText()].copy()
+        custom = self.palette_dict[self._palette.currentText()].copy()
         custom[idx] = color
         self.palette_dict.update(custom = custom)
         config.update(plot_palette = custom)
-        self._palette.button.setCurrentText("custom")
+        self._palette.setCurrentText("custom")
     
     def createPalette(self):
         color_lib = config["plot_palette"].copy()
@@ -222,7 +218,7 @@ class Figure_Colors(Frame):
         color_lib = list(dict.fromkeys(color_lib))
         matplotlib.rcParams["axes.prop_cycle"] = cycler.cycler(color=color_lib)
     
-class SettingsWindow (QMainWindow):
+class SettingsWindow(QMainWindow):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent)
 

@@ -8,6 +8,7 @@ from ui.base_widgets.text import BodyLabel, InfoLabel, TitleLabel
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine, Frame
 from ui.utils import icon as Icon
+from ui.utils import isDark
 from config.settings import config
 from typing import Callable, Union
 
@@ -501,9 +502,9 @@ class SegmentedWidget (Frame):
         for btn in self.findChildren(_TransparentPushButton):
             btn : _TransparentPushButton
             # btn.setStyleSheet("font-weight:normal")
-            btn.setStyleSheet(f"""
-                background-color: transparent;
-                color: black""")
+            btn.setStyleSheet('background-color: transparent;')
+            if isDark(): btn.setStyleSheet('color: white;')
+            else: btn.setStyleSheet('color: black;')
             if btn.text() == button_text:
                 self.currentWidget = btn
                 # btn.setStyleSheet("font-weight:bold")
@@ -516,9 +517,9 @@ class SegmentedWidget (Frame):
         for idx, btn in enumerate(self.findChildren(_TransparentPushButton)):
             btn : _TransparentPushButton
             # btn.setStyleSheet("font-weight:normal")
-            btn.setStyleSheet(f"""
-                background-color: transparent;
-                color: black""")
+            btn.setStyleSheet('background-color: transparent;')
+            if isDark(): btn.setStyleSheet('color: white;')
+            else: btn.setStyleSheet('color: black;')
             if idx == index:
                 self.currentWidget = btn
                 # btn.setStyleSheet("font-weight:bold")
