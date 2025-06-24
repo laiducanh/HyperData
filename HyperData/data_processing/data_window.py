@@ -1,19 +1,21 @@
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QApplication)
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, 
+                               QApplication, QMainWindow, QDialog)
 from PySide6.QtGui import QIcon, QGuiApplication, QBrush, QColor
-from PySide6.QtCore import QModelIndex, Signal, Qt, QAbstractTableModel
-import os, missingno, squarify
-from time import gmtime, strftime, time
+from PySide6.QtCore import QModelIndex, Signal, Qt, QAbstractTableModel, QSortFilterProxyModel
+import os, missingno
+from time import gmtime, strftime
 import pandas as pd
 import numpy as np
 from config.settings import list_name, GLOBAL_DEBUG, logger
-from ui.base_widgets.button import (DropDownPushButton, _PrimaryPushButton, ComboBox, Toggle, _ComboBox,
-                                    _TransparentPushButton, _TransparentToolButton, TransparentComboBox)
-from ui.base_widgets.spinbox import TransparentSpinBox, TransparentDoubleSpinBox
+from ui.base_widgets.button import (DropDownPushButton, _PrimaryPushButton, ComboBox, Toggle, 
+                                    _ComboBox,_TransparentPushButton, _TransparentToolButton, 
+                                    _ToolButton, _ToggleToolButton)
 from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.window import Dialog, FileDialog
-from ui.base_widgets.color import ColorDropdown
-from ui.utils import get_path, isDark
+from ui.base_widgets.frame import Frame
+from ui.utils import get_path
 from plot.canvas import ExplorerCanvas
 from data_processing.utlis import check_float, check_integer
 
@@ -26,7 +28,6 @@ class TableModel(QAbstractTableModel):
         self.arrays = self._data.to_numpy()
         self.numRows = 100
         self.numColumns = 100
-        self.toggleDecor = False
    
     def data(self, index:QModelIndex, role=Qt.ItemDataRole.DisplayRole):
 
@@ -40,37 +41,8 @@ class TableModel(QAbstractTableModel):
         
         if role == Qt.ItemDataRole.DisplayRole:
             return value
-    
-        if self.toggleDecor:
-            value = str(value)
-            if value.lower() in ['true','false']:
-                background_color = QColor("#FFC4A4")
-            elif value == 'nan':
-                background_color = QColor("#FBA2D0")
-            elif check_integer(value):
-                background_color = QColor("#6C7EE1")
-            elif check_float(value):
-                background_color = QColor("#92B9E3")
-            else:
-                background_color = QColor("#C688EB")
-            
-            brightness = 0.2126*background_color.getRgb()[0]+ \
-                         0.7152*background_color.getRgb()[1]+ \
-                         0.0722*background_color.getRgb()[2]
-            if brightness >= 128: text_color = QColor("black")
-            else: text_color = QColor("white")
-
-            if role == Qt.ItemDataRole.ForegroundRole:
-                return QBrush(text_color)
-            elif role == Qt.ItemDataRole.BackgroundRole:
-                #return QGuiApplication.palette().base()
-                return QBrush(background_color)
             
         return 
-
-    def toggleDecoration(self, toggle=False):
-        self.toggleDecor = toggle
-        self.layoutChanged.emit()
       
     def canFetchMore(self, index:QModelIndex):
 
@@ -136,12 +108,15 @@ class TableModel(QAbstractTableModel):
     def getArray(self) -> np.ndarray:
         return self.arrays
            
-class TableView (QWidget):
+class TableView(QWidget):
     def __init__(self, data: pd.DataFrame, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Data")
-        self.model = TableModel(data, self.parent())
+        self.model = TableModel(data, parent)
+        self.filter = QSortFilterProxyModel()
+        self.filter.setFilterKeyColumn(-1) # filter all columns.
+        self.filter.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.data = data
         
         self.clipboard = QApplication.clipboard()
@@ -153,26 +128,29 @@ class TableView (QWidget):
 
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        #self.view.setStyleSheet("QWidget {background:white}")
 
-        self.hlayout = QHBoxLayout()
-        self.vlayout.addLayout(self.hlayout)
-        self.decorate = Toggle(text="Decoration")
-        self.decorate.button.setChecked(False)
-        self.decorate.button.checkedChanged.connect(lambda c: self.model.toggleDecoration(c))
-        self.hlayout.addWidget(self.decorate)
-        self.savedata = _TransparentPushButton()
-        self.savedata.setText('Save data')
-        self.savedata.pressed.connect(self.save_data)
+        frame = Frame()
+        self.hlayout = QHBoxLayout(frame)
+        self.vlayout.addWidget(frame)
+        header = _ToggleToolButton(icon='header.png')
+        header.setToolTip('Toggle header')
+        header.setChecked(True)
+        header.toggled.connect(self.toggle_header)
+        self.hlayout.addWidget(header)
+        self.savedata = _ToolButton(icon='save.png')
+        self.savedata.setToolTip('Export data as csv')
+        self.savedata.clicked.connect(self.save_data)
         self.hlayout.addWidget(self.savedata)
-        self.hlayout.addStretch()
+        self.search_box = _SearchBox()
+        self.search_box.setPlaceholderText('Search from data')
+        self.search_box.textChanged.connect(lambda string: self.filter.setFilterFixedString(string))
+        self.hlayout.addWidget(self.search_box)
         self.time_update = BodyLabel()
         self.hlayout.addWidget(self.time_update)
-        
+
         self.view = QTableView(self.parent())
         self.update_data(self.data)
         self.vlayout.addWidget(self.view)
-        #view.setVerticalScrollBar(widget)
         
         layout1 = QHBoxLayout()
         self.vlayout.addLayout(layout1)
@@ -242,7 +220,7 @@ class TableView (QWidget):
         _unique_values = _values[_count == 1]
 
         string = list()
-        for value in self.selected_values:
+        for value in self.selected_values.flatten():
             if value.lower() in ['true','false']:
                 string.append('boolean')
             elif value == 'nan':
@@ -270,7 +248,8 @@ class TableView (QWidget):
     def update_data (self, data: pd.DataFrame):
         self.data = data
         self.model = TableModel(data, self.parent())
-        self.view.setModel(self.model)
+        self.filter.setSourceModel(self.model)
+        self.view.setModel(self.filter)
         self.view.selectionModel().selectionChanged.connect(self.on_selection)
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         self.time_update.setText(f"Updated: {time}")
@@ -280,8 +259,12 @@ class TableView (QWidget):
         if dialog.exec():
             file = dialog.selectedFiles()[0]
             self.data.to_csv(file)
+    
+    def toggle_header(self, checked:bool):
+        self.view.horizontalHeader().setVisible(checked)
+        self.view.verticalHeader().setVisible(checked)          
             
-class ExploreView (QWidget):
+class ExploreView(QWidget):
     def __init__(self, data, parent=None):
         super().__init__(parent)
 
@@ -291,7 +274,6 @@ class ExploreView (QWidget):
         self.nan_plot = ["NaNs matrix","NaNs bar"]
 
         self.grouplist = []
-        self.config = dict()
         
         self.initUI()
         self.initMenu()
@@ -316,6 +298,7 @@ class ExploreView (QWidget):
         self.vlayout.addWidget(self.view)
         self.plot_widget = QWidget()
         self.plot_selection = QHBoxLayout(self.plot_widget)
+        self.plot_selection.setContentsMargins(0,0,0,0)
         self.plot_selection.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.vlayout.addWidget(self.plot_widget)
         self.btn = DropDownPushButton(text='Plot type', parent=self)
@@ -328,10 +311,6 @@ class ExploreView (QWidget):
         self.plot_selection.addWidget(self.varx)
         self.vary = ComboBox(text="Y")
         self.plot_selection.addWidget(self.vary)
-        self.plot_config = _TransparentPushButton(text='Config')
-        self.plot_config.pressed.connect(self.open_plotConfig)
-        self.plot_selection.addWidget(self.plot_config)
-        self.plot_selection.addWidget(self.plot_config)
         self.plot_btn = _PrimaryPushButton(self)
         self.plot_btn.setText("Apply")
         self.plot_btn.pressed.connect(self.update_plot)
@@ -485,8 +464,8 @@ class ExploreView (QWidget):
                 self.canvas.figure.clear()
                 ax = self.canvas.figure.add_subplot()
                 
-                if plottype == "NaNs matrix": missingno.matrix(df=self.data,fontsize=6,ax=ax, **self.config)
-                elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
+                if plottype == "NaNs matrix": missingno.matrix(df=self.data,fontsize=10,sparkline=False,ax=ax)
+                elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=10,ax=ax)
                 elif plottype == "histogram": self.data.hist(varx, ax=ax)
                 elif plottype == "boxplot": self.data.boxplot(varx, ax=ax)
                 elif plottype == "density": self.data[varx].plot.density(ax=ax)
@@ -499,7 +478,7 @@ class ExploreView (QWidget):
                 elif plottype == "heatmap": ax.imshow(self.data.select_dtypes(include="number"), aspect="auto")
                 elif plottype == "correlation": ax.imshow(self.data.corr(numeric_only=True), aspect="auto")
                 elif plottype == "covariance": ax.imshow(self.data.cov(numeric_only=True), aspect="auto")
-            
+                
             #     xticks = []
             #     for ind, label in enumerate(ax.get_xticklabels()):
             #         # keep the maximum number of xticks = 10
@@ -513,70 +492,18 @@ class ExploreView (QWidget):
         except Exception as e:
             logger.exception(e)
     
-    def open_plotConfig(self):
-        dialog = Dialog(title='Plot configuration', parent=self.parent())
-        plottype = self.btn.button.text()
-        config = dict()
-
-        if plottype == "NaNs matrix": 
-            n = TransparentSpinBox(
-                text='Columns',
-                text2='Maximum number of columns to include',
-                getter=lambda: self.config.get('n') if self.config.get('n') else 0,
-                setter=lambda value: config.update(n=value),
-                layout=dialog.main_layout
-            )
-            p = TransparentSpinBox(
-                text='Percentage',
-                text2='Maximum percentage fill of the columns',
-                getter=lambda: self.config.get('p') if self.config.get('p') else 0,
-                setter=lambda value: config.update(p=value),
-                layout=dialog.main_layout
-            )
-            sort = TransparentComboBox(
-                items=["ascending","descending"],
-                text='Sort',
-                text2='The row sort order to apply',
-                getter=lambda: self.config.get('sort') if self.config.get('sort') else 'ascending',
-                setter=lambda value: config.update(sort=value),
-                layout=dialog.main_layout
-            )
-            color = ColorDropdown(
-                text='Color',
-                text2='The color of the filled columns',
-                getter=lambda: self.config.get('color') if self.config.get('color') else '#404040',
-                setter=lambda value: config.update(color=value),
-                layout=dialog.main_layout,
-            )
-
-        # elif plottype == "NaNs bar": missingno.bar(df=self.data,fontsize=6,ax=ax)
-        # elif plottype == "histogram": self.data.hist(varx, ax=ax)
-        # elif plottype == "boxplot": self.data.boxplot(varx, ax=ax)
-        # elif plottype == "density": self.data[varx].plot.density(ax=ax)
-        # elif plottype == "kde": self.data[varx].plot.kde(ax=ax)
-        # elif plottype == "line": self.data.plot.line(varx, vary, ax=ax)
-        # elif plottype == "scatter": self.data.plot.scatter(varx, vary, ax=ax)
-        # elif plottype == "bar": self.data.plot.bar(varx, vary, ax=ax)
-        # elif plottype == "area": self.data.plot.area(varx, vary, ax=ax)
-        # elif plottype == "hexbin": self.data.plot.hexbin(varx, vary, ax=ax)
-        # elif plottype == "heatmap": ax.imshow(self.data.select_dtypes(include="number"), aspect="auto")
-        # elif plottype == "correlation": ax.imshow(self.data.corr(numeric_only=True), aspect="auto")
-        # elif plottype == "covariance": ax.imshow(self.data.cov(numeric_only=True), aspect="auto")
-
-        if dialog.exec():
-            self.config = config
-            print(self.config)
-            self.update_plot()
-        
-class DataView (QWidget):
+class DataView(QMainWindow):
     def __init__(self, data, parent=None):
         super().__init__(parent)
-        
+    
         self.setWindowTitle("Data")
-        layout = QHBoxLayout(self)
         self.setWindowIcon(QIcon(os.path.join(get_path(),"ui","icons","data-window.png")))
-        screen = QGuiApplication.primaryScreen().geometry().getRect()
+        # screen = QGuiApplication.primaryScreen().geometry().getRect()
         #self.setMinimumSize(int(screen[2]*0.5), int(screen[3]*0.5))
+
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        self.setCentralWidget(widget)
         
         self.tableview = TableView(data, parent)
         layout.addWidget(self.tableview)
@@ -588,7 +515,7 @@ class DataView (QWidget):
         self.tableview.update_data(data)
         self.explore.update_data(data)
 
-class DataSelection (QWidget):
+class DataSelection(QDialog):
     sig = Signal(str)
     def __init__(self, data, parent=None):
         super().__init__(parent)

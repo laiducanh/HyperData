@@ -22,3 +22,23 @@ ListWidget::item:selected, TreeWidget::item:selected {
     background-color: --THEMECOLOR-1.0;
     color: white;
 }
+
+QHeaderView, QHeaderView::section, QTableView QTableCornerButton::section {
+	background: rgba(220, 220, 220, 0.8);
+}
+
+QHeaderView::section {
+	color: rgba(67, 67, 67, 1);
+	padding: 1ex;
+}
+
+QTableView::item {
+	color: rgba(67, 67, 67, 1);
+    background-color: white;
+    border: none;
+}
+
+QTableView::item:selected {
+	color: white;
+	background-color: --THEMECOLOR-1.0;
+}

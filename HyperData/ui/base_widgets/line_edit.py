@@ -60,22 +60,23 @@ class _SearchBox (_LineEdit):
         self.lookup = data_lookup
     
     def search_func (self):
-        s = self.text()
-        for i in range(self.lookup.topLevelItemCount()):
-            self.lookup.topLevelItem(i).setHidden(True)
-       
-        for i in range(self.lookup.topLevelItemCount()):
-            if s.lower() in self.lookup.topLevelItem(i).text(0).lower():
-                self.lookup.topLevelItem(i).setHidden(False)
-                for j in range(self.lookup.topLevelItem(i).childCount()):
-                    self.lookup.topLevelItem(i).child(j).setHidden(False)
-            else:
-                for j in range(self.lookup.topLevelItem(i).childCount()):
-                    if s.lower() in self.lookup.topLevelItem(i).child(j).text(0).lower():
-                        self.lookup.topLevelItem(i).setHidden(False)
+        if self.lookup:
+            s = self.text()
+            for i in range(self.lookup.topLevelItemCount()):
+                self.lookup.topLevelItem(i).setHidden(True)
+        
+            for i in range(self.lookup.topLevelItemCount()):
+                if s.lower() in self.lookup.topLevelItem(i).text(0).lower():
+                    self.lookup.topLevelItem(i).setHidden(False)
+                    for j in range(self.lookup.topLevelItem(i).childCount()):
                         self.lookup.topLevelItem(i).child(j).setHidden(False)
-                    else:
-                        self.lookup.topLevelItem(i).child(j).setHidden(True)
+                else:
+                    for j in range(self.lookup.topLevelItem(i).childCount()):
+                        if s.lower() in self.lookup.topLevelItem(i).child(j).text(0).lower():
+                            self.lookup.topLevelItem(i).setHidden(False)
+                            self.lookup.topLevelItem(i).child(j).setHidden(False)
+                        else:
+                            self.lookup.topLevelItem(i).child(j).setHidden(True)
 
     def keyPressEvent(self, a0: QKeyEvent) -> None:
         if a0.key() == Qt.Key.Key_Escape:

@@ -165,6 +165,9 @@ if os.path.exists(configFile):
     if config["version"] == tmp_config["version"]:
         config.update(**tmp_config)
 
+# reset save_path whenver starting up
+config['save_path'] = ''
+
 logging.getLogger('matplotlib.font_manager').disabled = True
 # Create and configure logger
 logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='w')

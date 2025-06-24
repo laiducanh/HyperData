@@ -142,10 +142,10 @@ class Widget2D_4input (QWidget):
 
     def open_data (self, which_input):
 
-        self.dataview = DataSelection(self.node.input_sockets[0].socket_data)
+        self.dataview = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
-        self.dataview.show()
+        self.dataview.exec()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
@@ -239,10 +239,10 @@ class Widget3D_4input (QWidget):
             self.sig.emit()
 
     def open_data (self, which_input):
-        self.dataview = DataSelection(self.node.input_sockets[0].socket_data)
+        self.dataview = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
-        self.dataview.show()
+        self.dataview.exec()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
