@@ -63,9 +63,9 @@ class GeneralPlot(ScrollArea):
         self.vlayout.addWidget(self.legend)
         self.vlayout.addWidget(SeparateHLine())
 
-        # self.addlayout = QVBoxLayout()
-        # self.addlayout.setContentsMargins(0,0,0,0)
-        # self.vlayout.addLayout(self.addlayout)
+        self.addlayout = QVBoxLayout()
+        self.addlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.addLayout(self.addlayout)
 
         clip = Toggle(
             text="Clipping",
