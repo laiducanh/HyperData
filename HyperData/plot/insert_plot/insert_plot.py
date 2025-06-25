@@ -243,8 +243,6 @@ class InsertPlot(QMainWindow):
                 "Line": ['3d line','3d step','3d stem'],
                 "Column": ['3d column'],
                 "Scatter": ['3d scatter','3d bubble'],
-                "Pie": ['pie','doughnut'],
-                "Statistics": ['histogram','stacked histogram','boxplot','violinplot'],
                 "Surface": ['3d surface','triangular 3d surface']
             }
         else:

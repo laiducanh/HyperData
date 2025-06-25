@@ -69,17 +69,17 @@ class PlotView(QMainWindow):
         if self.plot3d:
             self.treeview_data = {
                 "Manage graph":["Add graph"],
-                "Label":["Data annotation"],
-                "Objects":["X Axis","Y Axis","Z Axis","XY Pane","YZ Pane","XZ Pane",
-                           "Title","Legend"]
+                "Axis":["X Axis","Y Axis","Z Axis"],
+                "Pane":["XY Pane","YZ Pane","XZ Pane"],
+                "Label":["Title","Legend","Data annotation"],
             }
 
         else:
             self.treeview_data = {
                 "Manage graph":["Add graph"],
-                "Label":["Data annotation"],
-                "Objects":["Bottom Axis","Left Axis","Top Axis","Right Axis",
-                           "Axes","Title","Legend"],
+                "Axis":["Bottom Axis","Left Axis","Top Axis","Right Axis"],
+                "Figure":['Grid and Pane'],
+                "Label":["Title", "Legend","Data annotation"]
             }
 
         self.sidebar = QWidget()
@@ -178,7 +178,7 @@ class PlotView(QMainWindow):
             self.xpane = Axes3D('YZ Pane', self.canvas, self.parent())
             self.xpane.exec()
         
-        elif text == 'axes':
+        elif text == 'grid and pane':
             self.axes  = Axes2D(self.canvas, self.parent())
             self.axes.exec()
         
