@@ -39,13 +39,14 @@ class WidgetPie (QWidget):
     def open_data (self):
         self.data_window = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.data_window.update_data(self.node.input_sockets[0].socket_data)
-        self.data_window.exec()
+        self.data_window.show()
         self.data_window.sig.connect(lambda s: self.assign_data(s))
 
     def assign_data (self, text):
         self.input1.setCurrentText(text)
         self.input = [self.input1.currentText()] 
         self.sig.emit()
+        self.data_window.close()
 
 class Pie(WidgetPie):
     ''' '''

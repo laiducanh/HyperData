@@ -31,7 +31,7 @@ DEBUG = False
 
 class PlotView(QMainWindow):
     sig_back_to_grScene = Signal()
-    def __init__(self, node:NodeGraphicsNode, canvas:Canvas, parent=None):
+    def __init__(self, node:NodeGraphicsNode, canvas:Canvas, parent:QMainWindow=None):
         super().__init__(parent)
         
         ### 
@@ -50,7 +50,7 @@ class PlotView(QMainWindow):
         ### Initialize UI components
         self.setup_visual()
         self.setup_sidebar()
-        
+
         ###
         if GLOBAL_DEBUG or DEBUG: self.debug()
 
@@ -241,8 +241,8 @@ class PlotView(QMainWindow):
         
         elif key.key() == Qt.Key.Key_F and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.save_figure()
-
-        super().keyPressEvent(key)
+        else:
+            super().keyPressEvent(key)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         dock_area = config["dock area"]

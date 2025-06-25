@@ -297,7 +297,7 @@ class InsertPlot(QMainWindow):
         if plot_type not in self.type_list.keys():
             if not plot_gid: plot_gid = f"graph {self.plot_idx}"
         
-            newplot = NewPlot(plot_gid, plot_type, self.canvas, self.node, self.plot3d)
+            newplot = NewPlot(plot_gid, plot_type, self.canvas, self.node, self.plot3d, self.parent())
             self.plot_list.append(newplot)
             newplot.sig.connect(self.sig.emit)
             newplot.sig_delete.connect(self.delete_plot)

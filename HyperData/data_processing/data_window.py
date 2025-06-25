@@ -518,7 +518,7 @@ class DataView(QMainWindow):
 class DataSelection(QDialog):
     sig = Signal(str)
     def __init__(self, data, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         
         self.setWindowTitle("Data")
         layout = QVBoxLayout(self)

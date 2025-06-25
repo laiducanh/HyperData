@@ -127,7 +127,7 @@ class Widget2D_2input (QWidget):
         self.dataview = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
-        self.dataview.exec()
+        self.dataview.show()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
@@ -139,6 +139,7 @@ class Widget2D_2input (QWidget):
 
         self.input_func()
         self.dataview.close()
+        self.dataview.deleteLater()
 
 class Line2D(Widget2D_2input):
     ''' '''
