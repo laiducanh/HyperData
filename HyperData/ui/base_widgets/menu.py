@@ -8,10 +8,10 @@ class Menu (QMenu):
     def __init__(self, text:str=None, parent=None):
         super().__init__(title=text, parent=parent)
 
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | 
-                            Qt.WindowType.Popup | 
-                            Qt.WindowType.NoDropShadowWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # self.setWindowFlags(Qt.WindowType.FramelessWindowHint | 
+        #                     Qt.WindowType.Popup | 
+        #                     Qt.WindowType.NoDropShadowWindowHint)
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.icon_path = None
     
