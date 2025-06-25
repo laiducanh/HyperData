@@ -7,7 +7,7 @@ from ui.base_widgets.frame import ScrollArea
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
-from matplotlib import ticker, lines, colors
+from matplotlib import ticker, lines, colors, rcParams
 from matplotlib.axis import Axis
 from plot.canvas import Canvas
 
@@ -134,25 +134,27 @@ class TickBase2(TickBase):
     
     def initUI(self):
 
-        self.tickinterval = TransparentComboBox(
-            items=['Tick Interval','Tick Values'],
+        self.ticklocator = TransparentComboBox(
+            items=['Auto', 'Tick Interval','Tick Values', 'None'],
             text='Type',
-            setter=self.set_tickvalues,
+            setter=self.set_ticklocator,
+            getter=self.get_ticklocator,
             layout=self.vlayout
         )
 
         self.value = LineEdit(
             text='Tick values',
             text2=f"Set {self.axis} axis' tick positions",
-            setter=self.set_tickvalues,
+            setter=self.set_ticklocator,
+            getter=self.get_tickvalues,
             layout=self.vlayout
         )
 
-        self.tick_label = LineEdit(
-            text  = 'Tick labels',
-            text2 = f"Set {self.axis} axis' {self.ticktype} tick labels",
-            setter=self.set_ticklabels,
-            PlaceholderText=self.get_ticklabels(),
+        self.label = Toggle(
+            text='Label',
+            text2=f"Toggle {self.axis} axis' {self.ticktype} tick label",
+            getter=self.get_label,
+            setter=self.set_label,
             layout=self.vlayout
         )
 
@@ -203,40 +205,88 @@ class TickBase2(TickBase):
             layout=self.vlayout
         )
     
-    def set_tickvalues (self, value:str):
+    def set_ticklocator(self):
         try:
-            if self.tickinterval.button.currentText() == 'Tick Interval':
-                if self.ticktype == 'major': 
-                    self.obj.set_major_locator(ticker.MultipleLocator(float(value)))
-                else: 
-                    self.obj.set_minor_locator(ticker.MultipleLocator(float(value)))
-            else:
-                value = [float(i) for i in value.split(',')]
-                if self.ticktype == 'major': 
-                    self.obj.set_ticks(value)
-                else: 
-                    self.obj.set_ticks(value,minor=True)
+            locator = self.ticklocator.button.currentText()
+            if locator == 'Auto':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.AutoLocator())
+                    self.obj.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
+                else:
+                    self.obj.set_minor_locator(ticker.AutoMinorLocator())
+                    self.obj.set_minor_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
+            elif locator == 'Tick Interval':
+                value = float(self.value.button.text())
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.MultipleLocator(value))
+                    self.obj.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
+                else:
+                    self.obj.set_minor_locator(ticker.MultipleLocator(value))
+                    self.obj.set_minor_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
+            elif locator == 'Tick Values':
+                value = [float(i) for i in self.value.button.text().split(',')]
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.FixedLocator(value))
+                    self.obj.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
+                else:
+                    self.obj.set_minor_locator(ticker.FixedLocator(value))
+                    self.obj.set_minor_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
+            elif locator == 'None':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.NullLocator())
+                    self.obj.set_major_formatter(ticker.NullFormatter())
+                else:
+                    self.obj.set_minor_locator(ticker.NullLocator())
+                    self.obj.set_minor_formatter(ticker.NullFormatter())            
             self.canvas.draw_idle()
-        except Exception as e: logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
 
-    def set_ticklabels (self, value:str):
+    def get_ticklocator(self) -> str:
         try:
-            value = value.split(',')
-            if self.ticktype == 'major': self.obj.set_ticklabels(value)
-            else: self.obj.set_ticklabels(value,minor=True)
-            self.canvas.draw_idle()
-        except:pass
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+           
+            if isinstance(locator, (ticker.AutoLocator, ticker.AutoMinorLocator)):
+                return 'Auto'
+            elif isinstance(locator, ticker.MultipleLocator):
+                return 'Tick Interval'
+            elif isinstance(locator, ticker.FixedLocator):
+                return 'Tick Values'
+            elif isinstance(locator, ticker.NullLocator):
+                return 'None'
+        except Exception as e:
+            logger.exception(e)
     
-    def get_ticklabels(self):
-        
-        label_list = list()
-        if self.ticktype == 'major':
-            label_list = [i.get_text() for i in self.obj.get_majorticklabels()]
-
-        else:
-            label_list = [i.get_text() for i in self.obj.get_minorticklabels()]
+    def get_tickvalues(self):
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
             
-        return ", ".join(label_list)
+            if isinstance(locator, (ticker.AutoLocator, ticker.AutoMinorLocator)):
+                return
+            elif isinstance(locator, ticker.MultipleLocator):
+                return str(locator._edge.step)
+            elif isinstance(locator, ticker.FixedLocator):
+                return ', '.join(str(x) for x in locator.locs)
+            elif isinstance(locator, ticker.NullLocator):
+                return 
+        except Exception as e:
+            logger.exception(e)
+    
+    def set_label(self, value:bool):
+        try:
+            self.obj.set_tick_params(which=self.ticktype, labelleft=value)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_label(self) -> bool:
+        return self.obj.get_tick_params(which=self.ticktype)['labelleft']
 
     def set_tick_position(self, value):
         self.obj.set_ticks_position(value)
@@ -250,50 +300,60 @@ class TickBase2(TickBase):
         self.canvas.draw_idle()
     
     def get_labelsize (self):
-        if self.ticktype == 'major': return self.obj.get_majorticklabels()[0].get_fontsize()
-        else: 
-            try: return self.obj.get_minorticklabels()[0].get_fontsize() 
-            except: return 7
+        try:
+            if self.ticktype == 'major': 
+                return self.obj.get_majorticklabels()[0].get_fontsize()
+            else: 
+                return self.obj.get_minorticklabels()[0].get_fontsize() 
+        except: return self.obj.get_majorticklabels()[0].get_fontsize()
     
     def set_labelcolor(self, color):
         self.obj.set_tick_params(which=self.ticktype,labelcolor=color)
         self.canvas.draw_idle()
     
     def get_labelcolor(self):
-        if self.ticktype == 'major': return self.obj.get_majorticklabels()[0].get_color()
-        else: 
-            try: return self.obj.get_minorticklabels()[0].get_color()
-            except: return "black"
+        try:
+            if self.ticktype == 'major': 
+                return self.obj.get_majorticklabels()[0].get_color()
+            else: 
+                return self.obj.get_minorticklabels()[0].get_color()
+        except: return self.get_tickcolor()
 
     def set_tickcolor(self, color):
         self.obj.set_tick_params(which=self.ticktype,color=color)
         self.canvas.draw_idle()
     
     def get_tickcolor(self):
-        if self.ticktype == 'major': return self.obj.get_majorticklines()[0].get_color()
-        else: 
-            try: return self.obj.get_minorticklines()[0].get_color()
-            except: return "black"
+        try:
+            if self.ticktype == 'major': 
+                return self.obj.get_majorticklines()[0].get_color()
+            else: 
+                return self.obj.get_minorticklines()[0].get_color()
+        except: return rcParams['xtick.color']
     
     def set_labelrotation (self,value):
         self.obj.set_tick_params(which=self.ticktype,labelrotation=value)
         self.canvas.draw_idle()
     
     def get_labelrotation (self):
-        if self.ticktype == 'major': return self.obj.get_majorticklabels()[0].get_rotation()
-        else: 
-            try: return self.obj.get_minorticklabels()[0].get_rotation()
-            except: return 0
+        try:
+            if self.ticktype == 'major': 
+                return self.obj.get_majorticklabels()[0].get_rotation()
+            else: 
+                return self.obj.get_minorticklabels()[0].get_rotation()
+        except: return 0
     
     def set_tickpadding (self,value):
         self.obj.set_tick_params(which=self.ticktype,pad=value)
         self.canvas.draw_idle()
     
     def get_tickpadding (self):
-        if self.ticktype == 'major': return self.obj.get_major_ticks()[0].get_tick_padding()
-        else: 
-            try: return self.obj.get_minor_ticks()[0].get_tick_padding()
-            except: return 0
+        try:
+            if self.ticktype == 'major': 
+                return self.obj.get_major_ticks()[0].get_tick_padding()
+            else: 
+                return self.obj.get_minor_ticks()[0].get_tick_padding()
+        except: return rcParams[f'xtick.{self.ticktype}.pad']
 
 class SpineBase(ScrollArea):
     def __init__(self, axis:str, canvas: Canvas, parent=None):

@@ -42,19 +42,22 @@ def process_1d_data (input:str, data:pandas.DataFrame):
             try: 
                 _d = eval(i, {"numpy":numpy, "np": numpy, "math":math})
             except:
-                # process input
-                start_point = i.split(":")[0]
-                end_point = i.split(":")[-1]
-                start_col = list_name.index(''.join(re.findall(r'[a-zA-Z]', start_point)).lower())
-                start_row = int(''.join(re.findall(r'\d', start_point))) - 1
-                end_col = list_name.index(''.join(re.findall(r'[a-zA-Z]', end_point)).lower()) + 1
-                end_row = int(''.join(re.findall(r'\d', end_point)))
+                try:
+                    # process input
+                    start_point = i.split(":")[0]
+                    end_point = i.split(":")[-1]
+                    start_col = list_name.index(''.join(re.findall(r'[a-zA-Z]', start_point)).lower())
+                    start_row = int(''.join(re.findall(r'\d', start_point))) - 1
+                    end_col = list_name.index(''.join(re.findall(r'[a-zA-Z]', end_point)).lower()) + 1
+                    end_row = int(''.join(re.findall(r'\d', end_point)))
 
-                _d = data.iloc[start_row : end_row, start_col : end_col].to_numpy()
-            
+                    _d = data.iloc[start_row : end_row, start_col : end_col].to_numpy()
+                except:
+                    _d = str(i)
+   
             data_input.append(_d)
             data_input = list(numpy.ravel(data_input))
-
+   
     except Exception as e: 
         logger.exception("Cannot process input string.")
         logger.exception(e)
