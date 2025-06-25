@@ -62,6 +62,7 @@ class PlotView(QMainWindow):
         self.plot_visual.key_pressed.connect(self.keyPressEvent)
         self.plot_visual.save_figure.connect(self.save_figure)
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
+        self.plot_visual.mouse_released.connect(self.treeview_func)
         self.main_layout.addWidget(self.plot_visual)
     
     def setup_sidebar(self):
@@ -71,7 +72,7 @@ class PlotView(QMainWindow):
                 "Manage graph":["Add graph"],
                 "Axis":["X Axis","Y Axis","Z Axis"],
                 "Pane":["XY Pane","YZ Pane","XZ Pane"],
-                "Label":["Title","Legend","Data annotation"],
+                "Label":["Title","Legend","Data Annotation"],
             }
 
         else:
@@ -79,7 +80,7 @@ class PlotView(QMainWindow):
                 "Manage graph":["Add graph"],
                 "Axis":["Bottom Axis","Left Axis","Top Axis","Right Axis"],
                 "Figure":['Grid and Pane'],
-                "Label":["Title", "Legend","Data annotation"]
+                "Label":["Title", "Legend","Data Annotation"]
             }
 
         self.sidebar = QWidget()
@@ -106,7 +107,7 @@ class PlotView(QMainWindow):
         # self.sidebar_layout.addLayout(self.stackedlayout)
 
         self.treeview = TreeWidget()
-        self.treeview.itemPressed.connect(self.treeview_func)
+        self.treeview.itemPressed.connect(lambda item: self.treeview_func(item.text(0)))
         self.treeview.setData(self.treeview_data)
         self.sidebar_layout.addWidget(self.treeview)
         self.search_box.set_TreeView(self.treeview)
@@ -119,8 +120,8 @@ class PlotView(QMainWindow):
         self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
         self.insertplot.sig.connect(self.update_plotlist)
 
-    def treeview_func (self, item:QTreeWidgetItem):
-        text = item.text(0).lower()
+    def treeview_func (self, text:str):
+        text = text.lower()
         if text.startswith("graph"):
             plot_gid = text.split("/")[0].split(".")[0]
             # _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
@@ -234,10 +235,6 @@ class PlotView(QMainWindow):
 
         if key.key() == Qt.Key.Key_Slash:
             self.search_box.setFocus()
-        
-        elif key.key() == Qt.Key.Key_M:
-            point_to_show = self.mapToGlobal(self.plot_visual.scene().sceneRect().center().toPoint())
-            self.plot_visual.menu.exec(point_to_show)
         
         elif key.key() == Qt.Key.Key_N and key.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.sig_back_to_grScene.emit()

@@ -170,9 +170,6 @@ class GraphicsView (QGraphicsView):
     def Menu(self):
         self.menu.clear()
 
-        home = Action(text="&Home", shortcut="Ctrl+H", parent=self.menu)
-        home.triggered.connect(self.backtoHome.emit)
-        self.menu.addAction(home)
         nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
         nodeview.triggered.connect(self.backtoScene.emit)
         self.menu.addAction(nodeview)
@@ -194,43 +191,37 @@ class GraphicsView (QGraphicsView):
         _graph_list = list()
         for gid in set(plot_list):
             _graph_list.append(gid.title())
-        for text in ["Manage Graph"] + _graph_list:
+        for text in ["Add Graph"] + _graph_list:
             action = Action(text=text, parent=graph)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
             graph.addAction(action)
         
-        tick = Menu(text="&Tick", parent=self.menu)
-        self.menu.addMenu(tick)
+        axis = Menu(text="&Axis", parent=self.menu)
+        self.menu.addMenu(axis)
         if isinstance(self.canvas.axes, Axes3D): 
-            tick_list = ["Tick &X3D", "Tick &Y3D", "Tick &Z3D"]
+            axis_list = ["&X Axis","&Y Axis","&Z Axis"]
         else:
-            tick_list = ["Tick &Bottom", "Tick &Left", "Tick &Top", "Tick &Right"]
-        for text in tick_list:
-            action = Action(text=text, parent=tick)
+            axis_list = ["&Bottom Axis","&Left Axis","&Top Axis","&Right Axis"]
+        for text in axis_list:
+            action = Action(text=text, parent=axis)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text.replace("&","")))
-            tick.addAction(action)
+            axis.addAction(action)
 
-        spine = Menu(text="&Spine", parent=self.menu)
-        self.menu.addMenu(spine)
-        if isinstance(self.canvas.axes, Axes3D):
-            spine_list = ["Spine &X3D", "Spine &Y3D", "Spine &Z3D"]
-        else: 
-            spine_list = ["Spine &Bottom", "Spine &Left", "Spine &Top", "Spine &Right"]
-        for text in spine_list:
-            action = Action(text=text, parent=spine)
-            action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text.replace("&","")))
-            spine.addAction(action)
-        
-        figure = Menu(text="&Figure", parent=self.menu)
-        self.menu.addMenu(figure)
-        for text in ["Plot Size", "Grid"]:
-            action = Action(text=text, parent=figure)
-            action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
-            figure.addAction(action)
+        if isinstance(self.canvas, Canvas3D):
+            figure = Menu(text="&Pane", parent=self.menu)
+            self.menu.addMenu(figure)
+            for text in ["XY Pane","YZ Pane","XZ Pane"]:
+                action = Action(text=text, parent=figure)
+                action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
+                figure.addAction(action)
+        else:
+            figure = Action(text="&Figure", parent=self.menu)
+            figure.triggered.connect(lambda: self.mouse_released.emit('grid and pane'))
+            self.menu.addAction(figure)
 
         label = Menu(text="&Label", parent=self.menu)
         self.menu.addMenu(label)
-        for text in ["Title", "Axis Label", "Legend", "Data Annotation"]:
+        for text in ["Title", "Legend", "Data Annotation"]:
             action = Action(text=text, parent=label)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
             label.addAction(action)
@@ -484,7 +475,7 @@ class GraphicsView (QGraphicsView):
         
       
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        #self.key_pressed.emit(event)
+        self.key_pressed.emit(event)
         return super().keyPressEvent(event)
     
 class GraphicsViewMultiFig(GraphicsView):
