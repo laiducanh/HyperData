@@ -160,7 +160,7 @@ class Grid2D(ScrollArea):
                 color     = QColor(self.color.button.color).name(),
             )
         # Need to redraw grid after any changes
-            self.canvas.axes.grid(visible=False)
+            self.canvas.axes.grid(visible=False, which='both', axis='both')
             if self.visible.button.isChecked():
                 self.canvas.axes.grid(gid = "_grid", **self.canvas._config["grid"])
 
