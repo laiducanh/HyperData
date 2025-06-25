@@ -215,36 +215,33 @@ class TickBase2(TickBase):
     def set_ticklocator(self):
         try:
             locator = self.ticklocator.button.currentText()
+            self.obj.reset_ticks()
             if locator == 'Auto':
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.AutoLocator())
-                    self.obj.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
                 else:
                     self.obj.set_minor_locator(ticker.AutoMinorLocator())
-                    self.obj.set_minor_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
             elif locator == 'Tick Interval':
                 value = float(self.value.button.text())
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.MultipleLocator(value))
-                    self.obj.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
                 else:
                     self.obj.set_minor_locator(ticker.MultipleLocator(value))
-                    self.obj.set_minor_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
             elif locator == 'Tick Values':
                 value = [float(i) for i in self.value.button.text().split(',')]
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.FixedLocator(value))
-                    self.obj.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
                 else:
                     self.obj.set_minor_locator(ticker.FixedLocator(value))
-                    self.obj.set_minor_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:g}"))
             elif locator == 'None':
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.NullLocator())
-                    self.obj.set_major_formatter(ticker.NullFormatter())
                 else:
                     self.obj.set_minor_locator(ticker.NullLocator())
-                    self.obj.set_minor_formatter(ticker.NullFormatter())            
+            
+            self.obj.set_major_formatter(ticker.FixedFormatter([f'{x:g}' for x in self.obj.get_majorticklocs()]))
+            self.obj.set_minor_formatter(ticker.FixedFormatter([f'{x:g}' for x in self.obj.get_minorticklocs()]))
+         
             self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)
