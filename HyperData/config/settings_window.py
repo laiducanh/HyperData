@@ -5,13 +5,13 @@ from PySide6.QtCore import QSize, Qt
 import matplotlib.pyplot
 import matplotlib.style
 
-from ui.base_widgets.button import _ComboBox, ComboBox, Toggle
+from ui.base_widgets.button import _TransparentComboBox, TransparentComboBox, Toggle
 from ui.base_widgets.color import ColorPickerButton, ColorDropdown
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.list import ListWidget
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import TransparentSpinBox
 from ui.utils import get_path
 from config.settings import config
 import os, darkdetect, re, matplotlib, itertools, cycler, numpy
@@ -34,7 +34,7 @@ def set_stylesheet():
             try: widget._update()
             except: pass
 
-class Theme(ComboBox):
+class Theme(TransparentComboBox):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent=parent)
 
@@ -72,7 +72,7 @@ class ThemeColor(ColorDropdown):
         return config["themecolor"]
 
 
-class DockWidget_Position(ComboBox):
+class DockWidget_Position(TransparentComboBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -95,7 +95,7 @@ class Figure_Tooltip(Toggle):
     def setTooltip(self, checked):
         config["plot_tooltip"] = checked
 
-class Figure_Dpi(SpinBox):
+class Figure_Dpi(TransparentSpinBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -109,7 +109,7 @@ class Figure_Dpi(SpinBox):
     def setDPI(self, value:int):
         config['plot_dpi'] = value
 
-class Figure_Style(ComboBox):
+class Figure_Style(TransparentComboBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -166,7 +166,7 @@ class Figure_Colors(Frame):
         layout1 = QHBoxLayout()
         layout.addLayout(layout1)
         layout1.addWidget(BodyLabel("Color Palette"))
-        self._palette = _ComboBox(items=self.palette_dict.keys())
+        self._palette = _TransparentComboBox(items=self.palette_dict.keys())
         self._palette.setCurrentText("custom")
         for key, value in self.palette_dict.items():
             if config["plot_palette"] == value:

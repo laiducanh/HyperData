@@ -141,6 +141,7 @@ class GraphicsView (QGraphicsView):
         widget_layout.addWidget(self.zoom_slider)
 
         if isinstance(canvas, Canvas3D):
+            widget_layout.addSpacing(10)
             widget_layout.addWidget(BodyLabel('Elevation angle'))
             self.elev_btn = _TransparentDoubleSpinBox(
                 min=-360, max=360, step=10,
@@ -235,8 +236,8 @@ class GraphicsView (QGraphicsView):
             label.addAction(action)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        self.mouse_position = self.mapToScene(event.pos())
-        if self.mouse_position.y() > self.viewport().size().height()-40:
+        self.mouse_position = self.mapToScene(event.pos())        
+        if self.mouse_position.y() > self.widget_item.pos().y():
             self.widget_item.setOpacity(1)
         else: self.widget_item.setOpacity(0.4)
 
@@ -476,7 +477,7 @@ class GraphicsView (QGraphicsView):
         self.canvas.resize(int(width), int(height))
         self.plotview.setPos(size.width()/2-width/2,size.height()/2-height/2)
         if isinstance(self.canvas, Canvas3D):
-            self.widget_item.setPos(20, size.height()-70)
+            self.widget_item.setPos(20, size.height()-50)
         else:
             self.widget_item.setPos(20, size.height()-40)
         self.setSceneRect(0,0,size.width(),size.height())

@@ -84,11 +84,11 @@ class PlotView(QMainWindow):
 
         self.sidebar = QWidget()
         self.sidebar_layout = QVBoxLayout()
-        self.sidebar_layout.setContentsMargins(0,0,0,0)
+        # self.sidebar_layout.setContentsMargins(0,0,0,0)
         self.sidebar.setLayout(self.sidebar_layout)
 
         static_layout = QHBoxLayout()
-        static_layout.setContentsMargins(10,0,10,15)
+        # static_layout.setContentsMargins(10,0,10,15)
         self.sidebar_layout.addLayout(static_layout)
 
         self.graphicscreen_btn = _TransparentToolButton(
