@@ -10,6 +10,9 @@ class _SpinBox (QSpinBox):
                  layout:QLayout=None, parent=None):
         super().__init__(parent)
 
+        self.setter = setter
+        self.getter = getter
+
         self.setRange(min, max)
         self.setSingleStep(step)
         if getter: self.setValue(getter())
@@ -23,6 +26,9 @@ class _DoubleSpinBox (QDoubleSpinBox):
     def __init__(self, min:int=0, max:int=100, step:int=1, getter:Callable=None, setter:Callable=None, 
                  layout:QLayout=None, parent=None):
         super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
 
         self.setRange(min, max)
         self.setSingleStep(step)

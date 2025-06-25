@@ -1,26 +1,19 @@
 from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QStyleOptionGraphicsItem, QGraphicsTextItem,
-                             QWidget, QGraphicsItem, QGraphicsProxyWidget)
+                             QWidget, QGraphicsItem, QGraphicsProxyWidget, QHBoxLayout)
 from PySide6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, 
-                         QBrush, QTextOption, QCursor)
+                         QBrush, QTextOption)
 from PySide6.QtCore import QRectF, Signal, Qt
-from matplotlib.axes import Axes
-import matplotlib.axis
-import matplotlib.backend_tools
-import matplotlib.collections
-import matplotlib.container
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection, EventCollection, QuadMesh
-from matplotlib.widgets import Cursor
 from matplotlib.artist import Artist
-from matplotlib.text import Text
-from matplotlib.image import AxesImage
-from plot.canvas import Canvas
+from plot.canvas import Canvas, Canvas3D
 import matplotlib, math
 import numpy as np
 from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from ui.base_widgets.spinbox import _Slider
+from ui.base_widgets.spinbox import _Slider, _TransparentDoubleSpinBox
+from ui.base_widgets.text import BodyLabel
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
@@ -138,11 +131,40 @@ class GraphicsView (QGraphicsView):
         self.canvas.mpl_connect('figure_enter_event', self.mpl_enterFigure)
         self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
 
+        widget = QWidget()
+        widget.setStyleSheet("background-color:transparent;")
+        widget_layout = QHBoxLayout(widget)
+
+        widget_layout.addWidget(BodyLabel('Zoom'))
         self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
         self.zoom_slider.setValue(100)
-        self.zoom_slider.setStyleSheet("background-color:transparent;")
-        self.zoom_item = WidgetItem(self.zoom_slider)
-        self._scene.addItem(self.zoom_item)
+        widget_layout.addWidget(self.zoom_slider)
+
+        if isinstance(canvas, Canvas3D):
+            widget_layout.addWidget(BodyLabel('Elevation angle'))
+            self.elev_btn = _TransparentDoubleSpinBox(
+                min=-360, max=360, step=10,
+                getter=lambda: self.canvas.axes.elev,
+                setter=self.view3d_onChange,
+                layout=widget_layout
+            )
+            widget_layout.addWidget(BodyLabel('Azimuthal angle'))
+            self.azim_btn = _TransparentDoubleSpinBox(
+                min=-360, max=360, step=10,
+                getter=lambda: self.canvas.axes.azim,
+                setter=self.view3d_onChange,
+                layout=widget_layout
+            )
+            widget_layout.addWidget(BodyLabel('Roll angle'))
+            self.roll_btn = _TransparentDoubleSpinBox(
+                min=-360, max=360, step=10,
+                getter=lambda: self.canvas.axes.roll,
+                setter=self.view3d_onChange,
+                layout=widget_layout
+            )      
+        
+        self.widget_item = WidgetItem(widget)
+        self._scene.addItem(self.widget_item)
 
     def Menu(self):
         self.menu.clear()
@@ -215,8 +237,8 @@ class GraphicsView (QGraphicsView):
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         self.mouse_position = self.mapToScene(event.pos())
         if self.mouse_position.y() > self.viewport().size().height()-40:
-            self.zoom_item.setOpacity(1)
-        else: self.zoom_item.setOpacity(0.4)
+            self.widget_item.setOpacity(1)
+        else: self.widget_item.setOpacity(0.4)
 
         return super().mouseMoveEvent(event)
     
@@ -355,8 +377,15 @@ class GraphicsView (QGraphicsView):
                 self.tooltip.remove() 
 
                 break
+
+    def view3d_onChange(self):
+        self.canvas.axes.view_init(
+            elev=self.elev_btn.value(), 
+            azim=self.azim_btn.value(), 
+            roll=self.roll_btn.value(),
+        )
+        self.canvas.draw_idle()
         
-    
     def save_mpl_bg(self, event=None):
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.figure.bbox)
         
@@ -381,6 +410,10 @@ class GraphicsView (QGraphicsView):
             
         self.canvas.blit(self.canvas.figure.bbox)
         #self.canvas.flush_events()
+        if isinstance(self.canvas, Canvas3D): 
+            self.elev_btn.setValue(self.elev_btn.getter())
+            self.azim_btn.setValue(self.azim_btn.getter())
+            self.roll_btn.setValue(self.roll_btn.getter())
 
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(source=self.canvas.figure,
@@ -442,7 +475,10 @@ class GraphicsView (QGraphicsView):
         width = size.width()*ratio
         self.canvas.resize(int(width), int(height))
         self.plotview.setPos(size.width()/2-width/2,size.height()/2-height/2)
-        self.zoom_item.setPos(20, size.height()-30)
+        if isinstance(self.canvas, Canvas3D):
+            self.widget_item.setPos(20, size.height()-70)
+        else:
+            self.widget_item.setPos(20, size.height()-40)
         self.setSceneRect(0,0,size.width(),size.height())
         
       
