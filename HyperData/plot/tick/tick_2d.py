@@ -3,7 +3,8 @@ from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.frame import ScrollArea
+from ui.base_widgets.frame import ScrollArea, SeparateHLine
+from ui.base_widgets.text import TitleLabel
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
@@ -118,6 +119,9 @@ class TickBase2(TickBase):
 
     def initUI(self):
 
+        self.vlayout.addWidget(TitleLabel('Tick Parameters'))
+        self.vlayout.addWidget(SeparateHLine())
+
         self.ticklocator = TransparentComboBox(
             items=['Auto', 'Tick Interval','Tick Values', 'None'],
             text='Type',
@@ -133,6 +137,41 @@ class TickBase2(TickBase):
             getter=self.get_tickvalues,
             layout=self.vlayout
         )
+
+        tick_direction = TransparentComboBox(
+            text  = 'Tick direction',
+            text2 = f"Put {self.ticktype}ticks inside/outside {self.axis} axis, or both",
+            items = ['In','Out','InOut'],
+            setter=self.set_tickdir,
+            getter=self.get_tickdir,
+            layout=self.vlayout
+        )
+
+        tickcolor = ColorDropdown(
+            text  = 'Tick color', 
+            getter=self.get_tickcolor,
+            setter=self.set_tickcolor,
+            layout=self.vlayout
+        )
+
+        tick_length = TransparentDoubleSpinBox(
+            text = 'Tick length',
+            min = 0, max = 50, step = 0.5,
+            setter=self.set_ticklength,
+            getter=self.get_ticklength,
+            layout=self.vlayout
+        )
+
+        tick_width = TransparentDoubleSpinBox(
+            text = 'Tick width',
+            min = 0, max = 50, step = 0.5,
+            setter=self.set_tickwidth,
+            getter=self.get_tickwidth,
+            layout=self.vlayout
+        )
+
+        self.vlayout.addWidget(TitleLabel('Tick Labels'))
+        self.vlayout.addWidget(SeparateHLine())
 
         self.label = Toggle(
             text='Label',
@@ -151,26 +190,10 @@ class TickBase2(TickBase):
             layout=self.vlayout
         )
 
-        tick_direction = TransparentComboBox(
-            text  = 'Tick direction',
-            text2 = f"Put {self.ticktype}ticks inside/outside {self.axis} axis, or both",
-            items = ['In','Out','InOut'],
-            setter=self.set_tickdir,
-            getter=self.get_tickdir,
-            layout=self.vlayout
-        )
-
         tick_labelcolor = ColorDropdown(
             text  = 'Label color', 
             setter=self.set_labelcolor,
             getter=self.get_labelcolor,
-            layout=self.vlayout
-        )
-
-        tickcolor = ColorDropdown(
-            text  = 'Tick color', 
-            getter=self.get_tickcolor,
-            setter=self.set_tickcolor,
             layout=self.vlayout
         )
 
@@ -187,22 +210,6 @@ class TickBase2(TickBase):
             min = 0, max = 50, step = 0.5,
             setter=self.set_tickpadding,
             getter=self.get_tickpadding,
-            layout=self.vlayout
-        )
-
-        tick_length = TransparentDoubleSpinBox(
-            text = 'Tick length',
-            min = 0, max = 50, step = 0.5,
-            setter=self.set_ticklength,
-            getter=self.get_ticklength,
-            layout=self.vlayout
-        )
-
-        tick_width = TransparentDoubleSpinBox(
-            text = 'Tick width',
-            min = 0, max = 50, step = 0.5,
-            setter=self.set_tickwidth,
-            getter=self.get_tickwidth,
             layout=self.vlayout
         )
     

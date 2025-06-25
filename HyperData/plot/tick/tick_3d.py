@@ -3,7 +3,8 @@ from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.frame import ScrollArea
+from ui.base_widgets.frame import ScrollArea, SeparateHLine
+from ui.base_widgets.text import TitleLabel
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
@@ -134,6 +135,9 @@ class TickBase2(TickBase):
     
     def initUI(self):
 
+        self.vlayout.addWidget(TitleLabel('Tick Parameters'))
+        self.vlayout.addWidget(SeparateHLine())
+
         self.ticklocator = TransparentComboBox(
             items=['Auto', 'Tick Interval','Tick Values', 'None'],
             text='Type',
@@ -150,19 +154,29 @@ class TickBase2(TickBase):
             layout=self.vlayout
         )
 
-        self.label = Toggle(
-            text='Label',
-            text2=f"Toggle {self.axis} axis' {self.ticktype} tick label",
-            getter=self.get_label,
-            setter=self.set_label,
-            layout=self.vlayout
-        )
-
         tick_position = TransparentComboBox(
             items = ["lower","upper","both"], 
             text  = "Tick position",
             getter=self.get_tick_position,
             setter=self.set_tick_position,
+            layout=self.vlayout
+        )
+
+        tickcolor = ColorDropdown(
+            text  = 'Tick color', 
+            getter=self.get_tickcolor,
+            setter=self.set_tickcolor,
+            layout=self.vlayout
+        )
+
+        self.vlayout.addWidget(TitleLabel('Tick Labels'))
+        self.vlayout.addWidget(SeparateHLine())
+
+        self.label = Toggle(
+            text='Label',
+            text2=f"Toggle {self.axis} axis' {self.ticktype} tick label",
+            getter=self.get_label,
+            setter=self.set_label,
             layout=self.vlayout
         )
 
@@ -179,13 +193,6 @@ class TickBase2(TickBase):
             text  = 'Label color', 
             setter=self.set_labelcolor,
             getter=self.get_labelcolor,
-            layout=self.vlayout
-        )
-
-        tickcolor = ColorDropdown(
-            text  = 'Tick color', 
-            getter=self.get_tickcolor,
-            setter=self.set_tickcolor,
             layout=self.vlayout
         )
 
