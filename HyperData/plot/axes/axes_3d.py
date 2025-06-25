@@ -92,7 +92,7 @@ class Grid3D(ScrollArea):
         self.linewidth = TransparentDoubleSpinBox(
             text  = 'Line Width',
             text2 = 'Set the width of the grid lines',
-            min = 0.1, max = 10, step = 0.5,
+            min = 0, max = 10, step = 1,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
             layout=self.vlayout

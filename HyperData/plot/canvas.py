@@ -35,7 +35,7 @@ class Canvas (FigureCanvasQTAgg):
                 }
             }
         self.figure = Figure()
-        self.figure.set_dpi(config['plot_dpi'])
+        self.figure.set_dpi(100)
         # self.fig.subplots_adjust(*self._config['margin'])
         self.initAxes()
         
