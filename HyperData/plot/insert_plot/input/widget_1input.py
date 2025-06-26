@@ -7,7 +7,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class WidgetPie (QWidget):
     sig = Signal()
-    def __init__(self, node:NodeGraphicsNode,input:list=[str()],parent=None):
+    def __init__(self, node:NodeGraphicsNode, input:list[str], axes:list[str], parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()
         self.setLayout(layout)
@@ -16,7 +16,7 @@ class WidgetPie (QWidget):
 
         self.input = input
         self.node = node
-        self.axes = "pie"
+        self.axes = axes
 
         from plot.insert_plot.utilis import icon_open
 
@@ -39,7 +39,7 @@ class WidgetPie (QWidget):
     def open_data (self):
         self.data_window = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.data_window.update_data(self.node.input_sockets[0].socket_data)
-        self.data_window.show()
+        self.data_window.exec()
         self.data_window.sig.connect(lambda s: self.assign_data(s))
 
     def assign_data (self, text):

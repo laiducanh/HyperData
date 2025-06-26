@@ -10,7 +10,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class Widget2D_2input (QWidget):
     sig = Signal()
-    def __init__(self, node:NodeGraphicsNode, input:list=[str(),str()], parent=None):
+    def __init__(self, node:NodeGraphicsNode, input:list[str], axes:list[str], parent=None):
         super().__init__(parent)
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -18,13 +18,14 @@ class Widget2D_2input (QWidget):
 
         self.input = input
         self.node = node
-        self.axes = ["axis bottom", "axis left"]
+        self.axes = axes
 
         from plot.insert_plot.utilis import (icon_axisbot, icon_axisleft, 
                                              icon_axisright, icon_axistop, icon_open)
 
         self.choose_axis1 = _TransparentToolButton()
-        self.choose_axis1.setIcon(icon_axisbot)
+        if 'axis bottom' in self.axes: self.choose_axis1.setIcon(icon_axisbot)
+        elif 'axis top' in self.axes: self.choose_axis1.setIcon(icon_axistop)
         self.x_axis = Menu(parent=self)
         self.axis_bottom = Action(icon=icon_axisbot,text='Bottom Axis', parent=self)
         self.axis_bottom.triggered.connect(self.choose_axis_bottom)
@@ -43,7 +44,8 @@ class Widget2D_2input (QWidget):
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
         
         self.choose_axis2 = _TransparentToolButton()
-        self.choose_axis2.setIcon(icon_axisleft)
+        if 'axis left' in self.axes: self.choose_axis2.setIcon(icon_axisleft)
+        elif 'axis right' in self.axes: self.choose_axis2.setIcon(icon_axisright)
         self.y_axis = Menu(parent=self)
         self.axis_left = Action(icon=icon_axisleft,text='Left Axis', parent=self)
         self.axis_left.triggered.connect(self.choose_axis_left)
@@ -127,7 +129,7 @@ class Widget2D_2input (QWidget):
         self.dataview = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
-        self.dataview.show()
+        self.dataview.exec()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
@@ -139,7 +141,6 @@ class Widget2D_2input (QWidget):
 
         self.input_func()
         self.dataview.close()
-        self.dataview.deleteLater()
 
 class Line2D(Widget2D_2input):
     ''' '''
@@ -148,6 +149,8 @@ class Step2D(Widget2D_2input):
 class Stem2D(Widget2D_2input):
     ''' '''
 class Spline2D(Widget2D_2input):
+    ''' '''
+class Area2D(Widget2D_2input):
     ''' '''
 class StackedArea(Widget2D_2input):
     ''' '''

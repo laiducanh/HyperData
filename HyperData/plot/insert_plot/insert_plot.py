@@ -77,19 +77,23 @@ class NewPlot(Frame):
 
         self.initUI()
 
-    def initUI(self, input=None):
+    def initUI(self, input=None, axes=None):
 
         if not input: 
             try: input = self.canvas._config[self.plot_gid]["data_input"]
             except: input = [str(), str(), str(), str()]
+        
+        if not axes:
+            try: axes = self.canvas._config[self.plot_gid]["axes"]
+            except: axes = ["axis bottom", "axis left"]
 
-        args = [self.node, input, self.parent()]
+        args = [self.node, input, axes, self.parent()]
 
         if   self.plot_type == "2d line":                   self.widget = Line2D(*args)
         elif self.plot_type == "2d step":                   self.widget = Step2D(*args)
         elif self.plot_type == "2d stem":                   self.widget = Stem2D(*args)
         elif self.plot_type == "2d spline":                 self.widget = Spline2D(*args)
-        elif self.plot_type == "2d area":                   self.widget = Fillbetween(*args)
+        elif self.plot_type == "2d area":                   self.widget = Area2D(*args)
         elif self.plot_type == "fill between":              self.widget = Fillbetween(*args)
         elif self.plot_type == "2d stacked area":           self.widget = StackedArea(*args)
         elif self.plot_type == "2d 100% stacked area":      self.widget = StackedArea100(*args)
@@ -163,7 +167,7 @@ class NewPlot(Frame):
         self.progressbar._setValue(0)
 
         _ax = self.widget.axes
-
+        
         if self.plot3d:
             ax = self.canvas.axes
         else:
@@ -175,12 +179,11 @@ class NewPlot(Frame):
             if _ax == ["axis bottom", "axis left"]:    ax = self.canvas.axes
             elif _ax == ["axis bottom", "axis right"]: ax = self.canvas.axesy2
             elif _ax == ["axis top", "axis left"]:     ax = self.canvas.axesx2
-            elif _ax == "pie": 
+            else:
                 ax = self.canvas.axespie
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
-
 
         X, Y, Z, T  = list(), list(), list(), list()
         if len(self.widget.input) >= 1:
@@ -297,7 +300,7 @@ class InsertPlot(QMainWindow):
         if plot_type not in self.type_list.keys():
             if not plot_gid: plot_gid = f"graph {self.plot_idx}"
         
-            newplot = NewPlot(plot_gid, plot_type, self.canvas, self.node, self.plot3d, self.parent())
+            newplot = NewPlot(plot_gid, plot_type, self.canvas, self.node, self.plot3d, self)
             self.plot_list.append(newplot)
             newplot.sig.connect(self.sig.emit)
             newplot.sig_delete.connect(self.delete_plot)

@@ -8,7 +8,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class Widget2D_4input (QWidget):
     sig = Signal()
-    def __init__(self,node:NodeGraphicsNode,input:list=[str(),str(),str(),str()],parent=None):
+    def __init__(self,node:NodeGraphicsNode,input:list[str], axes:list[str], parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -17,7 +17,7 @@ class Widget2D_4input (QWidget):
 
         self.input = input
         self.node = node
-        self.axes = ["axis bottom", "axis left"]
+        self.axes = axes
 
         from plot.insert_plot.utilis import (icon_axisbot, icon_axisleft, 
                                              icon_axisright, icon_axistop, icon_open)
@@ -145,7 +145,7 @@ class Widget2D_4input (QWidget):
         self.dataview = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
-        self.dataview.show()
+        self.dataview.exec()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
@@ -160,7 +160,7 @@ class Widget2D_4input (QWidget):
 
 class Widget3D_4input (QWidget):
     sig = Signal()
-    def __init__(self,node:NodeGraphicsNode,input:list=[str(),str(),str(),str()],parent=None):
+    def __init__(self,node:NodeGraphicsNode, input:list[str], axes:list[str], parent=None):
         super().__init__(parent)
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -169,7 +169,7 @@ class Widget3D_4input (QWidget):
 
         self.input = input
         self.node = node
-        self.axes = "3d"
+        self.axes = axes
 
         from plot.insert_plot.utilis import icon_open
 
@@ -242,7 +242,7 @@ class Widget3D_4input (QWidget):
         self.dataview = DataSelection(self.node.input_sockets[0].socket_data, self.parent())
         self.dataview.update_data(self.node.input_sockets[0].socket_data)
         self.dataview.sig.connect(lambda s: self.assign_data(which_input,s))
-        self.dataview.show()
+        self.dataview.exec()
 
     def assign_data (self, which_input, text):
         """ this function is called when choose data from Data Selection Window """
