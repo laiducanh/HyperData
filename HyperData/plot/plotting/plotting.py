@@ -10,27 +10,26 @@ from plot.canvas import Canvas
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.artist import Artist
-from matplotlib.lines import Line2D
-from matplotlib.collections import Collection
-from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
-from matplotlib.legend import Legend, DraggableLegend
-from matplotlib.font_manager import FontProperties
+from matplotlib.legend import Legend
 from matplotlib.backend_bases import MouseEvent
-from typing import Union, Literal
 
 DEBUG = False
 
 bbox = None
 legend_picked = False
 
-def remove_artist (ax:Axes, gid:str) -> list[Artist]:
+def remove_artist (figure: Figure, gid:str) -> list[Artist]:
+    """
+    Remove artist which contains gid from figure
+    
+    """
     artist_removed = list()
     
-    for artist in find_mpl_object(source=ax.figure,match=[Artist],gid=gid,rule="contain"):
+    for artist in find_mpl_object(source=figure,match=[Artist],gid=gid,rule="contain"):
         artist_removed.append(artist)
         artist.remove()
         if GLOBAL_DEBUG or DEBUG:
-            pass
+            print('remove_artist::',artist)
     return artist_removed
 
 def get_legend(canvas: Canvas) -> Legend:
@@ -158,13 +157,9 @@ def rescale_plot(figure:Figure) -> None:
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> tuple[list[Artist], dict]:
    
     # get old artist that will be replaced
-    # but its properties will apply to the new ones
-    artist_old = find_mpl_object(
-        ax.figure,
-        match=[Line2D,Collection,Rectangle,Wedge,PathPatch,FancyBboxPatch],
-        gid=gid)
-   
-    remove_artist(ax, gid)
+    # but its properties will apply to the new ones  
+    artist_old = remove_artist(ax.figure, gid)
+
     remove_legend(ax.figure.canvas)
     
     # rescale all axes while remove old artists and add new artists
@@ -223,7 +218,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
    
     # update legend if necessary
     set_legend(ax.figure.canvas)
-    
+
     ax.figure.canvas.draw_idle()
     if DEBUG or GLOBAL_DEBUG: print("plotting")
     return artist, props

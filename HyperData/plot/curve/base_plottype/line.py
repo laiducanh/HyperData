@@ -194,7 +194,9 @@ class Area (PlotConfigBase):
             logger.exception(e)
     
     def get_step(self) -> str:
-        return self.plot.props["step"]
+        if self.plot.props["step"]:
+            return self.plot.props["step"]
+        else: return 'none'
 
     def set_orientation(self, value:str):
         try:
@@ -253,7 +255,9 @@ class StackedArea (PlotConfigBase):
             logger.exception(e)
     
     def get_step(self) -> str:
-        return self.plot.props["step"]
+        if self.plot.props["step"]:
+            return self.plot.props["step"]
+        else: return 'none'
 
     def set_baseline(self, value:str):
         try:

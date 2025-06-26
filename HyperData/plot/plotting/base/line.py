@@ -170,7 +170,7 @@ def fill_between (X, Y, Z, ax:Axes, gid:str, step=None, orientation='vertical', 
     _Z = np.asarray(Z)
 
     props = {
-        "step": step if step else 'none',
+        "step": step,
         "orientation": orientation
     }
 
@@ -208,7 +208,7 @@ def stackedarea (X, Y, ax:Axes, gid, step=None, baseline="zero", *args, **kwargs
     stack = np.cumsum(_Y, axis=0)
 
     props = {
-        "step": step if step else 'none',
+        "step": step,
         "baseline": baseline
     }
     

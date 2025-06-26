@@ -32,7 +32,7 @@ DEBUG = False
 class PlotView(QMainWindow):
     sig_back_to_grScene = Signal()
     def __init__(self, node:NodeGraphicsNode, canvas:Canvas, parent:QMainWindow=None):
-        super().__init__(parent)
+        super().__init__()
         
         ### 
         #self.data_window = DataView(data,self)
@@ -117,7 +117,7 @@ class PlotView(QMainWindow):
         self.dock.setWidget(self.sidebar)
         self.dock.setTitleBarWidget(QWidget())
 
-        self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
+        self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self)
         self.insertplot.sig.connect(self.update_plotlist)
 
     def treeview_func (self, text:str):
@@ -129,7 +129,7 @@ class PlotView(QMainWindow):
                 if pt.plot_gid == plot_gid:
                     _plot = pt
                     break
-            curve = Curve(text, self.plot_visual.canvas, _plot, self.parent())
+            curve = Curve(text, self.plot_visual.canvas, _plot, self)
             curve.sig.connect(self.update_plotlist)
             curve.exec()
             pass
@@ -140,55 +140,55 @@ class PlotView(QMainWindow):
             self.insertplot.show()
             
         elif text == "bottom axis":
-            self.botax = Tick2D('bottom', self.canvas, self.parent())
+            self.botax = Tick2D('bottom', self.canvas, self)
             self.botax.exec()
         
         elif text == "left axis":
-            self.lefax = Tick2D('left', self.canvas, self.parent())
+            self.lefax = Tick2D('left', self.canvas, self)
             self.lefax.exec()
 
         elif text == "top axis":
-            self.topax = Tick2D('top', self.canvas, self.parent())
+            self.topax = Tick2D('top', self.canvas, self)
             self.topax.exec()
 
         elif text == "right axis":
-            self.rigax = Tick2D('right', self.canvas, self.parent())
+            self.rigax = Tick2D('right', self.canvas, self)
             self.rigax.exec()
         
         elif text == 'x axis':
-            self.xax = Tick3D('x3d', self.canvas, self.parent())
+            self.xax = Tick3D('x3d', self.canvas, self)
             self.xax.exec()
         
         elif text == 'y axis':
-            self.yax = Tick3D('y3d', self.canvas, self.parent())
+            self.yax = Tick3D('y3d', self.canvas, self)
             self.yax.exec()
         
         elif text == 'z axis':
-            self.zax = Tick3D('z3d', self.canvas, self.parent())
+            self.zax = Tick3D('z3d', self.canvas, self)
             self.zax.exec()
         
         elif text == 'xy pane':
-            self.zpane = Axes3D('XY Pane', self.canvas, self.parent())
+            self.zpane = Axes3D('XY Pane', self.canvas, self)
             self.zpane.exec()
         
         elif text == 'xz pane':
-            self.ypane = Axes3D('XZ Pane', self.canvas, self.parent())
+            self.ypane = Axes3D('XZ Pane', self.canvas, self)
             self.ypane.exec()
         
         elif text == 'yz pane':
-            self.xpane = Axes3D('YZ Pane', self.canvas, self.parent())
+            self.xpane = Axes3D('YZ Pane', self.canvas, self)
             self.xpane.exec()
         
         elif text == 'grid and pane':
-            self.axes  = Axes2D(self.canvas, self.parent())
+            self.axes  = Axes2D(self.canvas, self)
             self.axes.exec()
         
         elif text == 'title':
-            self.title = GraphTitle(self.canvas, self.parent())
+            self.title = GraphTitle(self.canvas, self)
             self.title.exec()
         
         elif text == 'legend':
-            self.legendlabel = LegendLabel(self.canvas, self.parent())
+            self.legendlabel = LegendLabel(self.canvas, self)
             self.legendlabel.exec()
     
     def update_plotlist(self):
