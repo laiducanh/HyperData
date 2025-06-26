@@ -53,13 +53,14 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list=None, gid:str=N
         #obj_found += [artist for artist in _found if artist.get_gid() != None]
     return obj_found
 
-def update_props (from_obj: Artist, to_obj: Artist) -> None:  
+def _update_props (from_obj: Artist, to_obj: Artist) -> None:  
     try:      
         #print("update props")
         #print(to_obj, from_obj)
         to_obj_props = to_obj.properties()
         from_obj_props = from_obj.properties()
-
+        print(to_obj_props)
+        print(from_obj_props)
         if type(from_obj) == type(to_obj):
             to_obj.update_from(from_obj)
 
@@ -67,6 +68,81 @@ def update_props (from_obj: Artist, to_obj: Artist) -> None:
         
     except Exception as e:
         logger.exception(e)
+
+def update_props(from_obj: Artist, to_obj: Artist) -> None:
+    if isinstance(from_obj, lines.Line2D) and isinstance(to_obj, lines.Line2D):
+        to_obj.set(
+            alpha = from_obj.get_alpha(),
+            color = from_obj.get_color(),
+            dash_capstyle = from_obj.get_dash_capstyle(),
+            dash_joinstyle = from_obj.get_dash_joinstyle(),
+            linestyle = from_obj.get_linestyle(),
+            linewidth = from_obj.get_linewidth(),
+            marker = from_obj.get_marker(),
+            markeredgecolor = from_obj.get_markeredgecolor(),
+            markeredgewidth = from_obj.get_markeredgewidth(),
+            markerfacecolor = from_obj.get_markerfacecolor(),
+            markersize = from_obj.get_markersize(),
+            solid_capstyle = from_obj.get_solid_capstyle(),
+            solid_joinstyle = from_obj.get_solid_joinstyle(),
+            zorder = from_obj.get_zorder(),
+            label = from_obj.get_label(),
+        )
+    elif isinstance(from_obj, collections.Collection) and isinstance(to_obj, collections.Collection):
+        to_obj.set(
+            alpha = from_obj.get_alpha(),
+            cmap = from_obj.get_cmap(),
+            edgecolor = from_obj.get_edgecolor(),
+            facecolor = from_obj.get_facecolor(),
+            label = from_obj.get_label(),
+            linestyle = from_obj.get_linestyle(),
+            linewidth = from_obj.get_linewidth(),
+            zorder = from_obj.get_zorder()
+        )
+    elif isinstance(from_obj, patches.Patch) and isinstance(to_obj, patches.Patch):
+        to_obj.set(
+            alpha = from_obj.get_alpha(),
+            edgecolor = from_obj.get_edgecolor(),
+            facecolor = from_obj.get_facecolor(),
+            label = from_obj.get_label(),
+            linestyle = from_obj.get_linestyle(),
+            linewidth = from_obj.get_linewidth(),
+            zorder = from_obj.get_zorder()
+        )
+    elif isinstance(from_obj, AxesImage) and isinstance(to_obj, AxesImage):
+        to_obj.set(
+            alpha = from_obj.get_alpha(),
+            cmap = from_obj.get_cmap(),
+            extent = from_obj.get_extent(),
+            filternorm = from_obj.get_filternorm(),
+            filterad = from_obj.get_filterrad(),
+            interpolation = from_obj.get_interpolation(),
+            label = from_obj.get_label(),
+            resample = from_obj.get_resample(),
+            zorder = from_obj.get_zorder()
+        )
+    elif isinstance(from_obj, text.Text) and isinstance(to_obj, text.Text):
+        to_obj.set(
+            alpha = from_obj.get_alpha(),
+            color = from_obj.get_color(),
+            fontfamily = from_obj.get_fontfamily(),
+            fontproperties = from_obj.get_fontproperties(),
+            fontsize = from_obj.get_fontsize(),
+            fontstyle = from_obj.get_fontstyle(),
+            fontvariant = from_obj.get_fontvariant(),
+            fontweight = from_obj.get_fontweight(),
+            horizontalalignment = from_obj.get_horizontalalignment(),
+            label = from_obj.get_label(),
+            math_fontfamily = from_obj.get_math_fontfamily(),
+            parse_math = from_obj.get_parse_math(),
+            position = from_obj.get_position(),
+            rotation = from_obj.get_rotation(),
+            rotation_mode = from_obj.get_rotation_mode(),
+            text = from_obj.get_text(),
+            verticalalignment = from_obj.get_verticalalignment(),
+            wrap = from_obj.get_wrap(),
+            zorder = from_obj.get_zorder()
+        )
 
 def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
     # Copy Axes properties
