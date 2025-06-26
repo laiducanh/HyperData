@@ -123,7 +123,8 @@ class TickBase2(TickBase):
         self.vlayout.addWidget(SeparateHLine())
 
         self.ticklocator = TransparentComboBox(
-            items=['Auto', 'Tick Interval','Tick Values', 'None'],
+            items=['Auto','Interval','Fixed Values','Max Number','Linear',
+                   'Log Scale','Logit Scale', 'Asinh Scale', 'None'],
             text='Type',
             setter=self.set_ticklocator,
             getter=self.get_ticklocator,
@@ -181,6 +182,14 @@ class TickBase2(TickBase):
             layout=self.vlayout
         )
 
+        self.fmt = LineEdit(
+            text="Label format",
+            text2='Define how tick values is formatted as a string',
+            getter=self.get_fmt,
+            setter=self.set_label,
+            layout=self.vlayout
+        )
+
         tick_labelsize = TransparentDoubleSpinBox(
             text  = 'Label size',
             text2 = f"Set {self.axis} axis' {self.ticktype} tick label size",
@@ -222,27 +231,53 @@ class TickBase2(TickBase):
                     self.obj.set_major_locator(ticker.AutoLocator())
                 else:
                     self.obj.set_minor_locator(ticker.AutoMinorLocator())
-            elif locator == 'Tick Interval':
+            elif locator == 'Interval':
                 value = float(self.value.button.text())
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.MultipleLocator(value))
                 else:
                     self.obj.set_minor_locator(ticker.MultipleLocator(value))
-            elif locator == 'Tick Values':
+            elif locator == 'Fixed Values':
                 value = [float(i) for i in self.value.button.text().split(',')]
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.FixedLocator(value))
                 else:
                     self.obj.set_minor_locator(ticker.FixedLocator(value))
+            elif locator == 'Linear':
+                value = int(self.value.button.text())
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.LinearLocator(value))
+                else:
+                    self.obj.set_minor_locator(ticker.LinearLocator(value))
+            elif locator == 'Max Number':
+                value = int(self.value.button.text())
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.MaxNLocator(value))
+                else:
+                    self.obj.set_minor_locator(ticker.MaxNLocator(value))
+            elif locator == 'Log Scale':
+                value = float(self.value.button.text())
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.LogLocator(value))
+                else:
+                    self.obj.set_minor_locator(ticker.LogLocator(value))
+            elif locator == 'Logit Scale':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.LogitLocator(minor=False))
+                else:
+                    self.obj.set_minor_locator(ticker.LogitLocator(minor=True))
+            elif locator == 'Asinh Scale':
+                value = float(self.value.button.text())
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.AsinhLocator(value))
+                else:
+                    self.obj.set_minor_locator(ticker.AsinhLocator(value))
             elif locator == 'None':
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.NullLocator())
                 else:
                     self.obj.set_minor_locator(ticker.NullLocator())
             
-            self.obj.set_major_formatter(ticker.FixedFormatter([f'{x:g}' for x in self.obj.get_majorticklocs()]))
-            self.obj.set_minor_formatter(ticker.FixedFormatter([f'{x:g}' for x in self.obj.get_minorticklocs()]))
-
             self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)
@@ -257,9 +292,19 @@ class TickBase2(TickBase):
             if isinstance(locator, (ticker.AutoLocator, ticker.AutoMinorLocator)):
                 return 'Auto'
             elif isinstance(locator, ticker.MultipleLocator):
-                return 'Tick Interval'
+                return 'Interval'
             elif isinstance(locator, ticker.FixedLocator):
-                return 'Tick Values'
+                return 'Fixed Values'
+            elif isinstance(locator, ticker.MaxNLocator):
+                return 'Max Number'
+            elif isinstance(locator, ticker.LinearLocator):
+                return 'Linear'
+            elif isinstance(locator, ticker.LogLocator):
+                return 'Log Scale'
+            elif isinstance(locator, ticker.LogitLocator):
+                return 'Logit Scale'
+            elif isinstance(locator, ticker.AsinhLocator):
+                return 'Asinh Scale'
             elif isinstance(locator, ticker.NullLocator):
                 return 'None'
         except Exception as e:
@@ -283,22 +328,61 @@ class TickBase2(TickBase):
         except Exception as e:
             logger.exception(e)
     
-    def set_label(self, value:bool):
+    def set_label(self):
         try:
-            if self.axis in ['bottom','left']:
-                self.obj.set_tick_params(which=self.ticktype, labelleft=value)
-            elif self.axis in ['top','right']:
-                self.obj.set_tick_params(which=self.ticktype, labelright=value)
+            toggle_label = self.label.button.isChecked()
+            fmt = self.fmt.button.text()
+            value = self.value.button.text()
+            if toggle_label:
+                if self.ticktype == 'major':
+                    if fmt == '':
+                        if isinstance(self.obj.get_major_formatter(), 
+                            (ticker.AutoLocator, ticker.MultipleLocator, 
+                             ticker.MaxNLocator, ticker.FixedLocator, 
+                             ticker.LinearLocator, ticker.AsinhLocator)):
+                            self.obj.set_major_formatter(ticker.ScalarFormatter())
+                        elif isinstance(self.obj.get_major_locator(), ticker.LogLocator):
+                            self.obj.set_major_formatter(ticker.LogFormatter(value))
+                        elif isinstance(self.obj.get_major_locator(), ticker.LogitLocator):
+                            self.obj.set_major_formatter(ticker.LogitFormatter(minor=False))
+                    else:
+                        self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                else:
+                    if fmt == '':
+                        if isinstance(self.obj.get_minor_formatter(), 
+                            (ticker.AutoLocator, ticker.MultipleLocator, 
+                             ticker.MaxNLocator, ticker.FixedLocator, 
+                             ticker.LinearLocator, ticker.AsinhLocator)):
+                            self.obj.set_minor_formatter(ticker.ScalarFormatter())
+                        elif isinstance(self.obj.get_minor_locator(), ticker.LogLocator):
+                            self.obj.set_minor_formatter(ticker.LogFormatter(value))
+                        elif isinstance(self.obj.get_minor_locator(), ticker.LogitLocator):
+                            self.obj.set_minor_formatter(ticker.LogitFormatter(minor=True))
+                    else:
+                        self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+            else:
+                if self.ticktype == 'major':
+                    self.obj.set_major_formatter(ticker.NullFormatter())
+                else:
+                    self.obj.set_minor_formatter(ticker.NullFormatter())
             self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)
     
     def get_label(self) -> bool:
-        if self.axis in ['bottom','left']:
-            return self.obj.get_tick_params(which=self.ticktype)['labelleft']
-        if self.axis in ['top', 'right']:
-            return self.obj.get_tick_params(which=self.ticktype)['labelright']
+        if self.ticktype == 'major':
+            return not isinstance(self.obj.get_major_formatter(), ticker.NullFormatter)
+        else:
+            return not isinstance(self.obj.get_minor_formatter(), ticker.NullFormatter)
     
+    def get_fmt(self) -> str:
+        if self.ticktype == 'major':
+            try: return self.obj.get_major_formatter().fmt
+            except: return
+        else:
+            try: return self.obj.get_minor_formatter().fmt
+            except: return
+        
     def set_labelsize (self, value):
         self.obj.set_tick_params(which=self.ticktype,labelsize=value)
         self.canvas.draw_idle()
