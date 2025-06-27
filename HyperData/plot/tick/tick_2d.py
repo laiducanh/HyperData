@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.frame import ScrollArea, SeparateHLine
@@ -8,7 +8,7 @@ from ui.base_widgets.text import TitleLabel
 from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
-from matplotlib import ticker, spines, lines, colors, rcParams
+from matplotlib import ticker, dates, spines, lines, colors, rcParams
 from matplotlib.axis import Axis
 from plot.canvas import Canvas
 
@@ -123,19 +123,72 @@ class TickBase2(TickBase):
         self.vlayout.addWidget(SeparateHLine())
 
         self.ticklocator = TransparentComboBox(
-            items=['Auto','Interval','Fixed Values','Max Number','Linear',
-                   'Log Scale','Logit Scale', 'Asinh Scale', 'None'],
+            items=['Auto','Interval','Fixed Values','Max Number','Linear Scale',
+                   'Log Scale','Sym Log Scale','Logit Scale','Asinh Scale',
+                   'Auto Date','Day','Month','Weekday','Year','Hour','Minute',
+                   'Second','Microsecond','None'],
             text='Type',
-            setter=self.set_ticklocator,
+            setter=self.set_tick,
             getter=self.get_ticklocator,
             layout=self.vlayout
         )
 
+        self.nbins = TransparentSpinBox(
+            min=1, max=100, step=1,
+            text='Max interval',
+            text2='Maximum number of intervals',
+            getter=self.get_nbins,
+            setter=self.set_tick,
+            layout=self.vlayout
+        )
+
+        self.min_n_ticks = TransparentSpinBox(
+            min=0, max=100, step=1,
+            text='Min ticks',
+            text2='Minimum number of tick marks',
+            getter=self.get_min_n_ticks,
+            setter=self.set_tick,
+            layout=self.vlayout
+        )
+
+        self.basescale = TransparentDoubleSpinBox(
+            text='Base',
+            text2='Base of the scale',
+            setter=self.set_tick,
+            getter=self.get_base,
+            layout=self.vlayout
+        )
+
+        self.interval = TransparentDoubleSpinBox(
+            text='Interval',
+            text2='Interval between ticks',
+            decimals=5,
+            setter=self.set_tick,
+            getter=self.get_interval,
+            layout=self.vlayout
+        )
+
+        self.thresh = TransparentDoubleSpinBox(
+            text='Thresh',
+            text2='The threshold to be used in type: Sym Log Scale, Asinh Scale',
+            setter=self.set_tick,
+            getter=self.get_thresh,
+            layout=self.vlayout,
+        )
+
         self.value = LineEdit(
-            text='Tick values',
+            text='Fixed values',
             text2=f"Set {self.axis} axis' tick positions",
-            setter=self.set_ticklocator,
+            setter=self.set_tick,
             getter=self.get_tickvalues,
+            layout=self.vlayout
+        )
+
+        self.linear_width = TransparentDoubleSpinBox(
+            text='Asinh Scale parameter',
+            text2='The scale parameter defining the extent of the quasi-linear region.',
+            setter=self.set_tick,
+            getter=self.get_linear_width,
             layout=self.vlayout
         )
 
@@ -178,7 +231,7 @@ class TickBase2(TickBase):
             text='Label',
             text2=f"Toggle {self.axis} axis' {self.ticktype} tick label",
             getter=self.get_label,
-            setter=self.set_label,
+            setter=self.set_tick,
             layout=self.vlayout
         )
 
@@ -186,7 +239,7 @@ class TickBase2(TickBase):
             text="Label format",
             text2='Define how tick values is formatted as a string',
             getter=self.get_fmt,
-            setter=self.set_label,
+            setter=self.set_tick,
             layout=self.vlayout
         )
 
@@ -199,10 +252,33 @@ class TickBase2(TickBase):
             layout=self.vlayout
         )
 
+        font = TransparentComboBox(
+            items = font_lib,
+            text  = 'Font',
+            setter=self.set_fontname,
+            getter=self.get_fontname,
+            layout=self.vlayout
+        )
+
         tick_labelcolor = ColorDropdown(
             text  = 'Label color', 
             setter=self.set_labelcolor,
             getter=self.get_labelcolor,
+            layout=self.vlayout
+        )
+
+        style = FontStyle(
+            obj = self.obj.get_majorticklabels() if self.ticktype == 'major'
+                else self.obj.get_minorticklabels(), 
+            canvas = self.canvas,
+            layout=self.vlayout
+        )
+
+        alpha = TransparentSpinBox(
+            text = 'Transparency',
+            step = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
             layout=self.vlayout
         )
 
@@ -221,63 +297,290 @@ class TickBase2(TickBase):
             getter=self.get_tickpadding,
             layout=self.vlayout
         )
-    
-    def set_ticklocator(self):
+
+    def set_tick(self):
         try:
-            locator = self.ticklocator.button.currentText()
-            self.obj.reset_ticks()
+            locator = self.ticklocator.get_value()
+            nbins = self.nbins.get_value()
+            min_n_ticks = self.min_n_ticks.get_value()
+            base = self.basescale.get_value()
+            interval = self.interval.get_value()
+            thresh = self.thresh.get_value()
+            linear_width = self.linear_width.get_value()
+            label = self.label.get_value()
+            fmt = self.fmt.get_value()
+            value = [float(i) for i in self.value.get_value().split(',')]
+
             if locator == 'Auto':
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.AutoLocator())
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.ScalarFormatter())
                 else:
                     self.obj.set_minor_locator(ticker.AutoMinorLocator())
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.ScalarFormatter())
             elif locator == 'Interval':
-                value = float(self.value.button.text())
                 if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.MultipleLocator(value))
+                    self.obj.set_major_locator(ticker.MultipleLocator(interval))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.ScalarFormatter())
                 else:
-                    self.obj.set_minor_locator(ticker.MultipleLocator(value))
+                    self.obj.set_minor_locator(ticker.MultipleLocator(interval))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.ScalarFormatter())
             elif locator == 'Fixed Values':
-                value = [float(i) for i in self.value.button.text().split(',')]
                 if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.FixedLocator(value))
+                    self.obj.set_major_locator(ticker.FixedLocator(value,nbins))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.FixedFormatter(value,nbins))
                 else:
-                    self.obj.set_minor_locator(ticker.FixedLocator(value))
-            elif locator == 'Linear':
-                value = int(self.value.button.text())
-                if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.LinearLocator(value))
-                else:
-                    self.obj.set_minor_locator(ticker.LinearLocator(value))
+                    self.obj.set_minor_locator(ticker.FixedLocator(value,nbins))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.FixedFormatter(value,nbins))
             elif locator == 'Max Number':
-                value = int(self.value.button.text())
                 if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.MaxNLocator(value))
+                    self.obj.set_major_locator(ticker.MaxNLocator(nbins,min_n_ticks=min_n_ticks))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.ScalarFormatter())
                 else:
-                    self.obj.set_minor_locator(ticker.MaxNLocator(value))
+                    self.obj.set_minor_locator(ticker.MaxNLocator(nbins,min_n_ticks=min_n_ticks))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.ScalarFormatter())
+            elif locator == 'Linear Scale':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.LinearLocator(nbins+1))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.ScalarFormatter())
+                else:
+                    self.obj.set_minor_locator(ticker.LinearLocator(nbins+1))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.ScalarFormatter())
             elif locator == 'Log Scale':
-                value = float(self.value.button.text())
                 if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.LogLocator(value))
+                    self.obj.set_major_locator(ticker.LogLocator(base=base,numticks=nbins+1))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.LogFormatter(base))
                 else:
-                    self.obj.set_minor_locator(ticker.LogLocator(value))
+                    self.obj.set_minor_locator(ticker.LogLocator(base=base, numticks=nbins+1))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.LogFormatter(base))
+            elif locator == 'Sym Log Scale':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(ticker.SymmetricalLogLocator(base=base,linthresh=thresh))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.LogFormatter(base=base,linthresh=thresh))
+                else:
+                    self.obj.set_minor_locator(ticker.SymmetricalLogLocator(base=base,linthresh=thresh))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.LogFormatter(base=base,linthresh=thresh))
             elif locator == 'Logit Scale':
                 if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.LogitLocator(minor=False))
+                    self.obj.set_major_locator(ticker.LogitLocator(
+                        minor=False, nbins=nbins, min_n_ticks=min_n_ticks))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.LogitFormatter(minor=False))
                 else:
-                    self.obj.set_minor_locator(ticker.LogitLocator(minor=True))
+                    self.obj.set_minor_locator(ticker.LogitLocator(
+                        minor=True, nbins=nbins, min_n_ticks=min_n_ticks))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.LogitFormatter(minor=True))
             elif locator == 'Asinh Scale':
-                value = float(self.value.button.text())
                 if self.ticktype == 'major':
-                    self.obj.set_major_locator(ticker.AsinhLocator(value))
+                    self.obj.set_major_locator(ticker.AsinhLocator(
+                        linear_width=linear_width, base=base, symthresh=thresh))
+                    if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_major_formatter(ticker.ScalarFormatter())
                 else:
-                    self.obj.set_minor_locator(ticker.AsinhLocator(value))
+                    self.obj.set_minor_locator(ticker.AsinhLocator(
+                        linear_width=linear_width, base=base, symthresh=thresh))
+                    if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
+                    else: self.obj.set_minor_formatter(ticker.ScalarFormatter())
+            elif locator == 'Auto Date':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.AutoDateLocator(
+                        maxticks=nbins+1, minticks=min_n_ticks))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.AutoDateLocator(
+                        maxticks=nbins+1, minticks=min_n_ticks))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Day':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.DayLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.DayLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Hour':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.HourLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.HourLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Minute':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.MinuteLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.MinuteLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Month':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.MonthLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.MonthLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Second':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.SecondLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.SecondLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Weekday':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.WeekdayLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.WeekdayLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.set_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Year':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.YearLocator(base=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.YearLocator(base=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
+            elif locator == 'Microsecond':
+                if self.ticktype == 'major':
+                    self.obj.set_major_locator(dates.MicrosecondLocator(interval=int(interval)))
+                    if fmt: self.obj.set_major_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_major_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_major_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_major_locator()
+                    ))
+                else:
+                    self.obj.set_minor_locator(dates.MicrosecondLocator(interval=int(interval)))
+                    if fmt: self.obj.set_minor_formatter(dates.AutoDateFormatter(
+                        locator=self.obj.get_minor_locator(),
+                        defaultfmt=fmt
+                    ))
+                    else: self.obj.set_minor_formatter(dates.ConciseDateFormatter(
+                        locator=self.obj.get_minor_locator()
+                    ))
             elif locator == 'None':
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.NullLocator())
                 else:
                     self.obj.set_minor_locator(ticker.NullLocator())
             
+            if not label:
+                if self.ticktype == 'major':
+                    self.obj.set_major_formatter(ticker.NullFormatter())
+                else:
+                    self.obj.set_minor_formatter(ticker.NullFormatter())
+
             self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)
@@ -298,76 +601,103 @@ class TickBase2(TickBase):
             elif isinstance(locator, ticker.MaxNLocator):
                 return 'Max Number'
             elif isinstance(locator, ticker.LinearLocator):
-                return 'Linear'
+                return 'Linear Scale'
             elif isinstance(locator, ticker.LogLocator):
                 return 'Log Scale'
+            elif isinstance(locator, ticker.SymmetricalLogLocator):
+                return 'Sym Log Scale'
             elif isinstance(locator, ticker.LogitLocator):
                 return 'Logit Scale'
             elif isinstance(locator, ticker.AsinhLocator):
                 return 'Asinh Scale'
+            elif isinstance(locator, dates.AutoDateLocator):
+                return 'Auto Date'
+            elif isinstance(locator, dates.DayLocator):
+                return 'Day'
+            elif isinstance(locator, dates.HourLocator):
+                return 'Hour'
+            elif isinstance(locator, dates.MinuteLocator):
+                return 'Minute'
+            elif isinstance(locator, dates.MonthLocator):
+                return "Month"
+            elif isinstance(locator, dates.SecondLocator):
+                return "Second"
+            elif isinstance(locator, dates.WeekdayLocator):
+                return 'Weekday'
+            elif isinstance(locator, dates.YearLocator):
+                return 'Year'
+            elif isinstance(locator, dates.MicrosecondLocator):
+                return 'Microsecond'
             elif isinstance(locator, ticker.NullLocator):
                 return 'None'
         except Exception as e:
             logger.exception(e)
     
+    def get_nbins(self) -> int:
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+            return int(locator._nbins)
+        except Exception as e: return 10
+    
+    def get_min_n_ticks(self) -> int:
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+            return int(locator._min_n_ticks)
+        except Exception as e: return 2
+    
+    def get_base(self) -> float:
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+            return float(locator._base)
+        except Exception as e: return 10.0
+    
+    def get_interval(self) -> float:
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+            return float(locator._edge.step)
+        except Exception as e: return 1.0
+    
+    def get_thresh(self) -> float:
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+            if isinstance(locator, ticker.SymmetricalLogLocator):
+                return float(locator._linthresh)
+            else:
+                return float(locator.symthresh)
+        except Exception as e: return 0.2
+
+    def get_linear_width(self) -> float:
+        try:
+            if self.ticktype == 'major':
+                locator = self.obj.get_major_locator()
+            elif self.ticktype == 'minor':
+                locator = self.obj.get_minor_locator()
+            return float(locator.linear_width)
+        except Exception as e: return 1.0
+
     def get_tickvalues(self):
         try:
             if self.ticktype == 'major':
                 locator = self.obj.get_major_locator()
             elif self.ticktype == 'minor':
                 locator = self.obj.get_minor_locator()
-            
-            if isinstance(locator, (ticker.AutoLocator, ticker.AutoMinorLocator)):
-                return
-            elif isinstance(locator, ticker.MultipleLocator):
-                return str(locator._edge.step)
-            elif isinstance(locator, ticker.FixedLocator):
-                return ', '.join(str(f'{x:g}') for x in locator.locs)
-            elif isinstance(locator, ticker.NullLocator):
-                return 
-        except Exception as e:
-            logger.exception(e)
-    
-    def set_label(self):
-        try:
-            toggle_label = self.label.button.isChecked()
-            fmt = self.fmt.button.text()
-            value = self.value.button.text()
-            if toggle_label:
-                if self.ticktype == 'major':
-                    if fmt == '':
-                        if isinstance(self.obj.get_major_formatter(), 
-                            (ticker.AutoLocator, ticker.MultipleLocator, 
-                             ticker.MaxNLocator, ticker.FixedLocator, 
-                             ticker.LinearLocator, ticker.AsinhLocator)):
-                            self.obj.set_major_formatter(ticker.ScalarFormatter())
-                        elif isinstance(self.obj.get_major_locator(), ticker.LogLocator):
-                            self.obj.set_major_formatter(ticker.LogFormatter(value))
-                        elif isinstance(self.obj.get_major_locator(), ticker.LogitLocator):
-                            self.obj.set_major_formatter(ticker.LogitFormatter(minor=False))
-                    else:
-                        self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
-                else:
-                    if fmt == '':
-                        if isinstance(self.obj.get_minor_formatter(), 
-                            (ticker.AutoLocator, ticker.MultipleLocator, 
-                             ticker.MaxNLocator, ticker.FixedLocator, 
-                             ticker.LinearLocator, ticker.AsinhLocator)):
-                            self.obj.set_minor_formatter(ticker.ScalarFormatter())
-                        elif isinstance(self.obj.get_minor_locator(), ticker.LogLocator):
-                            self.obj.set_minor_formatter(ticker.LogFormatter(value))
-                        elif isinstance(self.obj.get_minor_locator(), ticker.LogitLocator):
-                            self.obj.set_minor_formatter(ticker.LogitFormatter(minor=True))
-                    else:
-                        self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
-            else:
-                if self.ticktype == 'major':
-                    self.obj.set_major_formatter(ticker.NullFormatter())
-                else:
-                    self.obj.set_minor_formatter(ticker.NullFormatter())
-            self.canvas.draw_idle()
-        except Exception as e:
-            logger.exception(e)
+            return ', '.join(str(f'{x:g}') for x in locator.locs)
+        except Exception as e: return
     
     def get_label(self) -> bool:
         if self.ticktype == 'major':
@@ -418,6 +748,42 @@ class TickBase2(TickBase):
             else: 
                 return self.obj.get_minorticklabels()[0].get_color()
         except: return self.get_tickcolor()
+    
+    def set_fontname (self, font:str):
+        if self.ticktype == 'major':
+            for label in self.obj.get_majorticklabels():
+                label.set_fontname(font)
+        else:
+            for label in self.obj.get_minorticklabels():
+                label.set_fontname(font)
+    
+    def get_fontname(self):
+        if self.ticktype == 'major':
+            for label in self.obj.get_majorticklabels():
+                return label.get_fontname()
+        else:
+            for label in self.obj.get_minorticklabels():
+                return label.get_fontname()
+        return rcParams[f"font.{rcParams['font.family'][0]}"][0]
+
+    def set_alpha (self, value):
+        if self.ticktype == 'major':
+            for label in self.obj.get_majorticklabels():
+                label.set_alpha(value/100)
+        else:
+            for label in self.obj.get_minorticklabels():
+                label.set_alpha(value/100)
+    
+    def get_alpha (self):
+        if self.ticktype == 'major':
+            for label in self.obj.get_majorticklabels():
+                if label.get_alpha(): 
+                    return int(label.get_alpha()*100)
+        else:
+            for label in self.obj.get_minorticklabels():
+                if label.get_alpha(): 
+                    return int(label.get_alpha()*100)
+        return 100
 
     def set_tickcolor(self, color):
         self.obj.set_tick_params(which=self.ticktype,color=color)
@@ -520,7 +886,7 @@ class SpineBase(ScrollArea):
             layout=self.vlayout
         )
 
-        alpha = TransparentDoubleSpinBox(
+        alpha = TransparentSpinBox(
             text ='Transparent',
             min = 0, max = 100, step = 10,
             setter=self.set_alpha,
@@ -683,7 +1049,7 @@ class AxisLabel(ScrollArea):
         #     layout=layout
         # )
 
-        alpha = TransparentDoubleSpinBox(
+        alpha = TransparentSpinBox(
             text = 'Transparency',
             step = 10,
             setter=self.set_alpha,
