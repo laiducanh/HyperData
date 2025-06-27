@@ -199,6 +199,10 @@ class _CompleterLineEdit (_TransparentComboBox):
     
     def update_model(self):
         self._addItem(self.lineedit.text())
+    
+    def focusOutEvent(self, e):
+        self._addItem(self.lineedit.text())
+        return super().focusOutEvent(e)
 
 class LineEdit (HButton):
     def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,

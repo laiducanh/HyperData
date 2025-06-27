@@ -53,19 +53,29 @@ def legend_onMove(event:MouseEvent, canvas:Canvas):
     if get_legend(canvas) and legend_picked:
         bbox = canvas.axesleg.transAxes.inverted().transform((event.x, event.y))
         _legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
-        #_legend.set_loc('center')
+        # _legend.set_loc("center")
         canvas.axesleg.draw_artist(_legend)
     return legend_picked
-    
+
+def get_legend_anchor(canvas: Canvas):
+    legend = get_legend(canvas)
+    # get legend bbox in display coords (pixels)
+    bbox = legend.get_window_extent()
+    # convert to figure coordinates
+    inv_fig = canvas.figure.transFigure.inverted()
+    # get lower-left corner of bbox
+    anchor_point = inv_fig.transform(bbox)[0]
+    return anchor_point
+
 def set_legend(canvas: Canvas, *args, **kwargs):
     try:   
-        _handles = find_mpl_object(
+        handles = find_mpl_object(
             canvas.figure,
             match=[Artist],
             gid="graph "
         )
-        plot_list = set([s.get_gid().split('/')[0] for s in _handles])
-        _labels, _handles = list(), list()
+        plot_list = set([s.get_gid().split('/')[0] for s in handles])
+        labels, handles = list(), list()
         for gid in plot_list:
             arts = find_mpl_object(
                 canvas.figure,
@@ -75,47 +85,64 @@ def set_legend(canvas: Canvas, *args, **kwargs):
 
             for art in arts:
                 if art.get_visible() and art.get_label() and not art.get_label().startswith('_'):
-                    _labels.append(arts[0].get_label())
-                    _handles.append(arts[0])
+                    labels.append(arts[0].get_label())
+                    handles.append(arts[0])
                     break # only one visible artist with valid label is used for legend                
+
+        if handles != []:            
+            if get_legend(canvas): 
+                update_legend(canvas, handles=handles, labels=labels)
+            else:
+                legend = canvas.axesleg.legend(
+                    handles=handles, labels=labels, 
+                    *args, *kwargs
+                )
+                legend.set_draggable(True, update='bbox')
+                legend.set_gid("legend")
         
-        old_title = None
-        global bbox, legend_picked
-        legend_picked = False
-        
-        # if not get_legend(canvas): 
-        #     mpl_background = canvas.copy_from_bbox(canvas.fig.bbox)
-
-        # if get_legend(canvas): 
-        #     old_title = get_legend(canvas).get_title()
-        #     get_legend(canvas).remove()
-
-        if _handles != []:
-            global _legend
-            _legend = canvas.axesleg.legend(_handles, _labels, 
-                                            *args, *kwargs)
-            #if bbox: _legend.set_loc('center')
-            _legend.set_bbox_to_anchor(bbox, canvas.axesleg.transAxes)
-            
-            _legend.set_gid("legend")
-            
-            # for _handle, _leghandle, _legtext \
-            # in zip(_handles, _legend.legend_handles, _legend.get_texts()):
-            #     print("awpoic", _handle.get_gid())
-            #     _leghandle.set_gid(f"{_handle.get_gid()}")
-            #     _legtext.set_gid(f"{_handle.get_gid()}")     
-
-            # if old_title: 
-            #     _legend.set_title(old_title.get_text())
-            #     _legend.get_title().update_from(old_title)
-            #canvas.draw()
-            # canvas.restore_region(mpl_background)
-            # canvas.axesleg.draw_artist(_legend)
-            # canvas.blit(canvas.fig.bbox)
-            
-            
     except Exception as e:
         logger.exception(e)
+
+def update_legend(canvas: Canvas, **kwargs):
+    old_legend = get_legend(canvas)
+    legend_title = old_legend.get_title()
+    legend_texts = old_legend.get_texts()
+    params = {
+        "handles": old_legend.legend_handles,
+        "numpoints": old_legend.numpoints,
+        "scatterpoints": old_legend.scatterpoints,
+        "ncols": old_legend._ncols,
+        "columnspacing": old_legend.columnspacing,
+        "frameon": old_legend.get_frame_on(),
+        "shadow": old_legend.shadow,
+        "facecolor": old_legend.legendPatch.get_facecolor(),
+        "edgecolor": old_legend.legendPatch.get_edgecolor(),
+        "framealpha": old_legend.legendPatch.get_alpha(),
+        "borderpad": old_legend.borderpad,
+        "handlelength": old_legend.handlelength,
+        "handleheight": old_legend.handleheight,
+        "handletextpad": old_legend.handletextpad,
+        "title": old_legend.get_title().get_text()
+    }
+    params.update(**kwargs)
+    anchor_point = get_legend_anchor(canvas)
+    # remove the old legend
+    remove_legend(canvas)
+    # draw new legend based on anchor point of the old one.
+    legend = canvas.axesleg.legend(
+        loc=anchor_point,
+        bbox_to_anchor=anchor_point,
+        bbox_transform=canvas.figure.transFigure,
+        **params
+    )
+    legend.set_draggable(True, update='bbox')
+    legend.set_gid(old_legend.get_gid())
+
+    update_props(legend_title, legend.get_title())
+    for new_text, old_text in zip(legend.get_texts(), legend_texts):
+        update_props(old_text, new_text)
+
+    
 
 def remove_legend(canvas: Canvas):
     _legend = get_legend(canvas)

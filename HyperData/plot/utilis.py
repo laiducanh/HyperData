@@ -138,7 +138,6 @@ def update_props(from_obj: Artist, to_obj: Artist) -> None:
             position = from_obj.get_position(),
             rotation = from_obj.get_rotation(),
             rotation_mode = from_obj.get_rotation_mode(),
-            text = from_obj.get_text(),
             verticalalignment = from_obj.get_verticalalignment(),
             wrap = from_obj.get_wrap(),
             zorder = from_obj.get_zorder()
@@ -318,22 +317,36 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
                 transform=destination_ax.transAxes
             )
         elif isinstance(artist, legend.Legend):
+            bbox = artist.get_window_extent()
+            inv_fig = artist.figure.transFigure.inverted()
+            anchor_point = inv_fig.transform(bbox)[0]
             new_artist = legend.Legend(
-                destination_ax,
-                artist.legend_handles,
-                [i.get_label() for i in artist.legend_handles],
-                title=artist.get_title().get_text()
+                parent=destination_ax,
+                handles=artist.legend_handles,
+                labels=[i.get_label() for i in artist.legend_handles],
+                loc=anchor_point,
+                bbox_to_anchor=anchor_point,
+                bbox_transform=destination_ax.figure.transFigure,
+                title=artist.get_title().get_text(),
+                numpoints=artist.numpoints,
+                scatterpoints=artist.scatterpoints,
+                ncols=artist._ncols,
+                columnspacing=artist.columnspacing,
+                frameon=artist.get_frame_on(),
+                shadow=artist.shadow,
+                facecolor=artist.legendPatch.get_facecolor(),
+                edgecolor=artist.legendPatch.get_edgecolor(),
+                framealpha=artist.legendPatch.get_alpha(),
+                borderpad=artist.borderpad,
+                handlelength=artist.handlelength,
+                handleheight=artist.handleheight,
+                handletextpad=artist.handletextpad,
+                draggable=True
             )
-            title_transform = new_artist.get_title().get_transform()
-            new_artist.get_title().update_from(artist.get_title())
-            new_artist.get_title().set_transform(title_transform)
-            bbox = source_ax.transAxes.inverted().transform((
-                artist.get_tightbbox().x0,
-                artist.get_tightbbox().y0
-            ))
-            new_artist.set_bbox_to_anchor(bbox, destination_ax.transAxes)
-            new_artist.set_loc("lower left") # because bbox is computed from (x0, y0)
-            #TO-DO: the legend box actually shifts up and right a little bit
+            update_props(artist.get_title(), new_artist.get_title())
+            for new_text, old_text in zip(new_artist.get_texts(), artist.get_texts()):
+                update_props(old_text, new_text)
+            destination_ax.legend_ = new_artist
 
         if new_artist:
             # Update gid

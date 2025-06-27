@@ -5,9 +5,9 @@ from ui.base_widgets.button import TransparentComboBox, SegmentedWidget, Toggle
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import ScrollArea
-from plot.plotting.plotting import set_legend, get_legend
+from plot.plotting.plotting import get_legend, update_legend
 from config.settings import font_lib, logger
-import matplotlib.pyplot as plt
+from matplotlib import rcParams, colors
 
 DEBUG = False
 
@@ -27,12 +27,12 @@ class LegendBase(ScrollArea):
         self.legend = get_legend(self.canvas)
         if self.legend:
             self.handles = self.legend.legend_handles
-            self.legend_text = self.legend.get_title()
-        
-    def showEvent(self, event):
+            self.legend_title = self.legend.get_title()
+            self.legend_texts = self.legend.get_texts()
+    
+    def paintEvent(self, arg__1):
         self.find_legend()
-        #self.update()
-        return super().showEvent(event)
+        return super().paintEvent(arg__1)
 
 class LegendEntries(LegendBase):
     def __init__(self, canvas: Canvas, parent=None):
@@ -67,8 +67,8 @@ class LegendEntries(LegendBase):
         )
 
         markerscale = TransparentDoubleSpinBox(
-            text = 'Marker scale',
-            min = 0, max = 5, step = 0.1,
+            text = 'Marker Size',
+            min = 0, max = 1000, step = 5,
             setter=self.set_markerscale,
             getter=self.get_markerscale,
             layout=self.vlayout
@@ -84,7 +84,7 @@ class LegendEntries(LegendBase):
 
         npoints = TransparentSpinBox(
             text = "Marker points",
-            min = 1, max = 10, step = 1,
+            min = 0, max = 10, step = 1,
             setter=self.set_npoints,
             getter=self.get_npoints,
             layout=self.vlayout
@@ -100,61 +100,67 @@ class LegendEntries(LegendBase):
     def set_fontname (self, font:str):
         if self.legend:
             try:
-                plt.rcParams["font.family"] = font
+                for text in self.legend_texts:
+                    text.set_fontname(font)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
     
     def get_fontname(self) -> str:
-        if self.legend: return self.legend_text.get_fontname()
-        return plt.rcParams["font.family"][0]
+        if self.legend and self.legend_texts: 
+            return self.legend_texts[0].get_fontname()
+        return rcParams[f"font.{rcParams['font.family'][0]}"][0]
     
     def set_fontsize(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["font.size"] = value
+                for text in self.legend_texts:
+                    text.set_fontsize(value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
     
     def get_fontsize(self):
-        if self.legend: return self.legend_text.get_fontsize()
-        return plt.rcParams["font.size"]
+        if self.legend and self.legend_texts: 
+            return self.legend_texts[0].get_fontsize()
+        return rcParams["font.size"]
     
     def set_color (self, color):
         if self.legend:
             try:
-                plt.rcParams["legend.labelcolor"] = color 
+                for text in self.legend_texts:
+                    text.set_color(color)
+                self.canvas.draw_idle()
             except Exception as e:
-                logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
+                logger.exception(e)            
     
     def get_color (self):
-        return plt.rcParams["legend.labelcolor"]
+        if self.legend and self.legend_texts:   
+            return self.legend_texts[0].get_color()
+        return rcParams["legend.labelcolor"]
     
     def set_markerscale(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["legend.markerscale"] = value
+                for handle in self.handles:
+                    handle.set_markersize(value)
+                self.canvas.draw_idle()
             except Exception as e:
-                logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
+                logger.exception(e)            
 
     def get_markerscale(self) -> float:
-        return plt.rcParams["legend.markerscale"]
+        if self.legend:
+            try: return self.handles[0].get_markersize()
+            except: pass
+        return rcParams["legend.markerscale"]
     
     def set_ncols(self, value:int):
         if self.legend:
             try:
-                self.legend.set_ncols(value)
+                update_legend(self.canvas, ncols=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
     
     def get_ncols(self) -> int:
         if self.legend: return self.legend._ncols
@@ -163,27 +169,26 @@ class LegendEntries(LegendBase):
     def set_npoints(self, value:int):
         if self.legend:
             try:
-                plt.rcParams["legend.numpoints"] = value
-                plt.rcParams["legend.scatterpoints"] = value
+                update_legend(self.canvas, numpoints=value, scatterpoints=value)
+                self.canvas.draw_idle()
             except Exception as e:
-                logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
+                logger.exception(e)            
     
     def get_npoints(self) -> int:
-        return plt.rcParams["legend.numpoints"]
+        if self.legend: return self.legend.numpoints
+        return rcParams["legend.numpoints"]
 
     def set_columnspacing(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["legend.columnspacing"] = value
+                update_legend(self.canvas, columnspacing=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
-            self.canvas.draw_idle()
     
     def get_columnspacing(self) -> float:
-        return plt.rcParams["legend.columnspacing"]
+        if self.legend: return self.legend.columnspacing
+        return rcParams["legend.columnspacing"]
 
 class LegendTitle(LegendBase):
     def __init__(self, canvas:Canvas, parent=None):
@@ -222,19 +227,19 @@ class LegendTitle(LegendBase):
             layout=self.vlayout
         )
 
-        self.backgroundcolor = ColorDropdown(
-            text  = 'Background color',
-            getter=self.get_backgroundcolor,
-            setter=self.set_backgroundcolor,
-            layout=self.vlayout
-        )
+        # self.backgroundcolor = ColorDropdown(
+        #     text  = 'Background color',
+        #     getter=self.get_backgroundcolor,
+        #     setter=self.set_backgroundcolor,
+        #     layout=self.vlayout
+        # )
 
-        edgecolor = ColorDropdown(
-            text  = 'Edge color',
-            getter = self.get_edgecolor,
-            setter=self.set_edgecolor,
-            layout=self.vlayout
-        )
+        # edgecolor = ColorDropdown(
+        #     text  = 'Edge color',
+        #     getter = self.get_edgecolor,
+        #     setter=self.set_edgecolor,
+        #     layout=self.vlayout
+        # )
 
         align = TransparentComboBox(
             text  = "Alignment", 
@@ -248,7 +253,7 @@ class LegendTitle(LegendBase):
         # #pad.button.valueChanged.connect(lambda: self.sig.emit())
         # #layout.addWidget(pad)
 
-        alpha = TransparentDoubleSpinBox(
+        alpha = TransparentSpinBox(
             text = 'Transparency',
             step = 10,
             setter=self.set_alpha,
@@ -265,53 +270,53 @@ class LegendTitle(LegendBase):
         self.canvas.draw_idle()
     
     def get_title(self):
-        if self.legend: return self.legend_text.get_text()
+        if self.legend: return self.legend_title.get_text()
 
     def set_fontname (self, font:str):
         if self.legend:
-            self.legend_text.set_fontname(font.lower())
+            self.legend_title.set_fontname(font.lower())
         self.canvas.draw_idle()
     
     def get_fontname(self):
-        if self.legend: return self.legend_text.get_fontname()
-        return plt.rcParams["font.family"][0]
+        if self.legend: return self.legend_title.get_fontname()
+        return rcParams[f"font.{rcParams['font.family'][0]}"][0]
 
     def set_fontsize(self, value):
-        if self.legend: self.legend_text.set_fontsize(value)
+        if self.legend: self.legend_title.set_fontsize(value)
         self.canvas.draw_idle()
     
     def get_fontsize(self):
-        if self.legend: return self.legend_text.get_fontsize()
-        return plt.rcParams["font.size"]
+        if self.legend: return self.legend_title.get_fontsize()
+        return rcParams["font.size"]
 
     def set_color (self, color):
-        if self.legend: self.legend_text.set_color(color)
+        if self.legend: self.legend_title.set_color(color)
         self.canvas.draw_idle()
     
     def get_color (self):
-        if self.legend: return self.legend_text.get_color()
-        return plt.rcParams["legend.labelcolor"]
+        if self.legend: return self.legend_title.get_color()
+        return rcParams["legend.labelcolor"]
 
     def set_backgroundcolor (self, color):
-        if self.legend: self.legend_text.set_backgroundcolor(color)
+        if self.legend: self.legend_title.set_backgroundcolor(color)
         self.canvas.draw_idle()
     
     def get_backgroundcolor(self):
         if self.legend: 
-            if self.legend_text.get_bbox_patch():
-                return self.legend_text.get_bbox_patch().get_facecolor()
+            if self.legend_title.get_bbox_patch():
+                return self.legend_title.get_bbox_patch().get_facecolor()
         return 'white'
 
     def set_edgecolor (self, color):
         if self.legend:
-            self.legend_text.set_bbox({"edgecolor":color,
+            self.legend_title.set_bbox({"edgecolor":color,
                                 "facecolor":self.backgroundcolor.button.color.name()})
         self.canvas.draw_idle()
     
     def get_edgecolor(self):
         if self.legend:
-            if self.legend_text.get_bbox_patch():
-                return self.legend_text.get_bbox_patch().get_edgecolor()
+            if self.legend_title.get_bbox_patch():
+                return self.legend_title.get_bbox_patch().get_edgecolor()
         return 'white'
     
     def set_alignment(self, value:str):
@@ -334,13 +339,13 @@ class LegendTitle(LegendBase):
 
     def set_alpha (self, value):
         if self.legend:
-            self.legend_text.set_alpha(value/100)
+            self.legend_title.set_alpha(value/100)
         self.canvas.draw_idle()
     
     def get_alpha (self):
         if self.legend:
-            if self.legend_text.get_alpha():
-                return int(self.legend_text.get_alpha()*100)
+            if self.legend_title.get_alpha():
+                return int(self.legend_title.get_alpha()*100)
         return 100
 
 class LegendFrame(LegendBase):
@@ -377,7 +382,7 @@ class LegendFrame(LegendBase):
             layout=self.vlayout
         )
 
-        alpha = TransparentDoubleSpinBox(
+        alpha = TransparentSpinBox(
             text = 'Transparency',
             step = 10,
             setter=self.set_alpha,
@@ -420,101 +425,112 @@ class LegendFrame(LegendBase):
     def set_frameon(self, value:bool):
         if self.legend:
             try:
-                plt.rcParams["legend.frameon"] = value
+                update_legend(self.canvas, frameon=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
         
     def get_frameon(self) -> bool:
-        return plt.rcParams["legend.frameon"]
+        if self.legend: return self.legend.get_frame_on()
+        return rcParams["legend.frameon"]
 
     def set_shadow(self, value:bool):
         if self.legend:
             try:
-                plt.rcParams["legend.shadow"] = value
+                update_legend(self.canvas, shadow=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
     
     def get_shadow(self) -> bool:
-        return plt.rcParams["legend.shadow"]
+        if self.legend: return self.legend.shadow
+        return rcParams["legend.shadow"]
 
     def set_facecolor(self, color):
         if self.legend:
             try:
-                plt.rcParams["legend.facecolor"] = color
+                update_legend(self.canvas, facecolor=color)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
         
     def get_facecolor(self):
-        return plt.rcParams["legend.facecolor"]
+        if self.legend: 
+            return colors.to_hex(self.legend.legendPatch.get_facecolor())
+        return rcParams["legend.facecolor"]
 
     def set_edgecolor(self, color):
         if self.legend:
             try:
-                plt.rcParams["legend.edgecolor"] = color
+                update_legend(self.canvas, edgecolor=color)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
     
     def get_edgecolor(self):
-        return plt.rcParams["legend.edgecolor"]
+        if self.legend: 
+            return colors.to_hex(self.legend.legendPatch.get_edgecolor())
+        return rcParams["legend.edgecolor"]
 
     def set_alpha(self, value):
         if self.legend:
             try:
-                plt.rcParams["legend.framealpha"] = value/100
+                update_legend(self.canvas, framealpha=value/100)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
 
     def get_alpha(self):
-        return int(plt.rcParams["legend.framealpha"]*100)
+        if self.legend: return int(self.legend.legendPatch.get_alpha()*100)
+        return int(rcParams["legend.framealpha"]*100)
 
     def set_borderpad(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["legend.borderpad"] = value
+                update_legend(self.canvas, borderpad=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
     
     def get_borderpad(self) -> float:
-        return plt.rcParams["legend.borderpad"]
+        if self.legend: return self.legend.borderpad
+        return rcParams["legend.borderpad"]
     
     def set_handlelength(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["legend.handlelength"] = value
+                update_legend(self.canvas, handlelength=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
     
     def get_handlelength(self) -> float:
-        return plt.rcParams["legend.handlelength"]
+        if self.legend: return self.legend.handlelength
+        return rcParams["legend.handlelength"]
     
     def set_handleheight(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["legend.handleheight"] = value
+                update_legend(self.canvas, handleheight=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
     
     def get_handleheight(self) -> float:
-        return plt.rcParams["legend.handleheight"]
+        if self.legend: return self.legend.handleheight
+        return rcParams["legend.handleheight"]
     
     def set_handletextpad(self, value:float):
         if self.legend:
             try:
-                plt.rcParams["legend.handletextpad"] = value
+                update_legend(self.canvas, handletextpad=value)
+                self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
-            set_legend(self.canvas)
     
     def get_handletextpad(self) -> float:
-        return plt.rcParams["legend.handletextpad"]
+        if self.legend: self.legend.handletextpad
+        return rcParams["legend.handletextpad"]
     
 class LegendLabel(QDialog):
     def __init__(self, canvas:Canvas, parent=None):

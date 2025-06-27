@@ -395,10 +395,10 @@ class GraphicsView (QGraphicsView):
         self.canvas.restore_region(self.mpl_background)
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
 
-        self.legend_picked = legend_onMove(event, self.canvas)
+        # self.legend_picked = legend_onMove(event, self.canvas)
 
-        if not self.legend_picked and config["plot_tooltip"]:
-            self.tooltip_onShow(event)
+        # if not self.legend_picked and config["plot_tooltip"]:
+        #     self.tooltip_onShow(event)
             
         self.canvas.blit(self.canvas.figure.bbox)
         #self.canvas.flush_events()
@@ -411,7 +411,7 @@ class GraphicsView (QGraphicsView):
         stack = find_mpl_object(source=self.canvas.figure,
                                 match=[Artist])
         
-        self.legend_picked = legend_onPress(event, self.canvas)
+        # self.legend_picked = legend_onPress(event, self.canvas)
         
         # if not self.legend_picked and event.button == 1:
         #     for obj in stack:
@@ -424,7 +424,7 @@ class GraphicsView (QGraphicsView):
     
     def mpl_mouseRelease(self, event: MouseEvent):
         self.save_mpl_bg(event)
-        self.legend_picked = legend_onRelease(event, self.canvas)
+        # self.legend_picked = legend_onRelease(event, self.canvas)
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
