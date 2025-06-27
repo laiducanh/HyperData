@@ -1,7 +1,7 @@
-from PySide6.QtCore import Signal, Qt, QStringListModel, QSize
+from PySide6.QtCore import Signal, Qt, QStringListModel, QSize, QEvent, QTimer
 from PySide6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
 from PySide6.QtWidgets import (QTextEdit, QVBoxLayout, QLayout, QCompleter, QHBoxLayout,
-                             QTreeWidget, QLineEdit)
+                             QTreeWidget, QLineEdit, QSizePolicy)
 from ui.base_widgets.menu import Menu, LineEdit_Menu
 from ui.base_widgets.button import _TransparentPushButton, _TransparentComboBox, HButton
 from ui.base_widgets.text import BodyLabel
@@ -12,24 +12,90 @@ class _LineEdit (QLineEdit):
                  setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent) 
 
+        self.default_width = 150
+        self.setFixedWidth(self.default_width)
+        self.setMouseTracking(True)
+
+        self.getter = getter
+        self.setter = setter
+
         if getter: self.setText(getter())
         if PlaceholderText: self.setPlaceholderText(PlaceholderText)
         if setter: self.textChanged.connect(setter)
         if layout: layout.addWidget(self)
+    
+    def set_value(self, value:str):
+        self.setText(value)
+    
+    def get_value(self) -> str:
+        return self.text()
+    
+    def set_setter(self, setter:Callable):
+        self.setter = setter
+    
+    def get_setter(self) -> Callable:
+        return self.setter
+    
+    def set_getter(self, getter:Callable):
+        self.getter = getter
+
+    def get_getter(self) -> Callable:
+        return self.getter
         
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
         menu = LineEdit_Menu(parent=self)
         menu.exec(a0.globalPos())
+    
+    def set_width(self, value:float):
+        self.default_width = value
+        self.setFixedWidth(self.default_width)
 
+    def enterEvent(self, event):
+        self.setMaximumWidth(3*self.default_width)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Maximum,
+            QSizePolicy.Policy.Minimum
+        )
+        return super().enterEvent(event)
+    
+    def leaveEvent(self, event):
+        self.setFixedWidth(self.default_width)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Minimum,
+            QSizePolicy.Policy.Minimum
+        )
+        return super().leaveEvent(event)
+    
 class _TextEdit (QTextEdit):
     def __init__(self, getter:Callable=None, PlaceholderText:str=None, 
                  setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent)
 
+        self.getter = getter
+        self.setter = setter
+
         if getter: self.setText(getter())
         if PlaceholderText: self.setPlaceholderText(PlaceholderText)
         if setter: self.textChanged.connect(setter)
         if layout: layout.addWidget(self)
+    
+    def set_value(self, value:str):
+        self.setText(value)
+    
+    def get_value(self) -> str:
+        return self.toPlainText()
+
+    def set_setter(self, setter:Callable):
+        self.setter = setter
+    
+    def get_setter(self) -> Callable:
+        return self.setter
+    
+    def set_getter(self, getter:Callable):
+        self.getter = getter
+
+    def get_getter(self) -> Callable:
+        return self.getter
 
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
         menu = LineEdit_Menu(parent=self)
@@ -38,6 +104,12 @@ class _TextEdit (QTextEdit):
 class _SearchBox (_LineEdit):
     def __init__(self, data_lookup: QTreeWidget=None, parent=None):
         super().__init__(parent=parent)
+
+        self.setMaximumWidth(100000) # Expand as much as possible
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Minimum
+        )
 
         self.hBoxLayout = QHBoxLayout(self)
         self.hBoxLayout.setSpacing(3)
@@ -83,14 +155,18 @@ class _SearchBox (_LineEdit):
             self.clear()
         return super().keyPressEvent(a0)
 
+    def enterEvent(self, event):
+        return QLineEdit().enterEvent(event)
+    
+    def leaveEvent(self, event):
+        return QLineEdit().leaveEvent(event)
+
 class _CompleterLineEdit (_TransparentComboBox):
-    def __init__(self, items:list=None, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
+    def __init__(self, items:list[str]=[], getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(items=items, getter=getter, setter=setter, layout=layout, parent=parent)    
 
-        if items: self.items = items
-        else: self.items = list()
-
         self.lineedit = QLineEdit(parent=parent)
+        self.lineedit.returnPressed.connect(self.update_model)
         self.setLineEdit(self.lineedit)
         
         self.completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
@@ -121,11 +197,9 @@ class _CompleterLineEdit (_TransparentComboBox):
         self.setCurrentText(_text)
         self.update()
     
-    def focusOutEvent(self, e: QFocusEvent) -> None:
-        # add current text in lineedit when focus out
-        self._addItem(self.currentText())
-        return super().focusOutEvent(e)
-    
+    def update_model(self):
+        self._addItem(self.lineedit.text())
+
 class LineEdit (HButton):
     def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
                  setter:Callable=None, layout:QLayout=None, parent=None):
@@ -133,6 +207,12 @@ class LineEdit (HButton):
 
         self.button = _LineEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)   
+    
+    def get_value(self) -> str:
+        return super().get_value()
+
+    def set_value(self, value:str):
+        return super().set_value(value)
 
 class TextEdit (HButton):
     def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
@@ -141,6 +221,12 @@ class TextEdit (HButton):
 
         self.button = _TextEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button) 
+    
+    def get_value(self) -> str:
+        return super().get_value()
+    
+    def set_value(self, value:str):
+        return super().set_value(value)
 
 class CompleterLineEdit(HButton):
     def __init__(self, items=None, text:str=None, text2:str=None, getter:Callable=None, setter:Callable=None,
@@ -150,7 +236,11 @@ class CompleterLineEdit(HButton):
         self.button = _CompleterLineEdit(items=items, getter=getter, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)
 
+    def get_value(self) -> str:
+        return super().get_value()
 
+    def set_value(self, value:str):
+        return super().set_value(value)
 
 
 

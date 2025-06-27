@@ -187,6 +187,24 @@ class ColorPickerButton (_PushButton):
 
         if setter: self.colorChanged.connect(setter)
         if layout: layout.addWidget(self)
+    
+    def get_value(self) -> str:
+        return QColor(self.color).name()
+
+    def set_value(self, value:str):
+        self.setColor(value)
+    
+    def set_setter(self, setter:Callable):
+        self.setter = setter
+    
+    def get_setter(self) -> Callable:
+        return self.setter
+    
+    def set_getter(self, getter:Callable):
+        self.getter = getter
+
+    def get_getter(self) -> Callable:
+        return self.getter
 
     def __showColorDialog(self):
         """ show color dialog """
@@ -258,4 +276,8 @@ class ColorDropdown (HButton):
         self.button = ColorPickerButton(setter=setter, getter=getter, parent=parent)
         self.butn_layout.addWidget(self.button)
 
-        
+    def get_value(self) -> str:
+        return super().get_value()
+
+    def set_value(self, value:str):
+        return super().set_value(value)
