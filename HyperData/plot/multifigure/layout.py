@@ -9,7 +9,7 @@ from ui.base_widgets.frame import Frame, ScrollArea
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from plot.utilis import copy_Axes
+from plot.copy_objects import copy_Axes
 
 class SubFigure(Frame):
     sig = Signal()

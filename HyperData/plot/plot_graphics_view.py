@@ -18,7 +18,6 @@ from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
 from config.settings import GLOBAL_DEBUG, config, logger
-from plot.plotting.plotting import legend_onMove, legend_onPress, legend_onRelease
 
 DEBUG = False
 
@@ -395,9 +394,7 @@ class GraphicsView (QGraphicsView):
         self.canvas.restore_region(self.mpl_background)
         #self.canvas.set_cursor(matplotlib.backend_tools.cursors.WAIT)
 
-        # self.legend_picked = legend_onMove(event, self.canvas)
-
-        # if not self.legend_picked and config["plot_tooltip"]:
+        # if config["plot_tooltip"]:
         #     self.tooltip_onShow(event)
             
         self.canvas.blit(self.canvas.figure.bbox)
@@ -411,9 +408,12 @@ class GraphicsView (QGraphicsView):
         stack = find_mpl_object(source=self.canvas.figure,
                                 match=[Artist])
         
-        # self.legend_picked = legend_onPress(event, self.canvas)
-        
-        # if not self.legend_picked and event.button == 1:
+        # prevent signals from 3d angle buttons while rotating 3d figure
+        self.elev_btn.valueChanged.disconnect()
+        self.azim_btn.valueChanged.disconnect()
+        self.roll_btn.valueChanged.disconnect()
+                
+        # if event.button == 1:
         #     for obj in stack:
         #         if obj.contains(event)[0] and not obj.get_gid().startswith("_"):
         #             self.mpl_pressed.emit(obj.get_gid())
@@ -424,7 +424,11 @@ class GraphicsView (QGraphicsView):
     
     def mpl_mouseRelease(self, event: MouseEvent):
         self.save_mpl_bg(event)
-        # self.legend_picked = legend_onRelease(event, self.canvas)
+        
+        # reconnect signals of 3d angle buttons while not rotating 3d figure
+        self.elev_btn.valueChanged.connect(self.elev_btn.setter)
+        self.azim_btn.valueChanged.connect(self.azim_btn.setter)
+        self.roll_btn.valueChanged.connect(self.roll_btn.setter)
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:

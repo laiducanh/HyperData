@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QStackedLayout
 from PySide6.QtGui import QColor
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import ScrollArea
 from plot.canvas import Canvas
@@ -139,7 +139,7 @@ class Grid2D(ScrollArea):
             layout=self.vlayout
         )
 
-        self.alpha = TransparentDoubleSpinBox(
+        self.alpha = TransparentSpinBox(
             text  = 'Transparency',
             text2 = 'Set the transparency of the grid lines',
             step  = 10,
@@ -248,7 +248,7 @@ class Pane2D(ScrollArea):
             layout=self.vlayout
         )
 
-        self.alpha = TransparentDoubleSpinBox(
+        self.alpha = TransparentSpinBox(
             text  = 'Transparency',
             text2 = 'Set the transparency of the Pane',
             step  = 10,

@@ -2,7 +2,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
-from plot.utilis import copy_Axes
+from plot.copy_objects import copy_Axes
 from config.settings import config, logger
 
 matplotlib.use("QtAgg")
@@ -46,7 +46,7 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
         self.axespie = self.figure.add_subplot()
-        self.axesleg = self.figure.add_subplot()
+        self.axesleg = self.figure.add_subplot(gid='legend axes')
 
         self.axespie.set_axis_off()
         self.axesleg.set_axis_off()
@@ -130,8 +130,7 @@ class Canvas3D (Canvas):
         super().__init__()
 
     def initAxes(self):
-        self.axes = self.figure.add_subplot(projection='3d')  
-        self.axesleg = None
+        self.axes = self.figure.add_subplot(projection='3d', gid='legend axes')  
 
         self.axes.xaxis.set_gid("x3d")
         self.axes.yaxis.set_gid("y3d")

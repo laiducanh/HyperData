@@ -5,8 +5,9 @@ from ui.base_widgets.button import TransparentComboBox, SegmentedWidget, Toggle
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.color import ColorDropdown
 from ui.base_widgets.frame import ScrollArea
-from plot.plotting.plotting import get_legend, update_legend
-from config.settings import font_lib, logger
+from plot.utilis import get_legend
+from plot.copy_objects import update_legend
+from config.settings import font_lib, logger, linestyle_lib
 from matplotlib import rcParams, colors
 
 DEBUG = False
@@ -24,7 +25,7 @@ class LegendBase(ScrollArea):
         pass
 
     def find_legend(self):
-        self.legend = get_legend(self.canvas)
+        self.legend = get_legend(self.canvas.figure)
         if self.legend:
             self.handles = self.legend.legend_handles
             self.legend_title = self.legend.get_title()
@@ -157,7 +158,7 @@ class LegendEntries(LegendBase):
     def set_ncols(self, value:int):
         if self.legend:
             try:
-                update_legend(self.canvas, ncols=value)
+                update_legend(self.legend, self.canvas.axesleg, ncols=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -169,7 +170,7 @@ class LegendEntries(LegendBase):
     def set_npoints(self, value:int):
         if self.legend:
             try:
-                update_legend(self.canvas, numpoints=value, scatterpoints=value)
+                update_legend(self.legend, self.canvas.axesleg, numpoints=value, scatterpoints=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)            
@@ -181,7 +182,7 @@ class LegendEntries(LegendBase):
     def set_columnspacing(self, value:float):
         if self.legend:
             try:
-                update_legend(self.canvas, columnspacing=value)
+                update_legend(self.legend, self.canvas.axesleg, columnspacing=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -382,6 +383,22 @@ class LegendFrame(LegendBase):
             layout=self.vlayout
         )
 
+        edgestyle = TransparentComboBox(
+            text  = 'Edge Style',
+            items = linestyle_lib.values(),
+            getter=self.get_edgestyle,
+            setter=self.set_edgestyle,
+            layout=self.vlayout
+        )
+
+        edgewidth = TransparentDoubleSpinBox(
+            text = 'Edge Width',
+            min = 0, max = 5, step = 0.1,
+            getter=self.get_edgewidth,
+            setter=self.set_edgewidth,
+            layout=self.vlayout
+        )
+
         alpha = TransparentSpinBox(
             text = 'Transparency',
             step = 10,
@@ -425,7 +442,7 @@ class LegendFrame(LegendBase):
     def set_frameon(self, value:bool):
         if self.legend:
             try:
-                update_legend(self.canvas, frameon=value)
+                self.legend.set_frame_on(value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -437,7 +454,7 @@ class LegendFrame(LegendBase):
     def set_shadow(self, value:bool):
         if self.legend:
             try:
-                update_legend(self.canvas, shadow=value)
+                update_legend(self.legend, self.canvas.axesleg, shadow=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -449,7 +466,7 @@ class LegendFrame(LegendBase):
     def set_facecolor(self, color):
         if self.legend:
             try:
-                update_legend(self.canvas, facecolor=color)
+                self.legend.legendPatch.set_facecolor(color)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -462,7 +479,7 @@ class LegendFrame(LegendBase):
     def set_edgecolor(self, color):
         if self.legend:
             try:
-                update_legend(self.canvas, edgecolor=color)
+                self.legend.legendPatch.set_edgecolor(color)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -472,10 +489,35 @@ class LegendFrame(LegendBase):
             return colors.to_hex(self.legend.legendPatch.get_edgecolor())
         return rcParams["legend.edgecolor"]
 
+    def set_edgestyle(self, value:str):
+        if self.legend:
+            try:
+                self.legend.legendPatch.set_linestyle(value)
+                self.canvas.draw_idle()
+            except Exception as e:
+                logger.exception(e)
+    
+    def get_edgestyle(self) -> str:
+        if self.legend:
+            return self.legend.legendPatch.get_linestyle()
+        return 'solid'
+    
+    def set_edgewidth(self, value:float):
+        if self.legend:
+            try:
+                self.legend.legendPatch.set_linewidth(value)
+                self.canvas.draw_idle()
+            except Exception as e:
+                logger.exception(e)
+    
+    def get_edgewidth(self) -> float:
+        if self.legend: return self.legend.legendPatch.get_linewidth()
+        return 1.0
+
     def set_alpha(self, value):
         if self.legend:
             try:
-                update_legend(self.canvas, framealpha=value/100)
+                self.legend.legendPatch.set_alpha(value/100)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -487,7 +529,7 @@ class LegendFrame(LegendBase):
     def set_borderpad(self, value:float):
         if self.legend:
             try:
-                update_legend(self.canvas, borderpad=value)
+                update_legend(self.legend, self.canvas.axesleg, borderpad=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -499,7 +541,7 @@ class LegendFrame(LegendBase):
     def set_handlelength(self, value:float):
         if self.legend:
             try:
-                update_legend(self.canvas, handlelength=value)
+                update_legend(self.legend, self.canvas.axesleg, handlelength=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -511,7 +553,7 @@ class LegendFrame(LegendBase):
     def set_handleheight(self, value:float):
         if self.legend:
             try:
-                update_legend(self.canvas, handleheight=value)
+                update_legend(self.legend, self.canvas.axesleg, handleheight=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
@@ -523,7 +565,7 @@ class LegendFrame(LegendBase):
     def set_handletextpad(self, value:float):
         if self.legend:
             try:
-                update_legend(self.canvas, handletextpad=value)
+                update_legend(self.legend, self.canvas.axesleg, handletextpad=value)
                 self.canvas.draw_idle()
             except Exception as e:
                 logger.exception(e)
