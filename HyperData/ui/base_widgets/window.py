@@ -162,7 +162,7 @@ class FileDialog(QFileDialog):
 
         # MacOS has a bug that prevents native dialog from properly working
         # then use the option of DontUseNativeDialog
-        if platform.system() == "Darwin":
-            self.setOption(QFileDialog.Option.DontUseNativeDialog)
+        # if platform.system() == "Darwin":
+        #     self.setOption(QFileDialog.Option.DontUseNativeDialog)
 
 

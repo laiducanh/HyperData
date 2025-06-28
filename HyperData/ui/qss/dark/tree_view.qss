@@ -18,22 +18,3 @@ ListWidget::item, TreeWidget::item {
 TreeWidget::item:hover {
     background: rgb(50, 50, 50);
 }
-
-QHeaderView, QHeaderView::section, QTableView QTableCornerButton::section {
-	background: rgba(220, 220, 220, 0.1);
-}
-
-QHeaderView::section {
-	color: white;
-	padding: 1ex;
-}
-
-QTableView::item {
-	color: white;
-    border: none;
-}
-
-QTableView::item:selected {
-	color: white;
-	background-color: --THEMECOLOR-1.0;
-}

@@ -20,7 +20,7 @@ from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.window import FileDialog
 from plot.canvas import Canvas
 from plot.axes.axes_2d import Axes2D
-from plot.axes.axes_3d import Axes3D
+from plot.axes.axes_3d import Axes3D, View3D
 from plot.label.graph_title import GraphTitle
 from plot.label.legend import LegendLabel
 from config.settings import GLOBAL_DEBUG, logger, config
@@ -72,15 +72,16 @@ class PlotView(QMainWindow):
                 "Manage graph":["Add graph"],
                 "Axis":["X Axis","Y Axis","Z Axis"],
                 "Pane":["XY Pane","YZ Pane","XZ Pane"],
-                "Label":["Title","Legend","Data Annotation"],
+                "Figure 3D": [],
+                "Label":["Title","Legend"],
             }
 
         else:
             self.treeview_data = {
                 "Manage graph":["Add graph"],
                 "Axis":["Bottom Axis","Left Axis","Top Axis","Right Axis"],
-                "Figure":['Grid and Pane'],
-                "Label":["Title", "Legend","Data Annotation"]
+                "Figure 2D":[],
+                "Label":["Title", "Legend"]
             }
 
         self.sidebar = QWidget()
@@ -179,8 +180,12 @@ class PlotView(QMainWindow):
             self.xpane = Axes3D('YZ Pane', self.canvas, self)
             self.xpane.exec()
         
-        elif text == 'grid and pane':
+        elif text == 'figure 2d':
             self.axes  = Axes2D(self.canvas, self)
+            self.axes.exec()
+        
+        elif text == 'figure 3d':
+            self.axes = View3D(self.canvas, self)
             self.axes.exec()
         
         elif text == 'title':

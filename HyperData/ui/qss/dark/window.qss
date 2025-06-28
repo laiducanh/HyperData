@@ -1,6 +1,25 @@
-QMainWindow, QMenuBar, QTableView, QAbstractTableModel {
+QMainWindow, QMenuBar, QTableView, QAbstractTableModel, QGraphicsView {
     background-color:rgb(32, 32, 32);
     color:white;
+}
+
+QHeaderView, QHeaderView::section, QTableView QTableCornerButton::section {
+	background: rgba(220, 220, 220, 0.1);
+}
+
+QHeaderView::section {
+	color: white;
+	padding: 1ex;
+}
+
+QTableView::item {
+	color: white;
+    border: none;
+}
+
+QTableView::item:selected {
+	color: white;
+	background-color: --THEMECOLOR-1.0;
 }
 
 NodeContentWidget {

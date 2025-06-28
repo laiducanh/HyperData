@@ -2,6 +2,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.copy_objects import copy_Axes
 from config.settings import config, logger
 
@@ -130,7 +131,7 @@ class Canvas3D (Canvas):
         super().__init__()
 
     def initAxes(self):
-        self.axes = self.figure.add_subplot(projection='3d', gid='legend axes')  
+        self.axes: Axes3D = self.figure.add_subplot(projection='3d', gid='legend axes')  
 
         self.axes.xaxis.set_gid("x3d")
         self.axes.yaxis.set_gid("y3d")

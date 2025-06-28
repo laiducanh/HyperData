@@ -12,12 +12,9 @@ import matplotlib, math
 import numpy as np
 from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from ui.base_widgets.spinbox import _Slider, _TransparentDoubleSpinBox
-from ui.base_widgets.text import BodyLabel
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
-from config.settings import GLOBAL_DEBUG, config, logger
 
 DEBUG = False
 
@@ -130,42 +127,6 @@ class GraphicsView (QGraphicsView):
         self.canvas.mpl_connect('figure_enter_event', self.mpl_enterFigure)
         self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
 
-        widget = QWidget()
-        widget.setStyleSheet("background-color:transparent;")
-        widget_layout = QHBoxLayout(widget)
-
-        widget_layout.addWidget(BodyLabel('Zoom'))
-        self.zoom_slider = _Slider(orientation=Qt.Orientation.Horizontal,step=10)
-        self.zoom_slider.setValue(100)
-        widget_layout.addWidget(self.zoom_slider)
-
-        if isinstance(canvas, Canvas3D):
-            widget_layout.addSpacing(10)
-            widget_layout.addWidget(BodyLabel('Elevation angle'))
-            self.elev_btn = _TransparentDoubleSpinBox(
-                min=-360, max=360, step=10,
-                getter=lambda: self.canvas.axes.elev,
-                setter=self.view3d_onChange,
-                layout=widget_layout
-            )
-            widget_layout.addWidget(BodyLabel('Azimuthal angle'))
-            self.azim_btn = _TransparentDoubleSpinBox(
-                min=-360, max=360, step=10,
-                getter=lambda: self.canvas.axes.azim,
-                setter=self.view3d_onChange,
-                layout=widget_layout
-            )
-            widget_layout.addWidget(BodyLabel('Roll angle'))
-            self.roll_btn = _TransparentDoubleSpinBox(
-                min=-360, max=360, step=10,
-                getter=lambda: self.canvas.axes.roll,
-                setter=self.view3d_onChange,
-                layout=widget_layout
-            )      
-        
-        self.widget_item = WidgetItem(widget)
-        self._scene.addItem(self.widget_item)
-
     def Menu(self):
         self.menu.clear()
 
@@ -227,10 +188,6 @@ class GraphicsView (QGraphicsView):
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         self.mouse_position = self.mapToScene(event.pos())        
-        if self.mouse_position.y() > self.widget_item.pos().y():
-            self.widget_item.setOpacity(1)
-        else: self.widget_item.setOpacity(0.4)
-
         return super().mouseMoveEvent(event)
     
     def mousePressEvent(self, event):
@@ -369,14 +326,6 @@ class GraphicsView (QGraphicsView):
 
                 break
 
-    def view3d_onChange(self):
-        self.canvas.axes.view_init(
-            elev=self.elev_btn.value(), 
-            azim=self.azim_btn.value(), 
-            roll=self.roll_btn.value(),
-        )
-        self.canvas.draw_idle()
-        
     def save_mpl_bg(self, event=None):
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.figure.bbox)
         
@@ -399,19 +348,10 @@ class GraphicsView (QGraphicsView):
             
         self.canvas.blit(self.canvas.figure.bbox)
         #self.canvas.flush_events()
-        if isinstance(self.canvas, Canvas3D): 
-            self.elev_btn.setValue(self.elev_btn.getter())
-            self.azim_btn.setValue(self.azim_btn.getter())
-            self.roll_btn.setValue(self.roll_btn.getter())
 
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(source=self.canvas.figure,
                                 match=[Artist])
-        
-        # prevent signals from 3d angle buttons while rotating 3d figure
-        self.elev_btn.valueChanged.disconnect()
-        self.azim_btn.valueChanged.disconnect()
-        self.roll_btn.valueChanged.disconnect()
                 
         # if event.button == 1:
         #     for obj in stack:
@@ -424,11 +364,6 @@ class GraphicsView (QGraphicsView):
     
     def mpl_mouseRelease(self, event: MouseEvent):
         self.save_mpl_bg(event)
-        
-        # reconnect signals of 3d angle buttons while not rotating 3d figure
-        self.elev_btn.valueChanged.connect(self.elev_btn.setter)
-        self.azim_btn.valueChanged.connect(self.azim_btn.setter)
-        self.roll_btn.valueChanged.connect(self.roll_btn.setter)
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -458,25 +393,18 @@ class GraphicsView (QGraphicsView):
             self.Menu()
             self.menu.exec(pos)       
         super().mouseReleaseEvent(event)
-                
-                
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        super().paintEvent(a0)
-        self.resizePlot()
-   
-    def resizePlot (self):
-        ratio = self.zoom_slider.value()/100
+    
+    def resizePlot(self):
         size = self.viewport().size()
-        height = size.height()*ratio
-        width = size.width()*ratio
+        height = size.height()
+        width = size.width()
         self.canvas.resize(int(width), int(height))
         self.plotview.setPos(size.width()/2-width/2,size.height()/2-height/2)
-        if isinstance(self.canvas, Canvas3D):
-            self.widget_item.setPos(20, size.height()-50)
-        else:
-            self.widget_item.setPos(20, size.height()-40)
         self.setSceneRect(0,0,size.width(),size.height())
-        
+    
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.resizePlot()
       
     def keyPressEvent(self, event: QKeyEvent) -> None:
         self.key_pressed.emit(event)

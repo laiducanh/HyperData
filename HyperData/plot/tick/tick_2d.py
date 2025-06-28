@@ -309,7 +309,6 @@ class TickBase2(TickBase):
             linear_width = self.linear_width.get_value()
             label = self.label.get_value()
             fmt = self.fmt.get_value()
-            value = [float(i) for i in self.value.get_value().split(',')]
 
             if locator == 'Auto':
                 if self.ticktype == 'major':
@@ -330,14 +329,15 @@ class TickBase2(TickBase):
                     if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
                     else: self.obj.set_minor_formatter(ticker.ScalarFormatter())
             elif locator == 'Fixed Values':
+                value = [float(i) for i in self.value.get_value().split(',')]
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.FixedLocator(value,nbins))
                     if fmt: self.obj.set_major_formatter(ticker.StrMethodFormatter(fmt))
-                    else: self.obj.set_major_formatter(ticker.FixedFormatter(value,nbins))
+                    else: self.obj.set_major_formatter(ticker.FixedFormatter(value))
                 else:
                     self.obj.set_minor_locator(ticker.FixedLocator(value,nbins))
                     if fmt: self.obj.set_minor_formatter(ticker.StrMethodFormatter(fmt))
-                    else: self.obj.set_minor_formatter(ticker.FixedFormatter(value,nbins))
+                    else: self.obj.set_minor_formatter(ticker.FixedFormatter(value))
             elif locator == 'Max Number':
                 if self.ticktype == 'major':
                     self.obj.set_major_locator(ticker.MaxNLocator(nbins,min_n_ticks=min_n_ticks))

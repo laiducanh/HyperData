@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
 from data_processing.data_window import DataSelection
 from ui.base_widgets.button import _TransparentToolButton, _DropDownPushButton
 from ui.base_widgets.menu import Menu, Action
@@ -35,6 +35,7 @@ class Widget2D_3input (QWidget):
         self.choose_axis1.setMenu(self.x_axis)
         
         self.input1 = _CompleterLineEdit()
+        self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_1 = _TransparentToolButton()
@@ -52,6 +53,7 @@ class Widget2D_3input (QWidget):
         self.choose_axis2.setMenu(self.y_axis)
 
         self.input2 = _CompleterLineEdit()
+        self.input2.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input2.setCurrentText(self.input[1])
         self.input2.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_2 = _TransparentToolButton()
@@ -62,6 +64,7 @@ class Widget2D_3input (QWidget):
         self.text3 = BodyLabel("Other")
         self.text3.setSizePolicy(self.choose_axis1.sizePolicy())
         self.input3 = _CompleterLineEdit()
+        self.input3.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input3.setCurrentText(self.input[2])
         self.input3.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_3 = _TransparentToolButton()
@@ -163,6 +166,7 @@ class Widget3D (QWidget):
         from plot.insert_plot.utilis import icon_open
 
         self.input1 = _CompleterLineEdit()
+        self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input1.setCurrentText(self.input[0])
         self.input1.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_1 = _TransparentToolButton()
@@ -170,6 +174,7 @@ class Widget3D (QWidget):
         self.choose_data_1.clicked.connect(lambda: self.open_data('input 1'))
 
         self.input2 = _CompleterLineEdit()
+        self.input2.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input2.setCurrentText(self.input[1])
         self.input2.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_2 = _TransparentToolButton()
@@ -177,6 +182,7 @@ class Widget3D (QWidget):
         self.choose_data_2.clicked.connect(lambda: self.open_data('input 2'))
 
         self.input3 = _CompleterLineEdit()
+        self.input3.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.input3.setCurrentText(self.input[2])
         self.input3.lineedit.returnPressed.connect(self.input_func)
         self.choose_data_3 = _TransparentToolButton()

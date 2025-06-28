@@ -2,15 +2,17 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QDialog, QStackedLayout
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.frame import ScrollArea
-from plot.canvas import Canvas
+from ui.base_widgets.frame import ScrollArea, SeparateHLine
+from ui.base_widgets.text import TitleLabel
+from plot.canvas import Canvas3D
 from matplotlib import colors
+import numpy as np
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
 DEBUG = False
 
 class Margin3D(ScrollArea):
-    def __init__(self, canvas:Canvas, parent=None):
+    def __init__(self, canvas:Canvas3D, parent=None):
         super().__init__(parent=parent)
 
         self.canvas = canvas
@@ -80,7 +82,7 @@ class Margin3D(ScrollArea):
         return self.canvas.figure.subplotpars.right
     
 class Grid3D(ScrollArea):
-    def __init__(self, axis:str, canvas: Canvas, parent=None):
+    def __init__(self, axis:str, canvas: Canvas3D, parent=None):
         super().__init__(parent=parent)
 
         self.canvas = canvas
@@ -138,7 +140,7 @@ class Grid3D(ScrollArea):
 
 
 class Pane3D(ScrollArea):
-    def __init__(self, axis:str, canvas: Canvas, parent=None):
+    def __init__(self, axis:str, canvas: Canvas3D, parent=None):
         super().__init__(parent=parent)
 
         self.canvas = canvas
@@ -196,7 +198,7 @@ class Pane3D(ScrollArea):
 
 
 class Axes3D(QDialog):
-    def __init__(self, axis:str, canvas:Canvas, parent=None):
+    def __init__(self, axis:str, canvas:Canvas3D, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle(f"{axis} settings")
@@ -222,3 +224,107 @@ class Axes3D(QDialog):
 
         pane = Pane3D(axis, canvas, parent)
         self.stackedlayout.addWidget(pane)
+
+class View3D(QDialog):
+    def __init__(self, canvas:Canvas3D, parent=None):
+        super().__init__(parent)
+
+        self.canvas = canvas
+
+        layout = QVBoxLayout(self)
+        scrollarea = ScrollArea()
+        layout.addWidget(scrollarea)
+
+        scrollarea.vlayout.addWidget(TitleLabel('View'))
+        scrollarea.vlayout.addWidget(SeparateHLine())
+
+        self.elev = TransparentDoubleSpinBox(
+            min=-360, max=360, step=10,
+            text='Elevation angle',
+            getter=lambda: self.canvas.axes.elev,
+            setter=self.set_view,
+            layout=scrollarea.vlayout
+        )
+
+        self.azim = TransparentDoubleSpinBox(
+            min=-360, max=360, step=10,
+            text='Azimuthal angle',
+            getter=lambda: self.canvas.axes.azim,
+            setter=self.set_view,
+            layout=scrollarea.vlayout
+        )
+
+        self.roll = TransparentDoubleSpinBox(
+            min=-360, max=360, step=10,
+            text='Roll angle',
+            getter=lambda: self.canvas.axes.roll,
+            setter=self.set_view,
+            layout=scrollarea.vlayout
+        )     
+
+        self.vertical_axis = TransparentComboBox(
+            items=["x","y","z"],
+            text='Vertical axis',
+            text2='Azimuthal angle rotates about this axis',
+            setter=self.set_view,
+            getter=lambda: ["x","y","z"][self.canvas.axes._vertical_axis],
+            layout=scrollarea.vlayout
+        )
+
+        scrollarea.vlayout.addWidget(TitleLabel('Projection'))
+        scrollarea.vlayout.addWidget(SeparateHLine())
+
+        self.proj_type = TransparentComboBox(
+            items=["persp","ortho"],
+            text='Projection type',
+            text2='Set the projection type',
+            setter=self.set_proj_type,
+            getter=self.get_proj_type,
+            layout=scrollarea.vlayout
+        ) 
+
+        self.focal_length = TransparentDoubleSpinBox(
+            min=1, max=1000, step=1,
+            text='Focal length',
+            text2="Focal length of the virtual camera used for a projection type of 'persp'",
+            setter=self.set_proj_type,
+            getter=self.get_focal_length,
+            layout=scrollarea.vlayout
+        )
+    
+    def set_view(self):
+        try: 
+            self.canvas.axes.view_init(
+                elev=self.elev.get_value(), 
+                azim=self.azim.get_value(), 
+                roll=self.roll.get_value(),
+                vertical_axis=self.vertical_axis.get_value()
+            )
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
+    
+    def set_proj_type(self):
+        try:
+            proj_type = self.proj_type.get_value()
+            if proj_type == 'persp':
+                focal_length = self.focal_length.get_value()
+            else: # ortho
+                focal_length = None
+            self.canvas.axes.set_proj_type(
+                proj_type=proj_type,
+                focal_length=focal_length
+            )
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_proj_type(self) -> str:
+        if self.canvas.axes._focal_length in (None, np.inf):
+            return 'ortho'
+        return 'persp'
+    
+    def get_focal_length(self) -> float:
+        if self.canvas.axes._focal_length in (None, np.inf):
+            return 1
+        else: return self.canvas.axes._focal_length

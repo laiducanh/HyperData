@@ -26,39 +26,21 @@ class Line(ArtistConfigBase):
             layout=self.vlayout
         )
 
-        self.solid_capstyle = TransparentComboBox(
-            text  = "Solid Capstyle", 
+        self.capstyle = TransparentComboBox(
+            text  = "Capstyle", 
             items = ['butt', 'projecting', 'round'],
-            setter=self.set_solid_capstyle,
-            getter=self.get_solid_capstyle,
+            setter=self.set_capstyle,
+            getter=self.get_capstyle,
             layout=self.vlayout
         )
         
-        self.solid_joinstyle = TransparentComboBox(
-            text  = "Solid Joinstyle", 
+        self.joinstyle = TransparentComboBox(
+            text  = "Joinstyle", 
             items = ['miter', 'round', 'bevel'],
-            setter=self.set_solid_joinstyle,
-            getter=self.get_solid_joinstyle,
+            setter=self.set_joinstyle,
+            getter=self.get_joinstyle,
             layout=self.vlayout
         )
-
-        self.dash_capstyle = TransparentComboBox(
-            text  = "Dash Capstyle", 
-            items = ['butt', 'projecting', 'round'],
-            getter=self.get_dash_capstyle,
-            setter=self.set_dash_capstyle,
-            layout=self.vlayout
-        )
-        self.dash_capstyle.hide()
-
-        self.dash_joinstyle = TransparentComboBox(
-            text  = "Dash Joinstyle", 
-            items = ['miter', 'round', 'bevel'],
-            getter=self.get_dash_joinstyle,
-            setter=self.set_dash_joinstyle,
-            layout=self.vlayout
-        )
-        self.dash_joinstyle.hide()
 
         self.linewidth = TransparentDoubleSpinBox(
             text = 'Line Width',
@@ -113,52 +95,30 @@ class Line(ArtistConfigBase):
         try: return self.find_object()[0].get_linestyle()
         except: return "solid"
     
-    def set_solid_capstyle(self, value):
+    def set_capstyle(self, value):
         try:
             for obj in self.find_object():
                 obj.set_solid_capstyle(value)
+                obj.set_dash_capstyle(value)
             self.prepare_update()
         except Exception as e:
             logger.exception(e)
     
-    def get_solid_capstyle(self):
+    def get_capstyle(self):
         try: return self.find_object()[0].get_solid_capstyle()
         except: return "butt"
     
-    def set_solid_joinstyle(self, value):
+    def set_joinstyle(self, value):
         try:
             for obj in self.find_object():
                 obj.set_solid_joinstyle(value)
-            self.prepare_update()
-        except Exception as e: 
-            logger.exception(e)
-    
-    def get_solid_joinstyle(self):
-        try: return self.find_object()[0].get_solid_joinstyle()
-        except: return "miter"
-
-    def set_dash_capstyle(self, value):
-        try: 
-            for obj in self.find_object():
-                obj.set_dash_capstyle(value)
-            self.prepare_update()
-        except Exception as e: 
-            logger.exception(e)
-    
-    def get_dash_capstyle(self):
-        try: return self.find_object()[0].get_dash_capstyle()
-        except: return "butt"
-
-    def set_dash_joinstyle(self, value):
-        try:
-            for obj in self.find_object():
                 obj.set_dash_joinstyle(value)
             self.prepare_update()
         except Exception as e: 
             logger.exception(e)
     
-    def get_dash_joinstyle(self):
-        try: return self.find_object()[0].get_dash_joinstyle()
+    def get_joinstyle(self):
+        try: return self.find_object()[0].get_solid_joinstyle()
         except: return "miter"
     
     def set_linewidth(self, value):
