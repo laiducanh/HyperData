@@ -163,46 +163,45 @@ class _SearchBox (_LineEdit):
 
 class _CompleterLineEdit (_TransparentComboBox):
     def __init__(self, items:list[str]=[], getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(items=items, getter=getter, setter=setter, layout=layout, parent=parent)    
+        super().__init__(parent=parent)   
+
+        self.items = items
+        self.getter = getter
+        self.setter = setter 
 
         self.lineedit = QLineEdit(parent=parent)
-        self.lineedit.returnPressed.connect(self.update_model)
         self.setLineEdit(self.lineedit)
         
         self.completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.completer().setFilterMode(Qt.MatchFlag.MatchContains)
         self.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)        
-    
+
+        if layout: layout.addWidget(self)
+        if items: self._addItems(items)
+        if setter: self.lineedit.editingFinished.connect(setter)
+        if getter: self.lineedit.setText(getter())
+
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
         menu = LineEdit_Menu(parent=self.lineedit)
         menu.exec(a0.globalPos())
     
     def _addItems (self, items:list):
-        _text = self.currentText()
-        for i in items:
-            if i not in self.items:
-                self.items.append(i)
+        _text = self.lineedit.text()
+        self.items = items
         self.clear()
-        self.addItems(self.items)
+        self.addItems(items)
         self.setCompleter(Completer(string_list=self.items))
         self.setCurrentText(_text)
         self.update()
     
     def _addItem(self, item:str):
-        _text = self.currentText()
+        _text = self.lineedit.text()
         if item not in self.items: self.items.append(item)
         self.clear()
         self.addItems(self.items)
         self.setCompleter(Completer(string_list=self.items))
         self.setCurrentText(_text)
         self.update()
-    
-    def update_model(self):
-        self._addItem(self.lineedit.text())
-    
-    def focusOutEvent(self, e):
-        self._addItem(self.lineedit.text())
-        return super().focusOutEvent(e)
 
 class LineEdit (HButton):
     def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
@@ -211,6 +210,8 @@ class LineEdit (HButton):
 
         self.button = _LineEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button)   
+
+        if layout: layout.addWidget(self)
     
     def get_value(self) -> str:
         return super().get_value()
@@ -225,6 +226,8 @@ class TextEdit (HButton):
 
         self.button = _TextEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
         self.butn_layout.addWidget(self.button) 
+
+        if layout: layout.addWidget(self)
     
     def get_value(self) -> str:
         return super().get_value()

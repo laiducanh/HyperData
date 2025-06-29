@@ -9,22 +9,24 @@ class WidgetPie (QWidget):
     sig = Signal()
     def __init__(self, node:NodeGraphicsNode, input:list[str], axes:list[str], parent=None):
         super().__init__(parent)
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+
+        layout = QHBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(0,0,0,0)
 
         self.input = input
         self.node = node
-        self.axes = axes
+        self.axes = "pie"
 
         from plot.insert_plot.utilis import icon_open
 
-        self.input1 = _CompleterLineEdit()
+        self.input1 = _CompleterLineEdit(
+            items=node.content.data_to_view.columns.tolist(),
+            setter=self.input_func,
+            getter=lambda: self.input[0],
+            layout=layout
+        )
         self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.input1.setCurrentText(self.input[0])
-        self.input1.lineedit.returnPressed.connect(self.input_func)
-        layout.addWidget(self.input1)
 
         self.choose_data = _TransparentToolButton(
             icon=icon_open,

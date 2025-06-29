@@ -31,15 +31,16 @@ def evaluate_func (input:str,var):
     return data_input
 
 def process_1d_data (input:str, data:pandas.DataFrame):
-    """ this function accepts input as a string of 1d data
-    in which element is separated by a comma
+    """ 
+    This function accepts input as a string of 1d data in which element is separated by a comma
+
     """
     data_input = []
     split = input.split(',')
 
     try:
         for i in split:
-            try: 
+            try: # try to evaluate python expression first
                 _d = eval(i, {"numpy":numpy, "np": numpy, "math":math})
             except:
                 try:
@@ -53,7 +54,10 @@ def process_1d_data (input:str, data:pandas.DataFrame):
 
                     _d = data.iloc[start_row : end_row, start_col : end_col].to_numpy()
                 except:
-                    _d = str(i)
+                    try: # if input is the name of a column in dataframe
+                        _d = data[i]
+                    except: # last case will be the plain text obtained from input
+                        _d = i
    
             data_input.append(_d)
             data_input = list(numpy.ravel(data_input))
@@ -65,11 +69,13 @@ def process_1d_data (input:str, data:pandas.DataFrame):
     return data_input
 
 def split_input(input:str, data:pandas.DataFrame):
-    """ this function will split a string input and
-    try to evaluate math expression from the string """
+    """ 
+    This function will split a string input and try to evaluate math expression from the string 
+
+    """
   
     data_input = []
-    input = input.replace(" ","")
+    # input = input.replace(" ","")
    
     # if input is 2d data, which is separated by "|"
     # split this input into a list of 1d data
