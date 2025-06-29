@@ -168,20 +168,24 @@ class GraphicsView (QGraphicsView):
             axis.addAction(action)
 
         if isinstance(self.canvas, Canvas3D):
-            figure = Menu(text="&Pane", parent=self.menu)
-            self.menu.addMenu(figure)
+            pane = Menu(text="&Pane", parent=self.menu)
+            self.menu.addMenu(pane)
             for text in ["XY Pane","YZ Pane","XZ Pane"]:
-                action = Action(text=text, parent=figure)
+                action = Action(text=text, parent=pane)
                 action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
-                figure.addAction(action)
+                pane.addAction(action)
+            figure = Action(text="&Figure 3D", parent=self.menu)
+            figure.triggered.connect(lambda: self.mouse_released.emit('figure 3d'))
+            self.menu.addAction(figure)
+
         else:
-            figure = Action(text="&Figure", parent=self.menu)
-            figure.triggered.connect(lambda: self.mouse_released.emit('grid and pane'))
+            figure = Action(text="&Grid and Pane", parent=self.menu)
+            figure.triggered.connect(lambda: self.mouse_released.emit('figure 2d'))
             self.menu.addAction(figure)
 
         label = Menu(text="&Label", parent=self.menu)
         self.menu.addMenu(label)
-        for text in ["Title", "Legend", "Data Annotation"]:
+        for text in ["Title", "Legend"]:
             action = Action(text=text, parent=label)
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
             label.addAction(action)

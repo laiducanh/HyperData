@@ -311,7 +311,7 @@ class ExploreView(QWidget):
         self.plot_selection.addWidget(self.varx)
         self.vary = ComboBox(text="Y")
         self.plot_selection.addWidget(self.vary)
-        self.plot_btn = _PrimaryPushButton(self)
+        self.plot_btn = _PrimaryPushButton(parent=self)
         self.plot_btn.setText("Apply")
         self.plot_btn.pressed.connect(self.update_plot)
         self.plot_selection.addWidget(self.plot_btn)
@@ -382,7 +382,7 @@ class ExploreView(QWidget):
 
         dialog = Dialog("Group by", self.parent())
 
-        add_btn = _TransparentPushButton(self)
+        add_btn = _TransparentPushButton(parent=self)
         add_btn.setIcon("add.png")
         add_btn.pressed.connect(add)
         dialog.main_layout.addWidget(add_btn)

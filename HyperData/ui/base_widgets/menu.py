@@ -27,7 +27,7 @@ class Menu (QMenu):
         # This function serves as an updater for menu when toggling dark/light mode
         if self.icon_path: super().setIcon(Icon(self.icon_path))
         for action in self.actions():
-            if isinstance(action, Action): action.update()
+            if isinstance(action, Action): action._update()
         super().update()
     
 
@@ -37,9 +37,10 @@ class Action (QAction):
     in cases we need to change the action's icon according to the theme change 
     
     """
-    def __init__(self, icon:str=None, *args, **kwargs):
+    def __init__(self, icon:Union[str, QIcon]=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.icon_path = None
         if icon: self.setIcon(icon)
 
     def setIcon(self, icon: Union[str, QIcon]) -> None:

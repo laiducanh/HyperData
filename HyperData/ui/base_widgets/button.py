@@ -13,7 +13,7 @@ from config.settings import config
 from typing import Callable, Union
 
 class _PushButton (QPushButton):
-    def __init__(self, icon:Union[str, QIcon]=None, menu:QMenu=None, 
+    def __init__(self, text: str=None, icon:Union[str, QIcon]=None, menu:QMenu=None, 
                  getter:Callable=None, setter:Callable=None, 
                  layout:QLayout=None, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -26,6 +26,7 @@ class _PushButton (QPushButton):
         self.setter = setter
 
         if icon: self.setIcon(icon)
+        if text: self.setText(text)
         if menu: self.setMenu(menu)
         if layout: layout.addWidget(self)
         if getter: self.setText(getter())
@@ -92,20 +93,20 @@ class _DropDownPrimaryPushButton (_DropDownPushButton):
 
 class _TogglePushButton (_PushButton):
     """ checkable PushButton """
-    def __init__(self, icon:Union[str, QIcon]=None, menu:QMenu=None, 
+    def __init__(self, text:str=None, icon:Union[str, QIcon]=None, menu:QMenu=None, 
                  getter:Callable=None, setter:Callable=None, 
                  layout:QLayout=None, parent=None, *args, **kwargs):
-        super().__init__(icon=icon, menu=menu, getter=getter, setter=setter, layout=layout, parent=parent, *args, **kwargs)
+        super().__init__(text=text, icon=icon, menu=menu, getter=getter, setter=setter, layout=layout, parent=parent, *args, **kwargs)
 
         self.setCheckable(True)
 
 class _CheckBox(_TransparentPushButton):
     """ checkable button, the same as _TogglePushButton,
     but behaves as transparent button when uncheck """
-    def __init__(self, icon:Union[str, QIcon]=None, menu:QMenu=None, 
+    def __init__(self, text:str=None, icon:Union[str, QIcon]=None, menu:QMenu=None, 
                  getter:Callable=None, setter:Callable=None, 
                  layout:QLayout=None, parent=None, *args, **kwargs):
-        super().__init__(icon=icon, menu=menu, getter=getter, setter=setter, layout=layout, parent=parent, *args, **kwargs)
+        super().__init__(text=text, icon=icon, menu=menu, getter=getter, setter=setter, layout=layout, parent=parent, *args, **kwargs)
 
         self.setCheckable(True)
     

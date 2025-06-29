@@ -167,7 +167,7 @@ class NewPlot(Frame):
         self.progressbar._setValue(0)
 
         _ax = self.widget.axes
-        
+  
         if self.plot3d:
             ax = self.canvas.axes
         else:

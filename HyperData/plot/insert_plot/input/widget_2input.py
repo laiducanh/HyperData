@@ -27,17 +27,17 @@ class Widget2D_2input (QWidget):
         self.vlayout.addLayout(layout1)
 
         self.x_axis = Menu(parent=self)
-        self.axis_bottom = Action(icon=icon_axisbot,text='Bottom Axis', parent=self)
+        self.axis_bottom = Action(icon=icon_axisbot,text='Bottom Axis')
         self.axis_bottom.triggered.connect(self.choose_axis_bottom)
-        self.axis_top = Action(icon=icon_axistop,text='Top Axis', parent=self)
+        self.axis_top = Action(icon=icon_axistop,text='Top Axis')
         self.axis_top.triggered.connect(self.choose_axis_top)
         self.x_axis.addActions([self.axis_bottom, self.axis_top])
 
         self.choose_axis1 = _TransparentToolButton(
             icon=icon_axisbot if 'axis bottom' in self.axes else icon_axistop,
-            menu=self.x_axis,
             layout=layout1
         )
+        self.choose_axis1.setMenu(self.x_axis)
                 
         self.input1 = _CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
