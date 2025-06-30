@@ -77,7 +77,7 @@ class Dialog (QDialog):
 
     
 class ProgressBar(QProgressBar):
-    def __init__(self, progresstype:Literal['normal','indeterminate']='indeterminate', 
+    def __init__(self, progresstype:Literal['normal','indeterminate']='normal', 
                  parent=None):
         super().__init__(parent)
         self.setFixedHeight(4)
@@ -115,7 +115,11 @@ class ProgressBar(QProgressBar):
         self.aniGroup.addAnimation(self.longBarAniGroup)
         self.aniGroup.setLoopCount(-1)
 
-        if progresstype == 'indeterminate': self.start()
+        if self.progresstype == 'indeterminate': self.start()
+    
+    def set_type(self, progresstype:Literal['normal','indeterminate']):
+        self.progresstype = progresstype
+        if self.progresstype == 'indeterminate': self.start()
     
     def set_value(self, value: int) -> None:
         self._val = value

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QColorDialog
-from PySide6.QtCore import Signal, QThreadPool, Qt
+from PySide6.QtCore import Signal, QThreadPool
 from PySide6.QtGui import QBrush
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.graphics.graphics_content import ContentItem
@@ -22,7 +22,6 @@ class NodeContentWidget(ContentItem):
 
     def run_threadpool(self, *args, **kwargs):
         """ use for threadpool run """
-        self.progress.setValue(0)
         self.worker = Worker(self.func, *args, **kwargs)
         self.worker.signals.finished.connect(self.exec_done)
         self.threadpool.start(self.worker)
@@ -34,7 +33,8 @@ class NodeContentWidget(ContentItem):
         for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
             edge.end_socket.node.content.resetStatus()
         self.exec_btn.setIcon("stop.png")
-        self.timerStart()
+        self.progress.set_type('indeterminate')
+        self.progress.setValue(0)
         self.run_threadpool(*args, **kwargs)
 
     def func(self, *args, **kwargs):
@@ -49,7 +49,7 @@ class NodeContentWidget(ContentItem):
     
     def exec_done(self):
         """ this function will be called when threadpool finishes running"""
-        self.timer.stop()
+        self.progress.set_type('normal')
         self.label.setText(f"Shape: {self.data_to_view.shape}")    
         
         for socket in self.node.output_sockets:
@@ -61,6 +61,7 @@ class NodeContentWidget(ContentItem):
                     logger.exception(e)
         
         self.pipeline()
+        
         self.progress.setValue(100)
         self.exec_btn.setIcon("play.png")
 

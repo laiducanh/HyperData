@@ -20,7 +20,7 @@ class DataReader (NodeContentWidget):
 
         self.node.output_sockets[0].socket_data = pd.DataFrame()
         self._config = dict(
-            nrows=100000,
+            nrows=None,
             delimiter=",",
             header=0,
             skip_blank_lines=True,
@@ -97,13 +97,13 @@ class DataReader (NodeContentWidget):
         dialog.main_layout.addWidget(self.encoding)
 
         self.nrows = TransparentSpinBox(
-            max=100000, 
+            min=-1, max=1000000000, 
             text="Number of rows",
-            text2="Maximum lines to read"
+            text2="Maximum lines to read",
+            getter=lambda: -1 if not self._config["nrows"] else self._config["nrows"],
+            setter=self.update_preview,
+            layout=dialog.main_layout
         )
-        self.nrows.button.setValue(self._config["nrows"])
-        self.nrows.button.valueChanged.connect(self.update_preview)
-        dialog.main_layout.addWidget(self.nrows)
 
         self.sheet_name = TransparentComboBox(
             text="Sheet name",
@@ -128,7 +128,7 @@ class DataReader (NodeContentWidget):
         self._config.update(
             auto_update=self.auto_update.button.isChecked(),
             skip_blank_lines=self.skip_blank_lines.button.isChecked(),
-            nrows=self.nrows.button.value(),
+            nrows=None if self.nrows.button.value() == -1 else self.nrows.button.value(),
             delimiter=self._delimiterDict[self.delimiter.button.currentText()],
             header=0 if self.header.button.isChecked() else None,
             encoding=self.encoding.button.currentText(),

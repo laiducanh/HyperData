@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
-from PySide6.QtCore import Signal, Qt, QTimer
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QAction
 import pandas, os
 from data_processing.data_window import DataView
@@ -24,9 +24,6 @@ class ContentItem(QWidget):
         self.comment = NodeComment() 
         self.comment.hide()
         self.name = type(self).__name__
-        self.timer = QTimer()
-        self.timer.setSingleShot(True)
-        self.timer.timeout.connect(self.timerStop)
 
         self.initUI()
         self.initMenu()
@@ -104,14 +101,14 @@ class ContentItem(QWidget):
     def run_threadpool(self, *args, **kwargs):
         pass
     
-    def timerStart (self, time:int=1000):
-        self.timer.start(time)
-        pass
+    # def timerStart (self, time:int=1000):
+    #     self.timer.start(time)
+    #     pass
     
-    def timerStop (self, step:int=10):
-        if self.progress.value() < 100-step:
-            self.progress.setValue(self.progress.value()+step)
-            self.timerStart()
+    # def timerStop (self, step:int=10):
+    #     if self.progress.value() < 100-step:
+    #         self.progress.setValue(self.progress.value()+step)
+    #         self.timerStart()
     
     def exec (self, *args, **kwargs):
         pass
