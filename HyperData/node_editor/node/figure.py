@@ -16,7 +16,7 @@ class Figure2D (NodeContentWidget):
         self.canvas = Canvas()
        
     def eval (self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
@@ -55,7 +55,7 @@ class MultiFigure(Figure2D):
         self.canvas = MultiFigureCanvas()
     
     def eval (self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = list()
         for edge in self.node.input_sockets[0].edges:
             try: 

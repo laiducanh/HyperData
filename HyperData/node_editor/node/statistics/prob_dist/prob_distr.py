@@ -290,4 +290,4 @@ class ProbDist (NodeContentWidget):
         self.currentWidget().result_dialog()
     
     def eval(self):
-        self.resetStatus()
+        self.resetNode()

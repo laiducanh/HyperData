@@ -185,7 +185,7 @@ class MultiSampleTest (NodeContentWidget):
         self.currentWidget().result_dialog(self.result)
     
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = list()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data.append(edge.start_socket.socket_data)

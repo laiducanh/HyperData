@@ -5,6 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.graphics.graphics_content import ContentItem
 from config.threadpool import Worker
 from config.settings import logger
+import pandas as pd
 
 class NodeContentWidget(ContentItem):
     sig = Signal()
@@ -16,6 +17,7 @@ class NodeContentWidget(ContentItem):
         self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
         self._config = dict()
+        self.resetNode()
 
     def config(self):
         pass
@@ -31,7 +33,7 @@ class NodeContentWidget(ContentItem):
          this function will be called when pressing execute button """
         self.num_signal_pipeline = 0 # reset number of pipeline signal
         for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
-            edge.end_socket.node.content.resetStatus()
+            edge.end_socket.node.content.resetNode()
         self.exec_btn.setIcon("stop.png")
         self.progress.set_type('indeterminate')
         self.progress.setValue(0)
@@ -45,7 +47,7 @@ class NodeContentWidget(ContentItem):
 
     def eval (self):
         """ use to process data_in """
-        self.resetStatus()
+        self.resetNode()
     
     def exec_done(self):
         """ this function will be called when threadpool finishes running"""
@@ -74,6 +76,14 @@ class NodeContentWidget(ContentItem):
         self.num_signal_pipeline += 1
         if self.num_signal_pipeline >= len(self.node.socket_pipeline_in.edges):
             self.exec()
+    
+    def resetNode(self):
+        self.data_to_view = pd.DataFrame()
+        for socket in self.node.output_sockets:
+            socket.socket_data = None
+        self.progress.setValue(0)
+        self.progress.changeColor("success")
+        self.label.setText('Shape: (--, --)') 
     
     def showColorDialog(self):
         dialog = QColorDialog(self.node._brush_background.color(), self.parent)

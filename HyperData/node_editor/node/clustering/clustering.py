@@ -180,7 +180,7 @@ class Clustering (NodeContentWidget):
             self.score_function = dialog.metrics.score_function
         
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         self.node.input_sockets[1].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
@@ -188,7 +188,7 @@ class Clustering (NodeContentWidget):
         for edge in self.node.input_sockets[1].edges:
             self.node.input_sockets[1].socket_data = edge.start_socket.socket_data
     
-    def resetStatus(self):
+    def resetNode(self):
         try: self.score_btn.setText(f"Score: --")
         except: pass
-        return super().resetStatus()
+        return super().resetNode()

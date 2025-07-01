@@ -59,7 +59,7 @@ class InputLayer (DLBase):
         self.node.output_sockets[0].socket_data = [cv, X, Y, layer, layer]
 
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()  
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

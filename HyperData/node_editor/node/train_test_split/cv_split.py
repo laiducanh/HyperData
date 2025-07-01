@@ -141,7 +141,7 @@ class CVSplitter (NodeContentWidget):
         self.data_to_view = data.copy()
      
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         # reset socket data
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         self.node.input_sockets[1].socket_data = pd.DataFrame()

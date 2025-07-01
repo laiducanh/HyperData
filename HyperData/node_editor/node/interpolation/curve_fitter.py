@@ -134,7 +134,7 @@ class CurveFitter (NodeContentWidget):
         self.currentWidget().result_dialog()
 
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()  
         self.node.input_sockets[1].socket_data = pd.DataFrame()  
         for edge in self.node.input_sockets[0].edges:

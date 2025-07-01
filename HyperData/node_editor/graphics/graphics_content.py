@@ -27,7 +27,6 @@ class ContentItem(QWidget):
 
         self.initUI()
         self.initMenu()
-        self.resetStatus()
 
         self.data_to_view = pandas.DataFrame()
 
@@ -152,10 +151,8 @@ class ContentItem(QWidget):
     def showColorDialog(self):
         pass
 
-    def resetStatus(self):
-        self.progress.setValue(0)
-        self.progress.changeColor("success")
-        self.label.setText('Shape: (--, --)') 
+    def resetNode(self):
+        pass
         
     def serialize(self):
         pass

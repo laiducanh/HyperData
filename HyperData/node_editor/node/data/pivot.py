@@ -107,7 +107,7 @@ class DataPivot (NodeContentWidget):
         self.data_to_view = data.copy()
     
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
@@ -190,7 +190,7 @@ class DataUnpivot(NodeContentWidget):
         self.data_to_view = data.copy()
     
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

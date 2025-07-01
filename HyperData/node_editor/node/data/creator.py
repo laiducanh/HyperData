@@ -98,4 +98,4 @@ class DataCreator (NodeContentWidget):
         self.data_to_view = data.copy() 
 
     def eval(self):
-        self.resetStatus()
+        self.resetNode()

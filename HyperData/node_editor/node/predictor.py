@@ -59,7 +59,7 @@ class Predictor (NodeContentWidget):
         self.data_to_view = data.copy()
     
     def eval(self):
-        self.resetStatus()
+        self.resetNode()
         # reset socket data
         for socket in self.node.input_sockets:
             socket.socket_data = None

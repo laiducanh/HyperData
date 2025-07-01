@@ -43,6 +43,6 @@ class Looper (NodeContentWidget):
             self.label.setText(f"Iteration: {self._config['current_iter']+1}")
             self.progress.setValue(int((self._config["current_iter"]+1)/self._config["n"]*100))     
                 
-    def resetStatus(self):
+    def resetNode(self):
         self.progress.setValue(0)
         self.progress.changeColor("success")

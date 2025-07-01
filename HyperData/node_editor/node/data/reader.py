@@ -183,7 +183,7 @@ class DataReader (NodeContentWidget):
             # write log
             logger.info(f"DataReader {self.node.id}: Selected {self.selectedFiles}.")
             # reset status of the node before executing the main function
-            self.resetStatus()
+            self.resetNode()
             # execute main function
             super().exec()
     
