@@ -1,5 +1,8 @@
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent
-from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
+from node_editor.graphics.graphics_node import GraphicsNode
+from node_editor.graphics.graphics_edge import GraphicsEdge
+from node_editor.graphics.graphics_socket import GraphicsSocket
+from config.settings import logger, GLOBAL_DEBUG
 import pandas as pd
 from typing import Union
 
@@ -13,7 +16,7 @@ CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 DEBUG = False
 
-class NodeGraphicsSocket (GraphicsSocket):
+class NodeGraphicsSocket(GraphicsSocket):
     def __init__(self, node:GraphicsNode, index=0, socket_type=SINGLE_IN, data:Union[pd.DataFrame,list]=None, parent=None):
         super().__init__(node, socket_type, parent)
 
@@ -45,21 +48,20 @@ class NodeGraphicsSocket (GraphicsSocket):
     
     def addEdge(self, edge:GraphicsEdge):   
         self.edges.append(edge)
-        if DEBUG: print('Add edge', edge, 'from node', edge.start_socket.node, 'to node', edge.end_socket.node)
-        if DEBUG: print(self.edges)
         if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
           
     def removeEdge(self, edge:GraphicsEdge):
-        if edge in self.edges: 
+        try:
             self.edges.remove(edge)
             if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
-        else: print("Socket::removeEdge", "wanna remove edge", edge, "from self.edges but it's not in the list!")
+        except Exception as e: 
+            logger.warning(f"NodeGraphicsSocket::removeEdge: cannot remove edge {edge.id}.")
+            logger.exception(e)
 
     def removeAllEdges(self):
         for edge in self.edges:
             self.edges.remove(edge)
             if self.socket_type in [SINGLE_IN, MULTI_IN]: edge.end_socket.node.content.eval()
-        if DEBUG: print("Socket::removeAllEdges", "the edge list is", self.edges)
 
     def hasEdge(self) -> bool:
         """ return True if there is at least one edge attached to the socket """

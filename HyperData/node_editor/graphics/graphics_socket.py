@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QBrush, QColor, QPainter
+from node_editor.graphics.graphics_node import GraphicsNode
 from ui.utils import isDark
 import pandas as pd
 
@@ -14,12 +15,12 @@ CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 DEBUG = False
 
-class SocketItem (QGraphicsItem):
-    def __init__(self, socket_type, parent=None):
+class GraphicsSocket(QGraphicsItem):
+    def __init__(self, node: GraphicsNode, socket_type, parent=None):
         super().__init__(parent)
 
-        self.radius = 6.0
-        self.outline_width = 1.5
+        self._radius = 6.0
+        self._outline_width = 1.5
         self._colors = [
             QColor("#FFA04D"),
             QColor("#FA6D6D"),
@@ -36,14 +37,15 @@ class SocketItem (QGraphicsItem):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
 
+        self.node = node
         self.socket_type = socket_type
         self.hovered = False
         self.id = id(self)
 
         self._pen_default = QPen(self._color_outline)
-        self._pen_default.setWidthF(self.outline_width)
+        self._pen_default.setWidthF(self._outline_width)
         self._pen_hovered = QPen(self._color_outline)
-        self._pen_hovered.setWidthF(self.outline_width+1)
+        self._pen_hovered.setWidthF(self._outline_width+1)
         self._brush = QBrush(self._color_background)    
         self._text = QGraphicsTextItem(self)   
         self._text.hide()     
@@ -56,10 +58,10 @@ class SocketItem (QGraphicsItem):
         
         if self.hovered:
             painter.setPen(self._pen_hovered)
-            painter.drawEllipse(int(-self.radius), int(-self.radius), int(2 * self.radius), int(2 * self.radius))
+            painter.drawEllipse(int(-self._radius), int(-self._radius), int(2 * self._radius), int(2 * self._radius))
         else:
             painter.setPen(self._pen_default)
-            painter.drawEllipse(int(-self.radius), int(-self.radius), int(2 * self.radius), int(2 * self.radius))
+            painter.drawEllipse(int(-self._radius), int(-self._radius), int(2 * self._radius), int(2 * self._radius))
         
         if isDark():
             self._text.setDefaultTextColor(Qt.GlobalColor.white)
@@ -68,10 +70,10 @@ class SocketItem (QGraphicsItem):
         
     def boundingRect(self):
         return QRectF(
-            - self.radius - self.outline_width,
-            - self.radius - self.outline_width,
-            2 * (self.radius + self.outline_width),
-            2 * (self.radius + self.outline_width),
+            - self._radius - self._outline_width,
+            - self._radius - self._outline_width,
+            2 * (self._radius + self._outline_width),
+            2 * (self._radius + self._outline_width),
         )
 
     def setSocketLabel(self, title = None):

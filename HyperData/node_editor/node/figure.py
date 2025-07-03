@@ -1,16 +1,14 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from plot.canvas import Canvas, Canvas3D, MultiFigureCanvas
 import pandas as pd
-from ui.base_widgets.menu import Action
 from config.settings import logger
-from plot.plot_view import PlotView
-import pickle
 
 class Figure2D (NodeContentWidget):
     def __init__(self, node, parent=None):
         super().__init__(node,parent)
 
         self.initCanvas()
+        logger.info(f"{self.node.title} {self.node.id}: Initialize Canvas {self.canvas.id}.")
 
     def initCanvas(self):
         self.canvas = Canvas()

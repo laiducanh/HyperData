@@ -1,10 +1,10 @@
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneDragDropEvent
 from PySide6.QtGui import QColor, QKeyEvent, QPen
 from PySide6.QtCore import Signal, Qt, QThreadPool, QTimer
-from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode
-from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
+from node_editor.base.node_graphics_node import NodeGraphicsNode
+from node_editor.base.node_graphics_edge import NodeGraphicsEdge
 from node_editor.node_node import Node
-from config.settings import logger, config
+from config.settings import logger, GLOBAL_DEBUG
 from ui.utils import isDark
 
 SINGLE_IN = 1
@@ -13,6 +13,8 @@ SINGLE_OUT = 3
 MULTI_OUT = 4
 PIPELINE_IN = 5
 PIPELINE_OUT = 6
+
+DEBUG = False
 
 class NodeGraphicsScene(QGraphicsScene):
     sig = Signal(object)
@@ -33,8 +35,8 @@ class NodeGraphicsScene(QGraphicsScene):
         self._pen_dark = QPen(self._color_dark)
         self._pen_dark.setWidth(2)
 
-        self.nodes = []
-        self.edges = []
+        self.nodes:list[NodeGraphicsNode] = []
+        self.edges:list[NodeGraphicsEdge] = []
 
         self.scene_width = 64000
         self.scene_height = 64000
@@ -44,8 +46,12 @@ class NodeGraphicsScene(QGraphicsScene):
         self.initUI()
     
     def initUI(self):
-        self.setSceneRect(-self.scene_width//2, -self.scene_height//2,
-                                  self.scene_width, self.scene_height)
+        self.setSceneRect(
+            -self.scene_width//2, 
+            -self.scene_height//2,
+            self.scene_width, 
+            self.scene_height
+            )
     
     def setBackgroundColor (self):
         if isDark(): self._color_background = QColor("#383838")
@@ -64,35 +70,39 @@ class NodeGraphicsScene(QGraphicsScene):
         self.addItem(node)
         self.nodes.append(node)
         if node.content: node.content.sig.connect(lambda: self.sig.emit(node))
-        logger.info(f"Scene::addNode: add node {node.content.name} {node.id}.")
+        logger.info(f"Scene::addNode: add node {node.title} {node.id}, Scene.nodes {[i.id for i in self.nodes]}.")
 
     def addEdge(self, edge:NodeGraphicsEdge):
         self.addItem(edge)
         self.edges.append(edge)
-        logger.info(f"Scene::addEdge: add edge {edge.id}.")
+        logger.info(f"Scene::addEdge: add edge {edge.id}, Scene.edges {[i.id for i in self.edges]}.")
 
     def removeNode(self, node:Node):
-        if node in self.nodes: 
+        try:
             self.nodes.remove(node)
             self.removeItem(node)
-            logger.info(f"Scene::removeNode: remove node {node.content.name} {node.id}.")
-        else: logger.warn(f"Scene::removeNode: wanna remove node {node.content.name} {node.id} from self.nodes but it's not in the list!")
+            logger.info(f"Scene::removeNode: remove node {node.title} {node.id}, Scene.nodes {[i.id for i in self.nodes]}.")
+        except Exception as e:
+            logger.warning(f"Scene::removeNode: cannot remove node {node.title} {node.id}.")
+            logger.exception(e)
 
     def removeEdge(self, edge:NodeGraphicsEdge):
-        if edge in self.edges: 
+        try:
             self.edges.remove(edge)
             self.removeItem(edge)
             edge.remove()
-            logger.info(f"Scene::removeEdgge: remove edge {edge.id}.")
-        else: logger.warn(f"Scene::removeEdge: wanna remove edge {edge.id} from self.edges but it's not in the list!") 
+            logger.info(f"Scene::removeEdgge: remove edge {edge.id}, Scene.edges {[i.id for i in self.edges]}.")
+        except Exception as e: 
+            logger.warning(f"Scene::removeEdge: cannot remove edge {edge.id}.")
+            logger.exception(e)
     
     def clear(self):
-        for i in self.items():
-            if isinstance(i,(NodeGraphicsNode,NodeGraphicsEdge)):
-                self.removeItem(i)
-                logger.info(f"Scene::clear: remove item {i.id}.")
+        for item in self.items():
+            if isinstance(item,(NodeGraphicsNode,NodeGraphicsEdge)):
+                self.removeItem(item)
+                logger.info(f"Scene::clear: remove item {item.id}.")
         self.nodes = []
         self.edges = []
-        logger.info(f"Scene::clear: reset self.nodes and self.edges.")
+        logger.info(f"Scene::clear: remove all items, reset self.nodes {[i.id for i in self.nodes]} and self.edges {[i.id for i in self.edges]}.")
 
     

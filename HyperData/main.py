@@ -161,7 +161,7 @@ class Main(QMainWindow):
 
 if __name__ == "__main__":
         
-    logger.info(get_path())
+    logger.info(f"Path: {get_path()}.")
     QDir.addSearchPath('ui', os.path.join(get_path(), 'ui'))
 
     # QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)

@@ -1,10 +1,10 @@
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen
 from PySide6.QtCore import Qt
 from ui.base_widgets.menu import Menu
-from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
+from node_editor.graphics.graphics_node import GraphicsNode
 from node_editor.base.node_graphics_socket import NodeGraphicsSocket
+from config.settings import logger, GLOBAL_DEBUG
 from ui.utils import isDark
-import pandas as pd
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -17,7 +17,7 @@ CONNECTOR_OUT = 8
 DEBUG = False
 
 
-class NodeGraphicsNode (GraphicsNode):
+class NodeGraphicsNode(GraphicsNode):
     def __init__(self, title:str, inputs=[], outputs=[], parent=None):
         super().__init__(title, parent)
 
@@ -26,7 +26,7 @@ class NodeGraphicsNode (GraphicsNode):
         self.menu = Menu()
 
         # create socket for inputs and outputs
-        self.input_sockets: list[NodeGraphicsSocket] = list() # keeps track input sockets by a list
+        self.input_sockets:list[NodeGraphicsSocket] = list() # keeps track input sockets by a list
         self.output_sockets:list[NodeGraphicsSocket] = list() # keeps track output sockets by a list
 
         for index, item in enumerate(inputs):
@@ -39,7 +39,10 @@ class NodeGraphicsNode (GraphicsNode):
         self.socket_pipeline_in = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_IN, parent=self)
         self.socket_pipeline_in.setPos(0, self.getSocketPosition(index=0, socket_type=PIPELINE_IN)[1])
         self.socket_pipeline_out = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_OUT, parent=self)
-        self.socket_pipeline_out.setPos(self.width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
+        self.socket_pipeline_out.setPos(self._width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
+
+        logger.info(f"Initialize node {self.title} {self.id}, Node.input_sockets {[i.id for i in self.input_sockets]}, "
+                    f"Node.output_sockets {[i.id for i in self.output_sockets]}.")
 
     def updateConnectedEdges(self):
         """ This method will update the edge attached to the socket that is moved """
@@ -55,21 +58,22 @@ class NodeGraphicsNode (GraphicsNode):
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
         
         if self.content:
-            if self.width != self.content.width() + 6*self.edge_size:
-                self.width = self.content.width() + 6*self.edge_size
+            if self._width != self.content.width() + 6*self._edge_size:
+                self._width = self.content.width() + 6*self._edge_size
                 self.content_change = True
             else: self.content_change = False
-            self.height = self.title_height + min(self.content.sizeHint().height(), self.content.height()) + 2*self._padding
+            self._height = self._title_height + min(self.content.sizeHint().height(), self.content.height()) + 2*self._padding
         
         if self.content_change:
             # update socket positions when content was enlarged
             for socket in self.output_sockets:
-                socket.setPos(self.width, socket.pos().y())
-            self.socket_pipeline_out.setPos(self.width, self.socket_pipeline_out.pos().y())
+                socket.setPos(self._width, socket.pos().y())
+            self.socket_pipeline_out.setPos(self._width, self.socket_pipeline_out.pos().y())
             # update title position
-            self.title_item.setTextWidth(self.width)
+            self.title_item.setTextWidth(self._width)
             # update edges
             self.updateConnectedEdges()
+            logger.info(f"{self.title} {self.id}: content changes, all graphics are updated accordingly.")
        
         return super().paint(painter, QStyleOptionGraphicsItem, widget)
     
@@ -79,29 +83,28 @@ class NodeGraphicsNode (GraphicsNode):
         This method is used to compute socket position, temporarily set socket position always on top 
         """
 
-        x = 0 if (socket_type in (SINGLE_IN, MULTI_IN)) else self.width
+        x = 0 if (socket_type in (SINGLE_IN, MULTI_IN)) else self._width
 
         if socket_type in (SINGLE_OUT, MULTI_OUT):
             # start from bottom
-            y = self.height - self.edge_size - self._padding - index * self.socket_spacing
+            y = self._height - self._edge_size - self._padding - index * self._socket_spacing
 
         # start from top
-        y = self.title_height + self._padding + self.edge_size + index * self.socket_spacing
+        y = self._title_height + self._padding + self._edge_size + index * self._socket_spacing
 
         return [x, y]
     
-    def addSocket (self, index, socket_type):
+    def addSocket(self, index, socket_type):
       
         # add data sockets
         index += 1
         socket = NodeGraphicsSocket(node=self, index=index, socket_type=socket_type, parent=self)
         socket.setPos(*self.getSocketPosition(index=index, socket_type=socket_type))
-        if DEBUG: print("Input Socket",socket, "-- creating with", index, "for node", self)
-        
+                
         if socket_type in (SINGLE_IN, MULTI_IN): self.input_sockets.append(socket)
         else: self.output_sockets.append(socket)
-    
-    def removeSocket (self, index=None, socket_type=None, socket:NodeGraphicsSocket=None):
+
+    def removeSocket(self, index=None, socket_type=None, socket:NodeGraphicsSocket=None):
         if index and socket_type:
             index += 1
             for _socket in self.childItems():
@@ -121,6 +124,9 @@ class NodeGraphicsNode (GraphicsNode):
         inputs, outputs = dict(), dict()
         for socket in self.input_sockets: inputs[socket.id] = socket.serialize()
         for socket in self.output_sockets: outputs[socket.id] = socket.serialize()
+
+        logger.info(f"Serializing node {self.title} {self.id}.")
+
         return {"id":self.id,
                 "title":self.title,
                 "pos_x":self.scenePos().x(),
@@ -138,9 +144,6 @@ class NodeGraphicsNode (GraphicsNode):
         self.title = data['title']
         self._brush_background = QBrush(data['color'])
 
-        #data['inputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
-        #data['outputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
-
         for socket_data, socket in zip(data['input sockets'].keys(), self.input_sockets):
             path = data['input sockets'][socket_data]
             socket.deserialize(path, hashmap)
@@ -151,7 +154,7 @@ class NodeGraphicsNode (GraphicsNode):
        
         self.content.deserialize(data['content'])
 
-        return True
+        logger.info(f"Deserializing node {self.title} {self.id}.")
     
 class NodeEditor (GraphicsNode):
     def __init__(self, title:str, socket_type, parent=None):
@@ -180,10 +183,10 @@ class NodeEditor (GraphicsNode):
 
         if socket_type in (SINGLE_OUT, MULTI_OUT, CONNECTOR_OUT, PIPELINE_OUT):
             # start from bottom
-            y = self.height - self.edge_size - self._padding - index * self.socket_spacing
+            y = self._height - self._edge_size - self._padding - index * self._socket_spacing
 
         # start from top
-        y = self.title_height + self._padding + self.edge_size + index * self.socket_spacing
+        y = self._title_height + self._padding + self._edge_size + index * self._socket_spacing
 
         return [x, y]
 

@@ -10,33 +10,26 @@ from plot.copy_objects import update_props, update_legend
 from plot.canvas import Canvas
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from matplotlib.figure import Figure
 from matplotlib.artist import Artist
 
 DEBUG = False
 
 def set_legend(canvas: Canvas, *args, **kwargs):
     try:   
-        handles = find_mpl_object(
-            canvas.figure,
-            match=[Artist],
-            gid="graph "
-        )
+        handles = find_mpl_object(canvas.figure, match=[Artist], gid="graph ")
         plot_list = set([s.get_gid().split('/')[0] for s in handles])
+        
         labels, handles = list(), list()
         for gid in plot_list:
-            arts = find_mpl_object(
-                canvas.figure,
-                match=[Artist],
-                gid=gid,
-            )
-
+            arts = find_mpl_object(canvas.figure, match=[Artist], gid=gid)
             for art in arts:
                 if art.get_visible() and art.get_label() and not art.get_label().startswith('_'):
                     labels.append(arts[0].get_label())
                     handles.append(arts[0])
-                    break # only one visible artist with valid label is used for legend                
+                    break # only one visible artist with valid label is used for legend  
+
         ax = find_mpl_object(canvas.figure, match=[Axes, Axes3D], gid='legend axes', rule='exact')[0]
+
         if handles != []:            
             if get_legend(canvas.figure): 
                 update_legend(
@@ -50,6 +43,7 @@ def set_legend(canvas: Canvas, *args, **kwargs):
                     *args, *kwargs
                 )
                 legend.set_gid('legend')
+                logger.info("Create legend.")
         
     except Exception as e:
         logger.exception(e)  
@@ -120,5 +114,5 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     set_legend(ax.figure.canvas)
 
     ax.figure.canvas.draw_idle()
-    if DEBUG or GLOBAL_DEBUG: print("plotting")
+
     return artist, props

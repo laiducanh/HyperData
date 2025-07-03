@@ -1,24 +1,24 @@
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsTextItem, QGraphicsProxyWidget, QWidget
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsSceneHoverEvent, QGraphicsTextItem, QGraphicsProxyWidget
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor, QPainterPath, QPainter, QTextOption
 from ui.utils import isDark
 from config.settings import config
-from node_editor.graphics.graphics_content import ContentItem
+from node_editor.graphics.graphics_content import GraphicsContent
 
 DEBUG = False
 
-class NodeItem(QGraphicsItem):
+class GraphicsNode(QGraphicsItem):
     def __init__(self, title:str, parent=None):
         super().__init__(parent)
 
         self._title_font = QFont("Arial", 10.5, 700)
         self.title = title
-        self.edge_size = 5.0
-        self.title_height = 28.0
+        self._edge_size = 5.0
+        self._title_height = 28.0
         self._padding = 4.0
-        self.socket_spacing = 22
-        self.width = 180
-        self.height = 50
+        self._socket_spacing = 22
+        self._width = 180
+        self._height = 50
         self.hovered = False
         self.id = id(self)
         self.content = None
@@ -57,8 +57,8 @@ class NodeItem(QGraphicsItem):
         return QRectF(
             0,
             0,
-            self.width,
-            self.height
+            self._width,
+            self._height
         ).normalized()     
 
     def setTitle(self):
@@ -70,7 +70,7 @@ class NodeItem(QGraphicsItem):
         self.title_item.setFont(self._title_font)
         #self.title_item.setPos(self._padding, 0)
         self.title_item.document().setDefaultTextOption(QTextOption(Qt.AlignmentFlag.AlignCenter))
-        self.title_item.setTextWidth(self.width)
+        self.title_item.setTextWidth(self._width)
     
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
         super().hoverEnterEvent(event)
@@ -88,23 +88,23 @@ class NodeItem(QGraphicsItem):
         # title
         path_title = QPainterPath()
         path_title.setFillRule(Qt.FillRule.WindingFill)
-        path_title.addRoundedRect(0,0, self.width, self.title_height, self.edge_size, self.edge_size)
-        path_title.addRect(0, self.title_height - self.edge_size, self.edge_size, self.edge_size)
-        path_title.addRect(self.width - self.edge_size, self.title_height - self.edge_size, self.edge_size, self.edge_size)
+        path_title.addRoundedRect(0,0, self._width, self._title_height, self._edge_size, self._edge_size)
+        path_title.addRect(0, self._title_height - self._edge_size, self._edge_size, self._edge_size)
+        path_title.addRect(self._width - self._edge_size, self._title_height - self._edge_size, self._edge_size, self._edge_size)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._brush_background)
         painter.drawPath(path_title.simplified())
         self.title_item.setDefaultTextColor(self._title_color)
         painter.setPen(self._pen_default)
-        painter.drawLine(10, self.title_height, self.width-10, self.title_height)
+        painter.drawLine(10, self._title_height, self._width-10, self._title_height)
 
 
         # content
         path_content = QPainterPath()
         path_content.setFillRule(Qt.FillRule.WindingFill)
-        path_content.addRoundedRect(0, self.title_height, self.width, self.height - self.title_height, self.edge_size, self.edge_size)
-        path_content.addRect(0, self.title_height, self.edge_size, self.edge_size)
-        path_content.addRect(self.width - self.edge_size, self.title_height, self.edge_size, self.edge_size)
+        path_content.addRoundedRect(0, self._title_height, self._width, self._height - self._title_height, self._edge_size, self._edge_size)
+        path_content.addRect(0, self._title_height, self._edge_size, self._edge_size)
+        path_content.addRect(self._width - self._edge_size, self._title_height, self._edge_size, self._edge_size)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._brush_background)
         painter.drawPath(path_content.simplified())
@@ -112,7 +112,7 @@ class NodeItem(QGraphicsItem):
 
         # outline
         path_outline = QPainterPath()
-        path_outline.addRoundedRect(0, 0, self.width, self.height, self.edge_size, self.edge_size)
+        path_outline.addRoundedRect(0, 0, self._width, self._height, self._edge_size, self._edge_size)
         
         painter.setBrush(Qt.BrushStyle.NoBrush)
         if self.hovered:
@@ -123,13 +123,13 @@ class NodeItem(QGraphicsItem):
             painter.setPen(self._pen_default if not self.isSelected() else self._pen_selected)
             painter.drawPath(path_outline.simplified())
     
-    def set_Content(self, content: ContentItem):
+    def set_Content(self, content: GraphicsContent):
         self.content = content
         self.grContent = QGraphicsProxyWidget(self)
-        self.content.setGeometry(int(self.edge_size)+10, int(self.title_height + self.edge_size),
-                                 int(self.width - 2*self.edge_size-20), int(self.height - 2*self.edge_size-self.title_height))
+        self.content.setGeometry(int(self._edge_size)+10, int(self._title_height + self._edge_size),
+                                 int(self._width - 2*self._edge_size-20), int(self._height - 2*self._edge_size-self._title_height))
         self.grContent.setWidget(content)
-        self.height = max(self.height, self.title_height + self.content.height() + 2*self._padding)
+        self._height = max(self._height, self._title_height + self.content.height() + 2*self._padding)
 
     def updateConnectedEdges(self):
         pass

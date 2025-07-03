@@ -14,7 +14,7 @@ class NodeComment (_TextEdit):
 
         self.setPlaceholderText("Comment")
 
-class ContentItem(QWidget):
+class GraphicsContent(QWidget):
     sig = Signal()
     def __init__(self, parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__()
@@ -99,15 +99,6 @@ class ContentItem(QWidget):
 
     def run_threadpool(self, *args, **kwargs):
         pass
-    
-    # def timerStart (self, time:int=1000):
-    #     self.timer.start(time)
-    #     pass
-    
-    # def timerStop (self, step:int=10):
-    #     if self.progress.value() < 100-step:
-    #         self.progress.setValue(self.progress.value()+step)
-    #         self.timerStart()
     
     def exec (self, *args, **kwargs):
         pass

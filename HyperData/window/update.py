@@ -12,6 +12,7 @@ class UpdateDialog(Dialog):
     
     def request(self):
         try:
+            logger.info("Checking updates.")
             data_requested = requests.get("https://app.box.com/index.php?rm=box_download_shared_file&shared_name=b3198y2bh6lgyxoyxk8trnjvvqd4p1wz&file_id=f_1261375080213").text
             self.newest_version = data_requested.splitlines()[0]
             self.download = data_requested.splitlines()[1]

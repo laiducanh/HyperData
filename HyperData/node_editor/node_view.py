@@ -6,11 +6,10 @@ from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
 from node_editor.base.node_graphics_node import NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdge
-from node_editor.graphics.graphics_item import GraphicsSocket
 from ui.base_widgets.list import Draggable_TreeWidget
 from ui.base_widgets.line_edit import _SearchBox
 from ui.base_widgets.button import _TransparentToolButton
-from config.settings import config
+from config.settings import config, logger
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -50,6 +49,8 @@ class NodeView (QMainWindow):
         }
 
         self.setup_layout()
+
+        logger.info("Initialize View.")
     
     def setup_layout (self):
         self.mainlayout = QHBoxLayout()
@@ -105,10 +106,8 @@ class NodeView (QMainWindow):
         return super().keyPressEvent(event)
 
     def addNode(self, title):
-        try:
-            node = Node(title,self.node_view)
-            self.grScene.addNode(node)
-        except:pass
+        node = Node(title,self.node_view)
+        self.grScene.addNode(node)
     
     def serialize(self):
         return self.node_view.serialize()

@@ -1,5 +1,6 @@
 ### Import libraries from Python
 from mpl_toolkits import mplot3d
+from matplotlib.artist import Artist
 
 ### Import libraries from PySide6
 from PySide6.QtCore import Qt, Signal
@@ -125,7 +126,6 @@ class PlotView(QMainWindow):
         text = text.lower()
         if text.startswith("graph"):
             plot_gid = text.split("/")[0].split(".")[0]
-            # _plot_index = int(text.split("/")[0].split(".")[0].split()[-1])
             for pt in self.insertplot.plot_list:
                 if pt.plot_gid == plot_gid:
                     _plot = pt
@@ -133,7 +133,6 @@ class PlotView(QMainWindow):
             curve = Curve(text, self.plot_visual.canvas, _plot, self)
             curve.sig.connect(self.update_plotlist)
             curve.exec()
-            pass
         
         elif "add graph" == text:
             # self.insertplot = InsertPlot(self.canvas, self.node, self.plot3d, self.parent())
@@ -202,7 +201,7 @@ class PlotView(QMainWindow):
             self.treeview_data["Manage graph"] = ["Add graph"]
 
             # append list of graphs
-            for obj in find_mpl_object(self.canvas.figure, gid="graph"):
+            for obj in find_mpl_object(self.canvas.figure, match=[Artist], gid="graph"):
                 if not obj.get_gid().startswith("_"):
                     if obj.get_gid().split('/')[0].title() not in self.treeview_data["Manage graph"]:
                         self.treeview_data["Manage graph"].append(obj.get_gid().split('/')[0].title())

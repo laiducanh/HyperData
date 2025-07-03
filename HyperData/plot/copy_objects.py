@@ -3,7 +3,8 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.image import AxesImage
 from matplotlib.legend import Legend
 from matplotlib import lines, patches, collections, text, legend, artist
-from plot.utilis import find_mpl_object, remove_legend, get_legend_anchor, get_legend
+from plot.utilis import find_mpl_object, remove_legend, get_legend_anchor
+from config.settings import logger
 from typing import Union
 
 def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
@@ -79,6 +80,7 @@ def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
             wrap = from_obj.get_wrap(),
             zorder = from_obj.get_zorder()
         )
+    logger.info(f"Canvas {to_obj.figure.canvas.id}: Update artist properties from {from_obj} to {to_obj}.")
 
 def update_legend(old_legend:Legend, ax:Axes, **kwargs) -> Legend:
     
@@ -117,6 +119,8 @@ def update_legend(old_legend:Legend, ax:Axes, **kwargs) -> Legend:
     for new_text, old_text in zip(legend.get_texts(), legend_texts):
         update_props(old_text, new_text)
     update_props(legend_patch, legend.legendPatch)
+
+    logger.info(f"Canvas {ax.figure.canvas.id}: Update legend.")
 
     return legend
 
@@ -307,5 +311,5 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
                               (collections.PathCollection, text.Text)):
                 new_artist.set_transform(destination_ax.transData)  
             destination_ax.add_artist(new_artist)
-
+    logger.info(f'Canvas {destination_ax.figure.canvas.id}: Copy artists from {source_ax.get_gid()} to {destination_ax.get_gid()}.')
     

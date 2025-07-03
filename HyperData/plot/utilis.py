@@ -66,8 +66,7 @@ def remove_artist (figure: Figure, gid:str) -> list[Artist]:
     for artist in find_mpl_object(source=figure,match=[Artist],gid=gid,rule="contain"):
         artist_removed.append(artist)
         artist.remove()
-        if GLOBAL_DEBUG or DEBUG:
-            print('remove_artist::',artist)
+        logger.info(f'Canvas {figure.canvas.id}: remove_artist {artist}.')
     return artist_removed
 
 def get_legend(figure: Figure) -> Union[legend.Legend, None]:

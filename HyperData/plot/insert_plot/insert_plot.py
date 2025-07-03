@@ -138,6 +138,9 @@ class NewPlot(Frame):
         self.update_config()
 
     def update_layout (self, plot_type:str):
+
+        logger.info(f"Canvas {self.canvas.id}: {self.plot_gid} changes from "
+                    f"type {self.plot_type} to type {plot_type}.")
         
         self.plot_type = plot_type
         self.props = dict()
@@ -164,7 +167,7 @@ class NewPlot(Frame):
 
     def plotting (self):
         self.progressbar.setValue(0)
-        self.progressbar._setValue(0)
+        self.progressbar.set_value(0)
 
         _ax = self.widget.axes
   
@@ -202,11 +205,18 @@ class NewPlot(Frame):
             )
 
             self.update_config()
+            self.progressbar.changeColor('success')
+
+            logger.info(f"Canvas {self.canvas.id}: Plot {self.plot_gid} ({len(self.artist)} artists), "
+                        f"type {self.plot_type}, on {self.widget.axes}.")
+
         except Exception as e:
+            self.progressbar.changeColor('fail')
             logger.exception(e)
         
         self.sig.emit()
         self.progressbar.setValue(100)
+        self.canvas.draw_idle()
 
     def update_config(self):
         self.canvas._config[self.plot_gid] = {

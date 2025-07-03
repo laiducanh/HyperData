@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QGraphicsView
-from PySide6.QtCore import Qt, QEvent, QRectF, QTimeLine, Signal
-from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QPainterPath, QColor
+from PySide6.QtCore import Qt, QEvent, QTimeLine
+from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QWheelEvent, QKeyEvent
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode, NodeEditor
-from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdgeDirect, NodeGraphicsEdge
+from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
 from ui.base_widgets.menu import Menu, Action
@@ -140,7 +140,7 @@ class NodeGraphicsView(QGraphicsView):
         self.grScene.addNode(node)
         node.setPos(self.last_rmb_click_scene_pos.x(), self.last_rmb_click_scene_pos.y())
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event:QMouseEvent):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.middleMouseButtonPress(event)
         elif event.button() == Qt.MouseButton.LeftButton:
@@ -150,7 +150,7 @@ class NodeGraphicsView(QGraphicsView):
         else:
             super().mousePressEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event:QMouseEvent):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.middleMouseButtonRelease(event)
         elif event.button() == Qt.MouseButton.LeftButton:
@@ -160,7 +160,7 @@ class NodeGraphicsView(QGraphicsView):
         else:
             super().mouseReleaseEvent(event)
         
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event:QMouseEvent):
         self.mouse_position = self.mapToScene(event.pos())
         if self.drag_mode:
             pos = self.mapToScene(event.pos())
@@ -275,7 +275,7 @@ class NodeGraphicsView(QGraphicsView):
         scene_position = self.grScene.views()[0].mapToScene(mouse_position.toPoint())
         node.setPos(scene_position.x(), scene_position.y())
 
-    def wheelEvent(self, event):
+    def wheelEvent(self, event:QWheelEvent):
         """
         Handles the wheel events, e.g. zoom in/out.
 
@@ -319,17 +319,19 @@ class NodeGraphicsView(QGraphicsView):
             self._numScheduledScalings -= 1
         else:
             self._numScheduledScalings += 1
+        
+        logger.info(f"View: current scale {self.currentScale}.")
     
     def edgeDragStart(self, item:NodeGraphicsSocket):
-
-        logger.info(f'View::edgeDragStart: start dragging edge {item}.')
-        logger.info(f'View::edgeDragStart: assign start socket to socket index {item.index} of node {item.node.id}.')
         
         #self.last_start_socket = item
         self.dragEdge = NodeGraphicsEdgeBezier(start_socket=item, end_socket=None)
         #item.addEdge(self.dragEdge)
         self.dragEdge.updatePositions()
         self.grScene.addEdge(self.dragEdge)
+
+        logger.info(f'View::edgeDragStart: start dragging edge {self.dragEdge.id} from socket {item.id}.')
+        logger.info(f'View::edgeDragStart: assign start socket to socket index {item.index} of node {item.node.id} to drag edge.')
 
     def edgeDragEnd(self, item):
         """ return True if skip the rest of the code """
@@ -339,8 +341,9 @@ class NodeGraphicsView(QGraphicsView):
             if item.socket_type == PIPELINE_IN:
                 self.dragEdge.end_socket = item
                 self.dragEdge.end_socket.addEdge(self.dragEdge)
-                logger.info(f'View::edgeDragEnd: assign end socket index {item.index} of node {item.node.id} to drag edge.')
                 self.dragEdge.updatePositions()
+                logger.info(f"View::edgeDragEnd: end dragging edge {self.dragEdge.id} to socket {item.id}.")
+                logger.info(f'View::edgeDragEnd: assign end socket to socket index {item.index} of node {item.node.id} to drag edge.')
                 return True
 
         elif isinstance(item, NodeGraphicsSocket) and item.socket_type in [SINGLE_IN, MULTI_IN, CONNECTOR_IN] and item.node != self.dragEdge.start_socket.node:
@@ -371,7 +374,6 @@ class NodeGraphicsView(QGraphicsView):
         self.dragEdge = None
         logger.info('View::edgeDragEnd: everything done.')
 
-
         return False
 
         
@@ -382,8 +384,8 @@ class NodeGraphicsView(QGraphicsView):
         edge_drag_threshold_sq = EDGE_DRAG_START_THRESHOLD*EDGE_DRAG_START_THRESHOLD
         return (dist_scene.x()*dist_scene.x() + dist_scene.y()*dist_scene.y()) > edge_drag_threshold_sq
 
-    def keyPressEvent(self, event):
-        logger.info(f"View::keyPressEvent: {event.key()} pressed.")
+    def keyPressEvent(self, event:QKeyEvent):
+        logger.info(f"View::keyPressEvent: {Qt.Key(event.key()).name} pressed.")
 
         if event.key() == Qt.Key.Key_Delete:
             self.deleteSelected()
@@ -420,6 +422,8 @@ class NodeGraphicsView(QGraphicsView):
                     self.grScene.removeEdge(item)
     
     def serialize(self):
+        logger.info("View: starting serialization.")
+
         nodes, edges = dict(), dict()
         for node in self.grScene.nodes: nodes[node.id] = node.serialize()
         for edge in self.grScene.edges: edges[edge.id] = edge.serialize()
@@ -431,6 +435,8 @@ class NodeGraphicsView(QGraphicsView):
                 "edges":edges}
 
     def deserialize(self, data, hashmap={}):
+        logger.info("View: starting deserialization.")
+
         self.grScene.clear()
         hashmap = {}
         self.id = data['id']
@@ -451,7 +457,6 @@ class NodeGraphicsView(QGraphicsView):
             edge.updatePositions()
             self.grScene.addEdge(edge)
             edge.deserialize(edges[edge_id], hashmap)    
-
     
     def paintEvent(self, event: QPaintEvent) -> None:
         self.grScene.setBackgroundColor()

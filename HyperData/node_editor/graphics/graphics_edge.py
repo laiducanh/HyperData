@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsSceneHoverEvent
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPen, QPainter
+from node_editor.graphics.graphics_socket import GraphicsSocket
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -11,12 +12,14 @@ PIPELINE_OUT = 6
 CONNECTOR_IN = 7
 CONNECTOR_OUT = 8
 
-class EdgeItem(QGraphicsPathItem):
-    def __init__(self, parent=None):
+class GraphicsEdge(QGraphicsPathItem):
+    def __init__(self, start_socket:GraphicsSocket = None, end_socket:GraphicsSocket = None, parent=None):
         super().__init__(parent)
 
         self.hovered = False
         self.id = id(self)
+        self.start_socket = start_socket
+        self.end_socket = end_socket
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
@@ -70,6 +73,9 @@ class EdgeItem(QGraphicsPathItem):
         raise NotImplemented("This method has to be overriden in a child class")
 
     def updatePositions(self):
+        pass
+
+    def remove(self):
         pass
 
    

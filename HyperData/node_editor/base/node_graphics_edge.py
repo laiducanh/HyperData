@@ -1,6 +1,8 @@
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPainterPath
-from node_editor.graphics.graphics_item import GraphicsSocket, GraphicsEdge, GraphicsNode
+from node_editor.graphics.graphics_socket import GraphicsSocket
+from node_editor.graphics.graphics_edge import GraphicsEdge
+from config.settings import logger
 import math
 
 EDGE_TYPE_DIRECT = 1
@@ -17,10 +19,7 @@ CONNECTOR_OUT = 8
 DEBUG = False
 
 class NodeGraphicsEdge(GraphicsEdge):
-    def __init__(self, 
-                 start_socket:GraphicsSocket=None, 
-                 end_socket:GraphicsSocket=None, 
-                 parent=None):
+    def __init__(self, start_socket:GraphicsSocket = None, end_socket:GraphicsSocket = None, parent = None):
         super().__init__(start_socket, end_socket, parent)
 
         self.start_socket = start_socket
@@ -52,12 +51,10 @@ class NodeGraphicsEdge(GraphicsEdge):
             self.setDestination(*end_pos)
         else:
             self.setDestination(*source_pos)
-        #if DEBUG: print('Source pos', source_pos, 'End pos', end_pos)
-        if DEBUG: print(" SS:", self.start_socket)
-        if DEBUG: print(" ES:", self.end_socket)
         self.update()
     
     def remove(self):
+        logger.info(f"NodeGraphicsEdge::remove: edge {self.id} will be removed, related sockets will remove the edge.")
         if self.start_socket: self.start_socket.removeEdge(self)
         if self.end_socket: self.end_socket.removeEdge(self)
 

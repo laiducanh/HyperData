@@ -2,14 +2,14 @@ from PySide6.QtWidgets import QColorDialog
 from PySide6.QtCore import Signal, QThreadPool
 from PySide6.QtGui import QBrush
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from node_editor.graphics.graphics_content import ContentItem
+from node_editor.graphics.graphics_content import GraphicsContent
 from config.threadpool import Worker
 from config.settings import logger
 import pandas as pd
 
-class NodeContentWidget(ContentItem):
+class NodeContentWidget(GraphicsContent):
     sig = Signal()
-    def __init__(self, node: NodeGraphicsNode,parent=None): # parent is an instance of "NodeGraphicsView"
+    def __init__(self, node: NodeGraphicsNode, parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__(parent)
   
         self.node = node
@@ -41,8 +41,7 @@ class NodeContentWidget(ContentItem):
 
     def func(self, *args, **kwargs):
         """ main function of the node """
-        # make sure to properly process data_in
-        # before executing the main function
+        # make sure to properly process data_in before executing the main function
         self.eval()
 
     def eval (self):
@@ -58,7 +57,6 @@ class NodeContentWidget(ContentItem):
             for edge in socket.edges:
                 try: edge.end_socket.node.content.eval()
                 except Exception as e:
-                    # write log
                     logger.warning(f"{self.name} {self.node.id}: could not evaluate the connected node {edge.end_socket.node.id}.")
                     logger.exception(e)
         
