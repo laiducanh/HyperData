@@ -1,8 +1,11 @@
 from matplotlib.axes import Axes
-from matplotlib.patches import Rectangle, PathPatch
+from matplotlib.patches import Rectangle, PathPatch, Ellipse
 from matplotlib.lines import Line2D
-from matplotlib.collections import PolyCollection, LineCollection, EventCollection, QuadMesh
+from matplotlib.collections import PolyCollection, LineCollection, EventCollection, QuadMesh, PathCollection
+from plot.utilis import complementary_color
 import numpy as np
+import matplotlib
+from pandas.plotting._matplotlib.style import get_standard_colors
 from config.settings import logger, GLOBAL_DEBUG
 from typing import Union
 
@@ -365,5 +368,146 @@ def errorbar(X, Y, Yerr, Xerr, ax:Axes, gid:str, capsize=10, errorevery=1, *args
     for err in art.lines[2]:
         artist.append(err)
         err.set_gid(f'_{gid}/err')
+
+    return artist, props
+
+def pareto(X, Y, ax:Axes, gid:str, width=0.8, bottom=0, align="center", *args, **kwargs) -> tuple[list[Union[Rectangle, Line2D]], dict]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = range(3)
+        Y = [40, 25, 10]
+    
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    Y_cum = np.cumsum(Y-bottom)/np.sum(Y-bottom)*100
+    
+    artist = list()
+    props = {
+        "width": width,
+        "bottom": bottom,
+        "align": align
+    }
+
+    bars = ax.bar(X, Y, gid=f"{gid}/bar", width=width, bottom=bottom, align=align, *args, **kwargs)
+    artist += bars.patches
+
+    line = ax.figure.canvas.axesy2.plot(X, Y_cum, gid=f"{gid}/line", 
+                                        c=complementary_color(bars.patches[0].get_facecolor()))
+    artist += line
+
+    return artist, props
+
+def _andrews_helper(amplitudes):
+    def f(t):
+        x1 = amplitudes[0]
+        result = x1 / np.sqrt(2.0)
+
+        # Take the rest of the coefficients and resize them
+        # appropriately. Take a copy of amplitudes as otherwise numpy
+        # deletes the element from amplitudes itself.
+        coeffs = np.delete(np.copy(amplitudes), 0)
+        coeffs = np.resize(coeffs, (int((coeffs.size + 1) / 2), 2))
+
+        # Generate the harmonics and arguments for the sin and cos
+        # functions.
+        harmonics = np.arange(0, coeffs.shape[0]) + 1
+        trig_args = np.outer(harmonics, t)
+
+        result += np.sum(
+            coeffs[:, 0, np.newaxis] * np.sin(trig_args)
+            + coeffs[:, 1, np.newaxis] * np.cos(trig_args),
+            axis=0,
+        )
+        return result
+
+    return f
+
+def andrews(X, Y, ax:Axes, gid:str, samples=200, *args, **kwargs) -> tuple[list[Line2D], dict]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        from sklearn.datasets import load_iris
+        iris = load_iris()
+        X = iris.data
+        Y = iris.target_names[iris.target]
+    
+    X = np.asarray(X)
+    Y = np.asarray(Y)
+    artist = list()
+    props = {
+        "samples": samples,
+    }
+
+    n = len(X)
+    classes = np.unique(Y)
+    t = np.linspace(-np.pi, np.pi, samples)
+    color_values = get_standard_colors(
+        num_colors=len(classes), colormap=None, color_type="default", color=None
+    )
+    colors = dict(zip(classes, color_values))
+    for i in range(n):
+        f = _andrews_helper(X[i])
+        y = f(t)
+        kls = Y[i]
+        line = ax.plot(
+            t, y, 
+            color=colors[kls],
+            marker='none', 
+            lw=1, 
+            label=kls,
+            gid=f'{gid}.{np.where(classes==kls)[0][0]+1}'
+            )
+        artist += line
+    
+    return artist, props
+
+def cov_ellipse(X, Y, ax:Axes, gid:str, n_std=2, sizes=1, *args, **kwargs) -> tuple[list[Union[PathCollection, Ellipse]], dict]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        data = np.random.multivariate_normal([0, 0], [[3, 1], [1, 2]], size=300)
+        X = data[:, 0]
+        Y = data[:, 1]
+    
+    data = np.column_stack((X, Y))
+    mean = np.mean(data, axis=0)
+    cov = np.cov(data, rowvar=False)
+    artist = list()
+    props = {
+        "n_std": n_std,
+        "sizes": sizes
+    }
+
+    # Eigen decomposition
+    vals, vecs = np.linalg.eigh(cov)
+    order = vals.argsort()[::-1]
+    vals = vals[order]
+    vecs = vecs[:, order]
+
+    # Compute angle and ellipse width/height
+    theta = np.degrees(np.arctan2(*vecs[:, 0][::-1]))
+    width, height = 2 * n_std * np.sqrt(vals)
+
+    # Draw scatter for raw data
+    sct = ax.scatter(
+        X, Y, 
+        s=matplotlib.rcParams["lines.markersize"]**2*sizes,
+        gid=f'{gid}/scatter'
+    )
+    artist.append(sct)
+
+    # Draw ellipse
+    ellipse = Ellipse(
+        xy=mean, 
+        width=width, 
+        height=height, 
+        angle=theta,
+        edgecolor=complementary_color(sct.get_facecolor()),
+        facecolor='none',
+        lw=2,
+        gid=f'{gid}/ellipse'
+    )
+    ax.add_patch(ellipse)
+    artist.append(ellipse)
+    
+    
 
     return artist, props

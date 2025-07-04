@@ -1,12 +1,10 @@
-from PySide6.QtWidgets import QVBoxLayout
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.button import Toggle
-from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.frame import SeparateHLine
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from plot.curve.base_elements.patches import Wedge, MultiWedges
+from plot.curve.base_elements.line import Line, Marker
+from plot.curve.base_elements.patches import Wedge, MultiWedges, Polygon
 from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
@@ -14,7 +12,7 @@ from matplotlib import patches
 
 DEBUG = False
 
-class Pie (PlotConfigBase):
+class Pie(PlotConfigBase):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
@@ -164,7 +162,7 @@ class Pie (PlotConfigBase):
     def get_normalize(self) -> bool:
         return self.plot.props["normalize"]
 
-class Coxcomb (Pie):
+class Coxcomb(Pie):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
@@ -221,7 +219,7 @@ class Coxcomb (Pie):
         wedge.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(wedge)
 
-class Doughnut (Pie):
+class Doughnut(Pie):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
 
@@ -302,7 +300,7 @@ class Doughnut (Pie):
     def get_wedgewidth(self) -> float:
         return self.plot.props["width"]
 
-class SemicircleDoughnut (Doughnut):
+class SemicircleDoughnut(Doughnut):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
@@ -359,7 +357,7 @@ class SemicircleDoughnut (Doughnut):
         wedge.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(wedge)
     
-class MultilevelDoughnut (Doughnut):
+class MultilevelDoughnut(Doughnut):
     def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
         super().__init__(gid, canvas, plot, parent)
     
@@ -448,3 +446,66 @@ class MultilevelDoughnut (Doughnut):
     
     def get_pad(self) -> float:
         return self.plot.props["pad"]
+
+class Radar(PlotConfigBase):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+
+        self.initUI()
+    
+    def initUI(self):   
+        self.segment.addButton(text='Line', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.addButton(text='Fill', func=lambda: self.stackedlayout.setCurrentIndex(3))
+        self.segment.setCurrentIndex(0)
+
+        self.labels = LineEdit(
+            text="Labels",
+            getter=self.get_labels,
+            setter=self.set_labels,
+            layout=self.general.addlayout
+        )
+
+        self.startangle = TransparentDoubleSpinBox(
+            min  = 0, max  = 360, step = 30,
+            text = "Start angle",
+            getter=self.get_startangle,
+            setter=self.set_startangle,
+            layout=self.general.addlayout
+        )
+
+        line2d = Line(f'{self.gid}/line', self.canvas)
+        line2d.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(line2d)
+
+        marker = Marker(f'{self.gid}/line', self.canvas)
+        marker.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(marker)
+
+        fill = Polygon(f'{self.gid}/fill', self.canvas)
+        fill.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(fill)
+
+    def set_labels(self, value:str) -> None:
+        try:
+            if value == "": value = None
+            else: value = value.split(",")
+            self.plot.props.update(labels = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_labels(self) -> str:
+        if not self.plot.props["labels"]:
+            return str()
+        return str(self.plot.props["labels"])
+
+    def set_startangle(self, value:float) -> None:
+        try:
+            self.plot.props.update(startangle = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_startangle(self) -> float:
+        return float(self.plot.props["startangle"])

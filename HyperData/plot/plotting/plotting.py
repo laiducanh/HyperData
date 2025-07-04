@@ -7,33 +7,33 @@ from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
 from plot.utilis import find_mpl_object, remove_artist, get_legend, remove_legend, rescale_plot
 from plot.copy_objects import update_props, update_legend
-from plot.canvas import Canvas
+from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.artist import Artist
 
 DEBUG = False
 
-def set_legend(canvas: Canvas, *args, **kwargs):
+def set_legend(figure:Figure, *args, **kwargs):
     try:   
-        handles = find_mpl_object(canvas.figure, match=[Artist], gid="graph ")
+        handles = find_mpl_object(figure, match=[Artist], gid="graph ")
         plot_list = set([s.get_gid().split('/')[0] for s in handles])
         
         labels, handles = list(), list()
         for gid in plot_list:
-            arts = find_mpl_object(canvas.figure, match=[Artist], gid=gid)
+            arts = find_mpl_object(figure, match=[Artist], gid=gid)
             for art in arts:
                 if art.get_visible() and art.get_label() and not art.get_label().startswith('_'):
                     labels.append(arts[0].get_label())
                     handles.append(arts[0])
                     break # only one visible artist with valid label is used for legend  
 
-        ax = find_mpl_object(canvas.figure, match=[Axes, Axes3D], gid='legend axes', rule='exact')[0]
+        ax = find_mpl_object(figure, match=[Axes, Axes3D], gid='legend axes', rule='exact')[0]
 
         if handles != []:            
-            if get_legend(canvas.figure): 
+            if get_legend(figure): 
                 update_legend(
-                    get_legend(canvas.figure), ax,
+                    get_legend(figure), ax,
                     handles=handles, labels=labels
                 )
             else:
@@ -85,6 +85,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     elif plot_type == "doughnut":                artist, props = doughnut(X, ax, gid, *args, **kwargs)
     elif plot_type == "multilevel doughnut":     artist, props = multilevel_doughnut(X, ax, gid, *args, **kwargs)
     elif plot_type == "semicircle doughnut":     artist, props = semicircle_doughnut(X, ax, gid, *args, **kwargs)
+    elif plot_type == "radar":                   artist, props = radar(X, ax, gid, *args, **kwargs)
     elif plot_type == "histogram":               artist, props = histogram(X, ax, gid, *args, **kwargs)
     elif plot_type == "stacked histogram":       artist, props = stacked_histogram(X, ax, gid, *args, **kwargs)
     elif plot_type == "boxplot":                 artist, props = boxplot(X, ax, gid, *args, **kwargs)
@@ -92,6 +93,9 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     elif plot_type == "eventplot":               artist, props = eventplot(X, ax, gid, *args, **kwargs)
     elif plot_type == "hist2d":                  artist, props = hist2d(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "error bar":               artist, props = errorbar(X, Y, Z, T, ax, gid, *args, **kwargs)
+    elif plot_type == "pareto":                  artist, props = pareto(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "andrews plot":            artist, props = andrews(X, Y, ax, gid, *args, **kwargs)
+    elif plot_type == "covariance ellipse":      artist, props = cov_ellipse(X, Y, ax, gid, *args, **kwargs)
     elif plot_type == "heatmap":                 artist, props = heatmap(X, ax, gid, *args, **kwargs)
     elif plot_type == "contour":                 artist, props = contour(X, ax, gid, *args, **kwargs)
 
@@ -111,7 +115,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
                         update_props(art_old, art)
    
     # update legend if necessary
-    set_legend(ax.figure.canvas)
+    set_legend(ax.figure)
 
     ax.figure.canvas.draw_idle()
 

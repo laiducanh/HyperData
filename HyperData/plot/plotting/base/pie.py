@@ -1,11 +1,11 @@
 from matplotlib.axes import Axes
+from matplotlib.patches import Wedge, Polygon
 from matplotlib.lines import Line2D
-from matplotlib.patches import Wedge, Rectangle
-from matplotlib.pyplot import colormaps
-from matplotlib import cm
+from plot.utilis import complementary_color
 import math
 import numpy as np
 from config.settings import GLOBAL_DEBUG, logger
+from typing import Union
 
 DEBUG = False
 
@@ -245,3 +245,47 @@ def semicircle_doughnut(X, ax:Axes, gid, width=0.3, explode=None, labels=None, s
         obj.set_gid(f"{gid}.{ind+1}")
     
     return artist, props
+
+def radar(X, ax:Axes, gid:str, labels=None, startangle=0, *args, **kwargs) -> tuple[list[Union[Line2D, Polygon]], dict]:
+
+    if DEBUG or GLOBAL_DEBUG:
+        X = [4, 3, 5, 4, 2]
+    
+    X = np.asarray(X)
+    X = np.append(X, X[0]) # Repeat the first value to close the circle
+
+    artist = list()
+    props = {
+        "labels": labels,
+        "startangle": startangle
+    }
+
+    startangle = np.radians(startangle)
+    num_vars = len(X)-1
+
+    # Compute angle for each axis
+    angles = np.linspace(startangle, startangle + 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1]
+
+    fill = ax.fill(angles, X, alpha=0.25, label='_child', gid=f'{gid}/fill')
+    artist += fill
+    line = ax.plot(
+        angles, X, 
+        color=complementary_color(fill[0].get_facecolor()),
+        linewidth=2,
+        gid=f'{gid}/line'
+    )
+    artist += line
+
+    # Set labels
+    ax.set_xticks(angles[:-1])
+    if labels: ax.set_xticklabels(labels)
+
+    # Adjust range
+    ax.set_xlim(0, 2 * np.pi)
+    # ax.set_ylim(0, np.max(X))
+
+    return artist, props
+    
+
+    

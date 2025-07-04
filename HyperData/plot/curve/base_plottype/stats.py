@@ -1,14 +1,12 @@
-from PySide6.QtWidgets import QVBoxLayout, QStackedLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from ui.base_widgets.line_edit import LineEdit
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
 from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.frame import SeparateHLine
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from plot.curve.base_elements.patches import Rectangle
+from plot.curve.base_elements.patches import Rectangle, Ellipse
 from plot.curve.base_elements.line import LineCollection, Line, Marker, ErrorBarCollection
-from plot.curve.base_elements.collection import SingleColorCollection, QuadMesh
+from plot.curve.base_elements.collection import SingleColorCollection, QuadMesh, CmapCollection
 from plot.curve.base_plottype.base import PlotConfigBase
 from plot.utilis import find_mpl_object
 from config.settings import GLOBAL_DEBUG, logger
@@ -914,3 +912,151 @@ class ErrorBar(PlotConfigBase):
     
     def get_capsize(self) -> float:
         return self.plot.props["capsize"]
+
+class Pareto(PlotConfigBase):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+
+        self.initUI()
+    
+    def initUI(self):
+        self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Cumulative percentage', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.setCurrentIndex(0)
+
+        self.bottom = LineEdit(
+            text="Bottom",
+            getter=self.get_bottom,
+            layout=self.general.addlayout
+        )
+        self.bottom.button.setFixedWidth(150)
+        self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
+
+        self.barwidth = TransparentDoubleSpinBox(
+            text = 'Column Width',
+            min  = 0, max  = 5, step = 0.1,
+            getter=self.get_barwidth,
+            setter=self.set_barwidth,
+            layout=self.general.addlayout
+        )
+
+        rect = Rectangle(f"{self.gid}/bar", self.canvas)
+        rect.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(rect)
+
+        line2d = Line(f"{self.gid}/line", self.canvas)
+        line2d.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(line2d)
+
+        marker = Marker(f"{self.gid}/line", self.canvas)
+        marker.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(marker)
+    
+    def set_bottom (self, value:str):
+        try:
+            self.plot.props.update(bottom = float(value))
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_bottom (self) -> str:
+        return str(self.plot.props["bottom"])
+
+    def set_barwidth (self, value:float):
+        try: 
+            self.plot.props.update(width = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_barwidth (self) -> float:
+        return self.plot.props["width"]
+
+class Andrews(PlotConfigBase):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+
+        self.initUI()
+    
+    def initUI(self):
+        self.segment.addButton(text='Line', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.setCurrentIndex(0)
+
+        self.samples = TransparentSpinBox(
+            min=1, max=10000, step=100,
+            text="Samples",
+            text2="Number of points to plot in each graph",
+            getter=self.get_samples,
+            setter=self.set_samples,
+            layout=self.general.addlayout
+        )
+
+        line2d = Line(f"{self.gid}", self.canvas)
+        line2d.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(line2d)
+    
+    def get_samples(self) -> int:
+        return self.plot.props["samples"]
+
+    def set_samples(self, value:int):
+        try:
+            self.plot.props.update(samples = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+
+class CovEllipse(PlotConfigBase):
+    def __init__(self, gid, canvas:Canvas, plot:NewPlot, parent=None):
+        super().__init__(gid, canvas, plot, parent)
+
+        self.initUI()
+    
+    def initUI(self):
+        self.segment.addButton(text='Scatter', func=lambda: self.stackedlayout.setCurrentIndex(1))
+        self.segment.addButton(text='Ellipse', func=lambda: self.stackedlayout.setCurrentIndex(2))
+        self.segment.setCurrentIndex(0)
+
+        self.sizes = TransparentSpinBox(
+            min  = 1, max  = 1000, step = 2,
+            text="Size",
+            text2 = "Size of scatter points",
+            getter=self.get_sizes,
+            setter=self.set_sizes,
+            layout=self.general.addlayout
+        )
+
+        n_std = TransparentSpinBox(
+            text='Number of std',
+            text2='Control the size of the ellipse',
+            getter=self.get_n_std,
+            setter=self.set_n_std,
+            layout=self.general.addlayout
+        )
+
+        collection = CmapCollection(f'{self.gid}/scatter', self.canvas)
+        collection.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(collection)
+
+        ellipse = Ellipse(f'{self.gid}/ellipse', self.canvas)
+        ellipse.onChanged.connect(self._onChange)
+        self.stackedlayout.addWidget(ellipse)
+    
+    def set_sizes(self, value:int):
+        try:
+            self.plot.props.update(sizes = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_sizes(self) -> int:
+        return int(self.plot.props["sizes"])
+
+    def set_n_std(self, value:int):
+        try:
+            self.plot.props.update(n_std = value)
+            self.update_plot()
+        except Exception as e:
+            logger.exception(e)
+    
+    def get_n_std(self) -> int:
+        return self.plot.props["n_std"]

@@ -189,6 +189,7 @@ class Layout(ScrollArea):
                     axy2 = ax.twinx()
                     axx2 = ax.twiny()
                     axpie = self.canvas.figure.add_subplot(ax.get_subplotspec())
+                    axpolar = self.canvas.figure.add_subplot(ax.get_subplotspec(), projection='polar')
                     axleg = self.canvas.figure.add_subplot(ax.get_subplotspec())
 
                     # axy2.set_ylabel(canvas.axesy2.get_ylabel())
@@ -197,17 +198,20 @@ class Layout(ScrollArea):
                     axy2.set_gid(f"subax {sub.subfig_idx}")
                     axx2.set_gid(f"subax {sub.subfig_idx}")
                     axpie.set_gid(f"subax {sub.subfig_idx}")
+                    axpolar.set_gid(f"subax {sub.subfig_idx}")
                     axleg.set_gid(f"subax {sub.subfig_idx}")
 
                     ax.set_axis_off()
                     axx2.set_axis_off()
                     axy2.set_axis_off()
                     axpie.set_axis_off()
+                    axpolar.set_axis_off()
                     axleg.set_axis_off()
                     
                     if canvas.axesx2.axison: axx2.set_axis_on()
                     if canvas.axesy2.axison: axy2.set_axis_on()
                     if canvas.axespie.axison: axpie.set_axis_on()
+                    if canvas.axespolar.axison: axpolar.set_axis_on()
                     if canvas.axes.axison: 
                         ax.set_axis_on()
                         copy_Axes(canvas.axes, ax)    
@@ -216,6 +220,7 @@ class Layout(ScrollArea):
                         copy_Axes(canvas.axesleg, axleg)
                     else:
                         copy_Axes(canvas.axespie, axpie)
+                        copy_Axes(canvas.axespolar, axpolar)
                                     
                 else:
                     copy_Axes(canvas.axes, ax)     

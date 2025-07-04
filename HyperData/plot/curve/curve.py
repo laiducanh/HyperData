@@ -7,8 +7,10 @@ from plot.curve.base_plottype.line import Line, Step, Stem, Stem3d, Area, Stacke
 from plot.curve.base_plottype.column import (Column, Column3D, Dot, ClusteredColumn, ClusteredDot, Dumbbell,
                                              Marimekko, Treemap, WaterFall)
 from plot.curve.base_plottype.scatter import Scatter, Scatter3D
-from plot.curve.base_plottype.pie import Pie, Doughnut, Coxcomb, SemicircleDoughnut, MultilevelDoughnut
-from plot.curve.base_plottype.stats import Histogram, Boxplot, Violinplot, Eventplot, Hist2d, ErrorBar
+from plot.curve.base_plottype.pie import (Pie, Doughnut, Coxcomb, SemicircleDoughnut, MultilevelDoughnut,
+                                          Radar)
+from plot.curve.base_plottype.stats import (Histogram, Boxplot, Violinplot, Eventplot, Hist2d, 
+                                            ErrorBar, Pareto, Andrews, CovEllipse)
 from plot.curve.base_plottype.grid import Heatmap, Contour
 from config.settings import GLOBAL_DEBUG, logger
 
@@ -57,6 +59,7 @@ class Curve(QDialog):
             elif plot_type == "doughnut":               widget = Doughnut(*args)
             elif plot_type == "multilevel doughnut":    widget = MultilevelDoughnut(*args)
             elif plot_type == "semicircle doughnut":    widget = SemicircleDoughnut(*args)
+            elif plot_type == "radar":                  widget = Radar(*args)
             elif plot_type == "histogram":              widget = Histogram(*args)
             elif plot_type == "stacked histogram":      widget = Histogram(*args)
             elif plot_type == "boxplot":                widget = Boxplot(*args)
@@ -64,6 +67,9 @@ class Curve(QDialog):
             elif plot_type == "eventplot":              widget = Eventplot(*args)
             elif plot_type == "hist2d":                 widget = Hist2d(*args)
             elif plot_type == "error bar":              widget = ErrorBar(*args)
+            elif plot_type == "pareto":                 widget = Pareto(*args)
+            elif plot_type == "andrews plot":           widget = Andrews(*args)
+            elif plot_type == "covariance ellipse":     widget = CovEllipse(*args)
             elif plot_type == "heatmap":                widget = Heatmap(*args)
             elif plot_type == "contour":                widget = Contour(*args)
 

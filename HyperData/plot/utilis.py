@@ -1,4 +1,4 @@
-from matplotlib.colors import to_hex
+from matplotlib.colors import to_hex, to_rgb
 from matplotlib.artist import Artist
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
@@ -32,6 +32,22 @@ def get_color(artist:Artist):
         return to_hex(artist.get_facecolor())
 
     return "white"
+
+def complementary_color(color):
+    """
+    Returns the complementary color of a given color.
+    Supports color names, hex, or RGB tuples.
+    """
+    # Convert to RGB (0–1)
+    rgb = to_rgb(color)
+    
+    # Complement: 1 - R, G, B
+    comp_rgb = tuple(1.0 - c for c in rgb)
+    
+    # Convert back to hex
+    comp_hex = to_hex(comp_rgb)
+    
+    return comp_hex
 
 def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None, 
                     gid:str=None, rule:Literal["exact","contain"]="contain") -> list[T]:

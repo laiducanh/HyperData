@@ -152,3 +152,42 @@ class MultiWedges(Wedge):
             self.prepare_update()
         except Exception as e:
             logger.exception(e)
+
+class Ellipse(Rectangle):
+    def __init__(self, gid, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
+
+    def find_object(self) -> list[patches.Ellipse]:
+        return find_mpl_object(
+            source=self.canvas.figure,
+            match=[patches.Ellipse],
+            gid=self.gid
+        ) 
+    
+class Polygon(Rectangle):
+    def __init__(self, gid, canvas:Canvas, parent=None):
+        super().__init__(gid, canvas, parent)
+    
+    def initUI(self):
+
+        self.facecolor = ColorDropdown(
+            text  = 'Face Color',
+            getter=self.get_facecolor,
+            setter=self.set_facecolor,
+            layout=self.vlayout
+        )
+
+        self.alpha = TransparentSpinBox(
+            text = 'Transparency',
+            min  = 0, max  = 100, step = 10,
+            getter=self.get_alpha,
+            setter=self.set_alpha,
+            layout=self.vlayout
+        )
+
+    def find_object(self) -> list[patches.Polygon]:
+        return find_mpl_object(
+            source=self.canvas.figure,
+            match=[patches.Polygon],
+            gid=self.gid
+        ) 

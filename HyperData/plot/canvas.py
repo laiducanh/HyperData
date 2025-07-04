@@ -47,9 +47,11 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2 = self.axes.twinx()
         self.axesx2 = self.axes.twiny()
         self.axespie = self.figure.add_subplot()
+        self.axespolar = self.figure.add_subplot(projection='polar')
         self.axesleg = self.figure.add_subplot(gid='legend axes')
 
         self.axespie.set_axis_off()
+        self.axespolar.set_axis_off()
         self.axesleg.set_axis_off()
 
         self.axes.xaxis.set_gid("bottom")
@@ -57,7 +59,7 @@ class Canvas (FigureCanvasQTAgg):
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
         
-        for _ax in self.figure.axes:     
+        for _ax in [self.axes, self.axesy2, self.axesx2]:     
             _ax.spines["bottom"].set_gid("spine bottom")
             _ax.plot(1, 0, marker=",", 
                      color=matplotlib.colors.rgb2hex(_ax.spines["bottom"].get_edgecolor()),

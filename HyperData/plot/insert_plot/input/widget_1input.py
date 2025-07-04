@@ -79,3 +79,8 @@ class Heatmap(WidgetPie):
     ''' '''
 class Contour(WidgetPie):
     ''' '''
+class Radar(WidgetPie):
+    def __init__(self, node:NodeGraphicsNode, input:list[str], axes:list[str], parent=None):
+        super().__init__(node, input, axes, parent)
+
+        self.axes = 'polar'

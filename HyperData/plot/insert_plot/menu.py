@@ -55,7 +55,7 @@ class Menu_type_2D (Menu):
 
         pie = Menu('Pie', self)
         pie.setIcon(icon_pie)
-        for i in ['pie','coxcomb']:
+        for i in ['pie','coxcomb','radar']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             pie.addAction(action)
@@ -67,12 +67,12 @@ class Menu_type_2D (Menu):
 
         stats = Menu('Statistics', self)
         stats.setIcon(icon_statistics)
-        for i in ['histogram','stacked histogram','hist2d','error bar']:
+        for i in ['histogram','stacked histogram','hist2d','error bar','Pareto']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             stats.addAction(action)
         stats.addSeparator()
-        for i in ['boxplot', 'violinplot','eventplot']:
+        for i in ['boxplot', 'violinplot','eventplot','Andrews plot','covariance ellipse']:
             action = Action(text=i.title(), parent=self)
             action.triggered.connect(lambda _, type=i: self.sig.emit(type.lower()))
             stats.addAction(action)

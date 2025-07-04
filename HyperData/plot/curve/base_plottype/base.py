@@ -96,7 +96,7 @@ class GeneralPlot(ScrollArea):
             for obj in self.find_obj():
                 if not obj.get_gid().startswith('_'):
                     obj.set_label(_label)
-            set_legend(self.canvas)
+            set_legend(self.canvas.figure)
             self.canvas.draw_idle()
             
         except Exception as e:
@@ -111,7 +111,7 @@ class GeneralPlot(ScrollArea):
     
     def update_legend (self):
         try:
-            if get_legend(self.canvas): set_legend(self.canvas)
+            if get_legend(self.canvas.figure): set_legend(self.canvas.figure)
             self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)

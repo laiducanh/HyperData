@@ -115,6 +115,7 @@ class NewPlot(Frame):
         elif self.plot_type == "doughnut":                  self.widget = Doughnut(*args)
         elif self.plot_type == "multilevel doughnut":       self.widget = MultilevelDoughnut(*args)
         elif self.plot_type == "semicircle doughnut":       self.widget = SemicircleDoughnut(*args)
+        elif self.plot_type == "radar":                     self.widget = Radar(*args)
         elif self.plot_type == "histogram":                 self.widget = Histogram(*args)
         elif self.plot_type == "stacked histogram":         self.widget = StackedHistogram(*args)
         elif self.plot_type == "boxplot":                   self.widget = Boxplot(*args)
@@ -122,6 +123,9 @@ class NewPlot(Frame):
         elif self.plot_type == "eventplot":                 self.widget = Eventplot(*args)
         elif self.plot_type == "hist2d":                    self.widget = Hist2D(*args)
         elif self.plot_type == "error bar":                 self.widget = Errorbar(*args)
+        elif self.plot_type == "pareto":                    self.widget = Pareto(*args)
+        elif self.plot_type == "andrews plot":              self.widget = Andrews(*args)
+        elif self.plot_type == "covariance ellipse":        self.widget = CovEllipse(*args)
         elif self.plot_type == "heatmap":                   self.widget = Heatmap(*args)
         elif self.plot_type == "contour":                   self.widget = Contour(*args)
 
@@ -178,15 +182,23 @@ class NewPlot(Frame):
             self.canvas.axesx2.set_axis_on()
             self.canvas.axesy2.set_axis_on()
             self.canvas.axespie.set_axis_off()
+            self.canvas.axespolar.set_axis_off()
 
             if _ax == ["axis bottom", "axis left"]:    ax = self.canvas.axes
             elif _ax == ["axis bottom", "axis right"]: ax = self.canvas.axesy2
             elif _ax == ["axis top", "axis left"]:     ax = self.canvas.axesx2
+            elif _ax == "polar":
+                ax = self.canvas.axespolar
+                self.canvas.axes.set_axis_off()
+                self.canvas.axesx2.set_axis_off()
+                self.canvas.axesy2.set_axis_off()
+                self.canvas.axespolar.set_axis_on()
             else:
                 ax = self.canvas.axespie
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
+                self.canvas.axespolar.set_axis_off()
 
         X, Y, Z, T  = list(), list(), list(), list()
         if len(self.widget.input) >= 1:
@@ -267,9 +279,11 @@ class InsertPlot(QMainWindow):
                 "Dot": ['dot','clustered dot','stacked dot','dumbbell'],
                 "Treemap": ['marimekko','treemap'],
                 "Scatter": ['2d scatter','2d bubble'],
-                "Pie": ['pie','coxcomb','doughnut','multilevel doughnut','semicircle doughnut'],
+                "Polar": ['pie','coxcomb','doughnut','multilevel doughnut','semicircle doughnut',
+                          'radar'],
                 "Statistics": ['histogram','stacked histogram','hist2d','error bar','boxplot', 
-                               'violinplot','eventplot'],
+                               'violinplot','eventplot','Pareto','Andrews plot','covariance ellipse',
+                               ],
                 "Mesh": ['heatmap','contour']
             }
 
