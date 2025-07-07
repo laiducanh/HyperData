@@ -1,25 +1,41 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.text import BodyLabel
-from node_editor.node.statistics.multi_sample_test.base import TestBase
-from scipy.stats._result_classes import TtestResult
+from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
 
-class ResultDialog(Dialog):
-    def __init__(self, result:TtestResult, parent=None):
-        super().__init__(parent)
-        if result:
-            self.main_layout.addWidget(BodyLabel(f"Statistic: {result.statistic}"))
-            self.main_layout.addWidget(BodyLabel(f"p-value: {result.pvalue}"))
-            self.main_layout.addWidget(BodyLabel(f"Number of degrees of freedom: {result.df}"))
-            self.main_layout.addWidget(BodyLabel(f"95% Confidence interval: {result.confidence_interval()}"))
-        else:
-            self.main_layout.addWidget(BodyLabel("Failed to run hypothesis test."))
+class ResultDialog(ResultDialogBase):
+    def __init__(self, title, samples, result, parent=None):
+        super().__init__(title, samples, result, parent)
+        
+    def initStats(self, result):
+        TransparentPushButton(
+            text='The t-statistic',
+            text2='The difference between the arithmetic means of the two samples',
+            getter=lambda: str(result.statistic[0]),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='p-value',
+            text2='Probability of observing this result (or more extreme) if null hypothesis is true',
+            getter=lambda: str(result.pvalue[0]),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='Degrees of freedom',
+            text2='The number of degrees of freedom used in the calculation of the t-statistic',
+            getter=lambda: str(result.df[0]),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='95% Confidence interval',
+            text2='The confidence interval around the difference in population means',
+            getter=lambda: f"[{result.confidence_interval().low[0]}, {result.confidence_interval().high[0]}]",
+            layout=self.main_layout
+        )
             
-class Yuen (TestBase):
+class Yuen(TestBase):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -34,13 +50,18 @@ class Yuen (TestBase):
         )
         else: self._config = config
 
-        self.alternative = ComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
-        self.alternative.button.setCurrentText(self._config["alternative"])
-        self.vlayout.addWidget(self.alternative)
+        self.alternative = TransparentComboBox(
+            items=["two-sided","less","greater"], 
+            text="Alternative hypothesis",
+            getter=lambda: self._config["alternative"],
+            layout=self.vlayout
+        )
 
-        self.trim = DoubleSpinBox(max=0.49, step=0.01, text="Trim value")
-        self.trim.button.setValue(self._config["trim"])
-        self.vlayout.addWidget(self.trim)
+        self.trim = TransparentDoubleSpinBox(
+            max=0.49, step=0.01, text="Trim value",
+            getter=lambda: self._config["trim"],
+            layout=self.vlayout
+        )
     
     def update_config(self):
         self._config.update(
@@ -48,6 +69,7 @@ class Yuen (TestBase):
             trim = self.trim.button.value()
         )
        
-    def result_dialog(self, result:TtestResult):
-        dialog = ResultDialog(result)
+    def result_dialog(self, title, samples, result):
+        dialog = ResultDialog(title, samples, result)
         dialog.exec()
+

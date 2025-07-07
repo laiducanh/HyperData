@@ -1,24 +1,39 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.text import BodyLabel
-from node_editor.node.statistics.multi_sample_test.base import TestBase
+from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
 
-class ResultDialog(Dialog):
-    def __init__(self, result, parent=None):
-        super().__init__(parent)
-        if result:
-            self.main_layout.addWidget(BodyLabel(f"Statistic: {result.statistic}"))
-            self.main_layout.addWidget(BodyLabel(f"p-value: {result.pvalue}"))
-            self.main_layout.addWidget(BodyLabel(f"Statistic location: {result.statistic_location}"))
-            self.main_layout.addWidget(BodyLabel(f"Statistic sign: {result.statistic_sign}"))
-        else:
-            self.main_layout.addWidget(BodyLabel("Failed to run hypothesis test."))
+class ResultDialog(ResultDialogBase):
+    def __init__(self, title, samples, result, parent=None):
+        super().__init__(title, samples, result, parent)
+        
+    def initStats(self, result):
+        TransparentPushButton(
+            text='Statistic',
+            text2='The KS test statistic',
+            getter=lambda: str(result.statistic),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='p-value',
+            text2='Probability of observing that large a difference if null is true',
+            getter=lambda: str(result.pvalue),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='Statistic location',
+            text2='The distance between the empirical distribution functions is measured at this observation',
+            getter=lambda: str(result.statistic_location),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='Statistic sign',
+            getter=lambda: 'positive' if result.statistic_sign == 1 else 'negative',
+            layout=self.main_layout
+        )
             
-class Kolmogorov (TestBase):
+class Kolmogorov(TestBase):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -32,13 +47,21 @@ class Kolmogorov (TestBase):
         )
         else: self._config = config
 
-        self.alternative = ComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
-        self.alternative.button.setCurrentText(self._config["alternative"])
-        self.vlayout.addWidget(self.alternative)
+        self.alternative = TransparentComboBox(
+            items=["two-sided","less","greater"], 
+            text="Alternative hypothesis",
+            text2='Define the null and alternative hypotheses',
+            getter=lambda: self._config["alternative"],
+            layout=self.vlayout
+        )
 
-        self.distribution = ComboBox(items=["t","normal"], text="Distribution")
-        self.distribution.button.setCurrentText(self._config["distribution"])
-        self.vlayout.addWidget(self.distribution)
+        self.distribution = TransparentComboBox(
+            items=["t","normal"], 
+            text="Distribution",
+            text2='The method used for calculating the p-value',
+            getter=lambda: self._config["distribution"],
+            layout=self.vlayout
+        )
     
     def update_config(self):
         self._config.update(
@@ -46,6 +69,7 @@ class Kolmogorov (TestBase):
             distribution = self.distribution.button.currentText()
         )
        
-    def result_dialog(self, result):
-        dialog = ResultDialog(result)
+    def result_dialog(self, title, samples, result):
+        dialog = ResultDialog(title, samples, result)
         dialog.exec()
+

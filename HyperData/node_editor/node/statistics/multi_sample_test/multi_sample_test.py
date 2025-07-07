@@ -10,6 +10,7 @@ from node_editor.node.statistics.multi_sample_test.base import TestBase
 from node_editor.node.statistics.multi_sample_test.ttest_ind import TtestInd
 from node_editor.node.statistics.multi_sample_test.welch import Welch
 from node_editor.node.statistics.multi_sample_test.yuen import Yuen
+from node_editor.node.statistics.multi_sample_test.ttest_rel import TtestRel
 from node_editor.node.statistics.multi_sample_test.mannwhitney import MannWhitney
 from node_editor.node.statistics.multi_sample_test.bws import BWS
 from node_editor.node.statistics.multi_sample_test.wilcoxon import RankSum
@@ -29,10 +30,11 @@ from node_editor.node.statistics.multi_sample_test.levene import Levene
 from node_editor.node.statistics.multi_sample_test.barlett import Barlett
 from node_editor.node.statistics.multi_sample_test.median import MedianTest
 from node_editor.node.statistics.multi_sample_test.friedman import Friedman
-from scipy.stats import (ttest_ind, mannwhitneyu, bws_test, ranksums, brunnermunzel, mood, ansari,
-                         cramervonmises_2samp, epps_singleton_2samp, ks_2samp, f_oneway, tukey_hsd,
+from node_editor.node.statistics.multi_sample_test.anderson import Anderson
+from scipy.stats import (ttest_ind, ttest_rel, mannwhitneyu, bws_test, ranksums, brunnermunzel, mood, 
+                         ansari, cramervonmises_2samp, epps_singleton_2samp, ks_2samp, f_oneway, tukey_hsd,
                          dunnett, kruskal, alexandergovern, fligner, levene, bartlett, median_test,
-                         friedmanchisquare)
+                         friedmanchisquare, anderson_ksamp)
 
 DEBUG = False
 
@@ -41,16 +43,17 @@ class MultiSampleTest (NodeContentWidget):
         super().__init__(node, parent)
 
         self._config = dict(
-            test = "T-test",
-            config = dict(alternative = "two-sided",equal_var = True)
+            test = "Independent T-test",
+            config = dict(alternative = "two-sided", equal_var = True)
         )
-        self.test_list = ["T-test","Welch's T-test","Yuen's T-test","Mann-Whitney U rank test",
+        self.test_list = ["Independent T-test","Welch's T-test","Yuen's T-test","Paired T-test",
+                          "Mann-Whitney U rank test",
                           "Baumgartner-Weiss-Schindler test","Wilcoxon rank-sum","Brunner-Munzel test",
                           "Mood's test","Ansari-Bradley test","Cramer-von Mises test",
                           "Epps-Singleton test","Kolmogorov-Smirnov test","One-way ANOVA",
                           "Tukey's HSD test","Dunnett's test", "Kruskal-Wallis H-test",
                           "Alexander Govern test","Fliger-Killeen test","Levene test","Barlett's test",
-                          "Mood's median test","Friedman test"]
+                          "Mood's median test","Friedman test","Anderson-Darling test"]
         self.result = None
 
         self.label.hide()
@@ -76,6 +79,7 @@ class MultiSampleTest (NodeContentWidget):
         self.stackedlayout.addWidget(TtestInd())
         self.stackedlayout.addWidget(Welch())
         self.stackedlayout.addWidget(Yuen())
+        self.stackedlayout.addWidget(TtestRel())
         self.stackedlayout.addWidget(MannWhitney())
         self.stackedlayout.addWidget(BWS())
         self.stackedlayout.addWidget(RankSum())
@@ -95,6 +99,7 @@ class MultiSampleTest (NodeContentWidget):
         self.stackedlayout.addWidget(Barlett())
         self.stackedlayout.addWidget(MedianTest())
         self.stackedlayout.addWidget(Friedman())
+        self.stackedlayout.addWidget(Anderson())
 
         self.stackedlayout.setCurrentIndex(self.test_list.index(self.test.button.currentText()))
         self.currentWidget().set_config(self._config["config"])
@@ -113,7 +118,6 @@ class MultiSampleTest (NodeContentWidget):
     
     def func(self):
         if DEBUG or GLOBAL_DEBUG:
-            from scipy.stats import norm
             df = pd.DataFrame({
                     "D": [1, 2, 2, 3, 3, 4, 5, 6, 7],
                     "E": [2, 4, 5, 5, 6, 6, 8, 9, 9]})
@@ -121,52 +125,56 @@ class MultiSampleTest (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            data:list = self.node.input_sockets[0].socket_data
+            self.data:list = self.node.input_sockets[0].socket_data
             test = self._config["test"]
-            if test == "T-test":
-                self.result = ttest_ind(data[0], data[1], **self._config["config"])
+            if test == "Independent T-test":
+                self.result = ttest_ind(self.data[0], self.data[1], **self._config["config"])
             elif test == "Welch's T-test":
-                self.result = ttest_ind(data[0], data[1], **self._config["config"])
+                self.result = ttest_ind(self.data[0], self.data[1], **self._config["config"])
             elif test == "Yuen's T-test":
-                self.result = ttest_ind(data[0], data[1], **self._config["config"])
+                self.result = ttest_ind(self.data[0], self.data[1], **self._config["config"])
+            elif test == "Paired T-test":
+                self.result = ttest_rel(self.data[0], self.data[1], **self._config["config"])
             elif test == "Mann-Whitney U rank test":
-                self.result = mannwhitneyu(data[0], data[1], **self._config["config"])
+                self.result = mannwhitneyu(self.data[0], self.data[1], **self._config["config"])
             elif test == "Baumgartner-Weiss-Schindler test":
-                self.result = bws_test(data[0], data[1], **self._config["config"])
+                self.result = bws_test(self.data[0], self.data[1], **self._config["config"])
             elif test == "Wilcoxon rank-sum":
-                self.result = ranksums(data[0], data[1], **self._config["config"])
+                self.result = ranksums(self.data[0], self.data[1], **self._config["config"])
             elif test == "Brunner-Munzel test":
-                self.result = brunnermunzel(data[0], data[1], **self._config["config"])
+                self.result = brunnermunzel(self.data[0], self.data[1], **self._config["config"])
             elif test == "Mood's test":
-                self.result = mood(data[0], data[1], **self._config["config"])
+                self.result = mood(self.data[0], self.data[1], **self._config["config"])
             elif test == "Ansari-Bradley test":
-                self.result = ansari(data[0], data[1], **self._config["config"])
+                self.result = ansari(self.data[0], self.data[1], **self._config["config"])
             elif test == "Cramer-von Mises test":
-                self.result = cramervonmises_2samp(data[0], data[1], **self._config["config"])
+                self.result = cramervonmises_2samp(self.data[0], self.data[1], **self._config["config"])
             elif test == "Epps-Singleton test":
-                self.result = epps_singleton_2samp(data[0], data[1], **self._config["config"])
+                self.result = epps_singleton_2samp(self.data[0], self.data[1], **self._config["config"])
             elif test == "Kolmogorov-Smirnov test":
-                self.result = ks_2samp(data[0], data[1], **self._config["config"])
+                self.result = ks_2samp(self.data[0], self.data[1], **self._config["config"])
             elif test == "One-way ANOVA":
-                self.result = f_oneway(*data, **self._config["config"])
+                self.result = f_oneway(*self.data, **self._config["config"])
             elif test == "Tukey's HSD test":
-                self.result = tukey_hsd(*data, **self._config["config"])
+                self.result = tukey_hsd(*self.data, **self._config["config"])
             elif test == "Dunnett's test":
-                self.result = dunnett(*data, **self._config["config"])
+                self.result = dunnett(*self.data, **self._config["config"])
             elif test == "Kruskal-Wallis H-test":
-                self.result = kruskal(*data, **self._config["config"])
+                self.result = kruskal(*self.data, **self._config["config"])
             elif test == "Alexander Govern test":
-                self.result = alexandergovern(*data, **self._config["config"])
+                self.result = alexandergovern(*self.data, **self._config["config"])
             elif test == "Fligner-Killeen test":
-                self.result = fligner(*data, **self._config["config"])
+                self.result = fligner(*self.data, **self._config["config"])
             elif test == "Levene test":
-                self.result = levene(*data, **self._config["config"])
+                self.result = levene(*self.data, **self._config["config"])
             elif test == "Barlett's test":
-                self.result = bartlett(*data, **self._config["config"])
+                self.result = bartlett(*self.data, **self._config["config"])
             elif test == "Mood's median test":
-                self.result = median_test(*data, **self._config["config"])
+                self.result = median_test(*self.data, **self._config["config"])
             elif test == "Friedman test":
-                self.result = friedmanchisquare(*data, **self._config["config"])
+                self.result = friedmanchisquare(*self.data, **self._config["config"])
+            elif test == "Anderson-Darling test":
+                self.result = anderson_ksamp(*self.data, **self._config["config"])
             
             # change progressbar's color
             self.progress.changeColor('success')
@@ -182,7 +190,7 @@ class MultiSampleTest (NodeContentWidget):
             logger.exception(e)
     
     def result_dialog(self):
-        self.currentWidget().result_dialog(self.result)
+        self.currentWidget().result_dialog(self._config["test"], self.data, self.result)
     
     def eval(self):
         self.resetNode()

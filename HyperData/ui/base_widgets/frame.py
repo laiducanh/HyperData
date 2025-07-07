@@ -27,6 +27,7 @@ class Frame(QFrame):
 
         self.isPressed = False
         self.isHover = False
+        self.backgroundColor = QColor(255, 255, 255)
 
     def mousePressEvent(self, e):
         self.isPressed = True
@@ -90,6 +91,7 @@ class Frame(QFrame):
 
         # draw background
         painter.setPen(Qt.PenStyle.NoPen)
+        bc = QColor(self.backgroundColor)
         alpha = 170
         if isDark():
             if self.isPressed:
@@ -102,7 +104,7 @@ class Frame(QFrame):
             alpha = 64
 
         rect = self.rect().adjusted(1, 1, -1, -1)
-        painter.setBrush(QColor(255, 255, 255, alpha))
+        painter.setBrush(QColor(bc.red(), bc.green(), bc.blue(), alpha))
         painter.drawRoundedRect(rect, r, r)
 
 class ScrollArea(QScrollArea):

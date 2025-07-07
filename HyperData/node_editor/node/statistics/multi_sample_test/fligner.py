@@ -1,22 +1,27 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.text import BodyLabel
-from node_editor.node.statistics.multi_sample_test.base import TestBase
+from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
 
-class ResultDialog(Dialog):
-    def __init__(self, result, parent=None):
-        super().__init__(parent)
-        if result:
-            self.main_layout.addWidget(BodyLabel(f"Statistic: {result.statistic}"))
-            self.main_layout.addWidget(BodyLabel(f"p-value: {result.pvalue}"))
-        else:
-            self.main_layout.addWidget(BodyLabel("Failed to run hypothesis test."))
-            
-class Fligner (TestBase):
+class ResultDialog(ResultDialogBase):
+    def __init__(self, title, samples, result, parent=None):
+        super().__init__(title, samples, result, parent)
+        
+    def initStats(self, result):
+        TransparentPushButton(
+            text='Statistic',
+            getter=lambda: str(result.statistic),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='p-value',
+            getter=lambda: str(result.pvalue),
+            layout=self.main_layout
+        )
+
+class Fligner(TestBase):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -30,11 +35,11 @@ class Fligner (TestBase):
         )
         else: self._config = config
 
-        self.center = ComboBox(items=["mean","median","trimmed"], text="Center")
+        self.center = TransparentComboBox(items=["mean","median","trimmed"], text="Center")
         self.center.button.setCurrentText(self._config["center"])
         self.vlayout.addWidget(self.center)
 
-        self.proprotiontocut = DoubleSpinBox(step=0.01, text="Proportion to cut")
+        self.proprotiontocut = TransparentDoubleSpinBox(step=0.01, text="Proportion to cut")
         self.proprotiontocut.button.setValue(self._config["proportiontocut"])
         self.vlayout.addWidget(self.proprotiontocut)
     
@@ -44,6 +49,6 @@ class Fligner (TestBase):
             proportiontocut = self.proprotiontocut.button.value()
         )
        
-    def result_dialog(self, result):
-        dialog = ResultDialog(result)
+    def result_dialog(self, title, samples, result):
+        dialog = ResultDialog(title, samples, result)
         dialog.exec()

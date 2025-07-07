@@ -106,13 +106,15 @@ class ProbDist (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
+        self.node.output_sockets[0].setSocketLabel('Distribution')
+
         self._config = dict(
             dist = "Normal",
             config = None
         )
         self.dist_list = ["Alpha","Anglit","Arcsine","Argus","Beta","Beta prime",
                           "Bradford","Burr (type III)","Burr (type XII)","Cauchy","Chi",
-                          "Chi-square","Cosine","Crystalball","Double gamme","Double Weibull",
+                          "Chi-square","Cosine","Crystalball","Double gamma","Double Weibull",
                           "Exponential","Exponentially modified Normal","Exponentiated Weibull",
                           "Exponential power","F","Fatique-life (BirnBaum-Saunders)","Fisk",
                           "Folded Cauchy","Folded Normal","Generalized logistic","Generalized Normal",
@@ -129,7 +131,7 @@ class ProbDist (NodeContentWidget):
                           "Non-central F","Non-central Student's t","Normal","Normal inverse Gaussian",
                           "Pareto","Pearson type III","Power-function","Power log-normal",
                           "Power normal","R-distributed","Rice","Reciprocal inverse Gaussian",
-                          "Skewed Cauchy","Skew-normal","Studentized range","Student's t","Trapezoidal",
+                          "Skewed Cauchy","Skew-normal","Studentized range","Student's t","Trapezoid",
                           "Triangular","Truncated exponential","Truncated normal","Truncated Pareto",
                           "Doubly truncated Weibull minimum","Tukey-Lambda","Uniform","Weibull minimum",
                           "Weibull maximum","Wrapped Cauchy"]

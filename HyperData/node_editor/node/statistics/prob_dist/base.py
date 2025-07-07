@@ -2,12 +2,12 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import TransparentComboBox, HButton, TransparentPushButton
 from plot.canvas import Canvas
 from scipy.stats._continuous_distns import norm_gen
 import numpy as np
 
-class DistBase (QWidget):
+class DistBase(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)   
 
@@ -30,8 +30,12 @@ class DistBase (QWidget):
         self.set_config(config=None)
         
     def clear_layout (self):
-        for widget in self.widget.findChildren(QWidget):
-            self.vlayout.removeWidget(widget)
+        for i in reversed(range(self.vlayout.count())):
+            item = self.vlayout.itemAt(i)
+            widget = item.widget()
+            if isinstance(widget, HButton):
+                self.vlayout.removeWidget(widget)
+                widget.deleteLater()
     
     def set_config(self, config=None):
         self.clear_layout()
@@ -48,11 +52,27 @@ class ResultDialog(Dialog):
 
         self.dist = dist
         self.title = title
-        self.main_layout.addWidget(BodyLabel(f"Median {self.dist.median()}"))
-        self.main_layout.addWidget(BodyLabel(f"Mean {self.dist.mean()}"))
-        self.main_layout.addWidget(BodyLabel(f"Standard deviation {self.dist.std()}"))
-        self.main_layout.addWidget(BodyLabel(f"95% Confidence interval {self.dist.interval(0.95)}"))
-        self.pl = ComboBox(items=["Probability density function","Log of the probability density function",
+        TransparentPushButton(
+            text='Median',
+            getter=lambda: str(self.dist.median()),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='Mean',
+            getter=lambda: str(self.dist.mean()),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='Standard deviation',
+            getter=lambda: str(self.dist.std()),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='95% Confidence interval',
+            getter=lambda: str(self.dist.interval(0.95)),
+            layout=self.main_layout
+        )
+        self.pl = TransparentComboBox(items=["Probability density function","Log of the probability density function",
                                   "Cumulative distribution function","Log of the cumulative distribution function",
                                   "Survival function","Log of the survival function"], 
                                   text="Probability function")

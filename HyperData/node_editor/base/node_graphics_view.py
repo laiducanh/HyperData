@@ -118,7 +118,7 @@ class NodeGraphicsView(QGraphicsView):
         stats = Menu(text="Statistics")
         self.menu.addMenu(stats)
         for text in ["Distribution","One Sample Tester","Multi-Sample Tester",
-                     "Correlation Tester"]:
+                     "Correlation Tester","Distribution Fitter"]:
             action = Action(text=text, parent=deep_learning)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             stats.addAction(action)

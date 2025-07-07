@@ -178,15 +178,18 @@ class Node(NodeGraphicsNode):
         elif title == "Distribution":
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
             self.content = ProbDist(self,parent)
-        elif title == "One-Sample Tester":
+        elif title == "One Sample Tester":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
             self.content = OneSampleTest(self,parent)
         elif title == "Multi-Sample Tester":
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[])
+            super().__init__(title=title, inputs=[MULTI_IN], outputs=[])
             self.content = MultiSampleTest(self,parent)
         elif title == "Correlation Tester":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
             self.content = CorrelationTest(self,parent)
+        elif title == "Distribution Fitter":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DistFitter(self, parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)

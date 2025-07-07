@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.button import TransparentPushButton, Toggle
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -11,41 +11,45 @@ class ResultDialog(ResultDialogBase):
     def initStats(self, result):
         TransparentPushButton(
             text='Statistic',
-            text2='The Cramér-von Mises statistic',
-            getter=lambda: str(result.statistic[0]),
+            getter=lambda: str(result.statistic),
+            layout=self.main_layout
+        )
+        TransparentPushButton(
+            text='Critical values',
+            text2='The critical values for significance levels 25%, 10%, 5%, 2.5%, 1%, 0.5%, 0.1%',
+            getter=lambda: str(result.critical_values),
             layout=self.main_layout
         )
         TransparentPushButton(
             text='p-value',
-            text2='Probability of observing this result (or more extreme) if null hypothesis is true',
-            getter=lambda: str(result.pvalue[0]),
+            getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )
             
-class Cramer(TestBase):
+class Anderson(TestBase):
     def __init__(self, parent=None):
         super().__init__(parent)
-
+    
     def set_config(self, config=None):
 
         self.clear_layout()
 
         if not config: self._config = dict(
-            method = "auto"
+            midrank = True
+
         )
         else: self._config = config
 
-        self.method = TransparentComboBox(
-            items=["auto","asymptotic","exact"], 
-            text="Method",
-            text2='The method used to compute the p-value',
-            getter=lambda: self._config["method"],
+        self.midrank = Toggle(
+            text='Midrank',
+            text2='Type of ANderson-Darling test',
+            getter=lambda: self._config['midrank'],
             layout=self.vlayout
         )
     
     def update_config(self):
         self._config.update(
-            method = self.method.button.currentText()
+            midrank = self.midrank.get_value()
         )
        
     def result_dialog(self, title, samples, result):

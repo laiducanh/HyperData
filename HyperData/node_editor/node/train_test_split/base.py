@@ -1,6 +1,7 @@
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
+from ui.base_widgets.button import HButton
 
 DEBUG = False
 
@@ -20,8 +21,12 @@ class SplitterBase(QWidget):
         self.vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         
     def clear_layout (self):
-        for widget in self.findChildren(QWidget):
-            self.vlayout.removeWidget(widget)
+        for i in reversed(range(self.vlayout.count())):
+            item = self.vlayout.itemAt(i)
+            widget = item.widget()
+            if isinstance(widget, HButton):
+                self.vlayout.removeWidget(widget)
+                widget.deleteLater()
     
     def set_config(self, config):
         self.clear_layout()

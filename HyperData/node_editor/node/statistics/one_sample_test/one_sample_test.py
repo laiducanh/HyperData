@@ -7,7 +7,7 @@ from ui.base_widgets.frame import SeparateHLine
 from PySide6.QtWidgets import QStackedLayout
 import pandas as pd
 from scipy.stats import (ttest_1samp, quantile_test, skewtest, kurtosistest, jarque_bera, shapiro,
-                         anderson, cramervonmises, ks_1samp, chisquare)
+                         anderson, cramervonmises, ks_1samp, normaltest)
 from node_editor.node.statistics.one_sample_test.ttest_1samp import Ttest1samp
 from node_editor.node.statistics.one_sample_test.quantile_test import QuantileTest
 from node_editor.node.statistics.one_sample_test.jarque_bera import JarqueBera
@@ -15,7 +15,7 @@ from node_editor.node.statistics.one_sample_test.shapiro import Shapiro
 from node_editor.node.statistics.one_sample_test.anderson import Anderson
 from node_editor.node.statistics.one_sample_test.cramervonmises import CramervonMises
 from node_editor.node.statistics.one_sample_test.kolmogorov import Kolmogorov
-from node_editor.node.statistics.one_sample_test.chisquare import Chisquare
+from node_editor.node.statistics.one_sample_test.normaltest import Normaltest
 from node_editor.node.statistics.one_sample_test.base import TestBase
 
 DEBUG = False
@@ -31,9 +31,8 @@ class OneSampleTest (NodeContentWidget):
             test = "T-test",
             config = dict(popmean = 0,alternative = "two-sided")
         )
-        self.test_list = ["T-test","Quantile test","Jarque-Bera test","Shapiro-Wilk test",
-                          "Anderson-Darling test","Cramer-von Mises test","Kolmogorov-Smirnov test",
-                          "Chi-square test"]
+        self.test_list = ["T-test","Quantile test","Jarque-Bera test","Shapiro-Wilk test","D'Agostino K² test",
+                          "Anderson-Darling test","Cramer-von Mises test","Kolmogorov-Smirnov test"]
         self.result = None
 
         self.label.hide()
@@ -60,10 +59,10 @@ class OneSampleTest (NodeContentWidget):
         self.stackedlayout.addWidget(QuantileTest())
         self.stackedlayout.addWidget(JarqueBera())
         self.stackedlayout.addWidget(Shapiro())
+        self.stackedlayout.addWidget(Normaltest())
         self.stackedlayout.addWidget(Anderson())
         self.stackedlayout.addWidget(CramervonMises())
         self.stackedlayout.addWidget(Kolmogorov())
-        self.stackedlayout.addWidget(Chisquare())
 
         self.stackedlayout.setCurrentIndex(self.test_list.index(self.test.button.currentText()))
         self.currentWidget().set_config(self._config["config"])
@@ -91,25 +90,26 @@ class OneSampleTest (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            data = self.node.input_sockets[0].socket_data.copy()
-            dist = self.node.input_sockets[1].socket_data
+            self.data = self.node.input_sockets[0].socket_data.copy().to_numpy().ravel()
+            self.dist = self.node.input_sockets[1].socket_data
             test = self._config["test"]
+            
             if test == "T-test":
-                self.result = ttest_1samp(data, **self._config["config"])
-            elif test == "Binomial test":
-                self.result = quantile_test(data, **self._config["config"])
+                self.result = ttest_1samp(self.data, **self._config["config"])
+            elif test == "Quantile test":
+                self.result = quantile_test(self.data, **self._config["config"])
             elif test == "Jarque-Bera test":
-                self.result = jarque_bera(data, **self._config["config"])
+                self.result = jarque_bera(self.data, **self._config["config"])
             elif test == "Shapiro-Wilk test":
-                self.result = shapiro(data, **self._config["config"])
+                self.result = shapiro(self.data, **self._config["config"])
             elif test == "Anderson-Darling test":
-                self.result = anderson(data, **self._config["config"])
+                self.result = anderson(self.data, **self._config["config"])
             elif test == "Cramer-von Mises test":
-                self.result = cramervonmises(data, dist.cdf, **self._config["config"])
+                self.result = cramervonmises(self.data, self.dist.cdf, **self._config["config"])
             elif test == "Kolmogorov-Smirnov test":
-                self.result = ks_1samp(data, dist.cdf, **self._config["config"])
-            elif test == "Chi-square test":
-                self.result = chisquare(data, **self._config["config"])
+                self.result = ks_1samp(self.data, self.dist.cdf, **self._config["config"])
+            elif test == "D'Agostino K² test":
+                self.result = normaltest(self.data, **self._config["config"])
             
             # change progressbar's color
             self.progress.changeColor('success')
@@ -125,12 +125,12 @@ class OneSampleTest (NodeContentWidget):
             logger.exception(e)
     
     def result_dialog(self):
-        self.currentWidget().result_dialog(self.result)
+        self.currentWidget().result_dialog(self.data, self.dist, self.result)
     
     def eval(self):
         self.resetNode()
         self.node.input_sockets[0].socket_data = pd.DataFrame()
-        self.node.input_sockets[0].socket_data = None
+        self.node.input_sockets[1].socket_data = None
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
         for edge in self.node.input_sockets[1].edges:

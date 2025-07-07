@@ -33,8 +33,8 @@ class ResultDialog(ResultDialogBase):
             getter=lambda: f"[{result.confidence_interval().low[0]}, {result.confidence_interval().high[0]}]",
             layout=self.main_layout
         )
-            
-class Welch(TestBase):
+
+class TtestRel(TestBase):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -44,7 +44,7 @@ class Welch(TestBase):
 
         if not config: self._config = dict(
             alternative = "two-sided",
-            equal_var = False
+            equal_var = True
         )
         else: self._config = config
 
@@ -63,4 +63,3 @@ class Welch(TestBase):
     def result_dialog(self, title, samples, result):
         dialog = ResultDialog(title, samples, result)
         dialog.exec()
-

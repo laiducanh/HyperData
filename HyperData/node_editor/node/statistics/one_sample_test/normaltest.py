@@ -31,7 +31,7 @@ class ResultDialog(ResultDialogBase):
     def plot(self):
         super().plot()
 
-        title = "Shapiro-Wilk test"
+        title = "D'Agostino K² test"
         hist = self.ax.hist(
             self.samples, 
             label="Samples", 
@@ -56,7 +56,7 @@ class ResultDialog(ResultDialogBase):
         self.ax.set_title(title)
         self.canvas.draw_idle()
             
-class Shapiro(TestBase):
+class Normaltest(TestBase):
     def __init__(self, parent=None):
         super().__init__(parent)
 
