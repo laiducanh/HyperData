@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, 
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QFileDialog,
                                QApplication, QMainWindow, QDialog)
 from PySide6.QtGui import QIcon, QGuiApplication, QBrush, QColor
 from PySide6.QtCore import QModelIndex, Signal, Qt, QAbstractTableModel, QSortFilterProxyModel
@@ -255,10 +255,21 @@ class TableView(QWidget):
         self.time_update.setText(f"Updated: {time}")
     
     def save_data(self):
-        dialog = FileDialog()
+        dialog = FileDialog(
+            caption="Save as",
+            directory='untitled.csv',
+            filter="""Comma-separated values (*.csv);;Microsoft excel (*.xlsx)""",
+            acceptMode=QFileDialog.AcceptMode.AcceptSave,
+        )
         if dialog.exec():
-            file = dialog.selectedFiles()[0]
-            self.data.to_csv(file)
+            path = dialog.selectedFiles()[0]
+            ext = os.path.splitext(path)[1]
+            if ext == ".xlsx":
+                self.data.to_excel(path)
+            elif ext == ".csv":
+                self.data.to_csv(path)
+            else:
+                self.data.to_csv(f"{path}.csv")
     
     def toggle_header(self, checked:bool):
         self.view.horizontalHeader().setVisible(checked)

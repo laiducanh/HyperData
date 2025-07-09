@@ -168,8 +168,8 @@ class DataReader (NodeContentWidget):
     def exec (self):    
         
         dialog = FileDialog(
-            caption="Import data",
-            filter="""All Files (*);;Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)"""
+            filter="""All Files (*);;Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)""",
+            acceptMode=QFileDialog.AcceptMode.AcceptOpen,
         )
         if self.selectedFiles: 
             dialog.setDirectory(os.path.dirname(self.selectedFiles))

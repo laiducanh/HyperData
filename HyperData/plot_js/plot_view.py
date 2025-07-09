@@ -3,15 +3,13 @@ import os
 
 ### Import libraries from PySide6
 from PySide6.QtCore import Qt, Signal, QUrl
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget,
-                             QStackedLayout, QTreeWidgetItem, QApplication)
-from PySide6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget, QStackedLayout)
+from PySide6.QtGui import QPaintEvent
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.button import _TransparentToolButton
 from ui.base_widgets.line_edit import _SearchBox
-from ui.base_widgets.window import ProgressDialog, FileDialog
 from config.settings import GLOBAL_DEBUG, logger, config
 
 DEBUG = False

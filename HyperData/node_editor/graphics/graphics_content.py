@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QAction
-import pandas, os
+import pandas as pd
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.line_edit import _TextEdit
 from ui.base_widgets.button import _TransparentPushButton, _TransparentToolButton
-from ui.base_widgets.window import ProgressBar, FileDialog
+from ui.base_widgets.window import ProgressBar
 
 class NodeComment (_TextEdit):
     def __init__(self, parent=None):
@@ -19,7 +19,7 @@ class GraphicsContent(QWidget):
     def __init__(self, parent=None): # parent is an instance of "NodeGraphicsView"
         super().__init__()
 
-        self.view = DataView(pandas.DataFrame(),parent)
+        self.view = DataView(pd.DataFrame(),parent)
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()
@@ -28,7 +28,7 @@ class GraphicsContent(QWidget):
         self.initUI()
         self.initMenu()
 
-        self.data_to_view = pandas.DataFrame()
+        self.data_to_view = pd.DataFrame()
 
     def initUI(self):
         self.vlayout = QVBoxLayout(self)
@@ -125,19 +125,7 @@ class GraphicsContent(QWidget):
         self.view.show()
     
     def saveData(self):
-        dialog = FileDialog(
-            caption="Import data",
-            filter="""Microsoft excel (*.xlsx);;Comma-separated values (*.csv)"""
-        )
-        if dialog.exec():
-            path = dialog.selectedFiles()[0]
-            ext = os.path.splitext(path)[1]
-            if ext == ".xlsx":
-                self.data_to_view.to_excel(path)
-            elif ext == ".csv":
-                self.data_to_view.to_csv(path)
-            else:
-                self.data_to_view.to_csv(f"{path}.csv")
+        self.view.tableview.save_data()
     
     def showColorDialog(self):
         pass
