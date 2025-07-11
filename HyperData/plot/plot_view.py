@@ -5,7 +5,7 @@ from matplotlib.artist import Artist
 ### Import libraries from PySide6
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QMainWindow, QDockWidget,
-                             QStackedLayout, QTreeWidgetItem, QApplication)
+                             QStackedLayout, QTreeWidgetItem, QApplication, QFileDialog)
 from PySide6.QtGui import QKeyEvent, QPaintEvent, QPixmap, QColor, QIcon
 
 ### Import self classes
@@ -225,9 +225,12 @@ class PlotView(QMainWindow):
 
     def save_figure(self):
         dialog = FileDialog(
-            caption="Save Figure",
+            caption="Save As",
+            directory='untitled.png',
             filter="""Portable Network Graphics (*.png);;Tagged Image File Format (*.tiff);;JPEG (*.jpg *.jpeg);;
-                      PDF (*.pdf);;Scalable Vector Graphics (*.svg);;PostScript formats (*.ps *.eps)"""
+                      PDF (*.pdf);;Scalable Vector Graphics (*.svg);;PostScript formats (*.ps *.eps);;All Files (*)""",
+            acceptMode=QFileDialog.AcceptMode.AcceptSave,
+            viewMode=QFileDialog.ViewMode.Detail
         )
         if dialog.exec():
             self.canvas.figure.savefig(

@@ -104,6 +104,7 @@ class Main(QMainWindow):
         dialog = FileDialog()
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         if dialog.exec():
             try:
                 dir = dialog.selectedFiles()[0]
@@ -120,6 +121,7 @@ class Main(QMainWindow):
         dialog = FileDialog()
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         if dialog.exec():
             dir = dialog.selectedFiles()[0]
             config['save_path'] = dir
