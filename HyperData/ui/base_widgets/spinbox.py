@@ -5,7 +5,7 @@ from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.button import HButton
 from typing import Callable
 
-class _SpinBox (QSpinBox):
+class _SpinBox(QSpinBox):
     def __init__(self, min=0, max=100, step=1, suffix='', prefix='',
                  getter:Callable=None, setter:Callable=None, 
                  layout:QLayout=None, parent=None):
@@ -22,6 +22,9 @@ class _SpinBox (QSpinBox):
         if getter: self.setValue(getter())
         if setter: self.valueChanged.connect(setter)
         if layout: layout.addWidget(self)
+    
+    def wheelEvent(self, event):
+        event.ignore()
     
     def set_value(self, value:int):
         self.setValue(value)
@@ -62,6 +65,9 @@ class _DoubleSpinBox (QDoubleSpinBox):
         if getter: self.setValue(getter())
         if setter: self.valueChanged.connect(setter)
         if layout: layout.addWidget(self)
+    
+    def wheelEvent(self, event):
+        event.ignore()
 
     def set_value(self, value:float):
         self.setValue(value)

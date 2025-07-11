@@ -23,7 +23,7 @@ Menu::separator {
 Menu::item {
     color: white;
     background: transparent;
-    font: 11.5pt;
+    font: 15px;
     padding: 7px 30px 7px 20px;
     border-radius: 8px;
     border: none;

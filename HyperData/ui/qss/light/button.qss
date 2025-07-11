@@ -3,7 +3,7 @@ _PushButton, _DropDownPushButton, _ToolButton, _TogglePushButton, _ToggleToolBut
     background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
     border-radius:8px;
-    font: 11.5pt;
+    font: 15px;
     padding: 7px 12px 7px 12px;
     outline: none;
 }

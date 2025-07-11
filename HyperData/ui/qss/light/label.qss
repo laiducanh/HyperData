@@ -1,6 +1,6 @@
 BodyLabel {
     color: rgba(62, 62, 62, 1);
-    font: 11.5pt;
+    font: 15px;
 }
 
 InfoLabel {

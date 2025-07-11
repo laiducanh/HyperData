@@ -1,6 +1,6 @@
 BodyLabel {
     color: white;
-    font: 11.5pt;
+    font: 15px;
 }
 
 InfoLabel {

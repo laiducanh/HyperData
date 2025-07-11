@@ -210,6 +210,9 @@ class _ComboBox (QComboBox):
         if setter: self.currentTextChanged.connect(setter)
         if layout: layout.addWidget(self)
     
+    def wheelEvent(self, e):
+        e.ignore()
+    
     def addItems(self, texts:list[str]):
         self.items = texts
         return super().addItems(texts)

@@ -1,7 +1,7 @@
 Menu {
     border: 1px solid rgba(200, 200, 200, 0.8);
     /* border-radius: 8px; */
-    font: 11.5pt;
+    font: 15px;
     background-color: white;
     padding: 4px 3px 4px 3px;
     color: rgba(67, 67, 67, 1);
