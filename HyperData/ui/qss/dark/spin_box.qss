@@ -4,7 +4,7 @@ _SpinBox, _DoubleSpinBox {
     border: none;
     border-radius: 8px;
     font: 15px;
-    padding: 7px 12px 7px 12px;
+    padding: 2px 12px 2px 12px;
     height: 28px;
 }
 
