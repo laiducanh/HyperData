@@ -8,7 +8,7 @@ from ui.base_widgets.window import Dialog
 
 DEBUG = False
 
-class DataPivot (NodeContentWidget):
+class DataPivot(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
@@ -29,24 +29,28 @@ class DataPivot (NodeContentWidget):
         aggfunc = TransparentComboBox(
             items=["mean","sum","min","max"],
             text="Function",
+            text2='Function will be used to calculate the partial aggregates',
             getter=lambda: self._config["aggfunc"],
             layout=dialog.main_layout
         )
 
         margins = Toggle(
             text="Margins",
+            text2='Add aggregate columns and rows across the categories',
             getter=lambda: self._config["margins"],
             layout=dialog.main_layout
         )
 
         dropna = Toggle(
             text="Drop NaN",
+            text2='Do not include columns whose entries are all NaN',
             getter=lambda: self._config["dropna"],
             layout=dialog.main_layout
         )
 
         sort = Toggle(
             text="Sort",
+            text2='Specifies if the result should be sorted',
             getter=lambda: self._config["sort"],
             layout=dialog.main_layout
         )
@@ -88,8 +92,28 @@ class DataPivot (NodeContentWidget):
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            data = self.node.input_sockets[0].socket_data
-            data = pd.pivot_table(data,**self._config)
+            rawdata = self.node.input_sockets[0].socket_data.copy(deep=True)
+            _data = pd.pivot_table(rawdata,**self._config)
+            
+            if self._config['margins']:
+                _columns = _data.columns[:-1]
+                _index = _data.index[:-1]
+            else:
+                _columns = _data.columns
+                _index = _data.index
+            if isinstance(_data.columns, pd.MultiIndex):
+                columns = [' \u2192 '.join(col) for col in _columns]
+            else:
+                columns = _data.columns
+            if isinstance(_data.index, pd.MultiIndex):
+                index = [' \u2192 '.join(idx) for idx in _index]
+            else:
+                index = _data.index
+            if self._config['margins']:
+                columns.append(self._config['aggfunc'].title())
+                index.append(self._config['aggfunc'].title())
+
+            data = pd.DataFrame(data=_data.values, columns=columns, index=index)
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
@@ -127,12 +151,6 @@ class DataUnpivot(NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Data Unpivot", parent=self.parent)
-        col_level = TransparentComboBox(
-            items=[str(i) for i in range(-1,data.columns.nlevels)], 
-            text="Level",
-            getter=lambda: str(self._config["col_level"]),
-            layout=dialog.main_layout
-        )
 
         ignore_index = Toggle(
             text="Ignore index",
@@ -157,7 +175,6 @@ class DataUnpivot(NodeContentWidget):
             self._config.update(
                 id_vars = list(compress(data.columns, id_vars.states)),
                 value_vars = list(compress(data.columns, value_vars.states)),
-                col_level = int(col_level.button.currentText()),
                 ignore_index = ignore_index.button.isChecked()
             )
             self.exec()

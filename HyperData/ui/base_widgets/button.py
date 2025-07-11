@@ -100,7 +100,7 @@ class _TogglePushButton (_PushButton):
 
         self.setCheckable(True)
 
-class _CheckBox(_TransparentPushButton):
+class _CheckBox(_TogglePushButton):
     """ checkable button, the same as _TogglePushButton,
     but behaves as transparent button when uncheck """
     def __init__(self, text:str=None, icon:Union[str, QIcon]=None, menu:QMenu=None, 
