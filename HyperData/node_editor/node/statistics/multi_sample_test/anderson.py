@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import HTransparentPushButton
+from ui.base_widgets.button import HTransparentPushButton, HToggle
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -40,9 +40,9 @@ class Anderson(TestBase):
         )
         else: self._config = config
 
-        self.midrank = Toggle(
-            text='Midrank',
-            text2='Type of ANderson-Darling test',
+        self.midrank = HToggle(
+            label='Midrank',
+            label2='Type of ANderson-Darling test',
             getter=lambda: self._config['midrank'],
             layout=self.vlayout
         )
