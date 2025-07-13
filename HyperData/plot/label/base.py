@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QLayout
-from ui.base_widgets.button import _ComboBox, _ToggleToolButton
+from ui.base_widgets.button import ComboBox, ToggleToolButton
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.frame import Frame
 from matplotlib.text import Text
@@ -16,14 +16,14 @@ class FontStyle(Frame):
     
         _layout.addWidget(BodyLabel('Font Style'))
 
-        style = _ToggleToolButton(
+        style = ToggleToolButton(
             setter=self.set_italic,
             getter=self.get_italic,
             icon="text-italic.svg",
             layout=_layout
         )
         
-        weight = _ToggleToolButton(
+        weight = ToggleToolButton(
             setter=self.set_bold,
             getter=self.get_bold,
             icon="text-bold.svg",
@@ -66,7 +66,7 @@ class FontAlignment(QWidget):
         self.canvas = canvas
 
         layout.addWidget(BodyLabel('Font Alignment'))
-        self.btn = _ComboBox()
+        self.btn = ComboBox()
         if self.obj[0].get_rotation() in ['y left','y right']:
             self.btn.addItems(['Bottom','Center','Top'])
         else:

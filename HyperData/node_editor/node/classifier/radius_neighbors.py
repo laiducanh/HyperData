@@ -1,5 +1,5 @@
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import neighbors
@@ -25,32 +25,32 @@ class RadiusNeighbors(ClassifierBase):
         else: self._config = config
         self.estimator = neighbors.RadiusNeighborsClassifier(**self._config)
 
-        self.radius = DoubleSpinBox(text="Range of parameter space")
+        self.radius = HTransparentDoubleSpinBox(label="Range of parameter space")
         self.radius.button.setValue(self._config["radius"])
         self.radius.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.radius)
 
-        self.weights = ComboBox(items=["uniform","distance"], text="Weight Function")
+        self.weights = HTransparentComboBox(items=["uniform","distance"], label="Weight Function")
         self.weights.button.setCurrentText(self._config["weights"])
         self.weights.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.weights)
 
-        self.algorithm = ComboBox(items=["auto","ball_tree","kd_tree","brute"], text="Algorithm")
+        self.algorithm = HTransparentComboBox(items=["auto","ball_tree","kd_tree","brute"], label="Algorithm")
         self.algorithm.button.setCurrentText(self._config["algorithm"])
         self.algorithm.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.algorithm)
 
-        self.leaf_size = SpinBox(text="Leaf size")
+        self.leaf_size = HTransparentSpinBox(label="Leaf size")
         self.leaf_size.button.setValue(self._config["leaf_size"])
         self.leaf_size.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.leaf_size)
 
-        self.p = DoubleSpinBox(text="Power parameter")
+        self.p = HTransparentDoubleSpinBox(label="Power parameter")
         self.p.button.setValue(self._config["p"])
         self.p.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.p)
 
-        self.outlier_label = ComboBox(items=["manual label","most_frequent","None"], text="Label for outliers")
+        self.outlier_label = HTransparentComboBox(items=["manual label","most_frequent","None"], label="Label for outliers")
         self.outlier_label.button.setCurrentText(self._config["outlier_label"])
         self.outlier_label.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.outlier_label)

@@ -5,8 +5,7 @@ from node_editor.node.classifier.bagging import BaggingClassifier
 from node_editor.node.classifier.voting import VotingClassifier
 from node_editor.node.classifier.stacking import Stacking
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import DropDownPushButton, _TransparentPushButton, ComboBox
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from ui.base_widgets.button import HDropDownTransparentPushButton, TransparentPushButton
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.menu import Menu
 from config.settings import logger
@@ -23,7 +22,7 @@ class MetaClassifier(NodeContentWidget):
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Data out")
 
-        self.score_btn = _TransparentPushButton()
+        self.score_btn = TransparentPushButton()
         self.score_btn.setText(f"Score: --")
         #self.score_btn.released.connect(self.score_dialog)
         self.vlayout.insertWidget(2,self.score_btn)
@@ -53,7 +52,7 @@ class MetaClassifier(NodeContentWidget):
             action.triggered.connect(lambda _, s=i: algorithm.button.setText(s))
             action.triggered.connect(lambda _, s=i: stackedlayout.setCurrentIndex(self.estimator_list.index(s)))
             menu.addAction(action)
-        algorithm = DropDownPushButton(text="Algorithm")
+        algorithm = HDropDownTransparentPushButton(label="Algorithm")
         algorithm.button.setText(self._config["estimator"])
         algorithm.button.setMenu(menu)
         dialog.main_layout.addWidget(algorithm)

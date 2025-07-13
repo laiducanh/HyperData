@@ -1,6 +1,6 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from sklearn import cluster
 
 class KMeans(MethodBase):
@@ -21,27 +21,27 @@ class KMeans(MethodBase):
         else: self._config = config
         self.method = cluster.KMeans(**self._config)
 
-        self.n_clusters = SpinBox(min=1,text="Number of clusters")
+        self.n_clusters = HTransparentSpinBox(minimum=1,label="Number of clusters")
         self.n_clusters.button.setValue(self._config["n_clusters"])
         self.n_clusters.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_clusters)
 
-        self.init = ComboBox(items=["k-means++","random"],text="Initialization")
+        self.init = HTransparentComboBox(items=["k-means++","random"],label="Initialization")
         self.init.button.setCurrentText(self._config["init"])
         self.init.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.init)
 
-        self.max_iter = SpinBox(min=1,max=10000,step=100,text="Max of iterations")
+        self.max_iter = HTransparentSpinBox(minimum=1,maximum=10000,singleStep=100,label="Max of iterations")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.tol = SpinBox(min=1, text="Tolerance")
+        self.tol = HTransparentSpinBox(minimum=1, label="Tolerance")
         self.tol.button.setValue(int(1/self._config["tol"]))
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.algorithm = ComboBox(items=["lloyd","elkan"],text="Algorithm")
+        self.algorithm = HTransparentComboBox(items=["lloyd","elkan"],label="Algorithm")
         self.algorithm.button.setCurrentText(self._config["algorithm"])
         self.algorithm.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.algorithm)

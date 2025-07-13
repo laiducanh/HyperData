@@ -1,5 +1,5 @@
-from ui.base_widgets.button import Toggle, ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HToggle, HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import ensemble
@@ -38,22 +38,22 @@ class HistGradientBoosting(ClassifierBase):
         else: self._config = config
         self.estimator = ensemble.HistGradientBoostingClassifier(**self._config)
 
-        self.loss = ComboBox(items=["log_loss"], text="Loss Function")
+        self.loss = HTransparentComboBox(items=["log_loss"], label="Loss Function")
         self.loss.button.setCurrentText(self._config["loss"])
         self.loss.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.loss)
 
-        self.learning_rate = DoubleSpinBox(max=1,step=0.05,text="Learning Rate")
+        self.learning_rate = HTransparentDoubleSpinBox(maximum=1,singleStep=0.05,label="Learning Rate")
         self.learning_rate.button.setValue(self._config["learning_rate"])
         self.learning_rate.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.learning_rate)
 
-        self.max_iter = SpinBox(max=10000, step=500, text="Maximum Number of Iterations")
+        self.max_iter = HTransparentSpinBox(maximum=10000, singleStep=500, label="Maximum Number of Iterations")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.max_leaf_nodes = DoubleSpinBox(min=-1, text="Maximum nmber of Leaves")
+        self.max_leaf_nodes = HTransparentDoubleSpinBox(minimum=-1, label="Maximum nmber of Leaves")
         self.max_leaf_nodes.button.setDecimals(0)
         if self._config["max_leaf_nodes"] == None:
             self.max_leaf_nodes.button.setValue(-1)
@@ -61,7 +61,7 @@ class HistGradientBoosting(ClassifierBase):
         self.max_leaf_nodes.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_leaf_nodes)
 
-        self.max_depth = DoubleSpinBox(min=-1, text="Maximum Depth")
+        self.max_depth = HTransparentDoubleSpinBox(minimum=-1, label="Maximum Depth")
         self.max_depth.button.setDecimals(0)
         if self._config["max_depth"] == None:
             self.max_depth.button.setValue(-1)
@@ -69,38 +69,38 @@ class HistGradientBoosting(ClassifierBase):
         self.max_depth.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_depth)
 
-        self.min_samples_leaf = SpinBox(text="Minimum Number of Samples per Leaf")
+        self.min_samples_leaf = HTransparentSpinBox(label="Minimum Number of Samples per Leaf")
         self.min_samples_leaf.button.setValue(self._config["min_samples_leaf"])
         self.min_samples_leaf.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.min_samples_leaf)
 
-        self.l2_regularization = DoubleSpinBox(text="L2 Regularization")
+        self.l2_regularization = HTransparentDoubleSpinBox(label="L2 Regularization")
         self.l2_regularization.button.setValue(self._config["l2_regularization"])
         self.l2_regularization.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.l2_regularization)
 
-        self.max_features = DoubleSpinBox(text="Proportion of Randomly Features")
+        self.max_features = HTransparentDoubleSpinBox(label="Proportion of Randomly Features")
         self.max_features.button.setValue(self._config["max_features"])
         self.max_features.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_features)
 
-        self.max_bins = SpinBox(max=255, text="Maximum Number of Bins")
+        self.max_bins = HTransparentSpinBox(maximum=255, label="Maximum Number of Bins")
         self.max_bins.button.setValue(self._config["max_bins"])
         self.max_bins.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_bins)
 
-        self.interaction_cst = ComboBox(items=["pairwise","no_interactions"],
-                                        text="Interaction Constraints")
+        self.interaction_cst = HTransparentComboBox(items=["pairwise","no_interactions"],
+                                        label="Interaction Constraints")
         self.interaction_cst.button.setCurrentText(self._config["interaction_cst"])
         self.interaction_cst.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.interaction_cst)
 
-        self.warm_start = Toggle(text="Warm Start")
+        self.warm_start = HToggle(label="Warm Start")
         self.warm_start.button.setChecked(self._config["warm_start"])
         self.warm_start.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.warm_start)
 
-        self.early_stopping = ComboBox(items=["auto","True","False"], text="Early Stopping")
+        self.early_stopping = HTransparentComboBox(items=["auto","True","False"], label="Early Stopping")
         if self._config["early_stopping"] == True:
             self.early_stopping.button.setCurrentText("True")
         elif self._config["early_stopping"] == False:
@@ -109,22 +109,22 @@ class HistGradientBoosting(ClassifierBase):
         self.early_stopping.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.early_stopping)
 
-        self.validation_fraction = DoubleSpinBox(text="Proportion for Validation Data")
+        self.validation_fraction = HTransparentDoubleSpinBox(label="Proportion for Validation Data")
         self.validation_fraction.button.setValue(self._config["validation_fraction"])
         self.validation_fraction.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.validation_fraction)
 
-        self.n_iter_no_change = SpinBox(text="Criterion for Early Stop")
+        self.n_iter_no_change = HTransparentSpinBox(label="Criterion for Early Stop")
         self.n_iter_no_change.button.setValue(self._config["n_iter_no_change"])
         self.n_iter_no_change.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_iter_no_change)
 
-        self.tol = DoubleSpinBox(min=1e-8,max=1e-6,step=1e-7,text="Tolerance")
+        self.tol = HTransparentDoubleSpinBox(minimum=1e-8,maximum=1e-6,singleStep=1e-7,label="Tolerance")
         self.tol.button.setValue(self._config["tol"])
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.class_weight = ComboBox(items=["None","balanced"],text="Class Weight")
+        self.class_weight = HTransparentComboBox(items=["None","balanced"],label="Class Weight")
         if self._config["class_weight"] == None:
             self.class_weight.button.setCurrentText("None")
         else: self.class_weight.button.setCurrentText(self._config["class_weight"])

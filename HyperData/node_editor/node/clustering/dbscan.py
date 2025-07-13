@@ -1,6 +1,6 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
 from sklearn import cluster
 
 class DBSCAN(MethodBase):
@@ -22,36 +22,36 @@ class DBSCAN(MethodBase):
         else: self._config = config
         self.method = cluster.DBSCAN(**self._config)
 
-        self.eps = DoubleSpinBox(text="Maximum distance")
+        self.eps = HTransparentDoubleSpinBox(label="Maximum distance")
         self.eps.button.setValue(self._config["eps"])
         self.eps.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.eps)
 
-        self.min_samples = SpinBox(text="Minimum number of samples")
+        self.min_samples = HTransparentSpinBox(label="Minimum number of samples")
         self.min_samples.button.setValue(self._config["min_samples"])
         self.min_samples.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.min_samples)
 
-        self.metric_ = ComboBox(items=["cityblock","cosine","euclidean","l1","l2","manhattan",
+        self.metric_ = HTransparentComboBox(items=["cityblock","cosine","euclidean","l1","l2","manhattan",
                                       "braycurtis","canberra","chebyshev","correlation","dice",
                                       "hamming","jaccard","kulsinski","mahalanobis","rogerstanimoto",
                                       "russellrao","seuclidean","sokalmichener","sokalsneath","sqeuclidean",
-                                      "yule"], text="Metric")
+                                      "yule"], label="Metric")
         self.metric_.button.setCurrentText(self._config["metric"])
         self.metric_.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.metric_)
 
-        self.algorithm = ComboBox(items=["auto","ball_tree","kd_tree","brute"], text="Algorithm")
+        self.algorithm = HTransparentComboBox(items=["auto","ball_tree","kd_tree","brute"], label="Algorithm")
         self.algorithm.button.setCurrentText(self._config["algorithm"])
         self.algorithm.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.algorithm)
 
-        self.leaf_size = SpinBox(text="Leaf size")
+        self.leaf_size = HTransparentSpinBox(label="Leaf size")
         self.leaf_size.button.setValue(self._config["leaf_size"])
         self.leaf_size.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.leaf_size)
 
-        self.p = DoubleSpinBox(text="Minkowski metric")
+        self.p = HTransparentDoubleSpinBox(label="Minkowski metric")
         self.p.button.setValue(self._config["p"])
         self.p.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.p)

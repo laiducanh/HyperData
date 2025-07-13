@@ -5,7 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import linear_model
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import DropDownPrimaryPushButton, _TransparentPushButton, PrimaryComboBox
+from ui.base_widgets.button import HDropDownPrimaryPushButton, TransparentPushButton, HPrimaryComboBox
 from ui.base_widgets.frame import SeparateHLine
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
 from node_editor.node.train_test_split.cv_split import CVSplitter
@@ -45,7 +45,7 @@ class Classifier (NodeContentWidget):
         self.node.output_sockets[1].setSocketLabel("Estimator")
         self.node.output_sockets[2].setSocketLabel("Data out")
 
-        self.score_btn = _TransparentPushButton()
+        self.score_btn = TransparentPushButton()
         self.score_btn.setText(f"Score: --")
         self.score_btn.released.connect(self.score_dialog)
         self.vlayout.insertWidget(2,self.score_btn)
@@ -78,13 +78,13 @@ class Classifier (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        multiclass = PrimaryComboBox(items=["One vs. Rest","One vs. One"],text="Multiclass strategy")
+        multiclass = HPrimaryComboBox(items=["One vs. Rest","One vs. One"],label="Multiclass strategy")
         dialog.main_layout.addWidget(multiclass)
         dialog.main_layout.addWidget(SeparateHLine())
         menu = AlgorithmMenu()
         menu.sig.connect(lambda s: algorithm.button.setText(s))
         menu.sig.connect(lambda s: self.stackedlayout.setCurrentIndex(self.estimator_list.index(s)))
-        algorithm = DropDownPrimaryPushButton(text="Algorithm")
+        algorithm = HDropDownPrimaryPushButton(label="Algorithm")
         algorithm.button.setText(self._config["estimator"])
         algorithm.button.setMenu(menu)
         dialog.main_layout.addWidget(algorithm)

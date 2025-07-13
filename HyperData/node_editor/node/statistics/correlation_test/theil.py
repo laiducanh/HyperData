@@ -1,7 +1,7 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from ui.base_widgets.text import BodyLabel
 from node_editor.node.statistics.multi_sample_test.base import TestBase
 
@@ -32,11 +32,11 @@ class Theil (TestBase):
         )
         else: self._config = config
 
-        self.method = ComboBox(items=["joint","separate"], text="Method")
+        self.method = HTransparentComboBox(items=["joint","separate"], label="Method")
         self.method.button.setCurrentText(self._config["method"])
         self.vlayout.addWidget(self.method)
 
-        self.alpha = DoubleSpinBox(max=1, step=0.05, text="Confidence")
+        self.alpha = HTransparentDoubleSpinBox(maximum=1, singleStep=0.05, label="Confidence")
         self.alpha.button.setValue(self._config["alpha"])
         self.vlayout.addWidget(self.alpha)
 

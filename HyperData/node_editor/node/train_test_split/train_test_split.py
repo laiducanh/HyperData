@@ -3,8 +3,8 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import model_selection
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.button import Toggle
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
+from ui.base_widgets.button import HToggle
 from config.settings import logger, GLOBAL_DEBUG
 
 DEBUG = False
@@ -27,11 +27,11 @@ class TrainTestSplitter (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        test_size = DoubleSpinBox(min=0, max=1, step=0.01, text="Test size")
+        test_size = HTransparentDoubleSpinBox(minimum=0, maximum=1, singleStep=0.01, label="Test size")
         test_size.button.setValue(self._config["test_size"])
         dialog.main_layout.addWidget(test_size)
 
-        shuffle = Toggle(text="Shuffle")
+        shuffle = HToggle(label="Shuffle")
         shuffle.button.setChecked(self._config["shuffle"])
         dialog.main_layout.addWidget(shuffle)
         

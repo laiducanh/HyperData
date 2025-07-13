@@ -4,7 +4,7 @@ from keras import layers
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.deep_learning.base import DLBase
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox 
+from ui.base_widgets.button import HTransparentComboBox 
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QStackedLayout)
 from PySide6.QtCore import Qt
@@ -81,7 +81,7 @@ class NormalizationLayer (DLBase):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        method = ComboBox(items=self.layer_list,text="Normalization strategy")
+        method = HTransparentComboBox(items=self.layer_list,label="Normalization strategy")
         method.button.setCurrentText(self._config["layer"])
         dialog.main_layout.addWidget(method)
         

@@ -1,6 +1,6 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from sklearn import decomposition
 
 class IncrementalPCA(MethodBase):
@@ -18,12 +18,12 @@ class IncrementalPCA(MethodBase):
         else: self._config = config
         self.method = decomposition.IncrementalPCA(**self._config)
 
-        self.n_components = SpinBox(text="Number of components")
+        self.n_components = HTransparentSpinBox(label="Number of components")
         self.n_components.button.setValue(self._config["n_components"])
         self.n_components.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_components)
 
-        self.whiten = Toggle(text="Whitening")
+        self.whiten = HToggle(label="Whitening")
         self.whiten.button.setChecked(self._config["whiten"])
         self.whiten.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.whiten)

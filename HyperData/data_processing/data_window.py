@@ -7,11 +7,11 @@ from time import gmtime, strftime
 import pandas as pd
 import numpy as np
 from config.settings import list_name, GLOBAL_DEBUG, logger
-from ui.base_widgets.button import (DropDownPushButton, _PrimaryPushButton, ComboBox, Toggle, 
-                                    _ComboBox,_TransparentPushButton, _TransparentToolButton, 
-                                    _ToolButton, _ToggleToolButton)
+from ui.base_widgets.button import (HDropDownPushButton, PrimaryPushButton, HComboBox, HToggle, 
+                                    ComboBox, TransparentPushButton, TransparentToolButton, 
+                                    ToolButton, ToggleToolButton)
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.line_edit import _SearchBox
+from ui.base_widgets.line_edit import SearchBox
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.window import Dialog, FileDialog
 from ui.base_widgets.frame import Frame
@@ -132,16 +132,16 @@ class TableView(QWidget):
         frame = Frame()
         self.hlayout = QHBoxLayout(frame)
         self.vlayout.addWidget(frame)
-        header = _ToggleToolButton(icon='header.png')
+        header = ToggleToolButton(icon='header.png')
         header.setToolTip('Toggle header')
         header.setChecked(True)
         header.toggled.connect(self.toggle_header)
         self.hlayout.addWidget(header)
-        self.savedata = _ToolButton(icon='save.png')
+        self.savedata = ToolButton(icon='save.png')
         self.savedata.setToolTip('Export data as csv')
         self.savedata.clicked.connect(self.save_data)
         self.hlayout.addWidget(self.savedata)
-        self.search_box = _SearchBox()
+        self.search_box = SearchBox()
         self.search_box.setPlaceholderText('Search from data')
         self.search_box.textChanged.connect(lambda string: self.filter.setFilterFixedString(string))
         self.hlayout.addWidget(self.search_box)
@@ -159,7 +159,7 @@ class TableView(QWidget):
         layout1.addWidget(text)
         self.data_type = BodyLabel()
         layout1.addWidget(self.data_type)
-        self.copy_btn = _PrimaryPushButton()
+        self.copy_btn = PrimaryPushButton()
         #self.copy_btn.setIcon(Icon(os.path.join('copy.png')))
         self.copy_btn.setText('Copy to clipboard')
         #self.copy_btn.setToolTip('Copy to clipboard')
@@ -295,11 +295,11 @@ class ExploreView(QWidget):
         self.describe_layout = QHBoxLayout()
         self.describe_layout.setContentsMargins(0,0,0,0)
         self.vlayout.addLayout(self.describe_layout)
-        self.groupby = Toggle(text="Group by")
+        self.groupby = HToggle(label="Group by")
         self.groupby.button.checkedChanged.connect(self.update_describe)
         self.groupby.button.checkedChanged.connect(lambda c: self.groupby2.setEnabled(c))
         self.describe_layout.addWidget(self.groupby)
-        self.groupby2 = _TransparentPushButton()
+        self.groupby2 = TransparentPushButton()
         self.groupby2.setEnabled(False)
         self.groupby2.setText("Choose group" if not self.grouplist else str(self.grouplist))
         self.groupby2.pressed.connect(self.groupbyDialog)
@@ -312,17 +312,17 @@ class ExploreView(QWidget):
         self.plot_selection.setContentsMargins(0,0,0,0)
         self.plot_selection.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.vlayout.addWidget(self.plot_widget)
-        self.btn = DropDownPushButton(text='Plot type', parent=self)
+        self.btn = HDropDownPushButton(label='Plot type', parent=self)
         self.btn.button.setFixedWidth(150)
         self.plot_selection.addWidget(self.btn)
         menu = self.initMenu()
         self.btn.button.setMenu(menu)
         self.btn.button.setText("NaNs matrix")
-        self.varx = ComboBox(text="X")
+        self.varx = HComboBox(label="X")
         self.plot_selection.addWidget(self.varx)
-        self.vary = ComboBox(text="Y")
+        self.vary = HComboBox(label="Y")
         self.plot_selection.addWidget(self.vary)
-        self.plot_btn = _PrimaryPushButton(parent=self)
+        self.plot_btn = PrimaryPushButton(parent=self)
         self.plot_btn.setText("Apply")
         self.plot_btn.pressed.connect(self.update_plot)
         self.plot_selection.addWidget(self.plot_btn)
@@ -372,12 +372,12 @@ class ExploreView(QWidget):
                 self.hlayout = QHBoxLayout(self)
                 self.hlayout.setContentsMargins(0,0,0,0)
 
-                self.col = _ComboBox(parent=parent)
+                self.col = ComboBox(parent=parent)
                 self.col.addItems(cols)
                 self.col.setCurrentText(group)
                 self.hlayout.addWidget(self.col)
 
-                delete = _TransparentToolButton(parent=parent)
+                delete = TransparentToolButton(parent=parent)
                 delete.setIcon("delete.png")
                 delete.pressed.connect(self.onDelete)
                 self.hlayout.addWidget(delete)
@@ -393,7 +393,7 @@ class ExploreView(QWidget):
 
         dialog = Dialog("Group by", self.parent())
 
-        add_btn = _TransparentPushButton(parent=self)
+        add_btn = TransparentPushButton(parent=self)
         add_btn.setIcon("add.png")
         add_btn.pressed.connect(add)
         dialog.main_layout.addWidget(add_btn)

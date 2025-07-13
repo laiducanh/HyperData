@@ -3,8 +3,8 @@ import pandas as pd
 import os
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog, FileDialog
-from ui.base_widgets.button import Toggle, TransparentComboBox
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.button import HToggle, HTransparentComboBox, HGroupRadioButton
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from data_processing.data_window import TableModel
@@ -53,9 +53,9 @@ class DataReader (NodeContentWidget):
         dialog = Dialog("Data Reading", self.parent)
         dialog.main_layout.addWidget(TitleLabel("File Watcher"))
         dialog.main_layout.addWidget(SeparateHLine())
-        self.auto_update = Toggle(
-            text="Auto update", 
-            text2="Update data file automatically when the file is modified externally",
+        self.auto_update = HToggle(
+            label="Auto update", 
+            label2="Update data file automatically when the file is modified externally",
             getter=lambda: self._config["auto_update"],
             setter=lambda v: self._config.update({"auto_update":v}),
             layout=dialog.main_layout
@@ -66,48 +66,51 @@ class DataReader (NodeContentWidget):
 
         hlayout = QHBoxLayout()
         dialog.main_layout.addLayout(hlayout)
-        self.header = Toggle(text="Header")
-        self.header.button.setChecked(True if self._config["header"]==0 else False)
-        self.header.button.checkedChanged.connect(self.update_preview)
-        hlayout.addWidget(self.header)
+        self.header = HToggle(
+            label="Header",
+            getter=lambda: True if self._config["header"]==0 else False,
+            setter=self.update_preview,
+            layout=hlayout
+        )
         
-        self.skip_blank_lines = Toggle(text="Skip blank lines")
-        self.skip_blank_lines.button.setChecked(self._config["skip_blank_lines"])
-        self.skip_blank_lines.button.checkedChanged.connect(self.update_preview)
-        hlayout.addWidget(self.skip_blank_lines)
+        self.skip_blank_lines = HToggle(
+            label="Skip blank lines",
+            getter=lambda: self._config["skip_blank_lines"],
+            setter=self.update_preview,
+            layout=hlayout
+        )
 
         self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
-        self.delimiter = TransparentComboBox(
+        self.delimiter = HGroupRadioButton(
             items=["Tab","Semicolon","Comma","Space"],
-            text="Delimiter",
-            text2="Character to treat as the separation"
+            label="Delimiter",
+            label2="Character to treat as the separation",
+            getter=lambda: list(self._delimiterDict.keys())
+            [list(self._delimiterDict.values()).index(self._config["delimiter"])],
+            setter=self.update_preview,
+            layout=dialog.main_layout
         )
-        self.delimiter.button.setCurrentText(list(self._delimiterDict.keys())
-            [list(self._delimiterDict.values()).index(self._config["delimiter"])])
-        self.delimiter.button.currentTextChanged.connect(self.update_preview)
-        dialog.main_layout.addWidget(self.delimiter)
-        
-        self.encoding = TransparentComboBox(
+        self.encoding = HTransparentComboBox(
             items=encode,
-            text="Encoding",
-            text2="Encoding to use for UTF when reading",
+            label="Encoding",
+            label2="Encoding to use for UTF when reading",
+            getter=lambda: self._config["encoding"],
+            setter=self.update_preview,
+            layout=dialog.main_layout
         )
-        self.encoding.button.setCurrentText(self._config["encoding"])
-        self.encoding.button.currentTextChanged.connect(self.update_preview)
-        dialog.main_layout.addWidget(self.encoding)
 
-        self.nrows = TransparentSpinBox(
-            min=-1, max=1000000000, 
-            text="Number of rows",
-            text2="Maximum lines to read",
+        self.nrows = HTransparentSpinBox(
+            minimum=-1, maximum=1000000000, 
+            label="Number of rows",
+            label2="Maximum lines to read",
             getter=lambda: -1 if not self._config["nrows"] else self._config["nrows"],
             setter=self.update_preview,
             layout=dialog.main_layout
         )
 
-        self.sheet_name = TransparentComboBox(
-            text="Sheet name",
-            text2="Select name of worksheet in the excel file to read"
+        self.sheet_name = HTransparentComboBox(
+            label="Sheet name",
+            label2="Select name of worksheet in the excel file to read"
         )
         if self.filetype == "excel":
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
@@ -129,7 +132,7 @@ class DataReader (NodeContentWidget):
             auto_update=self.auto_update.button.isChecked(),
             skip_blank_lines=self.skip_blank_lines.button.isChecked(),
             nrows=None if self.nrows.button.value() == -1 else self.nrows.button.value(),
-            delimiter=self._delimiterDict[self.delimiter.button.currentText()],
+            delimiter=self._delimiterDict[self.delimiter.get_value()],
             header=0 if self.header.button.isChecked() else None,
             encoding=self.encoding.button.currentText(),
             sheet_name=self.sheet_name.button.currentText(),

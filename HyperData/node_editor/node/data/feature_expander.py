@@ -3,9 +3,9 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import preprocessing
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import Toggle, PrimaryComboBox, TransparentComboBox
+from ui.base_widgets.button import HToggle, HPrimaryComboBox, HTransparentComboBox
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
@@ -74,24 +74,22 @@ class PolynomialFeatures(ExpanderBase):
             self._config = config
   
         # UI Components
-        self.degree = TransparentSpinBox(
-            text="Degree", 
-            text2="Maximal degree of the polynomial features",
+        self.degree = HTransparentSpinBox(
+            label="Degree", 
+            label2="Maximal degree of the polynomial features",
             getter=lambda: self._config["degree"],
             setter=lambda v: self._config.update({"degree":v}),
             layout=self.vlayout
         )
         
-        self.interaction_only = Toggle(
-            text="Interaction features",
-            text2="Only interaction features are produced",
+        self.interaction_only = HToggle(
+            label="Only interaction features are produced",
             setter=lambda v: self._config.update({"interaction_only":v}),
             getter=lambda: self._config["interaction_only"],
             layout=self.vlayout
         )
-        self.include_bias = Toggle(
-            text="Bias",
-            text2="Add a bias column",
+        self.include_bias = HToggle(
+            label="Add a bias column",
             getter=lambda: self._config["include_bias"],
             setter=lambda v: self._config.update({"include_bias":v}),
             layout=self.vlayout
@@ -118,40 +116,40 @@ class SplineTransfomer(ExpanderBase):
             self._config = config
         
         # Ui Components 
-        self.n_knots = TransparentSpinBox(
-            min=2, 
-            text="Knots", 
-            text2="Number of knots of the plines",
+        self.n_knots = HTransparentSpinBox(
+            minimum=2, 
+            label="Knots", 
+            label2="Number of knots of the plines",
             getter=lambda: self._config["n_knots"],
             setter=self.update_config,
             layout=self.vlayout
         )
-        self.degree = TransparentSpinBox(
-            text="Degree",
-            text2="The polynomial degree of the spline basis",
+        self.degree = HTransparentSpinBox(
+            label="Degree",
+            label2="The polynomial degree of the spline basis",
             getter=lambda: self._config["degree"],
             setter=self.update_config,
             layout=self.vlayout
         )
-        self.knots = TransparentComboBox(
+        self.knots = HTransparentComboBox(
             items=["uniform","quantile"], 
-            text="Distribution",
-            text2="How knot positions are distributed along the features",
+            label="Distribution",
+            label2="How knot positions are distributed along the features",
             getter=lambda: self._config["knots"],
             setter=self.update_config,
             layout=self.vlayout
         )
-        self.extrapolation = TransparentComboBox(
+        self.extrapolation = HTransparentComboBox(
             items=["error","constant","linear","continue","periodic"],
-            text="Extrapolation",
-            text2="Type of method to extrapolate values",
+            label="Extrapolation",
+            label2="Type of method to extrapolate values",
             getter=lambda: self._config["extrapolation"],
             setter=self.update_config,
             layout=self.vlayout
         )
-        self.include_bias = Toggle(
-            text="Bias",
-            text2="Add a bias column",
+        self.include_bias = HToggle(
+            label="Bias",
+            label2="Add a bias column",
             getter=lambda: self._config["include_bias"],
             setter=self.update_config,
             layout=self.vlayout
@@ -160,11 +158,11 @@ class SplineTransfomer(ExpanderBase):
     def update_config(self):
         # Update config from UI elements
         self._config.update(
-            n_knots = self.n_knots.button.value(),
-            degree = self.degree.button.value(),
-            knots = self.knots.button.currentText(),
-            extrapolation = self.extrapolation.button.currentText(),
-            include_bias = self.include_bias.button.isChecked(),
+            n_knots = self.n_knots.get_value(),
+            degree = self.degree.get_value(),
+            knots = self.knots.get_value(),
+            extrapolation = self.extrapolation.get_value(),
+            include_bias = self.include_bias.get_value(),
         )
 
 class FeatureExpander (NodeContentWidget):
@@ -184,9 +182,9 @@ class FeatureExpander (NodeContentWidget):
     def config(self):
         dialog = Dialog("Feature Expansion", self.parent)
         
-        expander = PrimaryComboBox(
+        expander = HPrimaryComboBox(
             items=self.estimator_list,
-            text="Scaler",
+            label="Scaler",
             setter=lambda s: self.stackedlayout.setCurrentIndex(self.estimator_list.index(s)),
             getter=lambda: self._config["estimator"],
             layout=dialog.main_layout

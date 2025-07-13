@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -9,21 +9,21 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='The Mann-Whitney U1 statistic',
-            text2='The statistic corresponding with the first sample',
+        HTransparentPushButton(
+            label='The Mann-Whitney U1 statistic',
+            label2='The statistic corresponding with the first sample',
             getter=lambda: str(result.statistic[0]),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='The Mann-Whitney U2 statistic',
-            text2='The statistic corresponding with the second sample',
+        HTransparentPushButton(
+            label='The Mann-Whitney U2 statistic',
+            label2='The statistic corresponding with the second sample',
             getter=lambda: str(len(self.samples[0])*len(self.samples[1])-result.statistic[0]),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing this result (or more extreme) if null hypothesis is true',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing this result (or more extreme) if null hypothesis is true',
             getter=lambda: str(result.pvalue[0]),
             layout=self.main_layout
         )
@@ -42,11 +42,11 @@ class MannWhitney(TestBase):
         )
         else: self._config = config
 
-        self.alternative = TransparentComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
+        self.alternative = HTransparentComboBox(items=["two-sided","less","greater"], label="Alternative hypothesis")
         self.alternative.button.setCurrentText(self._config["alternative"])
         self.vlayout.addWidget(self.alternative)
 
-        self.method = TransparentComboBox(items=["auto","asymptotic",'exact'], text="Method")
+        self.method = HTransparentComboBox(items=["auto","asymptotic",'exact'], label="Method")
         self.method.button.setCurrentText(self._config["method"])
         self.vlayout.addWidget(self.method)
     

@@ -1,7 +1,6 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.text import BodyLabel
 from node_editor.node.statistics.multi_sample_test.base import TestBase
 
@@ -31,15 +30,15 @@ class Kendall (TestBase):
         )
         else: self._config = config
 
-        self.alternative = ComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
+        self.alternative = HTransparentComboBox(items=["two-sided","less","greater"], label="Alternative hypothesis")
         self.alternative.button.setCurrentText(self._config["alternative"])
         self.vlayout.addWidget(self.alternative)
 
-        self.method = ComboBox(items=["auto","asymptotic","exact"], text="Method")
+        self.method = HTransparentComboBox(items=["auto","asymptotic","exact"], label="Method")
         self.method.button.setCurrentText(self._config["method"])
         self.vlayout.addWidget(self.method)
 
-        self.variant = ComboBox(items=["b","c"], text="Variant")
+        self.variant = HTransparentComboBox(items=["b","c"], label="Variant")
         self.variant.button.setCurrentText(self._config["variant"])
         self.vlayout.addWidget(self.variant)
 

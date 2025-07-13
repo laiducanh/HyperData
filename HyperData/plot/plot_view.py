@@ -16,8 +16,8 @@ from plot.tick.tick_3d import Tick3D
 from plot.plot_graphics_view import GraphicsView, GraphicsViewMultiFig
 from plot.multifigure.layout import Layout
 from ui.base_widgets.list import TreeWidget
-from ui.base_widgets.button import _TransparentToolButton
-from ui.base_widgets.line_edit import _SearchBox
+from ui.base_widgets.button import TransparentToolButton
+from ui.base_widgets.line_edit import SearchBox
 from ui.base_widgets.window import FileDialog
 from plot.canvas import Canvas
 from plot.axes.axes_2d import Axes2D
@@ -94,13 +94,13 @@ class PlotView(QMainWindow):
         # static_layout.setContentsMargins(10,0,10,15)
         self.sidebar_layout.addLayout(static_layout)
 
-        self.graphicscreen_btn = _TransparentToolButton(
+        self.graphicscreen_btn = TransparentToolButton(
             icon="stack.png",
             setter=self.sig_back_to_grScene.emit,
             layout=static_layout
         )
  
-        self.search_box = _SearchBox(parent=self.parent())
+        self.search_box = SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
         
@@ -296,17 +296,17 @@ class PlotViewMultiFig (PlotView):
         static_layout.setContentsMargins(10,0,10,15)
         self.sidebar_layout.addLayout(static_layout)
 
-        self.graphicscreen_btn = _TransparentToolButton()
+        self.graphicscreen_btn = TransparentToolButton()
         self.graphicscreen_btn.setIcon("stack.png")
         self.graphicscreen_btn.pressed.connect(self.sig_back_to_grScene.emit)
         self.graphicscreen_btn.setToolTip("Node View")
         static_layout.addWidget(self.graphicscreen_btn)
-        self.treeview_btn = _TransparentToolButton()
+        self.treeview_btn = TransparentToolButton()
         self.treeview_btn.setIcon("home.svg")
         self.treeview_btn.pressed.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.treeview_btn.setToolTip("Home")
         static_layout.addWidget(self.treeview_btn)
-        self.search_box = _SearchBox(parent=self.parent())
+        self.search_box = SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
         

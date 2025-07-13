@@ -3,9 +3,9 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import preprocessing
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import Toggle, PrimaryComboBox, TransparentComboBox
+from ui.base_widgets.button import HToggle, HPrimaryComboBox, HTransparentComboBox
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
@@ -61,15 +61,15 @@ class StandardScaler (ScalerBase):
         )
         else: self._config = config
     
-        self.with_mean = Toggle(
-            text="Center data",
+        self.with_mean = HToggle(
+            label="Center data",
             getter=lambda: self._config["with_mean"],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.with_std = Toggle(
-            text="Unit variance",
+        self.with_std = HToggle(
+            label="Unit variance",
             getter=lambda: self._config["with_std"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -93,22 +93,22 @@ class MinMaxScaler(ScalerBase):
         )
         else: self._config = config
     
-        self.min = TransparentDoubleSpinBox(
-            text="Min",
+        self.min = HTransparentDoubleSpinBox(
+            label="Min",
             getter=lambda: self._config["feature_range"][0],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.max = TransparentDoubleSpinBox(
-            text="Max",
+        self.max = HTransparentDoubleSpinBox(
+            label="Max",
             getter=lambda: self._config["feature_range"][1],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.clip = Toggle(
-            text="Clip",
+        self.clip = HToggle(
+            label="Clip",
             getter=lambda: self._config["clip"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -138,22 +138,22 @@ class RobustScaler(ScalerBase):
         )
         else: self._config = config
     
-        self.with_centering = Toggle(
-            text="Center data",
+        self.with_centering = HToggle(
+            label="Center data",
             getter=lambda: self._config["with_centering"],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.unit_variance = Toggle(
-            text="Unit variance",
+        self.unit_variance = HToggle(
+            label="Unit variance",
             getter=lambda: self._config["unit_variance"],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.with_scaling = Toggle(
-            text="Scale to interquartile",
+        self.with_scaling = HToggle(
+            label="Scale to interquartile",
             getter=lambda: self._config["with_scaling"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -179,32 +179,32 @@ class QuantileTransfomer(ScalerBase):
         )
         else: self._config = config
     
-        self.n_quantiles = TransparentSpinBox(
-            min=1, max=10000, step=1000,
-            text="Number of quantiles",
+        self.n_quantiles = HTransparentSpinBox(
+            minimum=1, maximum=10000, singleStep=1000,
+            label="Number of quantiles",
             getter=lambda: self._config["n_quantiles"],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.output_distribution = TransparentComboBox(
+        self.output_distribution = HTransparentComboBox(
             items=["uniform","normal"], 
-            text="Distribution",
+            label="Distribution",
             getter=lambda: self._config["output_distribution"],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.subsampleOn = Toggle(
+        self.subsampleOn = HToggle(
             text="Subsample",
             getter=lambda: True if self._config["subsample"] else False,
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.subsample = TransparentSpinBox(
-            min=1, max=100000, step=10000, 
-            text="Number of subsamples",
+        self.subsample = HTransparentSpinBox(
+            minimum=1, maximum=100000, singleStep=10000, 
+            label="Number of subsamples",
             getter=lambda: self._config["subsample"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -229,16 +229,16 @@ class PowerTransformer(ScalerBase):
         )
         else: self._config = config
     
-        self.method = TransparentComboBox(
+        self.method = HTransparentComboBox(
             items=["yeo-johnson","box-cox"], 
-            text="Method",
+            label="Method",
             getter=lambda: self._config["method"],
             setter=self.set_estimator,
             layout=self.vlayout
         )
 
-        self.standardize = Toggle(
-            text="Standardize",
+        self.standardize = HToggle(
+            label="Standardize",
             getter=lambda: self._config["standardize"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -265,7 +265,7 @@ class DataScaler (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Data Scaling", self.parent)
-        scaler = PrimaryComboBox(items=self.scaler_list,text="Scaler")
+        scaler = HPrimaryComboBox(items=self.scaler_list,label="Scaler")
         scaler.button.setMinimumWidth(250)
         scaler.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.scaler_list.index(s)))
         dialog.main_layout.addWidget(scaler)

@@ -2,8 +2,8 @@ from node_editor.node.classifier.report import scoring, Report
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from ui.base_widgets.button import _TransparentPushButton, Toggle, PrimaryComboBox
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import TransparentPushButton, HToggle, HPrimaryComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import ensemble
@@ -26,7 +26,7 @@ class BaggingClassifier(NodeContentWidget):
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Data out")
 
-        self.score_btn = _TransparentPushButton()
+        self.score_btn = TransparentPushButton()
         self.score_btn.setText(f"Score: --")
         self.score_btn.released.connect(self.score_dialog)
         self.vlayout.insertWidget(2,self.score_btn)
@@ -47,30 +47,30 @@ class BaggingClassifier(NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        multiclass = PrimaryComboBox(items=["One vs. Rest","One vs. One"],text="Multiclass strategy")
+        multiclass = HPrimaryComboBox(items=["One vs. Rest","One vs. One"],label="Multiclass strategy")
         dialog.main_layout.addWidget(multiclass)
 
-        n_estimators = SpinBox(min=1,text="Number of estimators")
+        n_estimators = HTransparentSpinBox(minimum=1,label="Number of estimators")
         n_estimators.button.setValue(self._config["n_estimators"])
         dialog.main_layout.addWidget(n_estimators)
 
-        max_samples = SpinBox(min=1, max=100, text="Sample sizes")
+        max_samples = HTransparentSpinBox(minimum=1, maximum=100, label="Sample sizes")
         max_samples.button.setValue(int(self._config["max_samples"]*100))
         dialog.main_layout.addWidget(max_samples)
 
-        max_features = SpinBox(min=1, max=100, text="Feature sizes")
+        max_features = HTransparentSpinBox(minimum=1, maximum=100, label="Feature sizes")
         max_features.button.setValue(int(self._config["max_features"]*100))
         dialog.main_layout.addWidget(max_features)
 
-        bootstrap = Toggle(text="Bootstrap")
+        bootstrap = HToggle(label="Bootstrap")
         bootstrap.button.setChecked(self._config["bootstrap"])
         dialog.main_layout.addWidget(bootstrap)
 
-        bootstrap_features = Toggle(text="Bootstrap features")
+        bootstrap_features = HToggle(label="Bootstrap features")
         bootstrap_features.button.setChecked(self._config["bootstrap_features"])
         dialog.main_layout.addWidget(bootstrap_features)
 
-        oob_score = Toggle(text="Out-of-bag samples")
+        oob_score = HToggle(label="Out-of-bag samples")
         oob_score.button.setChecked(self._config["oob_score"])
         oob_score.button.checkedChanged.connect(lambda checked: oob_score.button.setChecked(False if not bootstrap.button.isChecked() else checked))
         bootstrap.button.checkedChanged.connect(lambda checked: oob_score.button.setChecked(False if not checked else self._config["oob_score"]))

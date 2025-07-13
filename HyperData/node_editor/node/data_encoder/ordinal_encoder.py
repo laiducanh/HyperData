@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer
 from sklearn import preprocessing
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from config.settings import logger, GLOBAL_DEBUG
 import numpy as np
 
@@ -21,7 +21,7 @@ class FeatureEncoder (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        method = ComboBox(items=["Ordinal Encoder","Binarizer"], text="Type")
+        method = HTransparentComboBox(items=["Ordinal Encoder","Binarizer"], label="Type")
         method.button.setCurrentText(self._config["method"])
         dialog.main_layout.addWidget(method)
 

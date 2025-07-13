@@ -3,7 +3,7 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.line_edit import CompleterLineEdit
+from ui.base_widgets.line_edit import HCompleterLineEdit
 
 DEBUG = False
 
@@ -38,16 +38,16 @@ class DataLocator (NodeContentWidget):
     def config(self):
         dialog = Dialog("Locate Data", self.parent)
 
-        col_from = CompleterLineEdit(text="From column")
+        col_from = HCompleterLineEdit(label="From column")
         dialog.main_layout.addWidget(col_from)
 
-        col_to = CompleterLineEdit(text="To column")
+        col_to = HCompleterLineEdit(label="To column")
         dialog.main_layout.addWidget(col_to)
 
-        row_from = CompleterLineEdit(text="From row")
+        row_from = HCompleterLineEdit(label="From row")
         dialog.main_layout.addWidget(row_from)
 
-        row_to = CompleterLineEdit(text="To row")
+        row_to = HCompleterLineEdit(label="To row")
         dialog.main_layout.addWidget(row_to)
         
         if self.node.input_sockets[0].socket_data.shape[0] < 1000:

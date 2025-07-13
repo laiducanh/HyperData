@@ -2,12 +2,10 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.line_edit import CompleterLineEdit
-from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
 
 DEBUG = False
 
@@ -44,19 +42,19 @@ class DataSplitter (NodeContentWidget):
     def config(self):
         dialog = Dialog("Split Data", self.parent)
 
-        type = TransparentComboBox(
+        type = HTransparentComboBox(
             items=["columns","rows"], 
-            text="Type",
+            label="Type",
             getter=lambda: self._config["type"],
             layout=dialog.main_layout
         )
 
         dialog.main_layout.addWidget(SeparateHLine())
 
-        idx = TransparentSpinBox(
-            min=0, max=1000000,
-            text="Index",
-            text2="Position of the slice",
+        idx = HTransparentSpinBox(
+            minimum=0, maximum=1000000,
+            label="Index",
+            label2="Position of the slice",
             getter=lambda: self._config["idx"],
             layout=dialog.main_layout
         )

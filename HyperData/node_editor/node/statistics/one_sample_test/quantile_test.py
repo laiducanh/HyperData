@@ -1,6 +1,6 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, TransparentPushButton
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from plot.utilis import complementary_color
 from node_editor.node.statistics.one_sample_test.base import TestBase, ResultDialogBase
 import numpy as np
@@ -17,21 +17,21 @@ class ResultDialog(ResultDialogBase):
         self.plot()
 
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='Proportion of samples on the less extreme side of the hypothesized quantile',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='Proportion of samples on the less extreme side of the hypothesized quantile',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing this imbalace (or more extreme) under the null',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing this imbalace (or more extreme) under the null',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='95% Confidence interval',
-            text2='The confidence interval around the population quantile',
+        HTransparentPushButton(
+            label='95% Confidence interval',
+            label2='The confidence interval around the population quantile',
             getter=lambda: f"[{result.confidence_interval().low}, {result.confidence_interval().high}]",
             layout=self.main_layout
         )
@@ -83,25 +83,25 @@ class QuantileTest(TestBase):
         )
         else: self._config = config
     
-        self.q = DoubleSpinBox(
-            text="Hypothesized value",
-            text2='The hypothesized value of the quantile',
+        self.q = HTransparentDoubleSpinBox(
+            label="Hypothesized value",
+            label2='The hypothesized value of the quantile',
             decimals=5,
             getter=lambda: self._config["q"],
             layout=self.vlayout
         )
 
-        self.p = DoubleSpinBox(
-            max=1, min=0, step=0.1, 
-            text="Probability of quantile",
-            text2="The proportion of the population less than hypothesized value",
+        self.p = HTransparentDoubleSpinBox(
+            maximum=1, minimum=0, singleStep=0.1, 
+            label="Probability of quantile",
+            label2="The proportion of the population less than hypothesized value",
             getter=lambda: self._config["p"],
             layout=self.vlayout
         )
 
-        self.alternative = ComboBox(
+        self.alternative = HTransparentComboBox(
             items=["two-sided","less","greater"], 
-            text="Alternative hypothesis",
+            label="Alternative hypothesis",
             getter=lambda: self._config["alternative"],
             layout=self.vlayout
         )

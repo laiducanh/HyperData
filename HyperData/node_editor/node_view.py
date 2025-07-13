@@ -7,8 +7,8 @@ from node_editor.node_node import Node
 from node_editor.base.node_graphics_node import NodeEditor
 from node_editor.base.node_graphics_edge import NodeGraphicsEdge
 from ui.base_widgets.list import Draggable_TreeWidget
-from ui.base_widgets.line_edit import _SearchBox
-from ui.base_widgets.button import _TransparentToolButton
+from ui.base_widgets.line_edit import SearchBox
+from ui.base_widgets.button import TransparentToolButton
 from config.settings import config, logger
 
 SINGLE_IN = 1
@@ -27,10 +27,10 @@ class NodeView (QMainWindow):
 
         self.parent = parent
         self.nodelist = {
-            "Data Processing": ["Data Reader", "Data Concator", "Data Transpose", "Data Inserter",
-                                "Data Combiner", "Data Merge", "Data Compare","Data Correlator",
-                                "Data Locator","Data Splitter","Data Filter", "Data Holder","Data Sorter",
-                                "Data Pivot","Data Unpivot","Data Stack","Data Unstack","Data Computation",
+            "Data Processing": ["Data Reader", "Data Concator", "Data Inserter", "Data Combiner", 
+                                "Data Merge", "Data Compare","Data Correlator","Data Locator",
+                                "Data Splitter","Data Filter", "Data Holder","Data Sorter","Data Pivot",
+                                "Data Unpivot","Data Stack","Data Unstack","Data Computation",
                                 "Data Overwriter","Curve Fitter","Data Creator","Data Transformer",
                                 "Data Scaler","Data Normalizer","Pairwise Measurer",
                                 "Nan Eliminator", "Nan Imputer", "Drop Duplicate",
@@ -66,7 +66,7 @@ class NodeView (QMainWindow):
         self.static_layout = QHBoxLayout()
         self.list_widget_layout.addLayout(self.static_layout)
 
-        self.search_box = _SearchBox(parent=self.parent)
+        self.search_box = SearchBox(parent=self.parent)
         self.search_box.setPlaceholderText("Type / to search")
         self.static_layout.addWidget(self.search_box)
 
@@ -121,7 +121,7 @@ class NodeUserDefine (NodeView):
     def __init__(self, main_node:Node=None, parent=None):
         super().__init__(parent)
 
-        self.graphicscreen_btn = _TransparentToolButton()
+        self.graphicscreen_btn = TransparentToolButton()
         self.graphicscreen_btn.setIcon("stack.png")
         self.graphicscreen_btn.pressed.connect(self.sig_back_to_grScene.emit)
         self.graphicscreen_btn.setToolTip("Node View")

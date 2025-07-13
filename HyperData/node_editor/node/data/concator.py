@@ -2,14 +2,14 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.button import HToggle, HGroupRadioButton
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
-class DataConcator (NodeContentWidget):
+class DataConcator(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode,parent=None):
         super().__init__(node, parent)
 
@@ -24,38 +24,38 @@ class DataConcator (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.addWidget(TitleLabel("Concatenation"))
+        dialog.main_layout.addWidget(BodyLabel("Concatenate DataFrames along a particular axis"))
         dialog.main_layout.addWidget(SeparateHLine())
-        axis = TransparentComboBox(
+        axis = HGroupRadioButton(
             items=["index","columns"], 
-            text='Axis',
-            text2='Choose axis to concatenate along')
-        axis.button.setCurrentText(self._config['axis'])
-        dialog.main_layout.addWidget(axis)
-        
-        dialog.main_layout.addWidget(TitleLabel("Index"))
-        dialog.main_layout.addWidget(SeparateHLine())
-        join = TransparentComboBox(
+            label='Axis',
+            label2='Choose axis to concatenate along',
+            getter=lambda: self._config['axis'],
+            layout=dialog.main_layout
+        )
+        join = HGroupRadioButton(
             items=['inner','outer'],
-            text='Join',
-            text2='How to handle indexes on other axis')
-        join.button.setCurrentText(self._config['join'])
-        dialog.main_layout.addWidget(join)
-        ignore_index = Toggle(
-            text="Ignore index", 
-            text2="The index along the concatenation axis will be ignored")
-        ignore_index.button.setChecked(self._config['ignore_index'])
-        dialog.main_layout.addWidget(ignore_index)
-        sort = Toggle(
-            text="Sort", 
-            text2='Sort non-concatenation axis if it is not already aligned')
-        sort.button.setChecked(self._config["sort"])
-        dialog.main_layout.addWidget(sort)
+            label='Join',
+            label2='How to handle indexes on other axis',
+            getter=lambda: self._config['join'],
+            layout=dialog.main_layout
+        )
+        ignore_index = HToggle(
+            label="Do not use the index values along the concatenation axis", 
+            getter=lambda: self._config['ignore_index'],
+            layout=dialog.main_layout
+        )
+        sort = HToggle(
+            label='Sort non-concatenation axis if it is not already aligned',
+            getter=lambda: self._config["sort"],
+            layout=dialog.main_layout
+        )
 
         if dialog.exec(): 
-            self._config["axis"] = axis.button.currentText()
-            self._config["join"] = join.button.currentText()
-            self._config["ignore_index"] = ignore_index.button.isChecked()
-            self._config["sort"] = sort.button.isChecked()
+            self._config["axis"] = axis.get_value()
+            self._config["join"] = join.get_value()
+            self._config["ignore_index"] = ignore_index.get_value()
+            self._config["sort"] = sort.get_value()
             self.exec()
     
     def func(self):
@@ -76,9 +76,7 @@ class DataConcator (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            connectedEdges = self.node.input_sockets[0].edges
-            connectedNodes = [edge.start_socket.node for edge in connectedEdges]
-            logger.info(f"{self.name} {self.node.id}: concated data from {connectedNodes} {[node.id for node in connectedNodes]} successfully.")
+            logger.info(f"{self.name} {self.node.id}: run successfully.")
         
         except Exception as e:
             data = pd.DataFrame()

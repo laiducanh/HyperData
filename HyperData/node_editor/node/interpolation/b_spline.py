@@ -1,7 +1,6 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
 from node_editor.node.interpolation.base import FitBase
@@ -26,7 +25,7 @@ class ResultDialog(Dialog):
             self.main_layout.addWidget(BodyLabel(f"B-Spline coefficients: {spline.c}"))
             self.main_layout.addWidget(BodyLabel(f"Knots {spline.t}"))
 
-            smooth = ComboBox(items=[str(i) for i in np.arange(0,10000,50)], text="Smoothness")
+            smooth = HTransparentComboBox(items=[str(i) for i in np.arange(0,10000,50)], label="Smoothness")
             smooth.button.setCurrentText(str(len(xdata)))
             smooth.button.currentTextChanged.connect(self.onSmoothChange)
             self.main_layout.addWidget(smooth)
@@ -71,12 +70,12 @@ class BSpline (FitBase):
         )
         else: self._config = config
     
-        self.k = SpinBox(text="B-Spline degree")
+        self.k = HTransparentSpinBox(label="B-Spline degree")
         self.k.button.setValue(self._config["k"])
         self.vlayout.addWidget(self.k)
 
-        self.bc_type = ComboBox(items=["clamped","natural","not-a-knot","periodic"], 
-                                text="Boundary condition")
+        self.bc_type = HTransparentComboBox(items=["clamped","natural","not-a-knot","periodic"], 
+                                label="Boundary condition")
         self.bc_type.button.setCurrentText(self._config["bc_type"])
         self.vlayout.addWidget(self.bc_type)
     

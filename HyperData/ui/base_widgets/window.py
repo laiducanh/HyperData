@@ -4,7 +4,7 @@ from PySide6.QtCore import (Qt, QPropertyAnimation, Property, QEasingCurve
                             ,QParallelAnimationGroup, QSequentialAnimationGroup)
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QBrush
 import math, typing
-from ui.base_widgets.button import _PrimaryPushButton, _TransparentPushButton
+from ui.base_widgets.button import PrimaryPushButton, TransparentPushButton
 from ui.utils import isDark
 from typing import Literal
 
@@ -34,11 +34,11 @@ class Dialog (QDialog):
         self.groupButton = QHBoxLayout(widget)
         self.vlayout.addWidget(widget)
         self.groupButton.addStretch()
-        self.ok_btn = _PrimaryPushButton("Save Changes")
+        self.ok_btn = PrimaryPushButton("Save Changes")
         #self.ok_btn.setMinimumWidth(200)
         self.ok_btn.clicked.connect(self.accept)
         self.groupButton.addWidget(self.ok_btn)
-        self.cancel_btn = _TransparentPushButton("Cancel")
+        self.cancel_btn = TransparentPushButton("Cancel")
         #self.cancel_btn.setMinimumWidth(200)
         self.cancel_btn.clicked.connect(self.reject)
         self.groupButton.addWidget(self.cancel_btn)

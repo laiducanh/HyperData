@@ -2,7 +2,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, PrimaryComboBox
+from ui.base_widgets.button import HTransparentComboBox, HPrimaryComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QStackedLayout
@@ -59,12 +59,12 @@ class PairwiseDistances(MethodBase):
         )
         else: self._config = config
 
-        self.metric_ = TransparentComboBox(
+        self.metric_ = HTransparentComboBox(
             items=["cityblock","cosine","euclidean","l1","l2","manhattan","braycurtis",
                    "canberra","chebyshev","correlation","dice","hamming","jaccard",
                    "kulsinski","mahalanobis","rogerstanimoto","russellrao","seuclidean",
                    "sokalmichener","sokalsneath","sqeuclidean","yule"], 
-            text="Metric",
+            label="Metric",
             getter=lambda: self._config["metric"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -91,9 +91,9 @@ class PairedDistances(MethodBase):
         )
         else: self._config = config
 
-        self.metric_ = TransparentComboBox(
+        self.metric_ = HTransparentComboBox(
             items=["cityblock","cosine","euclidean","l1","l2","manhattan"], 
-            text="Metric",
+            label="Metric",
             getter=lambda: self._config["metric"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -120,10 +120,10 @@ class PairwiseKernel(MethodBase):
             metric = "linear"
         )
 
-        self.metric_ = TransparentComboBox(
+        self.metric_ = HTransparentComboBox(
             items=["additive_chi2","chi2","linear","quadratic","cubic",
                    "quartic","rbf","laplacian","sigmoid","cosine"],
-            text="Metric",
+            label="Metric",
             getter=lambda: self._config["metric"],
             setter=self.set_estimator,
             layout=self.vlayout
@@ -154,7 +154,7 @@ class PairwiseMeasurer (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        method = PrimaryComboBox(items=self.method_list,text="Method")
+        method = HPrimaryComboBox(items=self.method_list,label="Method")
         method.button.setMinimumWidth(250)
         method.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.method_list.index(s)))
         dialog.main_layout.addWidget(method)

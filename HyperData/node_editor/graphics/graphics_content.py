@@ -4,11 +4,11 @@ from PySide6.QtGui import QAction
 import pandas as pd
 from data_processing.data_window import DataView
 from ui.base_widgets.menu import Menu
-from ui.base_widgets.line_edit import _TextEdit
-from ui.base_widgets.button import _TransparentPushButton, _TransparentToolButton
+from ui.base_widgets.line_edit import TextEdit
+from ui.base_widgets.button import TransparentPushButton, TransparentToolButton
 from ui.base_widgets.window import ProgressBar
 
-class NodeComment (_TextEdit):
+class NodeComment (TextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -39,23 +39,23 @@ class GraphicsContent(QWidget):
         self.vlayout.addLayout(self.hlayout)
 
         
-        self.exec_btn = _TransparentToolButton()
+        self.exec_btn = TransparentToolButton()
         self.exec_btn.setIcon("play.png")
         self.exec_btn.setToolTip("Execute")
         self.exec_btn.clicked.connect(self.exec)
         self.hlayout.addWidget(self.exec_btn)
-        self.config_btn = _TransparentToolButton()
+        self.config_btn = TransparentToolButton()
         self.config_btn.setIcon("settings.png")
         self.config_btn.setToolTip("Configuration")
         self.config_btn.clicked.connect(self.config)
         self.hlayout.addWidget(self.config_btn)
-        comment = _TransparentToolButton()
+        comment = TransparentToolButton()
         comment.setIcon("comment.png")
         comment.setToolTip("Comment")
         comment.clicked.connect(lambda: self.comment.hide() if self.comment.isVisible() else self.comment.show())
         self.hlayout.addWidget(comment)
 
-        self.label = _TransparentPushButton()
+        self.label = TransparentPushButton()
         self.label.clicked.connect(self.viewData)
         #self.label.setContentsMargins(5,0,5,3)
         self.vlayout.addWidget(self.label)

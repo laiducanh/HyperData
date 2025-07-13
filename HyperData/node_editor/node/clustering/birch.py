@@ -1,6 +1,5 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
 from sklearn import cluster
 
 class Birch(MethodBase):
@@ -19,17 +18,17 @@ class Birch(MethodBase):
         else: self._config = config
         self.method = cluster.Birch(**self._config)
 
-        self.threshold = DoubleSpinBox(text="Threshold")
+        self.threshold = HTransparentDoubleSpinBox(label="Threshold")
         self.threshold.button.setValue(self._config["threshold"])
         self.threshold.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.threshold)
 
-        self.branching_factor = SpinBox(text="Branching factor")
+        self.branching_factor = HTransparentSpinBox(label="Branching factor")
         self.branching_factor.button.setValue(self._config["branching_factor"])
         self.branching_factor.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.branching_factor)
 
-        self.n_clusters = SpinBox(text="Number of clusters")
+        self.n_clusters = HTransparentSpinBox(label="Number of clusters")
         self.n_clusters.button.setValue(self._config["n_clusters"])
         self.n_clusters.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_clusters)

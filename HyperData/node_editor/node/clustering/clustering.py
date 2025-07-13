@@ -16,10 +16,9 @@ from node_editor.node.clustering.hdbscan import HDBSCAN
 from node_editor.node.clustering.optics import OPTICS
 from node_editor.node.clustering.birch import Birch
 from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import _TransparentPushButton, Toggle, PrimaryComboBox
+from ui.base_widgets.button import TransparentPushButton, HPrimaryComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QStackedLayout
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
@@ -36,7 +35,7 @@ class Clustering (NodeContentWidget):
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Data out")
 
-        self.score_btn = _TransparentPushButton()
+        self.score_btn = TransparentPushButton()
         self.score_btn.setText(f"Score: --")
         self.score_btn.released.connect(self.score_dialog)
         self.vlayout.insertWidget(2,self.score_btn)
@@ -89,7 +88,7 @@ class Clustering (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        method = PrimaryComboBox(items=self.method_list,text="Method")
+        method = HPrimaryComboBox(items=self.method_list,label="Method")
         method.button.setMinimumWidth(250)
         method.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.method_list.index(s)))
         dialog.main_layout.addWidget(method)

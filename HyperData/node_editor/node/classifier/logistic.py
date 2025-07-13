@@ -1,5 +1,5 @@
-from ui.base_widgets.button import Toggle, ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HToggle, HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import linear_model
@@ -26,38 +26,38 @@ class LogisticRegression(ClassifierBase):
         else: self._config = config
         self.estimator = linear_model.LogisticRegression(**self._config)
     
-        self.penalty = ComboBox(items=["l1", "l2", "elasticnet", "none"], text="Penalty")
+        self.penalty = HTransparentComboBox(items=["l1", "l2", "elasticnet", "none"], label="Penalty")
         self.penalty.button.setCurrentText(self._config["penalty"])
         self.penalty.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.penalty)
 
-        self.fit_intercept = Toggle(text="intercept")
+        self.fit_intercept = HToggle(label="intercept")
         self.fit_intercept.button.setChecked(self._config["fit_intercept"])
         self.fit_intercept.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.fit_intercept)
 
-        self.max_iter = SpinBox(min=1,max=10000,step=100,text="maximum iterations")
+        self.max_iter = HTransparentSpinBox(minimum=1,maximum=10000,singleStep=100,label="maximum iterations")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.C = DoubleSpinBox(min=0, max=10, step=0.1, text="inverse of regularization strength")
+        self.C = HTransparentDoubleSpinBox(minimum=0, maximum=10, singleStep=0.1, label="inverse of regularization strength")
         self.C.button.setValue(self._config["C"])
         self.C.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.C)
 
-        self.multi_class = ComboBox(items=["auto","ovr","multinomial"], text="Multiple classes")
+        self.multi_class = HTransparentComboBox(items=["auto","ovr","multinomial"], label="Multiple classes")
         self.multi_class.button.setCurrentText(self._config["multi_class"])
         self.multi_class.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.multi_class)
 
-        self.tol = DoubleSpinBox(min=1e-8,max=1e-3,step=1e-6,text="tolerance")
+        self.tol = HTransparentDoubleSpinBox(minimum=1e-8,maximum=1e-3,singleStep=1e-6,label="tolerance")
         self.tol.button.setValue(self._config["tol"])
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.solver = ComboBox(items=["lbfgs","liblinear","newton-cg","newton-cholesky","sag","saga"],
-                               text="solver")
+        self.solver = HTransparentComboBox(items=["lbfgs","liblinear","newton-cg","newton-cholesky","sag","saga"],
+                               label="solver")
         self.solver.button.setCurrentText(self._config["solver"])
         self.solver.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.solver)

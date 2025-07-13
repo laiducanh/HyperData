@@ -1,11 +1,11 @@
 from sklearn import model_selection
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from node_editor.node.train_test_split.base import SplitterBase
 
 DEBUG = False
 
-class GroupKFold (SplitterBase):
+class GroupKFold(SplitterBase):
     def __init__(self, parent=None):
         super().__init__(parent)
     
@@ -19,10 +19,13 @@ class GroupKFold (SplitterBase):
         else: self._config = config
         self.splitter = model_selection.GroupKFold(**self._config)
     
-        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
-        self.splits.button.setValue(self._config["n_splits"])
-        self.splits.button.valueChanged.connect(self.set_splitter)
-        self.vlayout.addWidget(self.splits)
+        self.splits = HTransparentSpinBox(
+            minimum=2, maximum=1000, singleStep=1, 
+            label="Number of folds",
+            getter=lambda: self._config['n_splits'],
+            setter=self.set_splitter,
+            layout=self.vlayout
+        )
     
     def set_splitter(self):
         self._config["n_splits"] = self.splits.button.value()

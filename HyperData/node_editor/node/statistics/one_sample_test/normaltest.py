@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentPushButton
+from ui.base_widgets.button import HTransparentPushButton
 from plot.utilis import complementary_color
 from node_editor.node.statistics.one_sample_test.base import TestBase, ResultDialogBase
 import numpy as np
@@ -15,15 +15,15 @@ class ResultDialog(ResultDialogBase):
         self.plot()
 
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='The test statistic',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='The test statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing this result (or more extreme) if null hypothesis is true',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing this result (or more extreme) if null hypothesis is true',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )

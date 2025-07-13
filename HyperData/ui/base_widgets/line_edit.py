@@ -1,16 +1,13 @@
-from PySide6.QtCore import Signal, Qt, QStringListModel, QSize, QEvent, QTimer
-from PySide6.QtGui import QContextMenuEvent, QFocusEvent, QFont, QKeyEvent
-from PySide6.QtWidgets import (QTextEdit, QVBoxLayout, QLayout, QCompleter, QHBoxLayout,
-                             QTreeWidget, QLineEdit, QSizePolicy)
-from ui.base_widgets.menu import Menu, LineEdit_Menu
-from ui.base_widgets.button import _TransparentPushButton, _TransparentComboBox, HButton
-from ui.base_widgets.text import BodyLabel
+from PySide6.QtCore import Qt, QStringListModel, QSize
+from PySide6.QtGui import QContextMenuEvent, QKeyEvent
+from PySide6.QtWidgets import (QTextEdit, QLayout, QCompleter, QHBoxLayout, QTreeWidget, QLineEdit, QSizePolicy)
+from ui.base_widgets.menu import LineEdit_Menu
+from ui.base_widgets.button import TransparentPushButton, TransparentComboBox, HButton, VButton
 from typing import Callable
 
-class _LineEdit (QLineEdit):
-    def __init__(self, getter:Callable=None, PlaceholderText:str=None, 
-                 setter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(parent=parent) 
+class LineEdit(QLineEdit):
+    def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs) 
 
         self.default_width = 150
         self.setFixedWidth(self.default_width)
@@ -20,8 +17,7 @@ class _LineEdit (QLineEdit):
         self.setter = setter
 
         if getter: self.setText(getter())
-        if PlaceholderText: self.setPlaceholderText(PlaceholderText)
-        if setter: self.textChanged.connect(setter)
+        if setter: self.returnPressed.connect(setter)
         if layout: layout.addWidget(self)
     
     def set_value(self, value:str):
@@ -66,16 +62,14 @@ class _LineEdit (QLineEdit):
         )
         return super().leaveEvent(event)
     
-class _TextEdit (QTextEdit):
-    def __init__(self, getter:Callable=None, PlaceholderText:str=None, 
-                 setter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(parent=parent)
+class TextEdit(QTextEdit):
+    def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
 
         self.getter = getter
         self.setter = setter
 
         if getter: self.setText(getter())
-        if PlaceholderText: self.setPlaceholderText(PlaceholderText)
         if setter: self.textChanged.connect(setter)
         if layout: layout.addWidget(self)
     
@@ -101,9 +95,9 @@ class _TextEdit (QTextEdit):
         menu = LineEdit_Menu(parent=self)
         menu.exec(a0.globalPos())
 
-class _SearchBox (_LineEdit):
-    def __init__(self, data_lookup: QTreeWidget=None, parent=None):
-        super().__init__(parent=parent)
+class SearchBox(LineEdit):
+    def __init__(self, data_lookup: QTreeWidget=None, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
 
         self.setMaximumWidth(100000) # Expand as much as possible
         self.setSizePolicy(
@@ -116,7 +110,7 @@ class _SearchBox (_LineEdit):
         self.hBoxLayout.setContentsMargins(4, 4, 4, 4)
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         
-        self.searchButton = _TransparentPushButton(parent=parent)
+        self.searchButton = TransparentPushButton(parent=parent)
         self.searchButton.setIcon("search.png")
         self.searchButton.setIconSize(QSize(12,12))
         self.searchButton.setFixedWidth(29)
@@ -161,9 +155,9 @@ class _SearchBox (_LineEdit):
     def leaveEvent(self, event):
         return QLineEdit().leaveEvent(event)
 
-class _CompleterLineEdit (_TransparentComboBox):
-    def __init__(self, items:list[str]=[], getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(parent=parent)   
+class CompleterLineEdit(TransparentComboBox):
+    def __init__(self, items:list[str]=[], getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)   
 
         self.items = items
         self.getter = getter
@@ -203,68 +197,49 @@ class _CompleterLineEdit (_TransparentComboBox):
         self.setCurrentText(_text)
         self.update()
 
-class LineEdit (HButton):
-    def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
-                 setter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
+class HLineEdit(HButton):
+    def __init__(self, label:str=None, label2:str=None, getter:Callable=None,
+                 setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-        self.button = _LineEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
-        self.butn_layout.addWidget(self.button)   
+        self.button = LineEdit(getter=getter, setter=setter, layout=self.butn_layout, parent=parent, *args, **kwargs)
 
-        if layout: layout.addWidget(self)
-    
-    def get_value(self) -> str:
-        return super().get_value()
+class VLineEdit(VButton):
+    def __init__(self, label:str=None, label2:str=None, getter:Callable=None,
+                 setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-    def set_value(self, value:str):
-        return super().set_value(value)
+        self.button = LineEdit(getter=getter, setter=setter, layout=self.butn_layout, parent=parent, *args, **kwargs)
 
-class TextEdit (HButton):
-    def __init__(self, text:str=None, text2:str=None, getter:Callable=None, PlaceholderText:str=None,
-                 setter:Callable=None, layout:QLayout=None, parent=None):
-        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
+class HTextEdit(HButton):
+    def __init__(self, label:str=None, label2:str=None, getter:Callable=None, 
+                 setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-        self.button = _TextEdit(getter=getter, PlaceholderText=PlaceholderText, setter=setter, parent=parent)
-        self.butn_layout.addWidget(self.button) 
+        self.button = TextEdit(getter=getter, setter=setter, layout=self.butn_layout, parent=parent, *args, **kwargs)
 
-        if layout: layout.addWidget(self)
-    
-    def get_value(self) -> str:
-        return super().get_value()
-    
-    def set_value(self, value:str):
-        return super().set_value(value)
+class VTextEdit(VButton):
+    def __init__(self, label:str=None, label2:str=None, getter:Callable=None,
+                 setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-class CompleterLineEdit(HButton):
-    def __init__(self, items=None, text:str=None, text2:str=None, getter:Callable=None, setter:Callable=None,
-                 layout:QLayout=None, parent=None):
-        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
+        self.button = TextEdit(getter=getter, setter=setter, layout=self.butn_layout, parent=parent, *args, **kwargs)
+        
+class HCompleterLineEdit(HButton):
+    def __init__(self, items=None, label:str=None, label2:str=None, getter:Callable=None, setter:Callable=None,
+                 layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-        self.button = _CompleterLineEdit(items=items, getter=getter, setter=setter, parent=parent)
-        self.butn_layout.addWidget(self.button)
+        self.button = CompleterLineEdit(items=items, getter=getter, setter=setter, layout=self.butn_layout, parent=parent, *args, **kwargs)
 
-    def get_value(self) -> str:
-        return super().get_value()
+class VCompleterLineEdit(VButton):
+    def __init__(self, items=None, label:str=None, label2:str=None, getter:Callable=None, setter:Callable=None,
+                 layout:QLayout=None, parent=None, *args, **kwargs):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-    def set_value(self, value:str):
-        return super().set_value(value)
+        self.button = CompleterLineEdit(items=items, getter=getter, setter=setter, layout=self.butn_layout, parent=parent, *args, **kwargs)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Completer (QCompleter):
+class Completer(QCompleter):
     def __init__(self, string_list:list):
         super().__init__()
 
@@ -278,60 +253,3 @@ class Completer (QCompleter):
 
     def updateModel (self, string_list):
         self._model.setStringList(string_list)
-
-
-
-
-    
-
-
-class TextEditBase (_TextEdit):
-    sig_focusOut = Signal()
-    def __init__(self, text=None, font=QFont('Arial',13), parent=None):
-        super().__init__(parent=parent)
-
-        self.append(text)
-        self.setFont(font)
-
-        #self.setStyleSheet('background-color:white')
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-        self.setContentsMargins(0,0,0,0)
-        
-        
-         
-    def focusOutEvent(self, e):
-        # Do something with the event here
-        self.sig_focusOut.emit()
-        #self.deleteLater()
-        super(TextEditBase, self).focusOutEvent(e) # Do the default action on the parent class QLineEdit
-    
-
-    
-class TextEdit_Menu (Menu): 
-    def __init__(self, text=None, font=QFont('Arial',13), parent=None):
-        super().__init__(parent=parent)
-        
-        _layout = QVBoxLayout()
-        self.text = TextEditBase(text=text,font=font,parent=self)
-        #self.view.hide()
-        self.hBoxLayout.addChildWidget(self.text)
-        #elf.setLayout(_layout)
-        _layout.setContentsMargins(0,0,0,0)
-        self.text.textChanged.connect(self.adjustBox)
-        self.setStyleSheet('background-color:transparent; border:none')
-
-        self.adjustBox()
-       
-    def adjustBox (self):
-        self.text.setFocus()
-        margins = self.layout().contentsMargins()
-        _height = int(self.text.document().size().height() + margins.top() + margins.bottom())
-        _width = int(self.text.document().size().width() + margins.left() + margins.right())
-        
-        #self.setFixedSize(_width,_height)
-        self.text.setFixedSize(_width,_height)
-        
-
-        

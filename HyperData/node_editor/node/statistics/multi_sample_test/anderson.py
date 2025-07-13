@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentPushButton, Toggle
+from ui.base_widgets.button import HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -9,19 +9,19 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
+        HTransparentPushButton(
+            label='Statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Critical values',
-            text2='The critical values for significance levels 25%, 10%, 5%, 2.5%, 1%, 0.5%, 0.1%',
+        HTransparentPushButton(
+            label='Critical values',
+            label2='The critical values for significance levels 25%, 10%, 5%, 2.5%, 1%, 0.5%, 0.1%',
             getter=lambda: str(result.critical_values),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
+        HTransparentPushButton(
+            label='p-value',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )

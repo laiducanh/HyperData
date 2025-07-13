@@ -1,5 +1,5 @@
-from ui.base_widgets.button import Toggle, ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HToggle, HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import svm
@@ -32,67 +32,67 @@ class NuSVC(ClassifierBase):
         else: self._config = config
         self.estimator = svm.NuSVC(**self._config)
 
-        self.nu = DoubleSpinBox(min=0, max=10, step=0.1, text="Nu")
+        self.nu = HTransparentDoubleSpinBox(minimum=0, maximum=10, singleStep=0.1, label="Nu")
         self.nu.button.setValue(self._config["nu"])
         self.nu.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.nu)
 
-        self.kernel = ComboBox(items=["linear","poly","rbf","sigmoid","precomputed"],text="Kernel")
+        self.kernel = HTransparentComboBox(items=["linear","poly","rbf","sigmoid","precomputed"],label="Kernel")
         self.kernel.button.setCurrentText(self._config["kernel"])
         self.kernel.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.kernel)
 
-        self.degree = SpinBox(min=1, max=10, text="Degree")
+        self.degree = HTransparentSpinBox(minimum=1, maximum=10, label="Degree")
         self.degree.button.setValue(self._config["degree"])
         self.degree.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.degree)
 
-        self.gamma = ComboBox(items=["scale","auto"], text="Kernel coefficient")
+        self.gamma = HTransparentComboBox(items=["scale","auto"], label="Kernel coefficient")
         self.gamma.button.setCurrentText(self._config["gamma"])
         self.gamma.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.gamma)
 
-        self.coef0 = DoubleSpinBox(text="Independent term")
+        self.coef0 = HTransparentDoubleSpinBox(label="Independent term")
         self.coef0.button.setValue(self._config["coef0"])
         self.coef0.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.coef0)
 
-        self.shrinking = Toggle(text="Shrinking")
+        self.shrinking = HToggle(label="Shrinking")
         self.shrinking.button.setChecked(self._config["shrinking"])
         self.shrinking.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.shrinking)
 
-        self.probability = Toggle(text="Probability")
+        self.probability = HToggle(label="Probability")
         self.probability.button.setChecked(self._config["probability"])
         self.probability.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.probability)
 
-        self.tol = DoubleSpinBox(min=1e-4,max=1e-2,step=1e-3,text="tolerance")
+        self.tol = HTransparentDoubleSpinBox(minimum=1e-4,maximum=1e-2,singleStep=1e-3,label="tolerance")
         self.tol.button.setValue(self._config["tol"])
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.class_weight = ComboBox(items=["balanced", "None"])
+        self.class_weight = HTransparentComboBox(items=["balanced", "None"])
         self.class_weight.button.setCurrentText(self._config["class_weight"])
         self.class_weight.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.class_weight)
 
-        self.verbose = Toggle(text="Verbose")
+        self.verbose = HToggle(label="Verbose")
         self.verbose.button.setChecked(self._config["verbose"])
         self.verbose.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.verbose)
 
-        self.max_iter = SpinBox(min=-1,max=10000,step=100,text="maximum iterations")
+        self.max_iter = HTransparentSpinBox(minimum=-1,maximum=10000,singleStep=100,label="maximum iterations")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.decision_function_shape = ComboBox(items=["ovo","ovr"])
+        self.decision_function_shape = HTransparentComboBox(items=["ovo","ovr"])
         self.decision_function_shape.button.setCurrentText(self._config["decision_function_shape"])
         self.decision_function_shape.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.decision_function_shape)
 
-        self.break_ties = Toggle(text="Break ties")
+        self.break_ties = HToggle(label="Break ties")
         self.break_ties.button.setChecked(self._config["break_ties"])
         self.break_ties.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.break_ties)

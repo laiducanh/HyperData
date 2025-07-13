@@ -1,6 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from ui.base_widgets.button import HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -10,13 +9,13 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
+        HTransparentPushButton(
+            label='Statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
+        HTransparentPushButton(
+            label='p-value',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )

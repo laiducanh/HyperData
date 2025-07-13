@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from node_editor.node.statistics.prob_dist.base import DistBase, ResultDialog
 from scipy.stats._continuous_distns import argus
 
@@ -20,15 +20,15 @@ class Argus (DistBase):
         )
         else: self._config = config
     
-        self.loc = DoubleSpinBox(min=-100000, max=100000, text="Mean")
+        self.loc = HTransparentDoubleSpinBox(minimum=-100000, maximum=100000, label="Mean")
         self.loc.button.setValue(self._config["loc"])
         self.vlayout.addWidget(self.loc)
 
-        self.scale = DoubleSpinBox(min=-100000, max=100000, text="Standard deviation")
+        self.scale = HTransparentDoubleSpinBox(minimum=-100000, maximum=100000, label="Standard deviation")
         self.scale.button.setValue(self._config["scale"])
         self.vlayout.addWidget(self.scale)
 
-        self.chi = DoubleSpinBox(text="Chi")
+        self.chi = HTransparentDoubleSpinBox(label="Chi")
         self.chi.button.setValue(self._config["chi"])
         self.vlayout.addWidget(self.chi)
 

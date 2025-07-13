@@ -11,12 +11,10 @@ from node_editor.node.decomposition.minibatch_sparse_pca import MiniBatchSparseP
 from node_editor.node.decomposition.kernel_pca import KernelPCA
 from node_editor.node.decomposition.truncated_svd import TruncatedSVD
 from config.settings import logger, encode, GLOBAL_DEBUG
-from ui.base_widgets.button import _TransparentPushButton, Toggle, PrimaryComboBox
+from ui.base_widgets.button import HPrimaryComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QStackedLayout
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QStackedLayout
 from PySide6.QtGui import QAction
 from sklearn import decomposition
 
@@ -76,7 +74,7 @@ class Decomposition (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        method = PrimaryComboBox(items=self.method_list,text="Method")
+        method = HPrimaryComboBox(items=self.method_list,label="Method")
         method.button.setMinimumWidth(250)
         method.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.method_list.index(s)))
         dialog.main_layout.addWidget(method)

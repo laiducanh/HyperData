@@ -5,9 +5,9 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer # is required to load sklear.impute
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
-from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
+from ui.base_widgets.line_edit import HLineEdit
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
@@ -38,7 +38,7 @@ class NAImputer (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        imputer = ComboBox(items=["univariate","multivariate","KNN"], text='Imputer')
+        imputer = HTransparentComboBox(items=["univariate","multivariate","KNN"], label='Imputer')
         imputer.button.setCurrentText(self._config['imputer'])
         imputer.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(imputer.button.currentIndex()))
         dialog.main_layout.addWidget(imputer)
@@ -52,11 +52,11 @@ class NAImputer (NodeContentWidget):
         univariate_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         univariate_widget.setLayout(univariate_layout)
         stacklayout.addWidget(univariate_widget)
-        u_strategy = ComboBox(items=["next valid observation", "last valid observation", "mean","median","most_frequent","constant"],text='strategy')
+        u_strategy = HTransparentComboBox(items=["next valid observation", "last valid observation", "mean","median","most_frequent","constant"],label='strategy')
         
         u_strategy.button.setCurrentText(self._config['u_strategy'])
         univariate_layout.addWidget(u_strategy)
-        u_fill_value = LineEdit(text='Fill value')
+        u_fill_value = HLineEdit(label='Fill value')
         u_fill_value.button.setText(self._config['u_fill_value'])
         u_fill_value.button.setEnabled(True if u_strategy.button.currentText() == 'constant' else False)
         u_strategy.button.currentTextChanged.connect(lambda s: u_fill_value.button.setEnabled(True) if s == 'constant' 
@@ -69,34 +69,34 @@ class NAImputer (NodeContentWidget):
         multivariate_widget.setLayout(multivariate_layout)
         stacklayout.addWidget(multivariate_widget)
 
-        sample_posterior = Toggle(text="Sample posterior")
+        sample_posterior = HToggle(label="Sample posterior")
         sample_posterior.button.setChecked(self._config["sample_posterior"])
         multivariate_layout.addWidget(sample_posterior)
 
-        max_iter = SpinBox(min=1, max=1000, step=5, text='Max iterations')
+        max_iter = HTransparentSpinBox(minimum=1, maximum=1000, singleStep=5, label='Max iterations')
         max_iter.button.setValue(self._config['max_iter'])
         multivariate_layout.addWidget(max_iter)
 
-        tol = DoubleSpinBox(min=1e-8,max=1,step=5e-8, text='Tolerance')
+        tol = HTransparentDoubleSpinBox(minimum=1e-8,maximum=1,singleStep=5e-8, label='Tolerance')
         tol.button.setDecimals(8)
         tol.button.setValue(self._config['tol'])
         multivariate_layout.addWidget(tol)
 
-        m_strategy = ComboBox(items=["mean","median","most_frequent","constant"],text='Strategy')
+        m_strategy = HTransparentComboBox(items=["mean","median","most_frequent","constant"],label='Strategy')
         m_strategy.button.currentTextChanged.connect(lambda s: m_fill_value.button.setEnabled(True) if s == 'Constant' 
                                                    else m_fill_value.button.setEnabled(False))
         m_strategy.button.setCurrentText(self._config['m_strategy'])
         multivariate_layout.addWidget(m_strategy)
-        m_fill_value = LineEdit(text='Fill value')
+        m_fill_value = HLineEdit(label='Fill value')
         m_fill_value.button.setText(self._config['m_fill_value'])
         m_fill_value.button.setEnabled(True if m_strategy.button.currentText() == 'Constant' else False)
         multivariate_layout.addWidget(m_fill_value)
 
-        imputation_order = ComboBox(items=['ascending', 'descending', 'roman', 'arabic', 'random'], text='Imputation order')
+        imputation_order = HTransparentComboBox(items=['ascending', 'descending', 'roman', 'arabic', 'random'], label='Imputation order')
         imputation_order.button.setCurrentText(self._config["imputation_order"])
         multivariate_layout.addWidget(imputation_order)
 
-        skip_complete = Toggle(text='Skip complete')
+        skip_complete = HToggle(label='Skip complete')
         skip_complete.button.setChecked(self._config["skip_complete"])
         multivariate_layout.addWidget(skip_complete)
 
@@ -107,11 +107,11 @@ class NAImputer (NodeContentWidget):
         knn_widget.setLayout(knn_layout)
         stacklayout.addWidget(knn_widget)
 
-        n_neighbors = SpinBox(min=0, max=1000, step=5, text='neighbors')
+        n_neighbors = HTransparentSpinBox(minimum=0, maximum=1000, singleStep=5, label='neighbors')
         n_neighbors.button.setValue(self._config["n_neighbors"])
         knn_layout.addWidget(n_neighbors)
 
-        weights = ComboBox(items=['uniform','distance'], text='weights')
+        weights = HTransparentComboBox(items=['uniform','distance'], label='weights')
         weights.button.setCurrentText(self._config["weights"])
         knn_layout.addWidget(weights)
 

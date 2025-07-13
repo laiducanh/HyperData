@@ -4,7 +4,7 @@ from typing import Union
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import model_selection
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.frame import SeparateHLine
 from node_editor.node.train_test_split.base import SplitterBase
 from node_editor.node.train_test_split.group_kfold import GroupKFold
@@ -46,16 +46,17 @@ class CVSplitter (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMaximumSize)
-        splitter = ComboBox(items=["Group K Fold","Group Shuffle Split","K Fold",
-                                   "Leave One Group Out", "Leave p Group Out",
-                                   "Geave One Out", "Leave p Out","Repeated K Fold",
-                                   "Repeated Stratified K Fold","Shuffle Split",
-                                   "Stratified K Fold","Stratified Shuffle Split",
-                                   "Stratified Group K Fold"], text="Splitter")
-        splitter.button.setCurrentText(self._config["splitter"])
+        splitter = HTransparentComboBox(
+            items=["Group K Fold","Group Shuffle Split","K Fold","Leave One Group Out", "Leave p Group Out",
+                   "Geave One Out", "Leave p Out","Repeated K Fold","Repeated Stratified K Fold","Shuffle Split",
+                   "Stratified K Fold","Stratified Shuffle Split","Stratified Group K Fold"], 
+            label="Splitter",
+            getter=lambda: self._config["splitter"],
+            setter=lambda: self.stackedlayout.setCurrentIndex(splitter.button.currentIndex()),
+            layout=dialog.main_layout
+            
+        )
         splitter.button.setMinimumWidth(200)
-        splitter.button.currentTextChanged.connect(lambda: self.stackedlayout.setCurrentIndex(splitter.button.currentIndex()))
-        dialog.main_layout.addWidget(splitter)
         dialog.main_layout.addWidget(SeparateHLine())
         self.stackedlayout = QStackedLayout()
         dialog.main_layout.addLayout(self.stackedlayout)

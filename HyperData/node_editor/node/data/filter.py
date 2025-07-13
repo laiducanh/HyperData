@@ -3,8 +3,8 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import TransparentComboBox
-from ui.base_widgets.line_edit import Completer, TextEdit, CompleterLineEdit
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.line_edit import Completer, HTextEdit, HCompleterLineEdit
 
 DEBUG = False
 
@@ -29,17 +29,16 @@ class DataFilter (NodeContentWidget):
                     labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.index])) 
             except: pass
 
-        axis = TransparentComboBox(
+        axis = HTransparentComboBox(
             items=["columns","index"], 
-            text="Filter by",
+            label="Filter by",
             setter=func1,
             getter=lambda: self._config["axis"],
             layout=dialog.main_layout
         )
-
-        type = TransparentComboBox(
+        type = HTransparentComboBox(
             items=["items","contains","regular expression"], 
-            text="filter type",
+            label="filter type",
             getter=lambda: self._config["type"],
             setter=func2,
             layout=dialog.main_layout
@@ -57,13 +56,13 @@ class DataFilter (NodeContentWidget):
                 apply.button.setText(labels.button.currentText())
             labels.button.clear()
 
-        labels = CompleterLineEdit(text="labels")
+        labels = HCompleterLineEdit(label="labels")
         labels.button.lineedit.returnPressed.connect(func2)
         func1()
         dialog.main_layout.addWidget(labels)
 
-        apply = TextEdit(
-            text="Keep labels",
+        apply = HTextEdit(
+            label="Keep labels",
             getter=lambda: ",".join(self._config["apply"]),
             layout=dialog.main_layout
         )

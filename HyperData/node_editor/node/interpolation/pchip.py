@@ -1,7 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
 from node_editor.node.interpolation.base import FitBase
@@ -22,7 +20,7 @@ class ResultDialog(Dialog):
         if not interpolator:
             self.main_layout.addWidget(BodyLabel("Could not determine Piecewise Cubic Hermite Interpolating Polynomial."))
         else:  
-            smooth = ComboBox(items=[str(i) for i in np.arange(0,10000,50)], text="Smoothness")
+            smooth = HTransparentComboBox(items=[str(i) for i in np.arange(0,10000,50)], label="Smoothness")
             smooth.button.setCurrentText(str(len(xdata)))
             smooth.button.currentTextChanged.connect(self.onSmoothChange)
             self.main_layout.addWidget(smooth)

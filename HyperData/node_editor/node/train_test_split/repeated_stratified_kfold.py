@@ -1,5 +1,5 @@
 from sklearn import model_selection
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from node_editor.node.train_test_split.base import SplitterBase
 
@@ -19,11 +19,11 @@ class RepeatedStratifiedKFold(SplitterBase):
         else: self._config = config
         self.splitter = model_selection.RepeatedStratifiedKFold(**self._config)
 
-        self.splits = SpinBox(min=2, max=1000, step=1, text="number of folds")
+        self.splits = HTransparentSpinBox(minimum=2, maximum=1000, singleStep=1, label="number of folds")
         self.splits.button.setValue(self._config["n_splits"])
         self.splits.button.valueChanged.connect(self.set_splitter)
         self.vlayout.addWidget(self.splits)
-        self.repeats = SpinBox(min=1, max=1000, step=1, text="number of repeats")
+        self.repeats = HTransparentSpinBox(minimum=1, maximum=1000, singleStep=1, label="number of repeats")
         self.repeats.button.valueChanged.connect(self.set_splitter)
         self.repeats.button.setValue(self._config["n_repeats"])
         self.vlayout.addWidget(self.repeats)

@@ -1,7 +1,6 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import DoubleSpinBox
 from ui.base_widgets.text import BodyLabel
 from node_editor.node.statistics.multi_sample_test.base import TestBase
 
@@ -29,7 +28,7 @@ class SomersD (TestBase):
         )
         else: self._config = config
 
-        self.alternative = ComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
+        self.alternative = HTransparentComboBox(items=["two-sided","less","greater"], label="Alternative hypothesis")
         self.alternative.button.setCurrentText(self._config["alternative"])
         self.vlayout.addWidget(self.alternative)
 

@@ -1,5 +1,5 @@
 from sklearn import model_selection
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from node_editor.node.train_test_split.base import SplitterBase
 
@@ -19,11 +19,11 @@ class ShuffleSplit(SplitterBase):
         else: self._config = config
         self.splitter = model_selection.ShuffleSplit(**self._config)
 
-        self.splits = SpinBox(min=1, max=1000, step=1, text="number of splits")
+        self.splits = HTransparentSpinBox(minimum=1, maximum=1000, singleStep=1, label="number of splits")
         self.splits.button.setValue(self._config["n_splits"])
         self.splits.button.valueChanged.connect(self.set_splitter)
         self.vlayout.addWidget(self.splits)
-        self.test_size = DoubleSpinBox(min=0, max=1, step=0.01, text="test size")
+        self.test_size = HTransparentDoubleSpinBox(minimum=0, maximum=1, singleStep=0.01, label="test size")
         self.test_size.button.valueChanged.connect(self.set_splitter)
         self.test_size.button.setValue(self._config["test_size"])
         self.vlayout.addWidget(self.test_size)

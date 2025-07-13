@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout
 from config.settings import logger, GLOBAL_DEBUG
 from config.settings import config as global_config
-from ui.base_widgets.button import TransparentPushButton
+from ui.base_widgets.button import HTransparentPushButton
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.text import BodyLabel
 from plot.utilis import complementary_color
@@ -20,15 +20,15 @@ class ResultDialog(ResultDialogBase):
         self.plot()
 
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='Cramér-von Mises statistic',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='Cramér-von Mises statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing this result (or more extreme) if null hypothesis is true',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing this result (or more extreme) if null hypothesis is true',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )

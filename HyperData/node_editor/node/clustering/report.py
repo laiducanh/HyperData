@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (PrimaryComboBox, ComboBox, Toggle, SegmentedWidget,
-                                    TransparentPushButton)
+from ui.base_widgets.button import (HPrimaryComboBox, HTransparentComboBox, HToggle, SegmentedWidget,
+                                    HTransparentPushButton)
 from ui.base_widgets.text import BodyLabel
 from plot.canvas import Canvas
 from config.settings import logger, GLOBAL_DEBUG
@@ -44,20 +44,20 @@ class Visualization(QWidget):
         btn_layout = QHBoxLayout()
         layout.addLayout(btn_layout)
 
-        self.plot = PrimaryComboBox(items=["Scatter","Fireworks"], text="Plot Type")
+        self.plot = HPrimaryComboBox(items=["Scatter","Fireworks"], label="Plot Type")
         self.plot.button.currentTextChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.plot)
 
-        self.x_btn = ComboBox(items=list(self.X.columns), text="X")
+        self.x_btn = HTransparentComboBox(items=list(self.X.columns), label="X")
         self.x_btn.button.currentTextChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.x_btn)
 
-        self.y_btn = ComboBox(items=list(self.X.columns), text="Y")
+        self.y_btn = HTransparentComboBox(items=list(self.X.columns), label="Y")
         self.y_btn.button.setCurrentIndex(1)
         self.y_btn.button.currentTextChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.y_btn)
 
-        self.legend_toggle = Toggle(text="Label")
+        self.legend_toggle = HToggle(label="Label")
         self.legend_toggle.button.checkedChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.legend_toggle)
 
@@ -142,12 +142,12 @@ class Metrics(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.score_function = "Rand Index"
 
-        metric_to_show = PrimaryComboBox(
+        metric_to_show = HPrimaryComboBox(
             items=["Rand Index","Adjusted Rand Index","Mutual Information Score",
                    "Adjusted Mutual Information Score","Homogeneity","Completeness",
                    "Fowlkes-Mallows Score","Silhouette Coefficient",
                    "Calinski-Harabasz Index","Davies-Douldin Index"], 
-            text="Metric"
+            label="Metric"
         )
         metric_to_show.button.setMinimumWidth(250)
         metric_to_show.button.currentTextChanged.connect(self.change_metric)
@@ -155,7 +155,7 @@ class Metrics(QWidget):
 
         score = scoring(X, labels_true, model.labels_)
         for metric in score:
-            _btn = TransparentPushButton(text=metric)
+            _btn = HTransparentPushButton(label=metric)
             _btn.button.setText(str(score[metric]))
             layout.addWidget(_btn)
 

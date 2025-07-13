@@ -1,9 +1,8 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
-from itertools import compress
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.window import Dialog
 
 DEBUG = False
@@ -22,9 +21,9 @@ class DataStack (NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Stack Data", parent=self.parent)
-        level = TransparentComboBox(
+        level = HTransparentComboBox(
             items=[str(i) for i in range(-1,data.columns.nlevels)], 
-            text="Level",
+            label="Level",
             getter=lambda: str(self._config["level"]),
             layout=dialog.main_layout
         )
@@ -81,9 +80,9 @@ class DataUnstack (NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Unstack Data", parent=self.parent)
-        level = TransparentComboBox(
+        level = HTransparentComboBox(
             items=[str(i) for i in range(-1,data.index.nlevels)], 
-            text="Level",
+            label="Level",
             getter=lambda: str(self._config["level"]),
             layout=dialog.main_layout
         )

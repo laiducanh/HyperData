@@ -1,5 +1,5 @@
-from ui.base_widgets.button import Toggle, ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HToggle, HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import ensemble
@@ -36,84 +36,84 @@ class RandomForest(ClassifierBase):
         else: self._config = config
         self.estimator = ensemble.RandomForestClassifier(**self._config)
 
-        self.n_estimators = SpinBox(text="Number of Trees")
+        self.n_estimators = HTransparentSpinBox(label="Number of Trees")
         self.n_estimators.button.setValue(self._config["n_estimators"])
         self.n_estimators.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_estimators)
 
-        self.criterion = ComboBox(items=["gini","entropy","log_loss"], text="Criterion")
+        self.criterion = HTransparentComboBox(items=["gini","entropy","log_loss"], label="Criterion")
         self.criterion.button.setCurrentText(self._config["criterion"])
         self.criterion.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.criterion)
 
-        self.max_depth = SpinBox(text="Maximum Depth")
+        self.max_depth = HTransparentSpinBox(label="Maximum Depth")
         if self._config["max_depth"] == None:
             self.max_depth.button.setValue(-1)
         else: self.max_depth.button.setValue(self._config["max_depth"])
         self.max_depth.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_depth)
 
-        self.min_samples_split = DoubleSpinBox(text="Minimum Number of Samples to Split")
+        self.min_samples_split = HTransparentDoubleSpinBox(label="Minimum Number of Samples to Split")
         self.min_samples_split.button.setValue(self._config["min_samples_split"])
         self.min_samples_split.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.min_samples_split)
 
-        self.min_samples_leaf = DoubleSpinBox(text="Minimum Number of Samples of A Leaf")
+        self.min_samples_leaf = HTransparentDoubleSpinBox(label="Minimum Number of Samples of A Leaf")
         self.min_samples_leaf.button.setValue(self._config["min_samples_leaf"])
         self.min_samples_leaf.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.min_samples_leaf)
 
-        self.min_weight_fraction_leaf = DoubleSpinBox(text="Minimum Weighted Fraction of A Leaf")
+        self.min_weight_fraction_leaf = HTransparentDoubleSpinBox(label="Minimum Weighted Fraction of A Leaf")
         self.min_weight_fraction_leaf.button.setValue(self._config["min_weight_fraction_leaf"])
         self.min_weight_fraction_leaf.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.min_weight_fraction_leaf)
 
-        self.max_features = ComboBox(items=["sqrt","log2","None"],text="Number of Features to Split")
+        self.max_features = HTransparentComboBox(items=["sqrt","log2","None"],label="Number of Features to Split")
         self.max_features.button.setCurrentText(self._config["max_features"])
         self.max_features.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_features)
 
-        self.max_leaf_nodes = SpinBox(text="Maximum Leafs of A Node")
+        self.max_leaf_nodes = HTransparentSpinBox(label="Maximum Leafs of A Node")
         if self._config["max_leaf_nodes"] == None:
             self.max_leaf_nodes.button.setValue(-1)
         else: self.max_leaf_nodes.button.setValue(self._config["max_leaf_nodes"])
         self.max_leaf_nodes.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_leaf_nodes)
 
-        self.min_impurity_decrease = DoubleSpinBox(text="Impurity Decrease to Split")
+        self.min_impurity_decrease = HTransparentDoubleSpinBox(label="Impurity Decrease to Split")
         self.min_impurity_decrease.button.setValue(self._config["min_impurity_decrease"])
         self.min_impurity_decrease.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.min_impurity_decrease)
 
-        self.bootstrap = Toggle(text="Bootstrap")
+        self.bootstrap = HToggle(label="Bootstrap")
         self.bootstrap.button.setChecked(self._config["bootstrap"])
         self.bootstrap.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.bootstrap)
 
-        self.oob_score = Toggle(text="Out-Of-Bag Score")
+        self.oob_score = HToggle(label="Out-Of-Bag Score")
         self.oob_score.button.setChecked(self._config["oob_score"])
         self.oob_score.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.oob_score)
 
-        self.warm_start = Toggle(text="Warm Start")
+        self.warm_start = HToggle(label="Warm Start")
         self.warm_start.button.setChecked(self._config["warm_start"])
         self.warm_start.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.warm_start)
 
-        self.class_weight = ComboBox(items=["balanced","balanced_subsample","None"],
-                                     text="Class Weight")
+        self.class_weight = HTransparentComboBox(items=["balanced","balanced_subsample","None"],
+                                     label="Class Weight")
         if self._config["class_weight"] == None:
             self.class_weight.button.setCurrentText("None")
         else: self.class_weight.button.setCurrentText(self._config["class_weight"])
         self.class_weight.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.class_weight)
 
-        self.ccp_alpha = DoubleSpinBox(min=0, text="Complexity Parameter")
+        self.ccp_alpha = HTransparentDoubleSpinBox(minimum=0, label="Complexity Parameter")
         self.ccp_alpha.button.setValue(self._config["ccp_alpha"])
         self.ccp_alpha.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.ccp_alpha)
 
-        self.max_samples = DoubleSpinBox(text="Number of Samples to Train")
+        self.max_samples = HTransparentDoubleSpinBox(label="Number of Samples to Train")
         if self._config["max_samples"] == None:
             self.max_samples.button.setValue(-1)
         else: self.max_samples.button.setValue(self._config["max_samples"])

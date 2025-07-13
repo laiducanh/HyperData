@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -9,15 +9,15 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='The computed A statistic of the test',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='The computed A statistic of the test',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='The associated p-value from the chi-squared distribution',
+        HTransparentPushButton(
+            label='p-value',
+            label2='The associated p-value from the chi-squared distribution',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )

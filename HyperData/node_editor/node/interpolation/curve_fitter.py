@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import _TransparentPushButton, PrimaryComboBox
+from ui.base_widgets.button import TransparentPushButton, HPrimaryComboBox
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.menu import Menu
 from node_editor.node.interpolation.base import FitBase
@@ -29,7 +29,7 @@ class CurveFitter (NodeContentWidget):
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Data out")
 
-        self.result_btn = _TransparentPushButton()
+        self.result_btn = TransparentPushButton()
         self.result_btn.setText("Result")
         self.result_btn.released.connect(self.result_dialog)
         self.vlayout.insertWidget(2,self.result_btn)
@@ -48,7 +48,7 @@ class CurveFitter (NodeContentWidget):
     def initDialog(self):
         self.dialog = Dialog("Configuration", self.parent)
         
-        self.method = PrimaryComboBox(items=self.method_list, text="Method")
+        self.method = HPrimaryComboBox(items=self.method_list, label="Method")
         self.method.button.setCurrentText(self._config["method"])
         self.method.button.currentIndexChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(s))
         self.dialog.main_layout.addWidget(self.method)

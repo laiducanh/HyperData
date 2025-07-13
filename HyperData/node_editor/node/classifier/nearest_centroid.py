@@ -1,4 +1,4 @@
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import neighbors
@@ -17,7 +17,7 @@ class NearestCentroid(ClassifierBase):
         else: self._config = config
         self.estimator = neighbors.NearestCentroid(**self._config)
 
-        self.metric_ = ComboBox(items=["euclidean","manhattan"], text="Metric")
+        self.metric_ = HTransparentComboBox(items=["euclidean","manhattan"], label="Metric")
         self.metric_.button.setCurrentText(self._config["metric"])
         self.metric_.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.metric_)

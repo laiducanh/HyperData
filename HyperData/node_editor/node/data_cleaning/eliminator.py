@@ -4,8 +4,8 @@ import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer # is required to load sklear.impute
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.line_edit import CompleterLineEdit
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.line_edit import HCompleterLineEdit
 from config.settings import logger, GLOBAL_DEBUG
 
 DEBUG = False
@@ -23,15 +23,15 @@ class NAEliminator (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        axis = ComboBox(items=["index","columns"], text="drop")
+        axis = HTransparentComboBox(items=["index","columns"], label="drop")
         axis.button.setCurrentText(self._config["axis"])
         dialog.main_layout.addWidget(axis)
 
-        thresh = CompleterLineEdit(text='thresh', items=["any","all"])
+        thresh = HCompleterLineEdit(label='thresh', items=["any","all"])
         thresh.button.setCurrentText(self._config['thresh'])
         dialog.main_layout.addWidget(thresh)
 
-        ignore_index = Toggle(text='ignore index')
+        ignore_index = HToggle(label='ignore index')
         ignore_index.button.setChecked(self._config['ignore_index'])
         dialog.main_layout.addWidget(ignore_index)
 

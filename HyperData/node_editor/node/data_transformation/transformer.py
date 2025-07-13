@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QStackedLayout
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from node_editor.node.data_transformation.base import MethodBase
@@ -26,7 +26,7 @@ class DataTransformer (NodeContentWidget):
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
         
-        method = ComboBox(items=self.method_list, text="Transformer")
+        method = HTransparentComboBox(items=self.method_list, label="Transformer")
         method.button.setCurrentText(self._config["method"])
         dialog.main_layout.addWidget(method)
         dialog.main_layout.addWidget(SeparateHLine())

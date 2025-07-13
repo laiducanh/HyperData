@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout
 from config.settings import logger, GLOBAL_DEBUG
 from config.settings import config as global_config
-from ui.base_widgets.button import ComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.text import BodyLabel
 from plot.utilis import complementary_color
@@ -20,26 +20,26 @@ class ResultDialog(ResultDialogBase):
         self.plot()
 
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='Maximum distance between empirical CDF and theoretical CDF',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='Maximum distance between empirical CDF and theoretical CDF',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing that large a difference if null is true',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing that large a difference if null is true',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Statistic location',
-            text2='The distance between the empirical CDF and theoretical CDF',
+        HTransparentPushButton(
+            label='Statistic location',
+            label2='The distance between the empirical CDF and theoretical CDF',
             getter=lambda: str(result.statistic_location),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Statistic sign',
+        HTransparentPushButton(
+            label='Statistic sign',
             getter=lambda: 'positive' if result.statistic_sign == 1 else 'negative',
             layout=self.main_layout
         )
@@ -95,16 +95,16 @@ class Kolmogorov(TestBase):
             "Note: this statistical test requires probability distribution."
         ))
 
-        self.alternative = ComboBox(
+        self.alternative = HTransparentComboBox(
             items=["two-sided","less","greater"], 
-            text="Alternative hypothesis",
+            label="Alternative hypothesis",
             getter=lambda: self._config["alternative"],
             layout=self.vlayout
         )
 
-        self.method = ComboBox(
+        self.method = HTransparentComboBox(
             items=["auto","exact","approx","asymp"], 
-            text="Method",
+            label="Method",
             getter=lambda: self._config["method"],
             layout=self.vlayout
         )

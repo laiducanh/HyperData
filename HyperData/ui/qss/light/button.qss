@@ -1,4 +1,4 @@
-_PushButton, _DropDownPushButton, _ToolButton, _TogglePushButton, _ToggleToolButton {
+PushButton, DropDownPushButton, ToolButton, TogglePushButton, ToggleToolButton {
     color: rgba(67, 67, 67, 1);
     background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
@@ -8,87 +8,87 @@ _PushButton, _DropDownPushButton, _ToolButton, _TogglePushButton, _ToggleToolBut
     outline: none;
 }
 
-_ToolButton[hasMenu=true] {
+ToolButton[hasMenu=true] {
     padding: 5px 20px 6px 8px;
 }
 
-_PushButton:hover, _DropDownPushButton:hover, _ToolButton:hover, 
-_TogglePushButton:hover, _ToggleToolButton:hover {
+PushButton:hover, DropDownPushButton:hover, ToolButton:hover, 
+TogglePushButton:hover, _ToggleToolButton:hover {
     background: rgba(220, 220, 220, 0.8);
 }
 
-_PushButton:pressed, _ToolButton:pressed, _TogglePushButton:pressed, _ToggleToolButton:pressed {
+PushButton:pressed, ToolButton:pressed, TogglePushButton:pressed, ToggleToolButton:pressed {
     color: rgba(67, 67, 67, 0.6);
     background: rgba(220, 220, 220, 0.4);
     border: 1px solid rgba(200, 200, 200, 0.8);
 }
 
-_PushButton:disabled, _ToolButton:disabled, _TogglePushButton:disabled, _ToggleToolButton:disabled {
+PushButton:disabled, ToolButton:disabled, TogglePushButton:disabled, ToggleToolButton:disabled {
     color: rgba(0, 0, 0, 0.36);
     background: rgba(249, 249, 249, 0.3);
     border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-_TransparentPushButton, _DropDownTransparentPushButton, _TransparentToolButton {
+TransparentPushButton, DropDownTransparentPushButton, TransparentToolButton {
     background-color: transparent;
     border: none;
     border-radius: 8px;
     margin: 0;
 }
 
-_CheckBox {
+CheckBox {
     text-align: left;
 }
 
-_TransparentPushButton:hover, _DropDownTransparentPushButton:hover, _TransparentToolButton:hover,
-_CheckBox:hover {
+TransparentPushButton:hover, DropDownTransparentPushButton:hover, TransparentToolButton:hover,
+CheckBox:hover {
     background: rgba(220, 220, 220, 0.8);
     border: none;
 }
 
-_TransparentPushButton:pressed, _TransparentToolButton:pressed, _CheckBox:pressed {
+TransparentPushButton:pressed, TransparentToolButton:pressed, CheckBox:pressed {
     color: rgba(0, 0, 0, 0.63);
     background: rgba(220, 220, 220, 0.4);
     border: none;
 }
 
-_TransparentPushButton:disabled, _DropDownTransparentPushButton:disabled, 
-_TransparentToolButton:disabled, _CheckBox:disabled {
+TransparentPushButton:disabled, DropDownTransparentPushButton:disabled, 
+TransparentToolButton:disabled, CheckBox:disabled {
     background: transparent;
     border: none;
 }
 
-_PrimaryPushButton, _DropDownPrimaryPushButton, _PrimaryToolButton _CheckBox:checked {
+PrimaryPushButton, DropDownPrimaryPushButton, PrimaryToolButton CheckBox:checked {
     color: white;
     background-color: --THEMECOLOR-1.0;
 }
 
-_PrimaryPushButton:hover, _DropDownPrimaryPushButton:hover, _PrimaryToolButton:hover,
-_CheckBox:checked:hover {
+PrimaryPushButton:hover, DropDownPrimaryPushButton:hover, PrimaryToolButton:hover,
+CheckBox:checked:hover {
     background-color: --THEMECOLOR-0.9;
     border: 2px solid --THEMECOLOR-1.0;
 }
 
-_PrimaryPushButton:pressed, _PrimaryToolButton:pressed,
-_TogglePushButton:checked:pressed, _ToggleToolButton:checked:pressed, 
-_CheckBox:checked:pressed {
+PrimaryPushButton:pressed, PrimaryToolButton:pressed,
+TogglePushButton:checked:pressed, ToggleToolButton:checked:pressed, 
+CheckBox:checked:pressed {
     color: rgba(255, 255, 255, 0.63);
 }
 
-_PrimaryPushButton:disabled, _DropDownPrimaryPushButton:disabled, _PrimaryToolButton:disabled,
-_TogglePushButton:checked:disabled, _ToggleToolButton:checked:pressed,
-_CheckBox:checked:disabled {
+PrimaryPushButton:disabled, DropDownPrimaryPushButton:disabled, PrimaryToolButton:disabled,
+TogglePushButton:checked:disabled, ToggleToolButton:checked:pressed,
+CheckBox:checked:disabled {
     color: rgba(255, 255, 255, 0.63);
     background-color: --THEMECOLOR-0.3;
 }
 
-_TogglePushButton:checked, _ToggleToolButton:checked {
+TogglePushButton:checked, ToggleToolButton:checked {
     border: 2px solid --THEMECOLOR-1.0;
 }
 
-_DropDownPushButton::menu-indicator,
-_DropDownTransparentPushButton::menu-indicator,
-_ToolButton::menu-indicator {
+DropDownPushButton::menu-indicator,
+DropDownTransparentPushButton::menu-indicator,
+ToolButton::menu-indicator {
     image: url(ui:icons/black/ChevronDown_black.svg);
     width: 10px;
     height: 10px;
@@ -98,7 +98,7 @@ _ToolButton::menu-indicator {
     margin-right: 10px;
 }
 
-_DropDownPrimaryPushButton::menu-indicator {
+DropDownPrimaryPushButton::menu-indicator {
     image: url(ui:icons/white/ChevronDown_white.svg);
     width: 10px;
     height: 10px;

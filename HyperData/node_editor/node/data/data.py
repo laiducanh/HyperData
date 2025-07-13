@@ -7,7 +7,6 @@ from node_editor.node.data.splitter import DataSplitter
 from node_editor.node.data.merge import DataMerge
 from node_editor.node.data.reader import DataReader
 from node_editor.node.data.sorter import DataSorter
-from node_editor.node.data.transpose import DataTranspose
 from node_editor.node.data.combiner import DataCombiner
 from node_editor.node.data.correlator import DataCorrelator
 from node_editor.node.data.inserter import DataInserter

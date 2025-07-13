@@ -4,8 +4,8 @@ from keras import layers
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.deep_learning.base import DLBase
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 
 DEBUG = False
@@ -30,17 +30,17 @@ class DenseLayer (DLBase):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        units = SpinBox(min=1, text="Units")
+        units = HTransparentSpinBox(minimum=1, label="Units")
         units.button.setValue(self._config["units"])
         dialog.main_layout.addWidget(units)
 
-        activation = ComboBox(items=["elu","exponential","gelu","hard_sigmoid","linear",
+        activation = HTransparentComboBox(items=["elu","exponential","gelu","hard_sigmoid","linear",
                                      "relu","selu","sigmoid","softmax","softplus","softsign",
-                                     "swish","tank"], text="Activation function")
+                                     "swish","tank"], label="Activation function")
         activation.button.setCurrentText(self._config["activation"])
         dialog.main_layout.addWidget(activation)
 
-        use_bias = Toggle(text="Use Bias")
+        use_bias = HToggle(label="Use Bias")
         use_bias.button.setChecked(self._config["use_bias"])
         dialog.main_layout.addWidget(use_bias)
 

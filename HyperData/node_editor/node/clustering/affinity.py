@@ -1,6 +1,6 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from sklearn import cluster
 
 class AffinityPropagation(MethodBase):
@@ -20,22 +20,22 @@ class AffinityPropagation(MethodBase):
         else: self._config = config
         self.method = cluster.AffinityPropagation(**self._config)
 
-        self.damping = DoubleSpinBox(min=0.5, max=1, step=0.05, text="Damping factor")
+        self.damping = HTransparentDoubleSpinBox(minimum=0.5, maximum=1, singleStep=0.05, label="Damping factor")
         self.damping.button.setValue(self._config["damping"])
         self.damping.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.damping)
 
-        self.max_iter = SpinBox(min=1,max=10000,step=100,text="Max of iterations")
+        self.max_iter = HTransparentSpinBox(minimum=1,maximum=10000,singleStep=100,label="Max of iterations")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.convergence_iter = SpinBox(min=1, text="Early convergence")
+        self.convergence_iter = HTransparentSpinBox(minimum=1, label="Early convergence")
         self.convergence_iter.button.setValue(self._config["convergence_iter"])
         self.convergence_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.convergence_iter)
 
-        self.affinity = ComboBox(items=["euclidean","precomputed"], text="Affinity")
+        self.affinity = HTransparentComboBox(items=["euclidean","precomputed"], label="Affinity")
         self.affinity.button.setCurrentText(self._config["affinity"])
         self.affinity.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.affinity)

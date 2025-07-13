@@ -1,6 +1,6 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
 from node_editor.node.interpolation.base import FitBase
@@ -40,7 +40,7 @@ class ResultDialog(Dialog):
                 self.main_layout.addWidget(BodyLabel(f"Condition number of the covariance matrix: {np.linalg.cond(pcov)}"))
                 self.main_layout.addWidget(BodyLabel(f"Diagonal elements of the covariance matrix: {np.diag(pcov)}"))
 
-                smooth = ComboBox(items=[str(i) for i in np.arange(0,10000,100)], text="Smoothness")
+                smooth = HTransparentComboBox(items=[str(i) for i in np.arange(0,10000,100)], label="Smoothness")
                 smooth.button.setCurrentText(str(len(xdata)))
                 smooth.button.currentTextChanged.connect(self.onSmoothChange)
                 self.main_layout.addWidget(smooth)
@@ -92,15 +92,15 @@ class EquationFit (FitBase):
         )
         else: self._config = config
     
-        self.params = LineEdit(text="Parameters")
+        self.params = HLineEdit(label="Parameters")
         self.params.button.setText(self._config["params"])
         self.vlayout.addWidget(self.params)
 
-        self.var = LineEdit(text="Variable")
+        self.var = HLineEdit(label="Variable")
         self.var.button.setText(self._config["variable"])
         self.vlayout.addWidget(self.var)
         
-        self.func = LineEdit(text="Function")
+        self.func = HLineEdit(label="Function")
         self.func.button.setText(self._config["input"])
         self.vlayout.addWidget(self.func)
     

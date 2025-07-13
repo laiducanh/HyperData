@@ -87,9 +87,8 @@ class NodeGraphicsView(QGraphicsView):
             data_aggre.addAction(action)
         data_manipulation = Menu("Data Manipulation")
         data_processing.addMenu(data_manipulation)
-        for text in ["Data Transpose","Data Computation",
-                     "Data Pivot","Data Unpivot","Data Stack","Data Unstack",
-                     "Data Scaler","Data Normalizer","Data Transformer"]:
+        for text in ["Data Computation","Data Pivot","Data Unpivot","Data Stack",
+                     "Data Unstack","Data Scaler","Data Normalizer","Data Transformer"]:
             action = Action(text=text, parent=data_manipulation)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             data_manipulation.addAction(action)
@@ -309,6 +308,14 @@ class NodeGraphicsView(QGraphicsView):
         
         if self.currentScale*factor <= 1 and self.currentScale*factor >= 0.5:
             self.currentScale *= factor
+            self.scale(factor, factor)
+        elif self.currentScale*factor > 1:
+            factor = 1.0/self.currentScale
+            self.currentScale = 1.0
+            self.scale(factor, factor)
+        elif self.currentScale*factor < 0.5:
+            factor = 0.5/self.currentScale
+            self.currentScale = 0.5
             self.scale(factor, factor)
             
     def anim_finished(self):

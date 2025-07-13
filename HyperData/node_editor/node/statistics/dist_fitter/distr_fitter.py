@@ -2,7 +2,7 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.statistics.dist_fitter.result_dialog import ResultDialog
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, _TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, TransparentPushButton
 from ui.base_widgets.window import Dialog
 import numpy as np
 import pandas as pd
@@ -60,7 +60,7 @@ class DistFitter(NodeContentWidget):
 
         self.label.hide()
 
-        self.result_btn = _TransparentPushButton()
+        self.result_btn = TransparentPushButton()
         self.result_btn.setText("Result")
         self.result_btn.released.connect(self.result_dialog)
         self.vlayout.insertWidget(2,self.result_btn)        
@@ -68,9 +68,9 @@ class DistFitter(NodeContentWidget):
     def config(self):
         self.dialog = Dialog(title="Configuration", parent=self.parent)
 
-        test = TransparentComboBox(
+        test = HTransparentComboBox(
             items=self.dist_list, 
-            text="Distribution",
+            label="Distribution",
             getter=lambda: self._config["dist"],
             layout=self.dialog.main_layout
         )

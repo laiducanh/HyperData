@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import ComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
 from plot.utilis import complementary_color
 from node_editor.node.statistics.one_sample_test.base import TestBase, ResultDialogBase
 from scipy.stats import norm, expon, logistic, gumbel_l, gumbel_r, weibull_min
@@ -16,21 +16,21 @@ class ResultDialog(ResultDialogBase):
         self.plot()
 
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='The Anderson-Darling test statistic',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='The Anderson-Darling test statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Critical values',
-            text2='The critical values for this distribution',
+        HTransparentPushButton(
+            label='Critical values',
+            label2='The critical values for this distribution',
             getter=lambda: str(result.critical_values),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Significance level',
-            text2='The significance levels for the corresponding critical values in percents',
+        HTransparentPushButton(
+            label='Significance level',
+            label2='The significance levels for the corresponding critical values in percents',
             getter=lambda: str(result.significance_level),
             layout=self.main_layout
         )
@@ -86,10 +86,10 @@ class Anderson(TestBase):
         )
         else: self._config = config
     
-        self.dist = ComboBox(
+        self.dist = HTransparentComboBox(
             items=["norm","expon","logistic","gumbel","gumbel_r","weibull_min"], 
-            text="Distribution",
-            text2="The type of distribution to test against",
+            label="Distribution",
+            label2="The type of distribution to test against",
             getter=lambda: self._config["dist"],
             layout=self.vlayout
         )

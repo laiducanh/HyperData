@@ -2,8 +2,8 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, Toggle
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel, BodyLabel
@@ -27,42 +27,48 @@ class DataCorrelator (NodeContentWidget):
         dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.addWidget(TitleLabel("Correlation and Covariance"))
         dialog.main_layout.addWidget(SeparateHLine())
-        method = TransparentComboBox(text="Type", items=["correlation","covariance"])
-        method.button.setCurrentText(self._config["type"])
-        dialog.main_layout.addWidget(method)
-        function = TransparentComboBox(
+        method = HTransparentComboBox(
+            label="Type", 
+            items=["correlation","covariance"],
+            getter=lambda: self._config['type'],
+            layout=dialog.main_layout
+        )
+        function = HTransparentComboBox(
             items=["pearson","kendall","spearman"],
-            text="Method",
-            text2="Method of correlation: Pearson (standard) correlation coefficient, " \
-            "Kendall Tau correlation coefficient, Spearman rank correlation")
-        dialog.main_layout.addWidget(function)
-        function.button.setCurrentText(self._config["method"])
-        min_periods = TransparentSpinBox(
-            min=1,
-            text="Minimum observations",
-            text2="Minimum number of observations required per pair of columns to have a valid result. " \
-            "Currently only available for Pearson, Spearman correlation, and covariance analyses."
+            label="Method",
+            label2="Method of correlation: Pearson (standard) correlation coefficient, " \
+            "Kendall Tau correlation coefficient, Spearman rank correlation",
+            getter=lambda: self._config['method'],
+            layout=dialog.main_layout
         )
-        min_periods.button.setValue(self._config["min_periods"])
-        dialog.main_layout.addWidget(min_periods)
-        ddof = TransparentSpinBox(
-            min=1,
-            text="Delta degrees of freedom",
-            text2="To determine the divisor used in calculations. This option is applicable only " \
-            "when no missing data is in the DataFrame"
+        min_periods = HTransparentSpinBox(
+            minimum=1,
+            label="Minimum observations",
+            label2="Minimum number of observations required per pair of columns to have a valid result. " \
+            "Currently only available for Pearson, Spearman correlation, and covariance analyses.",
+            getter=lambda: self._config["min_periods"],
+            layout=dialog.main_layout
         )
-        ddof.button.setValue(self._config["ddof"])
-        dialog.main_layout.addWidget(ddof)
-        overwrite = Toggle(text="Numeric only", text2="Include only float, int or boolean data")
-        dialog.main_layout.addWidget(overwrite)
-        overwrite.button.setChecked(self._config["numeric_only"])
+        ddof = HTransparentSpinBox(
+            minimum=1,
+            label="Delta degrees of freedom",
+            label2="To determine the divisor used in calculations. This option is applicable only " \
+            "when no missing data is in the DataFrame",
+            getter=lambda: self._config["ddof"],
+            layout=dialog.main_layout
+        )
+        overwrite = HToggle(
+            label="Include only float, int or boolean data",
+            getter=lambda: self._config["numeric_only"],
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
-            self._config["method"] = function.button.currentText()
-            self._config["numeric_only"] = overwrite.button.isChecked()
-            self._config["type"] = method.button.currentText()
-            self._config["min_periods"]=min_periods.button.value()
-            self._config["ddof"]=ddof.button.value()
+            self._config["method"] = function.get_value()
+            self._config["numeric_only"] = overwrite.get_value()
+            self._config["type"] = method.get_value()
+            self._config["min_periods"]=min_periods.get_value()
+            self._config["ddof"]=ddof.get_value()
             self.exec()
     
     def func(self):

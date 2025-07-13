@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import ComboBox, Toggle
+from ui.base_widgets.button import HTransparentComboBox, HToggle
 from config.settings import logger, GLOBAL_DEBUG
 
 DEBUG = False
@@ -20,11 +20,11 @@ class DropDuplicate (NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        keep = ComboBox(items=["first","last","none"], text='keep')
+        keep = HTransparentComboBox(items=["first","last","none"], label='keep')
         keep.button.setCurrentText(self._config["keep"])
         dialog.main_layout.addWidget(keep)
 
-        ignore_index = Toggle(text='ignore index')
+        ignore_index = HToggle(label='ignore index')
         ignore_index.button.setChecked(self._config["ignore_index"])
         dialog.main_layout.addWidget(ignore_index)
 

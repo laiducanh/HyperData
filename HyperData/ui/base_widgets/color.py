@@ -1,12 +1,11 @@
 import os
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, QLayout, 
                                QGridLayout, QWidgetAction)
-from PySide6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
-from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize, QPoint
+from PySide6.QtGui import (QColor, QEnterEvent, QPainter)
+from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize
 from PySide6.QtSvg import QSvgRenderer
-from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.button import _PushButton, _TransparentPushButton, HButton, _DropDownPushButton
-from ui.base_widgets.menu import Menu, Action
+from ui.base_widgets.button import PushButton, TransparentPushButton, HButton, VButton
+from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine
 from ui.utils import get_path
 from typing import Callable
@@ -36,7 +35,7 @@ PALETTES = {
 }
 
 
-class _PaletteButton(_PushButton):
+class _PaletteButton(PushButton):
     def __init__(self, color, parent=None):
         super().__init__(parent=parent)
         self.setFixedSize(25, 25)
@@ -130,7 +129,7 @@ class PaletteGrid(_PaletteBase):
 
         layout.addWidget(SeparateHLine())
         
-        add = _TransparentPushButton()
+        add = TransparentPushButton()
         add.setText("More colors")
         add.setIcon('add.png')
         add.setIconSize(QSize(15,15))
@@ -166,7 +165,7 @@ class PaletteMenu (Menu):
         widget_action.setDefaultWidget(self._palette)
         self.addAction(widget_action)
     
-class ColorPickerButton (_PushButton):
+class ColorPickerButton (PushButton):
     colorChanged = Signal(str)
     def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
         super().__init__(parent=parent)
@@ -268,16 +267,16 @@ class ColorPickerButton (_PushButton):
                       2-5, 10, 10)
         self._drawDropDownIcon(painter, rect)   
 
-class ColorDropdown (HButton):
-    def __init__(self, text:str=None, text2:str=None, getter:Callable=None, setter:Callable=None,
+class HColorDropdown(HButton):
+    def __init__(self, label:str=None, label2:str=None, getter:Callable=None, setter:Callable=None,
                  layout:QLayout=None, parent=None):
-        super().__init__(text=text, text2=text2, layout=layout, parent=parent)
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-        self.button = ColorPickerButton(setter=setter, getter=getter, parent=parent)
-        self.butn_layout.addWidget(self.button)
+        self.button = ColorPickerButton(setter=setter, getter=getter, layout=self.butn_layout, parent=parent)
 
-    def get_value(self) -> str:
-        return super().get_value()
+class VColorDropdown(VButton):
+    def __init__(self, label:str=None, label2:str=None, getter:Callable=None, setter:Callable=None,
+                 layout:QLayout=None, parent=None):
+        super().__init__(label=label, label2=label2, layout=layout, parent=parent)
 
-    def set_value(self, value:str):
-        return super().set_value(value)
+        self.button = ColorPickerButton(setter=setter, getter=getter, layout=self.butn_layout, parent=parent)

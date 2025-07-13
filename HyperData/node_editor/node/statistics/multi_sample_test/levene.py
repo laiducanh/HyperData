@@ -1,6 +1,6 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -10,13 +10,13 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
+        HTransparentPushButton(
+            label='Statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
+        HTransparentPushButton(
+            label='p-value',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )
@@ -35,11 +35,11 @@ class Levene(TestBase):
         )
         else: self._config = config
 
-        self.center = TransparentComboBox(items=["mean","median","trimmed"], text="Center")
+        self.center = HTransparentComboBox(items=["mean","median","trimmed"], label="Center")
         self.center.button.setCurrentText(self._config["center"])
         self.vlayout.addWidget(self.center)
 
-        self.proprotiontocut = TransparentDoubleSpinBox(step=0.01, text="Proportion to cut")
+        self.proprotiontocut = HTransparentDoubleSpinBox(step=0.01, label="Proportion to cut")
         self.proprotiontocut.button.setValue(self._config["proportiontocut"])
         self.vlayout.addWidget(self.proprotiontocut)
     

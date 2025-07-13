@@ -1,6 +1,6 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from sklearn import cluster
 
 class MiniBatchKMeans(MethodBase):
@@ -22,37 +22,37 @@ class MiniBatchKMeans(MethodBase):
         else: self._config = config
         self.method = cluster.MiniBatchKMeans(**self._config)
 
-        self.n_clusters = SpinBox(min=1,text="Number of clusters")
+        self.n_clusters = HTransparentSpinBox(minimum=1,label="Number of clusters")
         self.n_clusters.button.setValue(self._config["n_clusters"])
         self.n_clusters.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_clusters)
 
-        self.init = ComboBox(items=["k-means++","random"],text="Initialization")
+        self.init = HTransparentComboBox(items=["k-means++","random"],label="Initialization")
         self.init.button.setCurrentText(self._config["init"])
         self.init.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.init)
 
-        self.max_iter = SpinBox(min=1,max=10000,step=100,text="Max of iterations")
+        self.max_iter = HTransparentSpinBox(minimum=1,maximum=10000,singleStep=100,label="Max of iterations")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.batch_size = SpinBox(min=1, step=10, text="Batch size")
+        self.batch_size = HTransparentSpinBox(minimum=1, singleStep=10, label="Batch size")
         self.batch_size.button.setValue(self._config["batch_size"])
         self.batch_size.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.batch_size)
 
-        self.tol = SpinBox(min=1, text="Tolerance")
+        self.tol = HTransparentSpinBox(minimum=1, label="Tolerance")
         self.tol.button.setValue(int(1/self._config["tol"]))
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.max_no_improvement = SpinBox(text="Early convergence")
+        self.max_no_improvement = HTransparentSpinBox(label="Early convergence")
         self.max_no_improvement.button.setValue(self._config["max_no_improvement"])
         self.max_no_improvement.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_no_improvement)
 
-        self.reassignment_ratio = DoubleSpinBox(text="Reassignment ratio")
+        self.reassignment_ratio = HTransparentDoubleSpinBox(label="Reassignment ratio")
         self.reassignment_ratio.button.setValue(self._config["reassignment_ratio"])
         self.reassignment_ratio.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.reassignment_ratio)

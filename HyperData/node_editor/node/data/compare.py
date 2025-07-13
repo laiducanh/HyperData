@@ -2,14 +2,14 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.button import HToggle, HGroupRadioButton
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel, BodyLabel
 
 DEBUG = False
 
-class DataCompare (NodeContentWidget):
+class DataCompare(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
@@ -20,33 +20,33 @@ class DataCompare (NodeContentWidget):
         )
     
     def config(self):
-        dialog = Dialog(title="configuration", parent=self.parent)
+        dialog = Dialog(title="Configuration", parent=self.parent)
         dialog.main_layout.addWidget(TitleLabel("Data Comparison"))
         dialog.main_layout.addWidget(BodyLabel("Compare two DataFrames and show the differences"))
         dialog.main_layout.addWidget(SeparateHLine())
-        align_axis = TransparentComboBox(
+
+        align_axis = HGroupRadioButton(
             items=["index","columns"],
-            text="Axis",
-            text2="Determine which axis to align the comparison on")
-        dialog.main_layout.addWidget(align_axis)
-        align_axis.button.setCurrentText(self._config["align_axis"])
-        keep_shape = Toggle(
-            text="Keep shape",
-            text2="If selected, all rows and columns are kept. " \
-            "Otherwise, only the ones with different values are kept")
-        dialog.main_layout.addWidget(keep_shape)
-        keep_shape.button.setChecked(self._config["keep_shape"])
-        keep_equal = Toggle(
-            text="Keep equal",
-            text2="If selected, the result keeps values that are equal. " \
-            "Otherwise, equal values are shown as NaNs")
-        dialog.main_layout.addWidget(keep_equal)
-        keep_equal.button.setChecked(self._config["keep_equal"])
+            label="Axis",
+            label2="Determine which axis to align the comparison on",
+            getter=lambda: self._config["align_axis"],
+            layout=dialog.main_layout
+        )
+        keep_shape = HToggle(
+            label="Keep all rows and columns",
+            getter=lambda: self._config["keep_shape"],
+            layout=dialog.main_layout
+        )
+        keep_equal = HToggle(
+            label="Keep values that are equal",
+            getter=lambda: self._config["keep_equal"],
+            layout=dialog.main_layout
+        )
 
         if dialog.exec():
-            self._config["align_axis"] = align_axis.button.currentText()
-            self._config["keep_shape"] = keep_shape.button.isChecked()
-            self._config["keep_equal"] = keep_equal.button.isChecked()
+            self._config["align_axis"] = align_axis.get_value()
+            self._config["keep_shape"] = keep_shape.get_value()
+            self._config["keep_equal"] = keep_equal.get_value()
             self.exec()
     
     def func(self):

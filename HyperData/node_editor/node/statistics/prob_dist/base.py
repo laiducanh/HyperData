@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.button import TransparentComboBox, HButton, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HButton, HTransparentPushButton
 from plot.canvas import Canvas
 from scipy.stats._continuous_distns import norm_gen
 import numpy as np
@@ -52,30 +52,30 @@ class ResultDialog(Dialog):
 
         self.dist = dist
         self.title = title
-        TransparentPushButton(
-            text='Median',
+        HTransparentPushButton(
+            label='Median',
             getter=lambda: str(self.dist.median()),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Mean',
+        HTransparentPushButton(
+            label='Mean',
             getter=lambda: str(self.dist.mean()),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Standard deviation',
+        HTransparentPushButton(
+            label='Standard deviation',
             getter=lambda: str(self.dist.std()),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='95% Confidence interval',
+        HTransparentPushButton(
+            label='95% Confidence interval',
             getter=lambda: str(self.dist.interval(0.95)),
             layout=self.main_layout
         )
-        self.pl = TransparentComboBox(items=["Probability density function","Log of the probability density function",
+        self.pl = HTransparentComboBox(items=["Probability density function","Log of the probability density function",
                                   "Cumulative distribution function","Log of the cumulative distribution function",
                                   "Survival function","Log of the survival function"], 
-                                  text="Probability function")
+                                  label="Probability function")
         self.pl.button.currentTextChanged.connect(self.plot)
         self.main_layout.addWidget(self.pl)
         self.canvas = Canvas()

@@ -1,6 +1,6 @@
 from node_editor.node.data_transformation.base import MethodBase
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 
 class Quantile(MethodBase):
     def __init__(self, parent=None):
@@ -17,15 +17,15 @@ class Quantile(MethodBase):
         )
         else: self._config = config
 
-        self.n_quantiles = SpinBox(max=100000, step=1000, text="Number of quantiles")
+        self.n_quantiles = HTransparentSpinBox(maximum=100000, singleStep=1000, label="Number of quantiles")
         self.n_quantiles.button.setValue(self._config["n_quantiles"])
         self.vlayout.addWidget(self.n_quantiles)
 
-        self.output_dist = ComboBox(items=["uniform","normal"],text="Marginal distribution")
+        self.output_dist = HTransparentComboBox(items=["uniform","normal"],label="Marginal distribution")
         self.output_dist.button.setCurrentText(self._config["output_distribution"])
         self.vlayout.addWidget(self.output_dist)
 
-        self.subsample = SpinBox(max=100000, step=1000, text="Maximum of subsamples")
+        self.subsample = HTransparentSpinBox(maximum=100000, singleStep=1000, label="Maximum of subsamples")
         self.subsample.button.setValue(self._config["subsample"])
         self.vlayout.addWidget(self.subsample)
         

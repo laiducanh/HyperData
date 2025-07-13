@@ -1,12 +1,10 @@
 import numpy as np
 from sklearn import metrics, preprocessing
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (PrimaryComboBox, TransparentPushButton, SegmentedWidget, _PrimaryPushButton)
-from ui.base_widgets.text import BodyLabel
-from plot.canvas import Canvas
+from ui.base_widgets.button import (HPrimaryComboBox, HTransparentPushButton, SegmentedWidget)
 from node_editor.node.report import ConfusionMatrix, ROC, PrecisionRecall, DET, DecisionBoundary
 from config.settings import logger, GLOBAL_DEBUG
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QHBoxLayout, QApplication)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QApplication)
 from PySide6.QtCore import Qt
 
 DEBUG = False
@@ -178,13 +176,13 @@ class Report(Dialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         widget.setLayout(layout)
 
-        metric_to_show = PrimaryComboBox(
+        metric_to_show = HPrimaryComboBox(
             items=["Accuracy","Balanced accuracy",
                    "Micro Precision","Macro Precision","Weighted Precision",
                    "Micro Recall","Macro Recall","Weighted Recall",
                    "Micro F1 score","Macro F1 score","Weighted F1 score",
                    "Log loss","Brier score loss","Zero-one loss"], 
-            text="Metric"
+            label="Metric"
         )
         metric_to_show.button.setMinimumWidth(250)
         metric_to_show.button.currentTextChanged.connect(self.change_metric)
@@ -192,7 +190,7 @@ class Report(Dialog):
 
         score = scoring(Y, Y_pred)
         for metric in score:
-            _btn = TransparentPushButton(text=metric)
+            _btn = HTransparentPushButton(label=metric)
             _btn.button.setText(str(score[metric]))
             layout.addWidget(_btn)
 

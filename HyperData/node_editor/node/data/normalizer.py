@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn.preprocessing import normalize
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.button import HTransparentComboBox
 
 DEBUG = False
 
@@ -19,16 +19,16 @@ class DataNormalizer (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Data Normalization", self.parent)
-        norm = TransparentComboBox(
-            text="Norm",
+        norm = HTransparentComboBox(
+            label="Norm",
             items=["l1","l2","max"],
             getter=lambda: self._config["norm"],
             layout=dialog.main_layout
         )
 
-        axis = TransparentComboBox(
+        axis = HTransparentComboBox(
             items=["row","column"],
-            text="Axis",
+            label="Axis",
             getter=lambda: "row" if self._config["axis"] else "column",
             layout=dialog.main_layout
         )

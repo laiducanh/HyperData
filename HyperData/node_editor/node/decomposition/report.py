@@ -2,9 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics, preprocessing
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (PrimaryComboBox, ComboBox, Toggle, SegmentedWidget,
-                                    TransparentPushButton)
-from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.button import (HPrimaryComboBox, HTransparentComboBox, SegmentedWidget)
 from plot.canvas import Canvas
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QHBoxLayout, QApplication)
@@ -23,8 +21,8 @@ class Variance(QWidget):
 
         layout = QVBoxLayout(self)
 
-        self.plot = PrimaryComboBox(items=["Explained variance","Explained variance ratio",
-                                           "Singular values"], text="Plot Type")
+        self.plot = HPrimaryComboBox(items=["Explained variance","Explained variance ratio",
+                                           "Singular values"], label="Plot Type")
         self.plot.button.currentTextChanged.connect(self.draw_plot)
         layout.addWidget(self.plot)
 
@@ -89,22 +87,22 @@ class Projection(QWidget):
         btn_layout = QHBoxLayout()
         layout.addLayout(btn_layout)
 
-        self.plot = PrimaryComboBox(items=["2D projection","3D projection"], text="Plot Type")
+        self.plot = HPrimaryComboBox(items=["2D projection","3D projection"], label="Plot Type")
         self.plot.button.currentTextChanged.connect(self.change_plot)
         btn_layout.addWidget(self.plot)
 
-        self.x_btn = ComboBox(items=[f"Eigenvector {i+1}" for i in range(self.X_reduced.shape[1])],
-                              text="X")
+        self.x_btn = HTransparentComboBox(items=[f"Eigenvector {i+1}" for i in range(self.X_reduced.shape[1])],
+                              label="X")
         self.x_btn.button.currentTextChanged.connect(self.change_plot)
         btn_layout.addWidget(self.x_btn)
 
-        self.y_btn = ComboBox(items=[f"Eigenvector {i+1}" for i in range(self.X_reduced.shape[1])],
-                              text="Y")
+        self.y_btn = HTransparentComboBox(items=[f"Eigenvector {i+1}" for i in range(self.X_reduced.shape[1])],
+                              label="Y")
         self.y_btn.button.currentTextChanged.connect(self.change_plot)
         btn_layout.addWidget(self.y_btn)
 
-        self.z_btn = ComboBox(items=[f"Eigenvector {i+1}" for i in range(self.X_reduced.shape[1])],
-                              text="Z")
+        self.z_btn = HTransparentComboBox(items=[f"Eigenvector {i+1}" for i in range(self.X_reduced.shape[1])],
+                              label="Z")
         self.z_btn.button.currentTextChanged.connect(self.change_plot)
         btn_layout.addWidget(self.z_btn)
 

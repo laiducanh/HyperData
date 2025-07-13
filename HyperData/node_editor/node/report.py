@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QApplication)
-from ui.base_widgets.button import ComboBox, _PrimaryPushButton
+from ui.base_widgets.button import HTransparentComboBox, PrimaryPushButton
 from ui.base_widgets.text import BodyLabel
 from plot.canvas import Canvas
 import numpy as np
@@ -25,8 +25,8 @@ class ConfusionMatrix (QWidget):
         self.Y_pred = Y_pred
         self.clipboard = QApplication.clipboard()   
 
-        _fold = ComboBox(items=[f"Fold {i+1}" for i in range(len(Y_test))],
-                        text="Fold")
+        _fold = HTransparentComboBox(items=[f"Fold {i+1}" for i in range(len(Y_test))],
+                        label="Fold")
         _fold.button.setCurrentText(f"Fold {self.fold+1}")
         _fold.button.currentTextChanged.connect(self.setFold)
         layout.addWidget(_fold)
@@ -42,7 +42,7 @@ class ConfusionMatrix (QWidget):
         self.cm = BodyLabel()
         btn_layout.addWidget(self.cm)
         
-        copy_btn = _PrimaryPushButton()
+        copy_btn = PrimaryPushButton()
         copy_btn.setText("Copy to clipboard")
         copy_btn.released.connect(lambda: self.clipboard.setText(self.cm.text()))
         btn_layout.addWidget(copy_btn)
@@ -124,12 +124,12 @@ class ROC(QWidget):
         btn_layout2 = QHBoxLayout()
         layout.addLayout(btn_layout2)
 
-        method = ComboBox(text="Method", items=["By Class","Micro-averaged OvR",
+        method = HTransparentComboBox(label="Method", items=["By Class","Micro-averaged OvR",
                                                 "Macro-averaged OvR","Macro-averaged OvO"])
         method.button.currentTextChanged.connect(self.methodChange)
         btn_layout2.addWidget(method)
 
-        self.class_ = ComboBox(text="Class", items=[f"{s} vs Rest" for s in self.classes])
+        self.class_ = HTransparentComboBox(label="Class", items=[f"{s} vs Rest" for s in self.classes])
         self.class_.button.currentTextChanged.connect(self.classChange)
         btn_layout2.addWidget(self.class_)
 
@@ -144,7 +144,7 @@ class ROC(QWidget):
         self.fpr = BodyLabel()
         btn_layout1.addWidget(self.fpr)
         
-        copy_btn1 = _PrimaryPushButton()
+        copy_btn1 = PrimaryPushButton()
         copy_btn1.setText("Copy to clipboard")
         copy_btn1.released.connect(lambda: self.clipboard.setText(self.fpr.text()))
         btn_layout1.addWidget(copy_btn1)
@@ -156,7 +156,7 @@ class ROC(QWidget):
         self.tpr = BodyLabel()
         btn_layout2.addWidget(self.tpr)
         
-        copy_btn2 = _PrimaryPushButton()
+        copy_btn2 = PrimaryPushButton()
         copy_btn2.setText("Copy to clipboard")
         copy_btn2.released.connect(lambda: self.clipboard.setText(self.tpr.text()))
         btn_layout2.addWidget(copy_btn2)
@@ -472,19 +472,19 @@ class DecisionBoundary(QWidget):
         btn_layout = QHBoxLayout()
         layout.addLayout(btn_layout)
 
-        self.x_btn = ComboBox(items=list(X.columns), text="X")
+        self.x_btn = HTransparentComboBox(items=list(X.columns), label="X")
         self.x_btn.button.setCurrentIndex(0)
         self.x_btn.button.currentTextChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.x_btn)
 
-        self.y_btn = ComboBox(items=list(X.columns), text="Y")
+        self.y_btn = HTransparentComboBox(items=list(X.columns), label="Y")
         self.y_btn.button.setCurrentIndex(1)
         self.y_btn.button.currentTextChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.y_btn)
 
-        self.resolution = ComboBox(items=["50", "100", "150", "200", "300", "400", "500", 
+        self.resolution = HTransparentComboBox(items=["50", "100", "150", "200", "300", "400", "500", 
                                           "600", "700", "800", "900", "1000"],
-                                   text="Resolution")
+                                   label="Resolution")
         self.resolution.button.setCurrentText("100")
         self.resolution.button.currentTextChanged.connect(self.draw_plot)
         btn_layout.addWidget(self.resolution)

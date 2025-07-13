@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.button import HTransparentComboBox
 from config.settings import logger, GLOBAL_DEBUG
 import pandas as pd
 
@@ -21,8 +21,8 @@ class DataMerge (NodeContentWidget):
     def config(self):
         dialog = Dialog("Merge Data", self.parent)    
   
-        how = TransparentComboBox(
-            text="Merge method",text2="Type of merge to be performed",
+        how = HTransparentComboBox(
+            label="Merge method",label2="Type of merge to be performed",
             items=["inner","outer","left","right","cross"],
             getter=lambda: self._config["how"],
             layout=dialog.main_layout

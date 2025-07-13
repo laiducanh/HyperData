@@ -5,13 +5,13 @@ from PySide6.QtCore import QSize, Qt
 import matplotlib.pyplot
 import matplotlib.style
 
-from ui.base_widgets.button import _TransparentComboBox, TransparentComboBox, Toggle
-from ui.base_widgets.color import ColorPickerButton, ColorDropdown
+from ui.base_widgets.button import TransparentComboBox, HTransparentComboBox, HToggle
+from ui.base_widgets.color import ColorPickerButton, HColorDropdown
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.list import ListWidget
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.utils import get_path
 from config.settings import config
 import os, darkdetect, re, matplotlib, itertools, cycler, numpy
@@ -34,7 +34,7 @@ def set_stylesheet():
             try: widget._update()
             except: pass
 
-class Theme(TransparentComboBox):
+class Theme(HTransparentComboBox):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent=parent)
 
@@ -55,7 +55,7 @@ class Theme(TransparentComboBox):
         return config["theme"]
         
     
-class ThemeColor(ColorDropdown):
+class ThemeColor(HColorDropdown):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent=parent)
 
@@ -72,7 +72,7 @@ class ThemeColor(ColorDropdown):
         return config["themecolor"]
 
 
-class DockWidget_Position(TransparentComboBox):
+class DockWidget_Position(HTransparentComboBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -84,7 +84,7 @@ class DockWidget_Position(TransparentComboBox):
     def setPos (self, pos):
         config["dock area"] = pos
 
-class Figure_Tooltip(Toggle):
+class Figure_Tooltip(HToggle):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -95,7 +95,7 @@ class Figure_Tooltip(Toggle):
     def setTooltip(self, checked):
         config["plot_tooltip"] = checked
 
-class Figure_Dpi(TransparentSpinBox):
+class Figure_Dpi(HTransparentSpinBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -109,7 +109,7 @@ class Figure_Dpi(TransparentSpinBox):
     def setDPI(self, value:int):
         config['plot_dpi'] = value
 
-class Figure_Style(TransparentComboBox):
+class Figure_Style(HTransparentComboBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -166,7 +166,7 @@ class Figure_Colors(Frame):
         layout1 = QHBoxLayout()
         layout.addLayout(layout1)
         layout1.addWidget(BodyLabel("Color Palette"))
-        self._palette = _TransparentComboBox(items=self.palette_dict.keys())
+        self._palette = TransparentComboBox(items=self.palette_dict.keys())
         self._palette.setCurrentText("custom")
         for key, value in self.palette_dict.items():
             if config["plot_palette"] == value:

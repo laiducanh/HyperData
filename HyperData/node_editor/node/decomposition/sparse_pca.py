@@ -1,6 +1,6 @@
 from node_editor.node.clustering.base import MethodBase
-from ui.base_widgets.button import ComboBox, Toggle
-from ui.base_widgets.spinbox import SpinBox, DoubleSpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
 from sklearn import decomposition
 
 class SparsePCA(MethodBase):
@@ -21,27 +21,27 @@ class SparsePCA(MethodBase):
         else: self._config = config
         self.method = decomposition.SparsePCA(**self._config)
 
-        self.n_components = SpinBox(text="Number of components")
+        self.n_components = HTransparentSpinBox(label="Number of components")
         self.n_components.button.setValue(self._config["n_components"])
         self.n_components.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_components)
 
-        self.alpha = DoubleSpinBox(text="Sparsity")
+        self.alpha = HTransparentDoubleSpinBox(label="Sparsity")
         self.alpha.button.setValue(self._config["alpha"])
         self.alpha.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.alpha)
 
-        self.max_iter = SpinBox(max=10000, step=1000, text="Maximum iteration")
+        self.max_iter = HTransparentSpinBox(maximum=10000, singleStep=1000, label="Maximum iteration")
         self.max_iter.button.setValue(self._config["max_iter"])
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.tol = SpinBox(text="Tolerance")
+        self.tol = HTransparentSpinBox(label="Tolerance")
         self.tol.button.setValue(int(1/self._config["tol"]))
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.method = ComboBox(items=["lars","cd"],text="Method")
+        self.method = HTransparentComboBox(items=["lars","cd"],label="Method")
         self.method.button.setCurrentText(self._config["method"])
         self.method.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.method)

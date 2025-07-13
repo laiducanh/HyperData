@@ -2,13 +2,13 @@ from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedLayout, QWidget,
 from PySide6.QtCore import Signal, QSize, Qt
 from PySide6.QtGui import QIcon, QPixmap
 import os
-from ui.base_widgets.button import _PrimaryPushButton
+from ui.base_widgets.button import PrimaryPushButton
 from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.list import ListWidget
 from ui.utils import get_path
 
-class Plottype_Button (_PrimaryPushButton):
+class Plottype_Button (PrimaryPushButton):
     sig = Signal(str)
     def __init__(self,type,icon_size,tooltip):
         super().__init__()

@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -9,15 +9,15 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='The Brunner-Munzer W statistic',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='The Brunner-Munzer W statistic',
             getter=lambda: str(result.statistic[0]),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing this result (or more extreme) if null hypothesis is true',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing this result (or more extreme) if null hypothesis is true',
             getter=lambda: str(result.pvalue[0]),
             layout=self.main_layout
         )
@@ -36,11 +36,11 @@ class BrunnerMunzel(TestBase):
         )
         else: self._config = config
 
-        self.alternative = TransparentComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
+        self.alternative = HTransparentComboBox(items=["two-sided","less","greater"], label="Alternative hypothesis")
         self.alternative.button.setCurrentText(self._config["alternative"])
         self.vlayout.addWidget(self.alternative)
 
-        self.distribution = TransparentComboBox(items=["t","normal"], text="Distribution")
+        self.distribution = HTransparentComboBox(items=["t","normal"], label="Distribution")
         self.distribution.button.setCurrentText(self._config["distribution"])
         self.vlayout.addWidget(self.distribution)
     

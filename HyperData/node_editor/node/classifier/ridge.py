@@ -1,5 +1,5 @@
-from ui.base_widgets.button import Toggle, ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox
+from ui.base_widgets.button import HToggle, HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import linear_model
@@ -24,28 +24,28 @@ class RidgeClassifier(ClassifierBase):
         else: self._config = config
         self.estimator = linear_model.RidgeClassifier(**self._config)
         
-        self.alpha = DoubleSpinBox(min=0, max=1000, step=1, text="regularization strength")
+        self.alpha = HTransparentDoubleSpinBox(minimum=0, maximum=1000, singleStep=1, label="regularization strength")
         self.alpha.button.setValue(self._config["alpha"])
         self.alpha.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.alpha)
         
-        self.fit_intercept = Toggle(text="intercept")
+        self.fit_intercept = HToggle(label="intercept")
         self.fit_intercept.button.setChecked(self._config["fit_intercept"])
         self.fit_intercept.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.fit_intercept)
 
-        self.tol = DoubleSpinBox(min=1e-8,max=1e-3,step=1e-6,text="tolerance")
+        self.tol = HTransparentDoubleSpinBox(minimum=1e-8,maximum=1e-3,singleStep=1e-6,label="tolerance")
         self.tol.button.setValue(self._config["tol"])
         self.tol.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.tol)
 
-        self.solver = ComboBox(items=["auto","svd","cholesky","lsqr","sparse_cg","sag","saga","lbfgs"],
-                               text="solver")
+        self.solver = HTransparentComboBox(items=["auto","svd","cholesky","lsqr","sparse_cg","sag","saga","lbfgs"],
+                               label="solver")
         self.solver.button.setCurrentText(self._config["solver"])
         self.solver.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.solver)
 
-        self.positive = Toggle(text="positive coefficients")
+        self.positive = HToggle(label="positive coefficients")
         self.positive.button.setChecked(self._config["positive"])
         self.positive.button.checkedChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.positive)

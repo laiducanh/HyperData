@@ -1,5 +1,5 @@
-from ui.base_widgets.button import ComboBox
-from ui.base_widgets.spinbox import DoubleSpinBox, SpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from node_editor.node.classifier.base import ClassifierBase
 from config.settings import logger, GLOBAL_DEBUG
 from sklearn import ensemble
@@ -35,17 +35,17 @@ class ExtraTrees(ClassifierBase):
         else: self._config = config
         self.estimator = ensemble.ExtraTreesClassifier(**self._config)
 
-        self.n_estimators = SpinBox(max=1000,step=100,text="Number of Trees")
+        self.n_estimators = HTransparentSpinBox(maximum=1000,singleStep=100,label="Number of Trees")
         self.n_estimators.button.setValue(self._config["n_estimators"])
         self.n_estimators.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_estimators)
 
-        self.criterion = ComboBox(items=["gini","entropy","log_loss"],text="Criterion")
+        self.criterion = HTransparentComboBox(items=["gini","entropy","log_loss"],label="Criterion")
         self.criterion.button.setCurrentText(self._config["criterion"])
         self.criterion.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.criterion)
 
-        self.max_depth = DoubleSpinBox(min=-1, max=1000, step=10, text="Maximum Depth of Tree")
+        self.max_depth = HTransparentDoubleSpinBox(minimum=-1, maximum=1000, singleStep=10, label="Maximum Depth of Tree")
         self.max_depth.button.setDecimals(0)
         if self._config["max_depth"] == None:
             self.max_depth.button.setValue(-1)

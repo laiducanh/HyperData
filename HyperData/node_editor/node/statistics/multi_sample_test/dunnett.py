@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -9,20 +9,20 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='The computed statistic of the test for each comparison',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='The computed statistic of the test for each comparison',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='The computed p-value of the test for each comparison',
+        HTransparentPushButton(
+            label='p-value',
+            label2='The computed p-value of the test for each comparison',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='95% Confidence interval',
+        HTransparentPushButton(
+            label='95% Confidence interval',
             getter=lambda: str(result.confidence_interval()),
             layout=self.vlayout
         )
@@ -40,7 +40,7 @@ class Dunnett(TestBase):
         )
         else: self._config = config
 
-        self.alternative = TransparentComboBox(items=["two-sided","less","greater"], text="Alternative hypothesis")
+        self.alternative = HTransparentComboBox(items=["two-sided","less","greater"], label="Alternative hypothesis")
         self.alternative.button.setCurrentText(self._config["alternative"])
         self.vlayout.addWidget(self.alternative)
 

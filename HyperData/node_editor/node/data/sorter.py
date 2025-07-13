@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, encode, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
-from ui.base_widgets.button import _TransparentComboBox, _TransparentToolButton, _TransparentPushButton
+from ui.base_widgets.button import TransparentComboBox, TransparentToolButton, TransparentPushButton
 from PySide6.QtWidgets import QHBoxLayout, QApplication
 
 DEBUG = False
@@ -18,7 +18,7 @@ class SorterWidget(Frame):
         idx = parent.main_layout.count()-1
         parent.main_layout.insertWidget(idx, self)
 
-        self.col = _TransparentComboBox(parent=parent)
+        self.col = TransparentComboBox(parent=parent)
         self.col.setObjectName("by")
         try: self.col.addItems(data.columns)
         except: pass
@@ -26,13 +26,13 @@ class SorterWidget(Frame):
         else: self.col.setCurrentIndex(-1)
         self.hlayout.addWidget(self.col)
 
-        self.ascending = _TransparentComboBox(["ascending","descending"],parent=parent)
+        self.ascending = TransparentComboBox(["ascending","descending"],parent=parent)
         self.ascending.setObjectName("ascending")
         if order: self.ascending.setCurrentText("ascending")
         else: self.ascending.setCurrentText("descending")
         self.hlayout.addWidget(self.ascending)
 
-        delete = _TransparentToolButton(parent=parent)
+        delete = TransparentToolButton(parent=parent)
         delete.setIcon("delete.png")
         delete.pressed.connect(self.onDelete)
         self.hlayout.addWidget(delete)
@@ -65,7 +65,7 @@ class DataSorter (NodeContentWidget):
         def add(by="", order=True):
             SorterWidget(self.node.input_sockets[0].socket_data, by, order, dialog)
 
-        add_btn = _TransparentPushButton(self)
+        add_btn = TransparentPushButton(self)
         add_btn.setIcon("add.png")
         add_btn.pressed.connect(add)
         dialog.main_layout.addWidget(add_btn)
@@ -76,8 +76,7 @@ class DataSorter (NodeContentWidget):
         if dialog.exec():
             # reset self._config
             self._config = dict(by=[],ascending=[])
-            for btn in dialog.findChildren(_TransparentComboBox):
-                btn : _TransparentComboBox
+            for btn in dialog.findChildren(TransparentComboBox):
                 if btn.objectName() == "by":
                     self._config["by"].append(btn.currentText())
                 if btn.objectName() == "ascending":

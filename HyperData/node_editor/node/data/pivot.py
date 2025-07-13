@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import compress
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, Toggle, ListCheckBox
+from ui.base_widgets.button import HTransparentComboBox, HToggle, ListCheckBox
 from ui.base_widgets.window import Dialog
 
 DEBUG = False
@@ -26,35 +26,29 @@ class DataPivot(NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Data Pivot", parent=self.parent)
-        aggfunc = TransparentComboBox(
+        aggfunc = HTransparentComboBox(
             items=["mean","sum","min","max"],
-            text="Function",
-            text2='Function will be used to calculate the partial aggregates',
+            label="Function",
+            label2='Function will be used to calculate the partial aggregates',
             getter=lambda: self._config["aggfunc"],
             layout=dialog.main_layout
         )
-
-        margins = Toggle(
-            text="Margins",
-            text2='Add aggregate columns and rows across the categories',
+        margins = HToggle(
+            label='Add aggregate columns and rows across the categories',
             getter=lambda: self._config["margins"],
             layout=dialog.main_layout
         )
-
-        dropna = Toggle(
-            text="Drop NaN",
-            text2='Do not include columns whose entries are all NaN',
+        dropna = HToggle(
+            label='Do not include columns whose entries are all NaN',
             getter=lambda: self._config["dropna"],
             layout=dialog.main_layout
         )
-
-        sort = Toggle(
-            text="Sort",
-            text2='Specifies if the result should be sorted',
+        sort = HToggle(
+            label="Sort",
+            label2='Specifies if the result should be sorted',
             getter=lambda: self._config["sort"],
             layout=dialog.main_layout
         )
-
         values = ListCheckBox(data.columns, text="Values",
                               states=[i in self._config["values"] for i in data.columns])
         dialog.main_layout.addWidget(values)
@@ -152,8 +146,8 @@ class DataUnpivot(NodeContentWidget):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Data Unpivot", parent=self.parent)
 
-        ignore_index = Toggle(
-            text="Ignore index",
+        ignore_index = HToggle(
+            label="Ignore index",
             getter=lambda: self._config["ignore_index"],
             layout=dialog.main_layout
         )

@@ -1,9 +1,9 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import Toggle, TransparentComboBox
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.line_edit import HLineEdit
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel, BodyLabel
@@ -30,32 +30,41 @@ class DataCreator (NodeContentWidget):
         dialog.main_layout.addWidget(TitleLabel("Dimensions"))
         dialog.main_layout.addWidget(SeparateHLine())
 
-        num_rows = TransparentSpinBox(max=1000000, text="Number of rows")
-        num_rows.button.setValue(self._config["num_rows"])
-        dialog.main_layout.addWidget(num_rows)
-
-        num_cols = TransparentSpinBox(max=1000000, text="Number of columns")
-        num_cols.button.setValue(self._config["num_cols"])
-        dialog.main_layout.addWidget(num_cols)
+        num_rows = HTransparentSpinBox(
+            maximum=1000000, 
+            label="Number of rows",
+            getter=lambda: self._config["num_rows"],
+            layout=dialog.main_layout
+        )
+        num_cols = HTransparentSpinBox(
+            maximum=1000000, 
+            label="Number of columns",
+            getter=lambda: self._config["num_cols"],
+            layout=dialog.main_layout
+        )
 
         dialog.main_layout.addWidget(TitleLabel("Data structure"))
         dialog.main_layout.addWidget(SeparateHLine())
 
-        structure = TransparentComboBox(items=["full","diagonal","triangular"],text="Structure")
-        structure.button.setCurrentText(self._config["structure"])
-        dialog.main_layout.addWidget(structure)
-
-        fill_values = LineEdit(text="Fill values",text2="Values to fill to DataFrame")
-        fill_values.button.setText(str(self._config["fill_values"]))
-        dialog.main_layout.addWidget(fill_values)
-        
+        structure = HTransparentComboBox(
+            items=["full","diagonal","triangular"],
+            label="Structure",
+            getter=lambda: self._config["structure"],
+            layout=dialog.main_layout
+        )
+        fill_values = HLineEdit(
+            label="Fill values",
+            label2="Values to fill to DataFrame",
+            getter=lambda: str(self._config["fill_values"]),
+            layout=dialog.main_layout
+        )        
         
         if dialog.exec():
             self._config.update(
-                num_rows = num_rows.button.value(),
-                num_cols = num_cols.button.value(),
-                fill_values = fill_values.button.text(),
-                structure = structure.button.currentText()
+                num_rows = num_rows.get_value(),
+                num_cols = num_cols.get_value(),
+                fill_values = fill_values.get_value(),
+                structure = structure.get_value()
             )
             self.exec()
     

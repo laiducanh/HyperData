@@ -1,5 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import TransparentComboBox, TransparentPushButton
+from ui.base_widgets.button import HTransparentComboBox, HTransparentPushButton
 from node_editor.node.statistics.multi_sample_test.base import TestBase, ResultDialogBase
 
 DEBUG = False
@@ -9,26 +9,26 @@ class ResultDialog(ResultDialogBase):
         super().__init__(title, samples, result, parent)
         
     def initStats(self, result):
-        TransparentPushButton(
-            text='Statistic',
-            text2='The KS test statistic',
+        HTransparentPushButton(
+            label='Statistic',
+            label2='The KS test statistic',
             getter=lambda: str(result.statistic),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='p-value',
-            text2='Probability of observing that large a difference if null is true',
+        HTransparentPushButton(
+            label='p-value',
+            label2='Probability of observing that large a difference if null is true',
             getter=lambda: str(result.pvalue),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Statistic location',
-            text2='The distance between the empirical distribution functions is measured at this observation',
+        HTransparentPushButton(
+            label='Statistic location',
+            label2='The distance between the empirical distribution functions is measured at this observation',
             getter=lambda: str(result.statistic_location),
             layout=self.main_layout
         )
-        TransparentPushButton(
-            text='Statistic sign',
+        HTransparentPushButton(
+            label='Statistic sign',
             getter=lambda: 'positive' if result.statistic_sign == 1 else 'negative',
             layout=self.main_layout
         )
@@ -47,18 +47,18 @@ class Kolmogorov(TestBase):
         )
         else: self._config = config
 
-        self.alternative = TransparentComboBox(
+        self.alternative = HTransparentComboBox(
             items=["two-sided","less","greater"], 
-            text="Alternative hypothesis",
-            text2='Define the null and alternative hypotheses',
+            label="Alternative hypothesis",
+            label2='Define the null and alternative hypotheses',
             getter=lambda: self._config["alternative"],
             layout=self.vlayout
         )
 
-        self.distribution = TransparentComboBox(
+        self.distribution = HTransparentComboBox(
             items=["t","normal"], 
-            text="Distribution",
-            text2='The method used for calculating the p-value',
+            label="Distribution",
+            label2='The method used for calculating the p-value',
             getter=lambda: self._config["distribution"],
             layout=self.vlayout
         )
