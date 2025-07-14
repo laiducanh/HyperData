@@ -4,7 +4,7 @@ from node_editor.node.data.data import *
 from node_editor.node.data_cleaning.data_cleaning import *
 from node_editor.node.data_encoder.data_encoder import *
 from node_editor.node.data_transformation.transformer import DataTransformer
-# from node_editor.node.interpolation.curve_fitter import CurveFitter
+from node_editor.node.interpolation.curve_fitter import CurveFitter
 from node_editor.node.classifier.classifier import Classifier
 from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingClassifier, VotingClassifier
 from node_editor.node.regressor.regressor import Regressor
@@ -12,11 +12,11 @@ from node_editor.node.clustering.clustering import Clustering
 from node_editor.node.decomposition.decomposition import Decomposition
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
 from node_editor.node.train_test_split.cv_split import CVSplitter
-# from node_editor.node.figure import *
+from node_editor.node.figure import *
 from node_editor.node.predictor import Predictor
-# from node_editor.node.misc.misc import *
+from node_editor.node.misc.misc import *
 from node_editor.node.deep_learning.deep_learning import *
-# from node_editor.node.statistics.stats import *
+from node_editor.node.statistics.stats import *
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -28,24 +28,21 @@ class Node(NodeGraphicsNode):
         if title == 'Undefined Node':
             super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[SINGLE_OUT, MULTI_OUT, SINGLE_OUT, SINGLE_OUT])
             self.content = NodeContentWidget(self,parent)
-        # elif title == 'Figure 2D':
-        #     super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
-        #     self.content = Figure2D(self,parent)
-        # elif title == 'Figure 3D':
-        #     super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
-        #     self.content = Figure3D(self,parent)
-        # elif title == 'Multi-Figure':
-        #     super().__init__(title=title, inputs=[MULTI_IN], outputs=[MULTI_OUT])
-        #     self.content = MultiFigure(self,parent)
+        elif title == 'Figure 2D':
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = Figure2D(self,parent)
+        elif title == 'Figure 3D':
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = Figure3D(self,parent)
+        elif title == 'Multi-Figure':
+            super().__init__(title=title, inputs=[MULTI_IN], outputs=[MULTI_OUT])
+            self.content = MultiFigure(self,parent)
         elif title == 'Data Reader':
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
             self.content = DataReader(self,parent)
         elif title == 'Data Holder':
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataHolder(self,parent)
-        elif title == 'Data Concator':
-            super().__init__(title=title, inputs=[MULTI_IN], outputs=[MULTI_OUT])
-            self.content = DataConcator(self,parent)
         elif title == 'Data Combiner':
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataCombiner(self,parent)
@@ -79,9 +76,9 @@ class Node(NodeGraphicsNode):
         elif title == "Data Overwriter":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataOverwriter(self,parent)
-        # elif title == "Curve Fitter":
-        #     super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
-        #     self.content = CurveFitter(self,parent)
+        elif title == "Curve Fitter":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            self.content = CurveFitter(self,parent)
         elif title == "Data Normalizer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DataNormalizer(self,parent)
@@ -172,30 +169,30 @@ class Node(NodeGraphicsNode):
         elif title == "Model Compiler":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = ModelCompiler(self,parent)
-        # elif title == "Distribution":
-        #     super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
-        #     self.content = ProbDist(self,parent)
-        # elif title == "One Sample Tester":
-        #     super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
-        #     self.content = OneSampleTest(self,parent)
-        # elif title == "Multi-Sample Tester":
-        #     super().__init__(title=title, inputs=[MULTI_IN], outputs=[])
-        #     self.content = MultiSampleTest(self,parent)
-        # elif title == "Correlation Tester":
-        #     super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
-        #     self.content = CorrelationTest(self,parent)
-        # elif title == "Distribution Fitter":
-        #     super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
-        #     self.content = DistFitter(self, parent)
-        # elif title == "Executor":
-        #     super().__init__(title=title, inputs=[], outputs=[])
-        #     self.content = Executor(self,parent)
-        # elif title == "Looper":
-        #     super().__init__(title=title, inputs=[], outputs=[])
-        #     self.content = Looper(self,parent)
-        # elif title == 'User Define Card':
-        #     super().__init__(title=title, inputs=[], outputs=[])
-        #     self.content = UserDefine(self,parent)
+        elif title == "Distribution":
+            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
+            self.content = ProbDist(self,parent)
+        elif title == "One Sample Tester":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
+            self.content = OneSampleTest(self,parent)
+        elif title == "Multi-Sample Tester":
+            super().__init__(title=title, inputs=[MULTI_IN], outputs=[])
+            self.content = MultiSampleTest(self,parent)
+        elif title == "Correlation Tester":
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[])
+            self.content = CorrelationTest(self,parent)
+        elif title == "Distribution Fitter":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DistFitter(self, parent)
+        elif title == "Executor":
+            super().__init__(title=title, inputs=[], outputs=[])
+            self.content = Executor(self,parent)
+        elif title == "Looper":
+            super().__init__(title=title, inputs=[], outputs=[])
+            self.content = Looper(self,parent)
+        elif title == 'User Define Card':
+            super().__init__(title=title, inputs=[], outputs=[])
+            self.content = UserDefine(self,parent)
         
         self.menu = self.content.menu
         self.set_Content(self.content)

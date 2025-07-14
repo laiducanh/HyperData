@@ -80,7 +80,7 @@ class NodeGraphicsView(QGraphicsView):
             data_prep.addAction(action)
         data_aggre = Menu("Data Aggregation")
         data_processing.addMenu(data_aggre)
-        for text in ["Data Concator","Data Merge","Data Overwriter","Data Compare",
+        for text in ["Data Merge","Data Overwriter","Data Compare",
                      "Data Combiner","Data Inserter","Data Correlator","Pairwise Measurer"]:
             action = Action(text=text, parent=data_aggre)
             action.triggered.connect(lambda _, text=text: self.addNode(text))

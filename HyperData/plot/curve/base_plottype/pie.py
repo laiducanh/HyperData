@@ -1,6 +1,6 @@
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
-from ui.base_widgets.button import Toggle
+from ui.base_widgets.line_edit import HLineEdit
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
+from ui.base_widgets.button import HToggle
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
 from plot.curve.base_elements.line import Line, Marker
@@ -23,51 +23,51 @@ class Pie(PlotConfigBase):
         self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.explode = LineEdit(
-            text="Explode",
+        self.explode = HLineEdit(
+            label="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
             layout=self.general.addlayout
         )
 
-        self.labels = LineEdit(
-            text="Labels",
+        self.labels = HLineEdit(
+            label="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
             layout=self.general.addlayout
         )
 
-        self.radius = TransparentDoubleSpinBox(
-            text='Radius',
+        self.radius = HTransparentDoubleSpinBox(
+            label='Radius',
             getter=self.get_radius,
             setter=self.set_radius,
             layout=self.general.addlayout
         )
 
-        self.startangle = TransparentDoubleSpinBox(
-            min  = 0, max  = 360, step = 30,
-            text = "Start angle",
+        self.startangle = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 360, singleStep = 30,
+            label = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
             layout=self.general.addlayout
         )
 
-        self.counterclock = Toggle(
-            text="Counterclock",
+        self.counterclock = HToggle(
+            label="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
             layout=self.general.addlayout
         )
 
-        self.rotatelabels = Toggle(
-            text="Rotate Labels",
+        self.rotatelabels = HToggle(
+            label="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
             layout=self.general.addlayout
         )
 
-        self.normalize = Toggle(
-            text="Normalize",
+        self.normalize = HToggle(
+            label="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
             layout=self.general.addlayout
@@ -171,45 +171,45 @@ class Coxcomb(Pie):
         self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.explode = LineEdit(
-            text="Explode",
+        self.explode = HLineEdit(
+            label="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
             layout=self.general.addlayout
         )
 
-        self.labels = LineEdit(
-            text="Labels",
+        self.labels = HLineEdit(
+            label="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
             layout=self.general.addlayout
         )
 
-        self.startangle = TransparentDoubleSpinBox(
-            min  = 0, max  = 360, step = 30,
-            text = "Start angle",
+        self.startangle = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 360, singleStep = 30,
+            label = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
             layout=self.general.addlayout
         )
 
-        self.radius = TransparentDoubleSpinBox(
-            text = "Radius",
-            step = 0.2,
+        self.radius = HTransparentDoubleSpinBox(
+            label = "Radius",
+            singleStep = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
             layout=self.general.addlayout
         )
 
-        self.counterclock = Toggle(
-            text="Counterclock",
+        self.counterclock = HToggle(
+            label="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
             layout=self.general.addlayout
         )
 
-        self.rotatelabels = Toggle(
-            text="Rotate Labels",
+        self.rotatelabels = HToggle(
+            label="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
             layout=self.general.addlayout
@@ -227,60 +227,60 @@ class Doughnut(Pie):
         self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.wedgewidth = TransparentDoubleSpinBox(
-            min  = 0, max  = 1, step = 0.1,
-            text = "Width",
+        self.wedgewidth = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 1, singleStep = 0.1,
+            label = "Width",
             getter=self.get_wedgewidth,
             setter=self.set_wedgewidth,
             layout=self.general.addlayout
         )
 
-        self.explode = LineEdit(
-            text="Explode",
+        self.explode = HLineEdit(
+            label="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
             layout=self.general.addlayout
         )
 
-        self.labels = LineEdit(
-            text="Labels",
+        self.labels = HLineEdit(
+            label="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
             layout=self.general.addlayout
         )
 
-        self.startangle = TransparentDoubleSpinBox(
-            min  = 0, max  = 360, step = 30,
-            text = "Start angle",
+        self.startangle = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 360, singleStep = 30,
+            label = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
             layout=self.general.addlayout
         )
 
-        self.radius = TransparentDoubleSpinBox(
-            text = "Radius",
-            step = 0.2,
+        self.radius = HTransparentDoubleSpinBox(
+            label = "Radius",
+            singleStep = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
             layout=self.general.addlayout
         )
 
-        self.counterclock = Toggle(
-            text="Counterclock",
+        self.counterclock = HToggle(
+            label="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
             layout=self.general.addlayout
         )
 
-        self.rotatelabels = Toggle(
-            text="Rotate Labels",
+        self.rotatelabels = HToggle(
+            label="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
             layout=self.general.addlayout
         )
 
-        self.normalize = Toggle(
-            text="Normalize",
+        self.normalize = HToggle(
+            label="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
             layout=self.general.addlayout
@@ -309,45 +309,45 @@ class SemicircleDoughnut(Doughnut):
         self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.explode = LineEdit(
-            text="Explode",
+        self.explode = HLineEdit(
+            label="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
             layout=self.general.addlayout
         )
 
-        self.labels = LineEdit(
-            text="Labels",
+        self.labels = HLineEdit(
+            label="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
             layout=self.general.addlayout
         )
 
-        self.radius = TransparentDoubleSpinBox(
-            text = "Radius",
-            step = 0.2,
+        self.radius = HTransparentDoubleSpinBox(
+            label = "Radius",
+            singleStep = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
             layout=self.general.addlayout
         )
 
-        self.counterclock = Toggle(
-            text="Counterclock",
+        self.counterclock = HToggle(
+            label="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
             layout=self.general.addlayout
         )
 
-        self.startangle = TransparentDoubleSpinBox(
-            min  = 0, max  = 360, step = 30,
-            text = "Start angle",
+        self.startangle = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 360, singleStep = 30,
+            label = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
             layout=self.general.addlayout
         )
 
-        self.rotatelabels = Toggle(
-            text="Rotate Labels",
+        self.rotatelabels = HToggle(
+            label="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
             layout=self.general.addlayout
@@ -366,68 +366,68 @@ class MultilevelDoughnut(Doughnut):
         self.segment.addButton(text='Wedge', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.wedgewidth = TransparentDoubleSpinBox(
-            min  = 0, max  = 1, step = 0.1,
-            text = "Width",
+        self.wedgewidth = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 1, singleStep = 0.1,
+            label = "Width",
             getter=self.get_wedgewidth,
             setter=self.set_wedgewidth,
             layout=self.general.addlayout
         )
 
-        self.explode = LineEdit(
-            text="Explode",
+        self.explode = HLineEdit(
+            label="Explode",
             getter=self.get_explode,
             setter=self.set_explode,
             layout=self.general.addlayout
         )
 
-        self.labels = LineEdit(
-            text="Labels",
+        self.labels = HLineEdit(
+            label="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
             layout=self.general.addlayout
         )
 
-        self.startangle = TransparentDoubleSpinBox(
-            min  = 0, max  = 360, step = 30,
-            text = "Start angle",
+        self.startangle = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 360, singleStep = 30,
+            label = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
             layout=self.general.addlayout
         )
 
-        self.radius = TransparentDoubleSpinBox(
-            text = "Radius",
-            step = 0.2,
+        self.radius = HTransparentDoubleSpinBox(
+            label = "Radius",
+            singleStep = 0.2,
             getter=self.get_radius,
             setter=self.set_radius,
             layout=self.general.addlayout
         )
 
-        self.counterclock = Toggle(
-            text="Counterclock",
+        self.counterclock = HToggle(
+            label="Counterclock",
             getter=self.get_counterclock,
             setter=self.set_counterclock,
             layout=self.general.addlayout
         )
 
-        self.rotatelabels = Toggle(
-            text="Rotate Labels",
+        self.rotatelabels = HToggle(
+            label="Rotate Labels",
             getter=self.get_rotatelabels,
             setter=self.set_rotatelabels,
             layout=self.general.addlayout
         )
 
-        self.normalize = Toggle(
-            text="Normalize",
+        self.normalize = HToggle(
+            label="Normalize",
             getter=self.get_normalize,
             setter=self.set_normalize,
             layout=self.general.addlayout
         )
 
-        self.pad = TransparentDoubleSpinBox(
-            min  = 0, max  = 1, step = 0.01,
-            text = "Padding",
+        self.pad = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 1, singleStep = 0.01,
+            label = "Padding",
             getter=self.get_pad,
             setter=self.set_pad,
             layout=self.general.addlayout
@@ -459,16 +459,16 @@ class Radar(PlotConfigBase):
         self.segment.addButton(text='Fill', func=lambda: self.stackedlayout.setCurrentIndex(3))
         self.segment.setCurrentIndex(0)
 
-        self.labels = LineEdit(
-            text="Labels",
+        self.labels = HLineEdit(
+            label="Labels",
             getter=self.get_labels,
             setter=self.set_labels,
             layout=self.general.addlayout
         )
 
-        self.startangle = TransparentDoubleSpinBox(
-            min  = 0, max  = 360, step = 30,
-            text = "Start angle",
+        self.startangle = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 360, singleStep = 30,
+            label = "Start angle",
             getter=self.get_startangle,
             setter=self.set_startangle,
             layout=self.general.addlayout

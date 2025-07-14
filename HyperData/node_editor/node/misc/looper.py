@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.spinbox import SpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 
 class Looper (NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -15,7 +15,7 @@ class Looper (NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
-        n = SpinBox(min=1, max=10000, step=10, text="Number of iterations")
+        n = HTransparentSpinBox(minimum=1, maximum=10000, singleStep=10, label="Number of iterations")
         n.button.setValue(self._config["n"])
         dialog.main_layout.addWidget(n)
 

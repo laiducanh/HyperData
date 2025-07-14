@@ -1,8 +1,8 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy
 from data_processing.data_window import DataSelection
-from ui.base_widgets.line_edit import _CompleterLineEdit
-from ui.base_widgets.button import _TransparentToolButton
+from ui.base_widgets.line_edit import CompleterLineEdit
+from ui.base_widgets.button import TransparentToolButton
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class WidgetPie (QWidget):
@@ -20,7 +20,7 @@ class WidgetPie (QWidget):
 
         from plot.insert_plot.utilis import icon_open
 
-        self.input1 = _CompleterLineEdit(
+        self.input1 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             setter=self.input_func,
             getter=lambda: self.input[0],
@@ -28,7 +28,7 @@ class WidgetPie (QWidget):
         )
         self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data = _TransparentToolButton(
+        self.choose_data = TransparentToolButton(
             icon=icon_open,
             setter=self.open_data,
             layout=layout

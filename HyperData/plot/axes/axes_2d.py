@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QStackedLayout
 from PySide6.QtGui import QColor
-from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
-from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
+from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import ScrollArea
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
@@ -17,37 +17,37 @@ class Margin2D(ScrollArea):
 
         self.canvas = canvas
 
-        top = TransparentDoubleSpinBox(
-            text  = 'Margin top',
-            text2 = "The position of the top edge",
-            min = 0, max = 1, step = 0.05,
+        top = HTransparentDoubleSpinBox(
+            label  = 'Margin top',
+            label2 = "The position of the top edge",
+            minimum = 0, maximum = 1, singleStep = 0.05,
             getter=self.get_top,
             setter=self.set_top,
             layout=self.vlayout
         )
 
-        bottom = TransparentDoubleSpinBox(
-            text  = 'Margin bottom',
-            text2 = 'The position of the bottom edge',
-            min = 0, max = 1, step = 0.05,
+        bottom = HTransparentDoubleSpinBox(
+            label  = 'Margin bottom',
+            label2 = 'The position of the bottom edge',
+            minimum = 0, maximum = 1, singleStep = 0.05,
             getter=self.get_bottom,
             setter=self.set_bottom,
             layout=self.vlayout
         )
 
-        left = TransparentDoubleSpinBox(
-            text  = 'Margin left',
-            text2 ='The position of the left edge',
-            min = 0, max = 1, step = 0.05,
+        left = HTransparentDoubleSpinBox(
+            label  = 'Margin left',
+            label2 ='The position of the left edge',
+            minimum = 0, maximum = 1, singleStep = 0.05,
             setter=self.set_left,
             getter=self.get_left,
             layout=self.vlayout
         )
 
-        right = TransparentDoubleSpinBox(
-            text  = 'Margin right',
-            text2 = 'The position of the right edge',
-            min = 0, max = 1, step = 0.05,
+        right = HTransparentDoubleSpinBox(
+            label  = 'Margin right',
+            label2 = 'The position of the right edge',
+            minimum = 0, maximum = 1, singleStep = 0.05,
             setter=self.set_right,
             getter=self.get_right,
             layout=self.vlayout
@@ -87,62 +87,62 @@ class Grid2D(ScrollArea):
 
         self.canvas = canvas
 
-        self.visible = Toggle(
-            text  = 'Visible',
-            text2 = 'Whether to show the grid lines',
+        self.visible = HToggle(
+            label  = 'Visible',
+            label2 = 'Whether to show the grid lines',
             setter=self.set_visible,
             getter=self.get_visible,
             layout=self.vlayout
         )
 
-        self.which = TransparentComboBox(
+        self.which = HTransparentComboBox(
             items = ['Major','Minor','Both'],
-            text  = 'Type',
-            text2 = 'The grid lines to apply the changes on',
+            label  = 'Type',
+            label2 = 'The grid lines to apply the changes on',
             setter=self.set_gridtype,
             getter=self.get_gridtype,
             layout=self.vlayout
         )
 
-        self.axis = TransparentComboBox(
-            text  = 'Axis',
-            text2 = 'The axis to apply the changes on',
+        self.axis = HTransparentComboBox(
+            label  = 'Axis',
+            label2 = 'The axis to apply the changes on',
             items = ['X','Y','Both'],
             getter=self.get_gridaxis,
             setter=self.set_gridaxis,
             layout=self.vlayout
         )
 
-        self.linewidth = TransparentDoubleSpinBox(
-            text  = 'Line Width',
-            text2 = 'Set the width of the grid lines',
-            min = 0.1, max = 10, step = 0.5,
+        self.linewidth = HTransparentDoubleSpinBox(
+            label  = 'Line Width',
+            label2 = 'Set the width of the grid lines',
+            minimum = 0.1, maximum = 10, singleStep = 0.5,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
             layout=self.vlayout
         )
 
-        self.linestyle = TransparentComboBox(
-            text  = 'Line Style',
-            text2 = 'Set the style of the grid lines',
+        self.linestyle = HTransparentComboBox(
+            label  = 'Line Style',
+            label2 = 'Set the style of the grid lines',
             items = linestyle_lib.values(),
             getter=self.get_linestyle,
             setter=self.set_linestyle,
             layout=self.vlayout
         )
 
-        self.color = ColorDropdown(
-            text  = 'Line Color',
-            text2 = 'Set the color of the grid',
+        self.color = HColorDropdown(
+            label  = 'Line Color',
+            label2 = 'Set the color of the grid',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text  = 'Transparency',
-            text2 = 'Set the transparency of the grid lines',
-            step  = 10,
+        self.alpha = HTransparentSpinBox(
+            label  = 'Transparency',
+            label2 = 'Set the transparency of the grid lines',
+            singleStep  = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
             layout=self.vlayout
@@ -224,34 +224,34 @@ class Pane2D(ScrollArea):
 
         self.canvas = canvas
 
-        self.visible = Toggle(
-            text  = 'Visible',
-            text2 = 'Whether to show the color',
+        self.visible = HToggle(
+            label  = 'Visible',
+            label2 = 'Whether to show the color',
             setter=self.set_visible,
             getter=self.get_visible,
             layout=self.vlayout
         )
 
-        self.facecolor = ColorDropdown(
-            text  = 'Color',
-            text2 = 'Set the color of the Pane',
+        self.facecolor = HColorDropdown(
+            label  = 'Color',
+            label2 = 'Set the color of the Pane',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
         )
 
-        self.edgecolor = ColorDropdown(
-            text='Frame color',
-            text2='Set the frame color of the Figure',
+        self.edgecolor = HColorDropdown(
+            label='Frame color',
+            label2='Set the frame color of the Figure',
             getter=self.get_framecolor,
             setter=self.set_framecolor,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text  = 'Transparency',
-            text2 = 'Set the transparency of the Pane',
-            step  = 10,
+        self.alpha = HTransparentSpinBox(
+            label  = 'Transparency',
+            label2 = 'Set the transparency of the Pane',
+            singleStep  = 10, minimum = 0, maximum = 100,
             setter=self.set_patch_alpha,
             getter=self.get_patch_alpha,
             layout=self.vlayout

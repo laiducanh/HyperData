@@ -2,10 +2,10 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QSizePolicy
 from PySide6.QtCore import Signal, QTimer
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from ui.base_widgets.button import SegmentedWidget, Toggle
-from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.button import SegmentedWidget, HToggle
+from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import SeparateHLine, ScrollArea
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from plot.utilis import find_mpl_object
 from plot.plotting.plotting import set_legend, get_legend
 from config.settings import GLOBAL_DEBUG, logger
@@ -56,7 +56,7 @@ class GeneralPlot(ScrollArea):
         self.timer.timeout.connect(self.set_label)
     
     # Legend
-        self.legend = LineEdit(text='Legend')
+        self.legend = HLineEdit(label='Legend')
         self.legend.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.legend.button.setText(self.get_label())
         self.legend.button.textChanged.connect(lambda: self.timer.start(300))
@@ -67,15 +67,15 @@ class GeneralPlot(ScrollArea):
         self.addlayout.setContentsMargins(0,0,0,0)
         self.vlayout.addLayout(self.addlayout)
 
-        clip = Toggle(
-            text="Clipping",
+        clip = HToggle(
+            label="Clipping",
             setter=self.set_clip,
             getter=self.get_clip,
             layout=self.vlayout
         )
 
-        zorder = TransparentSpinBox(
-            text="Z-order",
+        zorder = HTransparentSpinBox(
+            label="Z-order",
             setter=self.set_zorder,
             getter=self.get_zorder,
             layout=self.vlayout

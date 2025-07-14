@@ -7,12 +7,12 @@ from plot.insert_plot.input.widget_1input import *
 from plot.insert_plot.input.widget_2input import *
 from plot.insert_plot.input.widget_3input import *
 from plot.insert_plot.input.widget_4input import *
-from ui.base_widgets.button import _DropDownPrimaryPushButton
+from ui.base_widgets.button import DropDownPrimaryPushButton
 from ui.base_widgets.text import TitleLabel
 from ui.base_widgets.window import ProgressBar
 from ui.base_widgets.frame import Frame, ScrollArea
 from ui.base_widgets.list import TreeWidget
-from ui.base_widgets.line_edit import _SearchBox
+from ui.base_widgets.line_edit import SearchBox
 from plot.canvas import Canvas
 from data_processing.utlis import split_input
 from plot.plotting.plotting import rescale_plot, plotting
@@ -59,7 +59,7 @@ class NewPlot(Frame):
         self.text = TitleLabel(self.plot_gid.title())
         layout.addWidget(self.text)
         layout.addStretch()
-        self.type = _DropDownPrimaryPushButton()
+        self.type = DropDownPrimaryPushButton()
         self.type.setText(self.plot_type)
         
 
@@ -287,7 +287,7 @@ class InsertPlot(QMainWindow):
                 "Mesh": ['heatmap','contour']
             }
 
-        self.search_box = _SearchBox(parent=self.parent())
+        self.search_box = SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         self.sidebar_layout.addWidget(self.search_box)
 

@@ -196,7 +196,7 @@ class QuantileTransfomer(ScalerBase):
         )
 
         self.subsampleOn = HToggle(
-            text="Subsample",
+            label="Subsample",
             getter=lambda: True if self._config["subsample"] else False,
             setter=self.set_estimator,
             layout=self.vlayout

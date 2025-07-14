@@ -1,6 +1,6 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (DropDownPrimaryPushButton, _TransparentPushButton)
+from ui.base_widgets.button import (DropDownPrimaryPushButton, TransparentPushButton)
 from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger, GLOBAL_DEBUG
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
@@ -49,7 +49,7 @@ class Regressor(NodeContentWidget):
         self.node.output_sockets[1].setSocketLabel("Estimator")
         self.node.output_sockets[2].setSocketLabel("Data out")
 
-        self.score_btn = _TransparentPushButton()
+        self.score_btn = TransparentPushButton()
         self.score_btn.setText(f"Score: --")
         self.score_btn.released.connect(self.score_dialog)
         self.vlayout.insertWidget(2,self.score_btn)

@@ -276,7 +276,7 @@ class TickBase2(TickBase):
 
         alpha = HTransparentSpinBox(
             label = 'Transparency',
-            singleStep = 10,
+            singleStep = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
             layout=self.vlayout
@@ -1051,7 +1051,7 @@ class AxisLabel(ScrollArea):
 
         alpha = HTransparentSpinBox(
             label = 'Transparency',
-            singleStep = 10,
+            singleStep = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
             layout=self.vlayout

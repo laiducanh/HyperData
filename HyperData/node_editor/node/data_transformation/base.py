@@ -25,11 +25,12 @@ class MethodBase(QWidget):
         self.set_config(config=None)
         
     def clear_layout (self):
-        for i in reversed(range(self.vlayout.count())):
-            item = self.vlayout.itemAt(i)
+        # Remove all child widgets from the layout
+        while self.vlayout.count():
+            item = self.vlayout.takeAt(0)
             widget = item.widget()
-            if isinstance(widget, HButton):
-                self.vlayout.removeWidget(widget)
+            if widget is not None:
+                widget.setParent(None)
                 widget.deleteLater()
     
     def set_config(self, config=None):

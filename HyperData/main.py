@@ -8,9 +8,9 @@ from PySide6.QtCore import QThreadPool, Qt, QDir
 from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
 from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
 
-# from plot.plot_view import PlotView, PlotViewMultiFig
+from plot.plot_view import PlotView, PlotViewMultiFig
 from node_editor.node_view import NodeView, NodeUserDefine
-# from node_editor.node_node import Node, Figure2D, Figure3D, MultiFigure, UserDefine
+from node_editor.node_node import Node, Figure2D, Figure3D, MultiFigure, UserDefine
 from window.menu_bar import MenuBar
 from ui.base_widgets.window import FileDialog
 from config.settings import GLOBAL_DEBUG, config, logger
@@ -56,40 +56,40 @@ class Main(QMainWindow):
     def add_node_view (self):
         self.node_view = NodeView(self)
         self.mainlayout.addWidget(self.node_view)
-        # self.node_view.sig.connect(self.node_signal)        
+        self.node_view.sig.connect(self.node_signal)        
         self.mainlayout.setCurrentIndex(0)
     
-    # def node_signal (self, node:Node):
-    #     if isinstance(node.content, (Figure2D)):
-    #         self.to_plot_view(node)
-    #     elif isinstance(node.content, UserDefine):
-    #         self.to_graphics_view(node)
+    def node_signal (self, node:Node):
+        if isinstance(node.content, (Figure2D)):
+            self.to_plot_view(node)
+        elif isinstance(node.content, UserDefine):
+            self.to_graphics_view(node)
     
-    # def to_plot_view (self, node: Node):
-    #     if node.id in self.stack_scene:
-    #         self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
-    #     else:
-    #         if isinstance(node.content, MultiFigure):
-    #             plot_view = PlotViewMultiFig(node, node.content.canvas, self)
-    #         elif isinstance(node.content, Figure3D):
-    #             plot_view = PlotView(node, node.content.canvas, self)
-    #         elif isinstance(node.content, Figure2D):
-    #             plot_view = PlotView(node, node.content.canvas, self)
+    def to_plot_view (self, node: Node):
+        if node.id in self.stack_scene:
+            self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
+        else:
+            if isinstance(node.content, MultiFigure):
+                plot_view = PlotViewMultiFig(node, node.content.canvas, self)
+            elif isinstance(node.content, Figure3D):
+                plot_view = PlotView(node, node.content.canvas, self)
+            elif isinstance(node.content, Figure2D):
+                plot_view = PlotView(node, node.content.canvas, self)
 
-    #         self.stack_scene.append(node.id)
-    #         plot_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
-    #         self.mainlayout.addWidget(plot_view)
-    #         self.mainlayout.setCurrentWidget(plot_view)
+            self.stack_scene.append(node.id)
+            plot_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
+            self.mainlayout.addWidget(plot_view)
+            self.mainlayout.setCurrentWidget(plot_view)
     
-    # def to_graphics_view (self, node: Node):
-    #     if node.id in self.stack_scene:
-    #         self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
-    #     else:
-    #         node_view = NodeUserDefine(main_node=node, parent=self)
-    #         self.mainlayout.addWidget(node_view)
-    #         self.mainlayout.setCurrentWidget(node_view)
-    #         node_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
-    #         self.stack_scene.append(node.id)
+    def to_graphics_view (self, node: Node):
+        if node.id in self.stack_scene:
+            self.mainlayout.setCurrentIndex(self.stack_scene.index(node.id)+1)
+        else:
+            node_view = NodeUserDefine(main_node=node, parent=self)
+            self.mainlayout.addWidget(node_view)
+            self.mainlayout.setCurrentWidget(node_view)
+            node_view.sig_back_to_grScene.connect(lambda: self.mainlayout.setCurrentIndex(0))
+            self.stack_scene.append(node.id)
         
     def keyPressEvent(self, event:QKeyEvent) -> None:
 

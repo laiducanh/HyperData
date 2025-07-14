@@ -2,75 +2,112 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import HToggle
+from ui.base_widgets.button import HToggle, HGroupRadioButton
 from ui.base_widgets.spinbox import HTransparentSpinBox
+from ui.base_widgets.window import Dialog
+from ui.base_widgets.text import TitleLabel, BodyLabel
+from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
-class DataInserter (NodeContentWidget):
-    def __init__(self, node: NodeGraphicsNode, parent=None):
+class DataInserter(NodeContentWidget):
+    def __init__(self, node: NodeGraphicsNode,parent=None):
         super().__init__(node, parent)
-        
+
+        self.node.input_sockets[0].socket_data = list()
         self._config = dict(
+            axis='index',
+            join='outer',
             loc=0,
-            allow_duplicates=True,
+            ignore_index=False,
+            sort=False
         )
     
     def config(self):
-        dialog = Dialog(title="Insert Data", parent=self.parent)
-
+        dialog = Dialog("Configuration", self.parent)
+        dialog.main_layout.addWidget(TitleLabel("Data Insertion"))
+        dialog.main_layout.addWidget(BodyLabel("Insert a DataFrame into another DataFrame at "
+                                               "a specific location along a particular axis"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        axis = HGroupRadioButton(
+            items=["index","columns"], 
+            label='Axis',
+            label2='Choose axis to concatenate along',
+            getter=lambda: self._config['axis'],
+            layout=dialog.main_layout
+        )
+        join = HGroupRadioButton(
+            items=['inner','outer'],
+            label='Join',
+            label2='How to handle indexes on other axis',
+            getter=lambda: self._config['join'],
+            layout=dialog.main_layout
+        )
         loc = HTransparentSpinBox(
-            label="Column index",
+            label="Location",
             label2="Insertion index",
             getter=lambda: self._config["loc"],
             layout=dialog.main_layout
         )
-        try: loc.button.setMaximum(len(self.node.input_sockets[0].socket_data.columns))
-        except: loc.button.setMaximum(0)
-
-        allow_duplicates = HToggle(
-            label="Allow duplicates",
-            label2="If not selected, the execution " \
-            "will raise error if column is already contained in the DataFrame",
-            getter=lambda: self._config["allow_duplicates"],
+        ignore_index = HToggle(
+            label="Do not use the index values along the concatenation axis", 
+            getter=lambda: self._config['ignore_index'],
+            layout=dialog.main_layout
+        )
+        sort = HToggle(
+            label='Sort non-concatenation axis if it is not already aligned',
+            getter=lambda: self._config["sort"],
             layout=dialog.main_layout
         )
 
-        if dialog.exec():
+        if dialog.exec(): 
+            self._config["axis"] = axis.get_value()
+            self._config["join"] = join.get_value()
             self._config["loc"] = loc.button.value()
-            self._config["allow_duplicates"] = allow_duplicates.button.isChecked()
-            self.exec()    
-        
+            self._config["ignore_index"] = ignore_index.get_value()
+            self._config["sort"] = sort.get_value()
+            self.exec()
+    
     def func(self):
         if DEBUG or GLOBAL_DEBUG:
             from sklearn import datasets
             data = datasets.load_iris()
             df = pd.DataFrame(data=data.data, columns=data.feature_names)
             df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            self.node.input_sockets[0].socket_data = df
-            self.node.input_sockets[1].socket_data = df
-            print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
+            self.node.input_sockets[0].socket_data.append(df)
+            self.node.input_sockets[0].socket_data.append(df)
+            print('data in', self.node.input_sockets[0].socket_data)
 
-        try:
-            data = self.node.input_sockets[0].socket_data.copy(deep=True)
-            loc = self._config["loc"]
-            for col in self.node.input_sockets[1].socket_data.columns:
-                data.insert(
-                    value=self.node.input_sockets[1].socket_data[col], 
-                    column=col,
-                    loc=loc,
-                    allow_duplicates=self._config["allow_duplicates"]
+        try: 
+            df1 = self.node.input_sockets[0].socket_data.copy(deep=True)
+            df2 = self.node.input_sockets[1].socket_data.copy(deep=True)
+            loc = self._config['loc']
+            if self._config['axis'] == 'index':
+                top = df1.iloc[:loc]
+                bot = df1.iloc[loc:]
+                data = pd.concat(
+                    objs=[top, df2, bot],
+                    join=self._config['join'],
+                    axis=self._config['axis'],
+                    ignore_index=self._config['ignore_index'],
+                    sort=self._config['sort']
                 )
-                loc += 1
-            
+            else:
+                left = df1.iloc[:, :loc]
+                right = df1.iloc[:, loc:]
+                data = pd.concat(
+                    objs=[left, df2, right],
+                    join=self._config['join'],
+                    axis=self._config['axis'],
+                    ignore_index=self._config['ignore_index'],
+                    sort=self._config['sort']
+                )
+
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            node1 = self.node.input_sockets[0].edges[0].start_socket.node
-            node2 = self.node.input_sockets[1].edges[0].start_socket.node
-            logger.info(f"{self.name} {self.node.id}: insert data from {node2} {node2.id} into {node1} {node1.id} successfully.")
-           
+            logger.info(f"{self.name} {self.node.id}: run successfully.")
+        
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
@@ -78,7 +115,7 @@ class DataInserter (NodeContentWidget):
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
-
+        
         self.node.output_sockets[0].socket_data = data.copy()
         self.data_to_view = data.copy()
 

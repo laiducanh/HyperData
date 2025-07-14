@@ -1,9 +1,10 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy
 from data_processing.data_window import DataSelection
-from ui.base_widgets.button import _TransparentToolButton
+from ui.base_widgets.button import TransparentToolButton
 from ui.base_widgets.menu import Menu, Action
-from ui.base_widgets.line_edit import BodyLabel, _CompleterLineEdit
+from ui.base_widgets.line_edit import CompleterLineEdit
+from ui.base_widgets.text import BodyLabel
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 
 class Widget2D_3input (QWidget):
@@ -36,13 +37,13 @@ class Widget2D_3input (QWidget):
         self.axis_top.triggered.connect(self.choose_axis_top)
         self.x_axis.addActions([self.axis_bottom, self.axis_top])
 
-        self.choose_axis1 = _TransparentToolButton(
+        self.choose_axis1 = TransparentToolButton(
             icon=icon_axisbot if 'axis bottom' in self.axes else icon_axistop,
             menu=self.x_axis,
             layout=layout1
         )
                 
-        self.input1 = _CompleterLineEdit(
+        self.input1 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             setter=self.input_func,
             getter=lambda: self.input[0],
@@ -50,7 +51,7 @@ class Widget2D_3input (QWidget):
         )
         self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data_1 = _TransparentToolButton(
+        self.choose_data_1 = TransparentToolButton(
             icon=icon_open,
             setter=lambda: self.open_data('input 1'),
             layout=layout1
@@ -66,13 +67,13 @@ class Widget2D_3input (QWidget):
         self.axis_right.triggered.connect(self.choose_axis_right)
         self.y_axis.addActions([self.axis_left,self.axis_right])
         
-        self.choose_axis2 = _TransparentToolButton(
+        self.choose_axis2 = TransparentToolButton(
             icon=icon_axisleft if 'axis left' in self.axes else icon_axisright,
             menu=self.y_axis,
             layout=layout2
         )
         
-        self.input2 = _CompleterLineEdit(
+        self.input2 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             getter=lambda: self.input[1],
             setter=self.input_func,
@@ -80,7 +81,7 @@ class Widget2D_3input (QWidget):
         )
         self.input2.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data_2 = _TransparentToolButton(
+        self.choose_data_2 = TransparentToolButton(
             icon=icon_open,
             setter=lambda: self.open_data('input 2'),
             layout=layout2
@@ -90,7 +91,7 @@ class Widget2D_3input (QWidget):
         layout.addLayout(layout3)
 
         layout3.addWidget(BodyLabel("Other"))
-        self.input3 = _CompleterLineEdit(
+        self.input3 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             setter=self.input_func,
             getter=lambda: self.input[2],
@@ -98,7 +99,7 @@ class Widget2D_3input (QWidget):
         )
         self.input3.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data_3 = _TransparentToolButton(
+        self.choose_data_3 = TransparentToolButton(
             icon=icon_open,
             setter=lambda: self.open_data('input 3'),
             layout=layout3
@@ -185,7 +186,7 @@ class Widget3D (QWidget):
 
         layout1.addWidget(BodyLabel('X Axis'))
 
-        self.input1 = _CompleterLineEdit(
+        self.input1 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             setter=self.input_func,
             getter=lambda: self.input[0],
@@ -193,7 +194,7 @@ class Widget3D (QWidget):
         )
         self.input1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data_1 = _TransparentToolButton(
+        self.choose_data_1 = TransparentToolButton(
             icon=icon_open,
             setter=lambda: self.open_data('input 1'),
             layout=layout1
@@ -204,7 +205,7 @@ class Widget3D (QWidget):
 
         layout2.addWidget(BodyLabel('Y Axis'))
         
-        self.input2 = _CompleterLineEdit(
+        self.input2 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             getter=lambda: self.input[1],
             setter=self.input_func,
@@ -212,7 +213,7 @@ class Widget3D (QWidget):
         )
         self.input2.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data_2 = _TransparentToolButton(
+        self.choose_data_2 = TransparentToolButton(
             icon=icon_open,
             setter=lambda: self.open_data('input 2'),
             layout=layout2
@@ -224,7 +225,7 @@ class Widget3D (QWidget):
         layout3.addWidget(BodyLabel('Z Axis'))
 
         layout3.addWidget(BodyLabel("Other"))
-        self.input3 = _CompleterLineEdit(
+        self.input3 = CompleterLineEdit(
             items=node.content.data_to_view.columns.tolist(),
             setter=self.input_func,
             getter=lambda: self.input[2],
@@ -232,7 +233,7 @@ class Widget3D (QWidget):
         )
         self.input3.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.choose_data_3 = _TransparentToolButton(
+        self.choose_data_3 = TransparentToolButton(
             icon=icon_open,
             setter=lambda: self.open_data('input 3'),
             layout=layout3

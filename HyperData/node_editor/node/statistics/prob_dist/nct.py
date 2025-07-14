@@ -1,6 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from node_editor.node.statistics.prob_dist.base import DistBase, ResultDialog
 from scipy.stats._continuous_distns import nct
 
@@ -22,19 +21,19 @@ class NCT (DistBase):
         )
         else: self._config = config
     
-        self.loc = DoubleSpinBox(min=-100000, max=100000, text="Mean")
+        self.loc = HTransparentDoubleSpinBox(minimum=-100000, maximum=100000, label="Mean")
         self.loc.button.setValue(self._config["loc"])
         self.vlayout.addWidget(self.loc)
 
-        self.scale = DoubleSpinBox(min=-100000, max=100000, text="Standard deviation")
+        self.scale = HTransparentDoubleSpinBox(minimum=-100000, maximum=100000, label="Standard deviation")
         self.scale.button.setValue(self._config["scale"])
         self.vlayout.addWidget(self.scale)
 
-        self.df = DoubleSpinBox(text="Degrees of freedom")
+        self.df = HTransparentDoubleSpinBox(label="Degrees of freedom")
         self.df.button.setValue(self._config["df"])
         self.vlayout.addWidget(self.df)
 
-        self.nc = DoubleSpinBox(text="k")
+        self.nc = HTransparentDoubleSpinBox(label="k")
         self.nc.button.setValue(self._config["nc"])
         self.vlayout.addWidget(self.nc)
 

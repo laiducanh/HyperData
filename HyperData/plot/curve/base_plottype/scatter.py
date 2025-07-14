@@ -1,8 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.spinbox import TransparentSpinBox
-from ui.base_widgets.button import Toggle
-from ui.base_widgets.text import TitleLabel
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.spinbox import HTransparentSpinBox
+from ui.base_widgets.button import HToggle
 from matplotlib.collections import PathCollection
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
@@ -24,9 +22,9 @@ class Scatter (PlotConfigBase):
         self.segment.addButton(text='Scatter', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.sizes = TransparentSpinBox(
-            min  = 1, max  = 1000, step = 2,
-            text = "sizes",
+        self.sizes = HTransparentSpinBox(
+            minimum = 1, maximum = 1000, singleStep = 2,
+            label = "sizes",
             getter=self.get_sizes,
             setter=self.set_sizes,
             layout=self.general.addlayout
@@ -64,16 +62,16 @@ class Scatter3D (Scatter):
         self.segment.addButton(text='Scatter', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.depthshade = Toggle(
-            text="Depth Shade",
+        self.depthshade = HToggle(
+            label="Depth Shade",
             getter=self.get_depthshade,
             setter=self.set_depthshade,
             layout=self.general.addlayout
         )
 
-        self.sizes = TransparentSpinBox(
-            min  = 1, max = 1000, step = 2,
-            text = "sizes",
+        self.sizes = HTransparentSpinBox(
+            minimum = 1, maximum = 1000, singleStep = 2,
+            label = "sizes",
             getter=self.get_sizes,
             setter=self.set_sizes,
             layout=self.general.addlayout

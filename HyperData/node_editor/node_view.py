@@ -27,7 +27,7 @@ class NodeView (QMainWindow):
 
         self.parent = parent
         self.nodelist = {
-            "Data Processing": ["Data Reader", "Data Concator", "Data Inserter", "Data Combiner", 
+            "Data Processing": ["Data Reader", "Data Inserter", "Data Combiner", 
                                 "Data Merge", "Data Compare","Data Correlator","Data Locator",
                                 "Data Splitter","Data Filter", "Data Holder","Data Sorter","Data Pivot",
                                 "Data Unpivot","Data Stack","Data Unstack","Data Computation",

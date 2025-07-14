@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QVBoxLayout, QSizePolicy, QDialog
 from plot.canvas import Canvas
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.button import TransparentComboBox
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
-from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.line_edit import HLineEdit
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
+from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import ScrollArea
 from plot.label.base import FontStyle
 from config.settings import font_lib
@@ -23,25 +23,25 @@ class GraphTitle(QDialog):
         scrollarea = ScrollArea()
         layout.addWidget(scrollarea)
 
-        label = LineEdit(
-            text='Label',
+        label = HLineEdit(
+            label='Label',
             getter=self.get_title,
             setter=self.set_title,
             layout=scrollarea.vlayout
         )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        font = TransparentComboBox(
+        font = HTransparentComboBox(
             items = font_lib,
-            text  = 'Font',
+            label  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
             layout=scrollarea.vlayout
         )
 
-        size = TransparentDoubleSpinBox(
-            text = 'Font size',
-            min = 1, max = 100, step = 2,
+        size = HTransparentDoubleSpinBox(
+            label = 'Font size',
+            minimum = 1, maximum = 100, singleStep = 2,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
             layout=scrollarea.vlayout
@@ -53,8 +53,8 @@ class GraphTitle(QDialog):
             layout=scrollarea.vlayout
         )
 
-        color = ColorDropdown(
-            text  = 'Font color',
+        color = HColorDropdown(
+            label  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
             layout=scrollarea.vlayout
@@ -82,9 +82,9 @@ class GraphTitle(QDialog):
         # #pad.button.valueChanged.connect(lambda: self.sig.emit())
         # #layout.addWidget(pad)
 
-        alpha = TransparentDoubleSpinBox(
-            text = 'Transparency',
-            step = 10,
+        alpha = HTransparentDoubleSpinBox(
+            label = 'Transparency',
+            singleStep = 10, minimum = 0, maximum = 100,
             setter=self.set_alpha,
             getter=self.get_alpha,
             layout=scrollarea.vlayout

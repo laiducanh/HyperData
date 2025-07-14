@@ -3,8 +3,8 @@ from node_editor.base.node_graphics_node import NodeGraphicsSocket
 from node_editor.node.misc.executor import Executor
 from node_editor.node.misc.looper import Looper
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import _TransparentComboBox, PushButton, _TransparentToolButton, _TransparentPushButton
-from ui.base_widgets.line_edit import LineEdit, Completer, TextEdit
+from ui.base_widgets.button import TransparentComboBox, TransparentToolButton, TransparentPushButton
+from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
@@ -35,7 +35,7 @@ class UserDefine (NodeContentWidget):
         def changeTitle (title):
             self.node.title = title
             self.node.setTitle()
-        title = LineEdit(text='Card Title')
+        title = HLineEdit(label='Card Title')
         title.button.setText(self._config['title'])
         dialog.main_layout.addWidget(title)
 
@@ -51,7 +51,7 @@ class UserDefine (NodeContentWidget):
         input_socket.addWidget(BodyLabel("Input"))
         socket_layout.addLayout(input_socket)
 
-        add_socket_in = _TransparentPushButton()
+        add_socket_in = TransparentPushButton()
         add_socket_in.setIcon("add.png")
         add_socket_in.clicked.connect(lambda: addSocketIn(len(self.socket_in), 1))
         input_socket.addWidget(add_socket_in)
@@ -62,7 +62,7 @@ class UserDefine (NodeContentWidget):
         output_socket.addWidget(BodyLabel("Output"))
         socket_layout.addLayout(output_socket)
 
-        add_socket_out = _TransparentPushButton()
+        add_socket_out = TransparentPushButton()
         add_socket_out.setIcon("add.png")
         add_socket_out.clicked.connect(lambda: addSocketOut(len(self.socket_out), 3))
         output_socket.addWidget(add_socket_out)
@@ -73,7 +73,7 @@ class UserDefine (NodeContentWidget):
                 self.node.addSocket(index=index, socket_type=socket_type)
                 self.sig_redraw.emit() # fire signal to redraw connection cards
         
-        def removeSocketIn(button:_TransparentComboBox):
+        def removeSocketIn(button:TransparentComboBox):
             index = btn_in.index(button)
             button.parent().deleteLater()
             self.socket_in.pop(index)
@@ -94,14 +94,14 @@ class UserDefine (NodeContentWidget):
             widget.setLayout(layout)
             input_socket.insertWidget(index+1, widget)
 
-            button = _TransparentComboBox(items=["single in", "multiple in"])
+            button = TransparentComboBox(items=["single in", "multiple in"])
             button.setCurrentText("multiple in" if socket_type==MULTI_IN else "single in")
             self.socket_in.append(socket_type)
             btn_in.append(button)
             button.currentTextChanged.connect(lambda text: updateSocketIn(index, text))
             layout.addWidget(button)
 
-            remove_btn = _TransparentToolButton(parent=widget)
+            remove_btn = TransparentToolButton(parent=widget)
             remove_btn.setIcon("close.png")
             remove_btn.setIconSize(QSize(12,12))
             remove_btn.clicked.connect(lambda: removeSocketIn(button))
@@ -113,7 +113,7 @@ class UserDefine (NodeContentWidget):
                 self.node.addSocket(index=index, socket_type=socket_type)
                 self.sig_redraw.emit() # fire signal to redraw connection cards
         
-        def removeSocketOut(button:_TransparentComboBox):
+        def removeSocketOut(button:TransparentComboBox):
             index = btn_out.index(button)
             button.parent().deleteLater()
             self.socket_out.pop(index)
@@ -134,14 +134,14 @@ class UserDefine (NodeContentWidget):
             widget.setLayout(layout)
             output_socket.insertWidget(index+1, widget)
 
-            button = _TransparentComboBox(items=["single out", "multiple out"])
+            button = TransparentComboBox(items=["single out", "multiple out"])
             button.setCurrentText("multiple out" if socket_type==MULTI_OUT else "single out")
             self.socket_out.append(socket_type)
             btn_out.append(button)
             button.currentTextChanged.connect(lambda text: updateSocketOut(index, text))
             layout.addWidget(button)
 
-            remove_btn = _TransparentToolButton(parent=widget)
+            remove_btn = TransparentToolButton(parent=widget)
             remove_btn.setIcon("close.png")
             remove_btn.setIconSize(QSize(12,12))
             remove_btn.clicked.connect(lambda: removeSocketOut(button))

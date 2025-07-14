@@ -1,6 +1,5 @@
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.spinbox import DoubleSpinBox
-from ui.base_widgets.button import ComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from node_editor.node.statistics.prob_dist.base import DistBase, ResultDialog
 from scipy.stats._continuous_distns import truncnorm
 
@@ -22,19 +21,19 @@ class Truncnorm (DistBase):
         )
         else: self._config = config
     
-        self.loc = DoubleSpinBox(min=-100000, max=100000, text="Mean")
+        self.loc = HTransparentDoubleSpinBox(minimum=-100000, maximum=100000, label="Mean")
         self.loc.button.setValue(self._config["loc"])
         self.vlayout.addWidget(self.loc)
 
-        self.scale = DoubleSpinBox(min=-100000, max=100000, text="Standard deviation")
+        self.scale = HTransparentDoubleSpinBox(minimum=-100000, maximum=100000, label="Standard deviation")
         self.scale.button.setValue(self._config["scale"])
         self.vlayout.addWidget(self.scale)
 
-        self.a = DoubleSpinBox(text="a")
+        self.a = HTransparentDoubleSpinBox(label="a")
         self.a.button.setValue(self._config["a"])
         self.vlayout.addWidget(self.a)
 
-        self.b = DoubleSpinBox(text='b')
+        self.b = HTransparentDoubleSpinBox(label='b')
         self.b.button.setValue(self._config["b"])
         self.vlayout.addWidget(self.b)
 

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QLayout
-from ui.base_widgets.button import ComboBox, ToggleToolButton
+from ui.base_widgets.button import TransparentComboBox, ToggleToolButton
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.frame import Frame
 from matplotlib.text import Text
@@ -66,7 +66,7 @@ class FontAlignment(QWidget):
         self.canvas = canvas
 
         layout.addWidget(BodyLabel('Font Alignment'))
-        self.btn = ComboBox()
+        self.btn = TransparentComboBox()
         if self.obj[0].get_rotation() in ['y left','y right']:
             self.btn.addItems(['Bottom','Center','Top'])
         else:

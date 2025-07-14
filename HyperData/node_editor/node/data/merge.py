@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.button import VGroupRadioButton
 from config.settings import logger, GLOBAL_DEBUG
 import pandas as pd
 
@@ -21,7 +21,7 @@ class DataMerge (NodeContentWidget):
     def config(self):
         dialog = Dialog("Merge Data", self.parent)    
   
-        how = HTransparentComboBox(
+        how = VGroupRadioButton(
             label="Merge method",label2="Type of merge to be performed",
             items=["inner","outer","left","right","cross"],
             getter=lambda: self._config["how"],
@@ -29,7 +29,7 @@ class DataMerge (NodeContentWidget):
         )
 
         if dialog.exec():
-            self._config["how"] = how.button.currentText()
+            self._config["how"] = how.get_value()
             self.exec()
 
     def func(self):

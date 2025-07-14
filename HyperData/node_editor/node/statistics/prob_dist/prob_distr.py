@@ -1,7 +1,7 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import PrimaryComboBox, _TransparentPushButton
+from ui.base_widgets.button import HPrimaryComboBox, TransparentPushButton
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
 from PySide6.QtWidgets import QStackedLayout
@@ -138,7 +138,7 @@ class ProbDist (NodeContentWidget):
 
         self.label.hide()
 
-        self.result_btn = _TransparentPushButton()
+        self.result_btn = TransparentPushButton()
         self.result_btn.setText("Result")
         self.result_btn.released.connect(self.result_dialog)
         self.vlayout.insertWidget(2,self.result_btn)
@@ -148,7 +148,7 @@ class ProbDist (NodeContentWidget):
     def initDialog(self):
         self.dialog = Dialog(title="Configuration", parent=self.parent)
 
-        self.test = PrimaryComboBox(items=self.dist_list, text="Distribution")
+        self.test = HPrimaryComboBox(items=self.dist_list, label="Distribution")
         self.test.button.setMinimumWidth(300)
         self.test.button.setCurrentText(self._config["dist"])
         self.test.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.dist_list.index(s)))

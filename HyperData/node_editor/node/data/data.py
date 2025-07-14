@@ -1,5 +1,4 @@
 from node_editor.node.data.compare import DataCompare
-from node_editor.node.data.concator import DataConcator
 from node_editor.node.data.filter import DataFilter
 from node_editor.node.data.holder import DataHolder
 from node_editor.node.data.locator import DataLocator

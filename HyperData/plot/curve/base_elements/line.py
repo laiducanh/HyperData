@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.button import TransparentComboBox, Toggle
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
-from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
+from ui.base_widgets.color import HColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib, marker_lib
 from plot.canvas import Canvas
@@ -18,48 +18,48 @@ class Line(ArtistConfigBase):
     
     def initUI(self):
         
-        self.linestyle = TransparentComboBox(
-            text  = 'Line Style',
+        self.linestyle = HTransparentComboBox(
+            label  = 'Line Style',
             items = linestyle_lib.values(),
             getter=self.get_linestyle,
             setter=self.set_linestyle,
             layout=self.vlayout
         )
 
-        self.capstyle = TransparentComboBox(
-            text  = "Capstyle", 
+        self.capstyle = HTransparentComboBox(
+            label  = "Capstyle", 
             items = ['butt', 'projecting', 'round'],
             setter=self.set_capstyle,
             getter=self.get_capstyle,
             layout=self.vlayout
         )
         
-        self.joinstyle = TransparentComboBox(
-            text  = "Joinstyle", 
+        self.joinstyle = HTransparentComboBox(
+            label  = "Joinstyle", 
             items = ['miter', 'round', 'bevel'],
             setter=self.set_joinstyle,
             getter=self.get_joinstyle,
             layout=self.vlayout
         )
 
-        self.linewidth = TransparentDoubleSpinBox(
-            text = 'Line Width',
-            min = 0, max = 10, step = 0.5,
+        self.linewidth = HTransparentDoubleSpinBox(
+            label = 'Line Width',
+            minimum = 0, maximum = 10, singleStep = 0.5,
             getter=self.get_linewidth,
             setter=self.set_linewidth,
             layout=self.vlayout
         )
 
-        self.color = ColorDropdown(
-            text  = 'Line Color',
+        self.color = HColorDropdown(
+            label  = 'Line Color',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min = 0, max = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.vlayout
@@ -169,39 +169,39 @@ class Marker(ArtistConfigBase):
     
     def initUI(self):
 
-        self.marker = TransparentComboBox(
-            text  = 'Marker Style',
+        self.marker = HTransparentComboBox(
+            label  = 'Marker Style',
             items = marker_lib.values(),
             getter=self.get_marker,
             setter=self.set_marker,
             layout=self.vlayout
         )
 
-        self.markersize = TransparentDoubleSpinBox(
-            text = 'Marker Size',
-            min = 0, step = 2,
+        self.markersize = HTransparentDoubleSpinBox(
+            label = 'Marker Size',
+            minimum = 0, singleStep = 2,
             getter=self.get_markersize,
             setter=self.set_markersize,
             layout=self.vlayout
         )
 
-        self.markeredgewidth = TransparentDoubleSpinBox(
-            text = 'Marker Edge Width',
-            min = 0, max = 5, step = 0.5,
+        self.markeredgewidth = HTransparentDoubleSpinBox(
+            label = 'Marker Edge Width',
+            minimum = 0, maximum = 5, singleStep = 0.5,
             getter=self.get_markeredgewidth,
             setter=self.set_markeredgewidth,
             layout=self.vlayout
         )
 
-        self.markerfacecolor = ColorDropdown(
-            text  = 'Marker Face Color',
+        self.markerfacecolor = HColorDropdown(
+            label  = 'Marker Face Color',
             getter=self.get_markerfacecolor,
             setter=self.set_markerfacecolor,
             layout=self.vlayout
         )
 
-        self.markeredgecolor = ColorDropdown(
-            text  = 'Marker Edge Color',
+        self.markeredgecolor = HColorDropdown(
+            label  = 'Marker Edge Color',
             getter=self.get_markeredgecolor,
             setter=self.set_markeredgecolor,
             layout=self.vlayout
@@ -286,31 +286,31 @@ class LineCollection(ArtistConfigBase):
     
     def initUI(self):
 
-        self.visible = Toggle(
-            text="Visible",
+        self.visible = HToggle(
+            label="Visible",
             getter=self.get_visible,
             setter=self.set_visible,
             layout=self.vlayout
         )
 
-        self.linewidth = TransparentDoubleSpinBox(
-            text = 'Line Width',
-            min = 0, max = 10, step = 0.5,
+        self.linewidth = HTransparentDoubleSpinBox(
+            label = 'Line Width',
+            minimum = 0, maximum = 10, singleStep = 0.5,
             getter=self.get_linewidth,
             setter=self.set_linewidth,
             layout=self.vlayout
         )
 
-        self.color = ColorDropdown(
-            text  = 'Line Color',
+        self.color = HColorDropdown(
+            label  = 'Line Color',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min = 0, max = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.vlayout

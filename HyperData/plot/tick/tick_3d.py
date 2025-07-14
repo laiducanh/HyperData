@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import  QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
-from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
-from ui.base_widgets.color import ColorDropdown
-from ui.base_widgets.line_edit import LineEdit
+from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
+from ui.base_widgets.color import HColorDropdown
+from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import ScrollArea, SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from plot.utilis import find_mpl_object
@@ -27,34 +27,34 @@ class TickBase(ScrollArea):
     
     def initUI(self):
         
-        visible = Toggle(
-            text  = "Visible",
-            text2 = f"Toggle {self.axis} ticks' visibility",
+        visible = HToggle(
+            label  = "Visible",
+            label2 = f"Toggle {self.axis} ticks' visibility",
             setter=self.set_visible,
             getter=self.get_visible,
             layout=self.vlayout
         )
 
-        self.min = LineEdit(
-            text  = "Min Value",
-            text2 = f"Set {self.axis} axis view minimum",
+        self.min = HLineEdit(
+            label  = "Min Value",
+            label2 = f"Set {self.axis} axis view minimum",
             setter=self.set_min,
             getter=self.get_min,
             layout=self.vlayout
         )
 
-        self.max = LineEdit(
-            text  = 'Max Value',
-            text2 = f"Set {self.axis} axis view maximum",
+        self.max = HLineEdit(
+            label  = 'Max Value',
+            label2 = f"Set {self.axis} axis view maximum",
             setter=self.set_max,
             getter=self.get_max,
             layout=self.vlayout
         )
 
-        scale = TransparentComboBox(
+        scale = HTransparentComboBox(
             items = ['linear','log','symlog','logit','asinh'],
-            text  = 'Scale',
-            text2 = f"Set {self.axis} axis' scale",
+            label  = 'Scale',
+            label2 = f"Set {self.axis} axis' scale",
             setter=self.set_scale,
             getter=self.get_scale,
             layout=self.vlayout
@@ -139,54 +139,54 @@ class SpineBase(ScrollArea):
 
     def initUI(self):
         
-        visible = Toggle(
-            text='Spine visible',
+        visible = HToggle(
+            label='Spine visible',
             setter=self.set_visible,
             getter=self.get_visible,
             layout=self.vlayout
         )
 
-        arrow = TransparentComboBox(
-            text  = 'Arrow Style',
+        arrow = HTransparentComboBox(
+            label  = 'Arrow Style',
             items = marker_lib.values(),
             setter=self.set_arrow,
             getter=self.get_arrow,
             layout=self.vlayout
         )
 
-        color = ColorDropdown(
-            text='Spine color',
+        color = HColorDropdown(
+            label='Spine color',
             setter=self.set_color,
             getter=self.get_color,
             layout=self.vlayout
         )
         
-        arrowcolor = ColorDropdown(
-            text="Arrow color",
+        arrowcolor = HColorDropdown(
+            label="Arrow color",
             setter=self.set_arrowcolor,
             getter=self.get_arrowcolor,
             layout=self.vlayout
         )
 
-        alpha = TransparentDoubleSpinBox(
-            text ='Transparent',
-            min = 0, max = 100, step = 10,
+        alpha = HTransparentDoubleSpinBox(
+            label ='Transparent',
+            minimum = 0, maximum = 100, singleStep = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
             layout=self.vlayout
         )
 
-        linestyle = TransparentComboBox(
-            text  = 'Line style',
+        linestyle = HTransparentComboBox(
+            label  = 'Line style',
             items = linestyle_lib.values(),
             setter=self.set_linestyle,
             getter=self.get_linestyle,
             layout=self.vlayout
         )
 
-        linewidth = TransparentDoubleSpinBox(
-            text = 'Line width',
-            min = 0, max = 20, step = 0.5,
+        linewidth = HTransparentDoubleSpinBox(
+            label = 'Line width',
+            minimum = 0, maximum = 20, singleStep = 0.5,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
             layout=self.vlayout
@@ -268,25 +268,25 @@ class AxisLabel(ScrollArea):
     
     def initUI(self):
 
-        label = LineEdit(
-            text='Label',
+        label = HLineEdit(
+            label='Label',
             getter=self.get_label,
             setter=self.set_label,
             layout=self.vlayout
         )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        font = TransparentComboBox(
+        font = HTransparentComboBox(
             items = font_lib,
-            text  = 'Font',
+            label  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
             layout=self.vlayout
         )
 
-        size = TransparentDoubleSpinBox(
-            text = 'Font size',
-            min = 1, max = 100, step = 1,
+        size = HTransparentDoubleSpinBox(
+            label = 'Font size',
+            minimum = 1, maximum = 100, singleStep = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
             layout=self.vlayout
@@ -298,30 +298,30 @@ class AxisLabel(ScrollArea):
             layout=self.vlayout
         )
 
-        color = ColorDropdown(
-            text  = 'Font color',
+        color = HColorDropdown(
+            label  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
         )
 
-        self.backgroundcolor = ColorDropdown(
-            text  = 'Background color',
+        self.backgroundcolor = HColorDropdown(
+            label  = 'Background color',
             getter=self.get_backgroundcolor,
             setter=self.set_backgroundcolor,
             layout=self.vlayout
         )
 
-        edgecolor = ColorDropdown(
-            text  = 'Edge color',
+        edgecolor = HColorDropdown(
+            label  = 'Edge color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
             layout=self.vlayout
         )
 
-        alpha = TransparentDoubleSpinBox(
-            text = 'Transparency',
-            step = 10,
+        alpha = HTransparentDoubleSpinBox(
+            label = 'Transparency',
+            singleStep = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
             layout=self.vlayout

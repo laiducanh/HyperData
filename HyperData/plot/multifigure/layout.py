@@ -3,8 +3,8 @@ from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout
 from plot.canvas import Canvas
 from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.button import _TransparentComboBox, _TransparentPushButton, _PrimaryComboBox
-from ui.base_widgets.spinbox import TransparentSpinBox
+from ui.base_widgets.button import TransparentComboBox, TransparentPushButton, PrimaryComboBox
+from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.frame import Frame, ScrollArea
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
@@ -29,7 +29,7 @@ class SubFigure(Frame):
 
         hlayout1.addWidget(TitleLabel(f"Subfigure {subfig_idx+1}"))
         hlayout1.addStretch()
-        self.fig = _PrimaryComboBox()
+        self.fig = PrimaryComboBox()
         self.fig.setMinimumWidth(150)
         self.fig.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout1.addWidget(self.fig)
@@ -39,12 +39,12 @@ class SubFigure(Frame):
 
         hlayout2.addWidget(BodyLabel("Row"))
         hlayout2.addStretch()
-        self.row1 = _TransparentComboBox()
+        self.row1 = TransparentComboBox()
         self.row1.setMinimumWidth(100)
         self.row1.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout2.addWidget(self.row1)
         hlayout2.addWidget(BodyLabel("\u2192"))
-        self.row2 = _TransparentComboBox()
+        self.row2 = TransparentComboBox()
         self.row2.setMinimumWidth(100)
         self.row2.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout2.addWidget(self.row2)
@@ -54,12 +54,12 @@ class SubFigure(Frame):
 
         hlayout3.addWidget(BodyLabel("Column"))
         hlayout3.addStretch()
-        self.col1 = _TransparentComboBox()
+        self.col1 = TransparentComboBox()
         self.col1.setMinimumWidth(100)
         self.col1.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout3.addWidget(self.col1)
         hlayout3.addWidget(BodyLabel("\u2192"))
-        self.col2 = _TransparentComboBox()
+        self.col2 = TransparentComboBox()
         self.col2.setMinimumWidth(100)
         self.col2.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout3.addWidget(self.col2)
@@ -122,22 +122,22 @@ class Layout(ScrollArea):
         self.vlayout.addWidget(TitleLabel("Grid"))
         self.vlayout.addWidget(SeparateHLine())
 
-        self.rows = TransparentSpinBox(
-            text="Rows", 
-            min=1,
+        self.rows = HTransparentSpinBox(
+            label="Rows", 
+            minimum=1,
             setter=self.update_layout,
             layout=self.vlayout
         )
 
-        self.cols = TransparentSpinBox(
-            text="Columns", 
-            min=1,
+        self.cols = HTransparentSpinBox(
+            label="Columns", 
+            minimum=1,
             setter=self.update_layout,
             layout=self.vlayout
         )
 
         self.vlayout.addWidget(SeparateHLine())
-        add_btn = _TransparentPushButton()
+        add_btn = TransparentPushButton()
         add_btn.setIcon("add.png")
         add_btn.pressed.connect(self.add_subfigure)
         self.vlayout.addWidget(add_btn)

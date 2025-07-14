@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.line_edit import LineEdit
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
-from ui.base_widgets.button import TransparentComboBox, Toggle
-from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.line_edit import HLineEdit
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from plot.insert_plot.insert_plot import NewPlot
@@ -32,25 +32,25 @@ class Column(PlotConfigBase):
         self.segment.addButton(text='Connecting lines', func=lambda: self.stackedlayout.setCurrentIndex(2))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label  = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
         )
 
-        self.bottom = LineEdit(
-            text="Bottom",
+        self.bottom = HLineEdit(
+            label="Bottom",
             getter=self.get_bottom,
             layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
-        self.barwidth = TransparentDoubleSpinBox(
-            text = 'Column Width',
-            min  = 0, max  = 5, step = 0.1,
+        self.barwidth = HTransparentDoubleSpinBox(
+            label = 'Column Width',
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
             layout=self.general.addlayout
@@ -113,47 +113,47 @@ class Column3D(PlotConfigBase):
         self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["x","y","z"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
         )
 
-        self.bottom = LineEdit(
-            text="Bottom",
+        self.bottom = HLineEdit(
+            label="Bottom",
             getter=self.get_bottom,
             layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
-        self.dx = TransparentDoubleSpinBox(
-            text = 'Dx',
-            min  = 0, max  = 5, step = 0.1,
+        self.dx = HTransparentDoubleSpinBox(
+            label = 'Dx',
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_dx,
             setter=self.set_dx,
             layout=self.general.addlayout
         )
 
-        self.dy = TransparentDoubleSpinBox(
-            text = "Dy",
-            min  = 0, max  = 5, step = 0.1,
+        self.dy = HTransparentDoubleSpinBox(
+            label = "Dy",
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_dy,
             setter=self.set_dy,
             layout=self.general.addlayout
         )
 
-        self.color = ColorDropdown(
-            text  = "Color", 
+        self.color = HColorDropdown(
+            label = "Color", 
             getter=self.get_color,
             setter=self.set_color,
             layout=self.general.addlayout
         )
 
-        self.shade = Toggle(
-            text="Shade",
+        self.shade = HToggle(
+            label="Shade",
             getter=self.get_shade,
             setter=self.set_shade,
             layout=self.general.addlayout
@@ -246,16 +246,16 @@ class Dot(PlotConfigBase):
         self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
         )
 
-        self.bottom = LineEdit(
-            text="Bottom",
+        self.bottom = HLineEdit(
+            label="Bottom",
             getter=self.get_bottom,
             layout=self.general.addlayout
         )
@@ -266,9 +266,9 @@ class Dot(PlotConfigBase):
         marker.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(marker)
 
-        alpha = TransparentSpinBox(
-            text = 'Transparent',
-            step = 10,
+        alpha = HTransparentSpinBox(
+            label = 'Transparent',
+            singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=marker.vlayout
@@ -322,33 +322,33 @@ class ClusteredColumn(Column):
         self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
         )
 
-        self.bottom = LineEdit(
-            text="Bottom",
+        self.bottom = HLineEdit(
+            label="Bottom",
             getter=self.get_bottom,
             layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
-        self.barwidth = TransparentDoubleSpinBox(
-            text = 'Bar Width',
-            min  = 0, max  = 5, step = 0.1,
+        self.barwidth = HTransparentDoubleSpinBox(
+            label = 'Bar Width',
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
             layout=self.general.addlayout
         )
 
-        self.distance = TransparentSpinBox(
-            min  = 0,
-            max  = 100, step = 10, text = "Distance",
+        self.distance = HTransparentSpinBox(
+            minimum = 0, maximum = 100, singleStep = 10, 
+            label = "Distance",
             getter=self.get_distance,
             setter=self.set_distance,
             layout=self.general.addlayout
@@ -376,25 +376,25 @@ class ClusteredDot(Dot):
         self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
         )
 
-        self.bottom = LineEdit(
-            text="Bottom",
+        self.bottom = HLineEdit(
+            label="Bottom",
             getter=self.get_bottom,
             layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
-        self.distance = TransparentSpinBox(
-            min  = 0, max  = 100, step = 10,
-            text = "Distance",
+        self.distance = HTransparentSpinBox(
+            minimum = 0, maximum = 100, singleStep = 10,
+            label = "Distance",
             getter=self.get_distance,
             setter=self.set_distance,
             layout=self.general.addlayout
@@ -404,9 +404,9 @@ class ClusteredDot(Dot):
         marker.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(marker)
 
-        alpha = TransparentSpinBox(
-            text = 'Transparent',
-            step = 10,
+        alpha = HTransparentSpinBox(
+            label = 'Transparent',
+            singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=marker.vlayout
@@ -441,9 +441,9 @@ class Dumbbell(PlotConfigBase):
         self.segment.setCurrentIndex(0)
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
@@ -485,9 +485,9 @@ class Marimekko(PlotConfigBase):
         self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
@@ -525,31 +525,31 @@ class Treemap (PlotConfigBase):
         self.segment.addButton(text='Column', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
 
-        self.rounded = TransparentDoubleSpinBox(
-            text="Rounding factor",
+        self.rounded = HTransparentDoubleSpinBox(
+            label="Rounding factor",
             getter=self.get_rounded,
             setter=self.set_rounded,
             layout=self.general.addlayout
         )
 
-        self.pad = TransparentDoubleSpinBox(
-            min  = 0, max  = 20, step = 0.5,
-            text = "Padding",
+        self.pad = HTransparentDoubleSpinBox(
+            minimum = 0, maximum = 20, singleStep = 0.5,
+            label = "Padding",
             getter=self.get_pad,
             setter=self.set_pad,
             layout=self.general.addlayout
         )
 
-        self.cmap_on = Toggle(
-            text="Use colormap",
+        self.cmap_on = HToggle(
+            label="Use colormap",
             getter=self.get_cmap_on,
             setter=self.set_cmap_on,
             layout=self.general.addlayout
         )
 
-        self.cmap = TransparentComboBox(
+        self.cmap = HTransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap",
+            label = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
             layout=self.general.addlayout
@@ -619,25 +619,25 @@ class WaterFall (PlotConfigBase):
         self.segment.addButton(text='Connecting lines', func=lambda: self.stackedlayout.setCurrentIndex(3))
         self.segment.setCurrentIndex(0)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
         )
 
-        self.bottom = LineEdit(
-            text="Bottom",
+        self.bottom = HLineEdit(
+            label="Bottom",
             getter=self.get_bottom,
             layout=self.general.addlayout
         )
         self.bottom.button.setFixedWidth(150)
         self.bottom.button.returnPressed.connect(lambda: self.set_bottom(self.bottom.button.text()))
 
-        self.barwidth = TransparentDoubleSpinBox(
-            text = 'Bar Width',
-            min  = 0, max  = 5, step = 0.1,
+        self.barwidth = HTransparentDoubleSpinBox(
+            label = 'Bar Width',
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_barwidth,
             setter=self.set_barwidth,
             layout=self.general.addlayout

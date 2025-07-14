@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.spinbox import TransparentSpinBox
-from ui.base_widgets.button import TransparentComboBox, Toggle
+from ui.base_widgets.spinbox import HTransparentSpinBox
+from ui.base_widgets.button import HTransparentComboBox, HToggle
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from plot.insert_plot.insert_plot import NewPlot
@@ -42,32 +42,32 @@ class Contour (PlotConfigBase):
         self.segment.addButton(text='Line', func=lambda: self.stackedlayout.setCurrentIndex(1))
         self.segment.setCurrentIndex(0)
         
-        self.fillmesh = Toggle(
-            text="Fill Color",
+        self.fillmesh = HToggle(
+            label="Fill Color",
             getter=self.get_fillmesh,
             setter=self.set_fillmesh,
             layout=self.general.addlayout
         )
 
-        self.cmap = TransparentComboBox(
+        self.cmap = HTransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap",
+            label  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
             layout=self.general.addlayout
         )
 
-        self.norm = TransparentComboBox(
+        self.norm = HTransparentComboBox(
             items = ['linear', 'log', 'logit', 'symlog','asinh'], 
-            text = "Norm",
+            label = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
             layout=self.general.addlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min  = 0, max  = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.general.addlayout

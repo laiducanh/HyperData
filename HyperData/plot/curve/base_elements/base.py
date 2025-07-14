@@ -1,5 +1,4 @@
 from PySide6.QtCore import QTimer, Signal
-from PySide6.QtWidgets import QWidget
 from ui.base_widgets.frame import ScrollArea
 from plot.canvas import Canvas
 

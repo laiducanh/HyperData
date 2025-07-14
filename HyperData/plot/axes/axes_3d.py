@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QDialog, QStackedLayout
-from ui.base_widgets.button import TransparentComboBox, Toggle, SegmentedWidget
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
-from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
+from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import ScrollArea, SeparateHLine
 from ui.base_widgets.text import TitleLabel
 from plot.canvas import Canvas3D
@@ -17,37 +17,37 @@ class Margin3D(ScrollArea):
 
         self.canvas = canvas
 
-        top = TransparentDoubleSpinBox(
-            text  = 'Margin top',
-            text2 = "The position of the top edge",
-            min = 0, max = 1, step = 0.05,
+        top = HTransparentDoubleSpinBox(
+            label  = 'Margin top',
+            label2 = "The position of the top edge",
+            minimum = 0, maximum = 1, singleStep = 0.05,
             getter=self.get_top,
             setter=self.set_top,
             layout=self.vlayout
         )
 
-        bottom = TransparentDoubleSpinBox(
-            text  = 'Margin bottom',
-            text2 = 'The position of the bottom edge',
-            min = 0, max = 1, step = 0.05,
+        bottom = HTransparentDoubleSpinBox(
+            label  = 'Margin bottom',
+            label2 = 'The position of the bottom edge',
+            minimum = 0, maximum = 1, singleStep = 0.05,
             getter=self.get_bottom,
             setter=self.set_bottom,
             layout=self.vlayout
         )
 
-        left = TransparentDoubleSpinBox(
-            text  = 'Margin left',
-            text2 ='The position of the left edge',
-            min = 0, max = 1, step = 0.05,
+        left = HTransparentDoubleSpinBox(
+            label  = 'Margin left',
+            label2 ='The position of the left edge',
+            minimum = 0, maximum = 1, singleStep = 0.05,
             setter=self.set_left,
             getter=self.get_left,
             layout=self.vlayout
         )
 
-        right = TransparentDoubleSpinBox(
-            text  = 'Margin right',
-            text2 = 'The position of the right edge',
-            min = 0, max = 1, step = 0.05,
+        right = HTransparentDoubleSpinBox(
+            label  = 'Margin right',
+            label2 = 'The position of the right edge',
+            minimum = 0, maximum = 1, singleStep = 0.05,
             setter=self.set_right,
             getter=self.get_right,
             layout=self.vlayout
@@ -91,27 +91,27 @@ class Grid3D(ScrollArea):
         elif axis == 'YZ Pane': self.axinfo = self.canvas.axes.xaxis._axinfo['grid']
         elif axis == 'XZ Pane': self.axinfo = self.canvas.axes.yaxis._axinfo['grid']
 
-        self.linewidth = TransparentDoubleSpinBox(
-            text  = 'Line Width',
-            text2 = 'Set the width of the grid lines',
-            min = 0, max = 10, step = 1,
+        self.linewidth = HTransparentDoubleSpinBox(
+            label  = 'Line Width',
+            label2 = 'Set the width of the grid lines',
+            minimum = 0, maximum = 10, singleStep = 1,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
             layout=self.vlayout
         )
 
-        self.linestyle = TransparentComboBox(
-            text  = 'Line Style',
-            text2 = 'Set the style of the grid lines',
+        self.linestyle = HTransparentComboBox(
+            label  = 'Line Style',
+            label2 = 'Set the style of the grid lines',
             items = linestyle_lib.values(),
             getter=self.get_linestyle,
             setter=self.set_linestyle,
             layout=self.vlayout
         )
 
-        self.color = ColorDropdown(
-            text  = 'Line Color',
-            text2 = 'Set the color of the grid',
+        self.color = HColorDropdown(
+            label  = 'Line Color',
+            label2 = 'Set the color of the grid',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
@@ -149,26 +149,26 @@ class Pane3D(ScrollArea):
         elif axis == 'XZ Pane': self.axis = self.canvas.axes.yaxis.pane
         elif axis == 'YZ Pane': self.axis = self.canvas.axes.xaxis.pane
 
-        self.visible = Toggle(
-            text  = 'Visible',
-            text2 = 'Whether to show the color',
+        self.visible = HToggle(
+            label  = 'Visible',
+            label2 = 'Whether to show the color',
             setter=self.set_visible,
             getter=self.get_visible,
             layout=self.vlayout
         )
 
-        self.facecolor = ColorDropdown(
-            text  = 'Color',
-            text2 = 'Set the color of the Pane',
+        self.facecolor = HColorDropdown(
+            label  = 'Color',
+            label2 = 'Set the color of the Pane',
             getter=self.get_color,
             setter=self.set_color,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentDoubleSpinBox(
-            text  = 'Transparency',
-            text2 = 'Set the transparency of the Pane',
-            step  = 10,
+        self.alpha = HTransparentDoubleSpinBox(
+            label  = 'Transparency',
+            label2 = 'Set the transparency of the Pane',
+            singleStep  = 10, minimum = 0, maximum = 100,
             setter=self.set_patch_alpha,
             getter=self.get_patch_alpha,
             layout=self.vlayout
@@ -238,34 +238,34 @@ class View3D(QDialog):
         scrollarea.vlayout.addWidget(TitleLabel('View'))
         scrollarea.vlayout.addWidget(SeparateHLine())
 
-        self.elev = TransparentDoubleSpinBox(
-            min=-360, max=360, step=10,
-            text='Elevation angle',
+        self.elev = HTransparentDoubleSpinBox(
+            minimum=-360, maximum=360, singleStep=10,
+            label='Elevation angle',
             getter=lambda: self.canvas.axes.elev,
             setter=self.set_view,
             layout=scrollarea.vlayout
         )
 
-        self.azim = TransparentDoubleSpinBox(
-            min=-360, max=360, step=10,
-            text='Azimuthal angle',
+        self.azim = HTransparentDoubleSpinBox(
+            minimum=-360, maximum=360, singleStep=10,
+            label='Azimuthal angle',
             getter=lambda: self.canvas.axes.azim,
             setter=self.set_view,
             layout=scrollarea.vlayout
         )
 
-        self.roll = TransparentDoubleSpinBox(
-            min=-360, max=360, step=10,
-            text='Roll angle',
+        self.roll = HTransparentDoubleSpinBox(
+            minimum=-360, maximum=360, singleStep=10,
+            label='Roll angle',
             getter=lambda: self.canvas.axes.roll,
             setter=self.set_view,
             layout=scrollarea.vlayout
         )     
 
-        self.vertical_axis = TransparentComboBox(
+        self.vertical_axis = HTransparentComboBox(
             items=["x","y","z"],
-            text='Vertical axis',
-            text2='Azimuthal angle rotates about this axis',
+            label='Vertical axis',
+            label2='Azimuthal angle rotates about this axis',
             setter=self.set_view,
             getter=lambda: ["x","y","z"][self.canvas.axes._vertical_axis],
             layout=scrollarea.vlayout
@@ -274,19 +274,19 @@ class View3D(QDialog):
         scrollarea.vlayout.addWidget(TitleLabel('Projection'))
         scrollarea.vlayout.addWidget(SeparateHLine())
 
-        self.proj_type = TransparentComboBox(
+        self.proj_type = HTransparentComboBox(
             items=["persp","ortho"],
-            text='Projection type',
-            text2='Set the projection type',
+            label='Projection type',
+            label2='Set the projection type',
             setter=self.set_proj_type,
             getter=self.get_proj_type,
             layout=scrollarea.vlayout
         ) 
 
-        self.focal_length = TransparentDoubleSpinBox(
-            min=1, max=1000, step=1,
-            text='Focal length',
-            text2="Focal length of the virtual camera used for a projection type of 'persp'",
+        self.focal_length = HTransparentDoubleSpinBox(
+            minimum=1, maximum=1000, singleStep=1,
+            label='Focal length',
+            label2="Focal length of the virtual camera used for a projection type of 'persp'",
             setter=self.set_proj_type,
             getter=self.get_focal_length,
             layout=scrollarea.vlayout

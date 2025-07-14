@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout
-from ui.base_widgets.button import TransparentComboBox, Toggle
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox, TransparentSpinBox
-from ui.base_widgets.color import ColorDropdown
+from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
+from ui.base_widgets.color import HColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from plot.canvas import Canvas
@@ -22,39 +22,39 @@ class SingleColorCollection(ArtistConfigBase):
 
     def initUI(self):
 
-        self.edgewidth = TransparentDoubleSpinBox(
-            text = 'Edge Width',
-            min = 0, max = 5, step = 0.1,
+        self.edgewidth = HTransparentDoubleSpinBox(
+            label = 'Edge Width',
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
             layout=self.vlayout
         )
 
-        self.edgestyle = TransparentComboBox(
-            text  = 'Edge Style',
+        self.edgestyle = HTransparentComboBox(
+            label  = 'Edge Style',
             items = linestyle_lib.values(),
             getter=self.get_edgestyle,
             setter=self.set_edgestyle,
             layout=self.vlayout
         )
 
-        self.facecolor = ColorDropdown(
-            text  = 'Face Color',
+        self.facecolor = HColorDropdown(
+            label  = 'Face Color',
             getter=self.get_facecolor,
             setter=self.set_facecolor,
             layout=self.vlayout
         )
 
-        self.edgecolor = ColorDropdown(
-            text  = 'Edge Color',
+        self.edgecolor = HColorDropdown(
+            label  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min = 0, max = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.vlayout
@@ -150,62 +150,62 @@ class CmapCollection(ArtistConfigBase):
 
     def initUI(self):
 
-        self.edgewidth = TransparentDoubleSpinBox(
-            text = 'Edge Width'
-            ,min = 0, max = 5, step = 0.1,
+        self.edgewidth = HTransparentDoubleSpinBox(
+            label = 'Edge Width',
+            minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
             layout=self.vlayout
         )
 
-        self.edgestyle = TransparentComboBox(
-            text  = 'Edge Style',
+        self.edgestyle = HTransparentComboBox(
+            label  = 'Edge Style',
             items = linestyle_lib.values(),
             getter=self.get_edgestyle,
             setter=self.set_edgestyle,
             layout=self.vlayout
         )
 
-        self.cmap_on = Toggle(
-            text="Colormap On",
+        self.cmap_on = HToggle(
+            label="Colormap On",
             getter=self.get_cmap_on,
             setter=self.set_cmap_on,
             layout=self.vlayout
         )
 
-        self.cmap = TransparentComboBox(
+        self.cmap = HTransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap",
+            label  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
             layout=self.vlayout
         )
 
-        self.norm = TransparentComboBox(
+        self.norm = HTransparentComboBox(
             items = ['linear', 'log', 'logit', 'symlog','asinh'], 
-            text  = "Norm",
+            label  = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
             layout=self.vlayout
         )
 
-        self.facecolor = ColorDropdown(
-            text  = 'Face Color',
+        self.facecolor = HColorDropdown(
+            label  = 'Face Color',
             getter=self.get_facecolor,
             setter=self.set_facecolor,
             layout=self.vlayout
         )
 
-        self.edgecolor = ColorDropdown(
-            text  = 'Edge Color',
+        self.edgecolor = HColorDropdown(
+            label  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min = 0, max = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.vlayout
@@ -343,9 +343,9 @@ class QuadMesh(ArtistConfigBase):
 
     def initUI(self):
 
-        self.edgewidth = TransparentDoubleSpinBox(
-            text = 'Edge Width',
-            min  = 0, max  = 5, step = 0.1,
+        self.edgewidth = HTransparentDoubleSpinBox(
+            label = 'Edge Width',
+            minimum  = 0, maximum  = 5, singleStep = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
             layout=self.vlayout
@@ -360,32 +360,32 @@ class QuadMesh(ArtistConfigBase):
         #     layout=self.mainlayout
         # )
 
-        self.edgecolor = ColorDropdown(
-            text  = 'Edge Color',
+        self.edgecolor = HColorDropdown(
+            label  = 'Edge Color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
             layout=self.vlayout
         )
 
-        self.cmap = TransparentComboBox(
+        self.cmap = HTransparentComboBox(
             items = colormaps(), 
-            text  = "Colormap",
+            label  = "Colormap",
             getter=self.get_cmap,
             setter=self.set_cmap,
             layout=self.vlayout
         )
 
-        self.norm = TransparentComboBox(
+        self.norm = HTransparentComboBox(
             items = ['linear', 'log', 'logit', 'symlog','asinh'], 
-            text  = "Norm",
+            label = "Norm",
             getter=self.get_norm,
             setter=self.set_norm,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min  = 0, max  = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum  = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.vlayout
@@ -500,17 +500,17 @@ class Poly3DCollection(ArtistConfigBase):
 
     def initUI(self):
 
-        self.zsort = TransparentComboBox(
+        self.zsort = HTransparentComboBox(
             items = ["average","min","max"], 
-            text  = "Zsort",
+            label  = "Zsort",
             getter=self.get_zsort,
             setter=self.set_zsort,
             layout=self.vlayout
         )
 
-        self.alpha = TransparentSpinBox(
-            text = 'Transparency',
-            min  = 0, max  = 100, step = 10,
+        self.alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            minimum  = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=self.vlayout

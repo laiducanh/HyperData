@@ -1,6 +1,6 @@
 from plot.curve.base_elements import line
-from ui.base_widgets.button import TransparentComboBox
-from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from matplotlib.collections import Collection
 from matplotlib import lines, collections
 from plot.insert_plot.insert_plot import NewPlot
@@ -36,9 +36,9 @@ class Step (PlotConfigBase):
         self.segment.addButton(text='Marker', func=lambda: self.stackedlayout.setCurrentIndex(2))
         self.segment.setCurrentIndex(0)
 
-        self.where = TransparentComboBox(
+        self.where = HTransparentComboBox(
             items=['pre', 'post', 'mid'], 
-            text="Where",
+            label="Where",
             getter=self.get_where,
             setter=self.set_where,
             layout=self.general.addlayout
@@ -86,9 +86,9 @@ class Stem (PlotConfigBase):
         self.stemline.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(self.stemline)
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items = ["vertical","horizontal"],
-            text  = "Orientation",
+            label = "Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
         )
@@ -98,8 +98,8 @@ class Stem (PlotConfigBase):
         line2d.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(line2d)
 
-        self.bottom = TransparentDoubleSpinBox(
-            text="Bottom",
+        self.bottom = HTransparentDoubleSpinBox(
+            label="Bottom",
             getter=self.get_bottom,
             setter=self.set_bottom,
         )
@@ -162,17 +162,17 @@ class Area (PlotConfigBase):
         collection.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(collection)
 
-        self.step = TransparentComboBox(
-            text='Step',
+        self.step = HTransparentComboBox(
+            label='Step',
             items=['pre','post','mid','none'],
             getter=self.get_step,
             setter=self.set_step,
             layout=self.general.addlayout
         )
 
-        self.orientation = TransparentComboBox(
+        self.orientation = HTransparentComboBox(
             items=["vertical","horizontal"],
-            text="Orientation",
+            label="Orientation",
             getter=self.get_orientation,
             setter=self.set_orientation,
             layout=self.general.addlayout
@@ -223,16 +223,16 @@ class StackedArea (PlotConfigBase):
         collection.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(collection)
 
-        self.baseline = TransparentComboBox(
-            text  = 'Baseline',
+        self.baseline = HTransparentComboBox(
+            label = 'Baseline',
             items = ['zero','sym','wiggle','weighted_wiggle'],
             setter=self.set_baseline,
             getter=self.get_baseline,
             layout=self.general.addlayout
         )
 
-        self.step = TransparentComboBox(
-            text  = 'Step',
+        self.step = HTransparentComboBox(
+            label = 'Step',
             items = ['pre','post','mid','none'],
             getter=self.get_step,
             setter=self.set_step,
