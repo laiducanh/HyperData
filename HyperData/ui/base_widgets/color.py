@@ -1,14 +1,14 @@
 import os
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QColorDialog, QVBoxLayout, QLayout, 
                                QGridLayout, QWidgetAction)
-from PySide6.QtGui import (QColor, QEnterEvent, QPainter)
+from PySide6.QtGui import (QColor, QEnterEvent, QPainter, QIcon)
 from PySide6.QtCore import QEvent, Signal, Qt, QRectF, QSize
 from PySide6.QtSvg import QSvgRenderer
-from ui.base_widgets.button import PushButton, TransparentPushButton, HButton, VButton
+from ui.base_widgets.button import PushButton, TransparentPushButton, HButton, VButton, TransparentToolButton
 from ui.base_widgets.menu import Menu
 from ui.base_widgets.frame import SeparateHLine
 from ui.utils import get_path
-from typing import Callable
+from typing import Callable, Union
 
 PALETTES = {
     # Matplotlib default
@@ -249,7 +249,7 @@ class ColorPickerButton (PushButton):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
         
-        if self.setter: self.color = self.getter()
+        if self.getter: self.color = self.getter()
         # darker self.color to get edge color
         _pc = QColor(self.color)
         pc = QColor(int(_pc.getRgb()[0]*0.5),
@@ -266,6 +266,62 @@ class ColorPickerButton (PushButton):
         rect = QRectF(self.width()-22, self.height() /
                       2-5, 10, 10)
         self._drawDropDownIcon(painter, rect)   
+
+class ColorToolButton(TransparentToolButton):
+    colorChanged = Signal(str)
+    def __init__(self, icon:Union[str, QIcon]=None, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None):
+        super().__init__(icon=icon, parent=parent)
+
+        self.setter = setter
+        self.getter = getter
+
+        if getter: self.setColor(getter())
+        else: self.setColor("black")
+
+        self._menu = PaletteMenu(colors='basic colors',parent=self)
+        self._menu._palette.selected.connect(self.onColorChanged)
+        self._menu._palette.sig_openDialog.connect(self.__showColorDialog)
+        self.setMenu(self._menu)
+
+        if setter: self.colorChanged.connect(setter)
+        if layout: layout.addWidget(self)
+    
+    def get_value(self) -> str:
+        return QColor(self.color).name()
+
+    def set_value(self, value:str):
+        self.setColor(value)
+    
+    def set_setter(self, setter:Callable):
+        self.setter = setter
+    
+    def get_setter(self) -> Callable:
+        return self.setter
+    
+    def set_getter(self, getter:Callable):
+        self.getter = getter
+
+    def get_getter(self) -> Callable:
+        return self.getter
+
+    def __showColorDialog(self):
+        """ show color dialog """
+        dialog = QColorDialog(self.color, self.window())
+        dialog.colorSelected.connect(self.onColorChanged)
+        dialog.exec()
+        
+    def onColorChanged(self, color):
+        """ color changed slot """
+        self.setColor(color)
+        if isinstance(color, QColor): color = color.name()
+        self.colorChanged.emit(color)
+        self._menu.close()
+
+    def setColor(self, color):
+        """ set color """
+        if not color: color = 'white'
+        self.color = QColor(color)
+        self.update()
 
 class HColorDropdown(HButton):
     def __init__(self, label:str=None, label2:str=None, getter:Callable=None, setter:Callable=None,

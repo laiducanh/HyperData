@@ -24,6 +24,7 @@ from plot.axes.axes_2d import Axes2D
 from plot.axes.axes_3d import Axes3D, View3D
 from plot.label.graph_title import GraphTitle
 from plot.label.legend import LegendLabel
+from plot.toolbar import PlotView_ToolBar
 from config.settings import GLOBAL_DEBUG, logger, config
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from plot.utilis import get_color, find_mpl_object
@@ -50,6 +51,7 @@ class PlotView(QMainWindow):
 
         ### Initialize UI components
         self.setup_visual()
+        self.setup_toolbar()
         self.setup_sidebar()
 
         ###
@@ -64,7 +66,14 @@ class PlotView(QMainWindow):
         self.plot_visual.save_figure.connect(self.save_figure)
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.plot_visual.mouse_released.connect(self.treeview_func)
+        self.plot_visual.selected_obj.connect(self.update_toolbar)
         self.main_layout.addWidget(self.plot_visual)
+    
+    def setup_toolbar(self):
+        self.toolbar = PlotView_ToolBar(self.canvas, self)
+        self.toolbar.sig_back_to_grScene.connect(self.sig_back_to_grScene.emit)
+        self.toolbar.sig_update.connect(self.update_plotlist)
+        self.addToolBar(self.toolbar)
     
     def setup_sidebar(self):
 
@@ -220,8 +229,13 @@ class PlotView(QMainWindow):
                             color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="contain")[0])
                         pixmap.fill(QColor(color))
                         item.child(child).setIcon(0,QIcon(pixmap))  
+
         except Exception as e: 
             logger.exception(e)
+
+    def update_toolbar(self, gid:str):
+        self.toolbar.gid = gid
+        if gid: self.toolbar.update()
 
     def save_figure(self):
         dialog = FileDialog(

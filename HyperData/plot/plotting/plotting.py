@@ -49,6 +49,10 @@ def set_legend(figure:Figure, *args, **kwargs):
         logger.exception(e)  
 
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> tuple[list[Artist], dict]:
+
+    # remove selected rectangles:
+    for rect in find_mpl_object(ax.figure, gid='selected'):
+        ax.figure.patches.remove(rect)
    
     # get old artist that will be replaced
     # but its properties will apply to the new ones  

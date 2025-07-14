@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QStyleOptionGraphicsItem, QGraphicsTextItem,
-                             QWidget, QGraphicsItem, QGraphicsProxyWidget, QHBoxLayout)
-from PySide6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPaintEvent, QPainterPath, QColor, QPen, 
+from PySide6.QtWidgets import (QGraphicsView, QStyleOptionGraphicsItem, QGraphicsTextItem, 
+                             QWidget, QGraphicsItem, QGraphicsProxyWidget)
+from PySide6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPainterPath, QColor, QPen, 
                          QBrush, QTextOption)
 from PySide6.QtCore import QRectF, Signal, Qt
 from matplotlib.lines import Line2D
@@ -11,10 +11,12 @@ from plot.canvas import Canvas, Canvas3D
 import matplotlib, math
 import numpy as np
 from matplotlib.backend_bases import MouseEvent
+from matplotlib.transforms import Bbox
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from ui.utils import isDark
 from plot.utilis import get_color, find_mpl_object
 from ui.base_widgets.menu import Menu, Action
+from plot.plot_graphics_scene import GraphicsScene
 
 DEBUG = False
 
@@ -93,18 +95,18 @@ class ToolTip (QGraphicsItem):
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(self._pen_default)
         painter.drawPath(path_outline.simplified())
-
+   
 class GraphicsView (QGraphicsView):
     key_pressed = Signal(object)
     mouse_released = Signal(object)
     backtoScene = Signal()
     backtoHome = Signal()
-    mpl_pressed = Signal(str)
+    selected_obj = Signal(str)
     save_figure = Signal()
     def __init__(self, canvas:Canvas,parent=None):
         super().__init__(parent)
 
-        self._scene = QGraphicsScene(parent)
+        self._scene = GraphicsScene(parent)
         self.setScene(self._scene)
         self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.LosslessImageRendering | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
         self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
@@ -115,7 +117,9 @@ class GraphicsView (QGraphicsView):
         self.canvas = canvas
         self.plotview = WidgetItem(canvas)
         self._scene.addItem(self.plotview) 
-    
+
+        self.initMenu()
+        self._scene.draw_ruler() # draw ruler after attaching 
         # self.tooltip = ToolTip()
         # self._scene.addItem(self.tooltip)
         # self.tooltip.hide()
@@ -127,8 +131,9 @@ class GraphicsView (QGraphicsView):
         self.canvas.mpl_connect('figure_enter_event', self.mpl_enterFigure)
         self.canvas.mpl_connect('figure_leave_event', self.mpl_leaveFigure)
 
-    def Menu(self):
-        self.menu.clear()
+    def initMenu(self):
+
+        self.menu = Menu(parent=self)
 
         nodeview = Action(text="&Node View", shortcut="Ctrl+N", parent=self.menu)
         nodeview.triggered.connect(self.backtoScene.emit)
@@ -143,18 +148,9 @@ class GraphicsView (QGraphicsView):
 
         graph = Menu(text="&Graph", parent=self.menu)
         self.menu.addMenu(graph)
-        plot_list = [s for s in find_mpl_object(self.canvas.figure,gid="graph ")]
-        plot_list = list()
-        for obj in find_mpl_object(self.canvas.figure,gid="graph "):
-            if not obj.get_gid().startswith("_"):
-                plot_list.append(obj.get_gid().split('/')[0])
-        _graph_list = list()
-        for gid in set(plot_list):
-            _graph_list.append(gid.title())
-        for text in ["Add Graph"] + _graph_list:
-            action = Action(text=text, parent=graph)
-            action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
-            graph.addAction(action)
+        action = Action(text='Add Graph', parent=graph)
+        action.triggered.connect(lambda : self.mouse_released.emit('Add Graph'))
+        graph.addAction(action)
         
         axis = Menu(text="&Axis", parent=self.menu)
         self.menu.addMenu(axis)
@@ -194,7 +190,7 @@ class GraphicsView (QGraphicsView):
         self.mouse_position = self.mapToScene(event.pos())        
         return super().mouseMoveEvent(event)
     
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event:QMouseEvent):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.middleMouseButtonPress(event)
         elif event.button() == Qt.MouseButton.LeftButton:
@@ -332,7 +328,7 @@ class GraphicsView (QGraphicsView):
 
     def save_mpl_bg(self, event=None):
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.figure.bbox)
-        
+    
     def mpl_enterFigure(self, event:MouseEvent):
         """ save original figure when mouse enters the figure """
         self.save_mpl_bg(event)
@@ -355,13 +351,18 @@ class GraphicsView (QGraphicsView):
 
     def mpl_mousePress(self, event: MouseEvent):
         stack = find_mpl_object(source=self.canvas.figure,
-                                match=[Artist])
-                
-        # if event.button == 1:
-        #     for obj in stack:
-        #         if obj.contains(event)[0] and not obj.get_gid().startswith("_"):
-        #             self.mpl_pressed.emit(obj.get_gid())
-        #             break # emit when one and only one object is selected
+                                match=[Line2D, Rectangle])
+        for rect in find_mpl_object(self.canvas.figure, gid='selected'):
+            self.canvas.figure.patches.remove(rect)
+        self.selected_obj.emit(None)
+        self.canvas.draw_idle()
+
+        if event.button == 1:
+            for obj in stack:
+                if obj.contains(event)[0] and not obj.get_gid().startswith("_"):
+                    self.selected_obj.emit(obj.get_gid())
+                    self.select_mpl_obj(obj.get_gid())
+                    break # emit when one and only one object is selected
         
         if isinstance(self.canvas.axes, Axes3D) and event.button == 3:
             self.ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
@@ -369,7 +370,35 @@ class GraphicsView (QGraphicsView):
     def mpl_mouseRelease(self, event: MouseEvent):
         self.save_mpl_bg(event)
     
-    def mouseReleaseEvent(self, event):
+    def select_mpl_obj(self, gid:str):        
+        stack = find_mpl_object(source=self.canvas.figure,
+                                gid=gid)
+        shrink_pixels = 5
+        for obj in stack:
+            # Shrink the bbox of the object
+            bbox = obj.get_window_extent()
+            x0 = bbox.x0 - shrink_pixels
+            y0 = bbox.y0 - shrink_pixels
+            width = bbox.width + 2 * shrink_pixels
+            height = bbox.height + 2 * shrink_pixels
+            # Convert bbox from display coordinates to data coordinates
+            bbox_data = Bbox.from_bounds(x0, y0, width, height).transformed(self.canvas.figure.transFigure.inverted())
+            # Get coordinates and width/height
+            x0, y0 = bbox_data.x0, bbox_data.y0
+            width, height = bbox_data.width, bbox_data.height
+
+            # Create rectangle patch
+            rect = Rectangle(
+                (x0, y0), width, height,
+                edgecolor='gray', facecolor='none', 
+                lw=1, ls='dashed',
+                transform=self.canvas.figure.transFigure,
+                gid='selected'
+            )
+            self.canvas.figure.patches.append(rect)
+        self.canvas.draw_idle()
+    
+    def mouseReleaseEvent(self, event:QMouseEvent):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.middleMouseButtonRelease(event)
         elif event.button() == Qt.MouseButton.LeftButton:
@@ -390,12 +419,11 @@ class GraphicsView (QGraphicsView):
             ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
             exec_menu = self.ax_limit == ax_limit
         else: exec_menu = True
-        
-        if exec_menu: 
-            pos = self.mapToGlobal(event.pos())
-            self.menu = Menu(parent=self)
-            self.Menu()
-            self.menu.exec(pos)       
+
+        if exec_menu:
+            pos = self.mapToGlobal(event.pos()) 
+            self.menu.exec(pos)
+            
         super().mouseReleaseEvent(event)
     
     def resizePlot(self):
@@ -405,6 +433,7 @@ class GraphicsView (QGraphicsView):
         self.canvas.resize(int(width), int(height))
         self.plotview.setPos(size.width()/2-width/2,size.height()/2-height/2)
         self.setSceneRect(0,0,size.width(),size.height())
+        self._scene.update_rulers()
     
     def resizeEvent(self, event):
         super().resizeEvent(event)
