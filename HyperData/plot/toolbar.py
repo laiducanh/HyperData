@@ -1,10 +1,10 @@
 from PySide6.QtWidgets import QToolBar
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap, QPainter, QPen, QIcon, QColor
+from PySide6.QtGui import QPixmap, QPainter, QPen, QIcon, QColor, QFont
 from ui.base_widgets.color import ColorToolButton
-from ui.base_widgets.button import TransparentToolButton, TransparentComboBox, CheckBox
+from ui.base_widgets.button import TransparentToolButton, TransparentComboBox, CheckBox, ToggleToolButton
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
-from config.settings import linestyle_lib, marker_lib
+from config.settings import linestyle_lib, marker_lib, font_lib
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
 
@@ -80,8 +80,18 @@ class PlotView_ToolBar(QToolBar):
     def initActions(self):
 
         self.graphicscreen_btn = TransparentToolButton(
-            icon="stack.png",
+            icon="node.png",
             setter=self.sig_back_to_grScene.emit,
+            layout=self
+        )
+        self.save_img = TransparentToolButton(
+            icon='save_img.png',
+            setter=self._parent.save_figure,
+            layout=self
+        )
+        self.add_graph = TransparentToolButton(
+            icon='curve.png',
+            setter=self._parent.insertplot.show,
             layout=self
         )
 
@@ -115,6 +125,33 @@ class PlotView_ToolBar(QToolBar):
 
         self.addSeparator()
 
+        self.labelfont = TransparentComboBox(
+            items = font_lib,
+            setter=self.set_fontname,
+            layout=self
+        )
+
+        self.labelsize = TransparentDoubleSpinBox(
+            minimum = 1, maximum = 100, singleStep = 2, decimals = 1,
+            setter=self.set_fontsize,
+            value=10,
+            layout=self
+        )
+        
+        self.labelstyle = CheckBox(
+            setter=self.set_italic,
+            text='Italic',
+            layout=self
+        )
+        
+        self.labelweight = CheckBox(
+            setter=self.set_bold,
+            text='Bold',
+            layout=self
+        )
+
+        self.addSeparator()
+
         CheckBox(
             text='Ruler',
             setter=self._parent.plot_visual._scene.toggle_ruler,
@@ -139,8 +176,7 @@ class PlotView_ToolBar(QToolBar):
     def get_facecolor(self):
         try:
             return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_facecolor()
-        except:
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_color()
+        except Exception as e: print(e)
     
     def set_facecolor(self, value):
         if self.gid:
@@ -187,11 +223,81 @@ class PlotView_ToolBar(QToolBar):
             for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
                 try: obj.set_marker(marker)
                 except: pass
-            self.canvas.draw_idle()        
+            self.canvas.draw_idle()     
+
+    def set_fontname (self, font:str):
+        if self.gid:
+            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+                try: obj.set_fontname(font.lower())
+                except: pass
+        self.canvas.draw_idle()
+    
+    def get_fontname(self):
+        try: 
+            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontname()
+        except Exception as e: print(e)
+
+    def set_fontsize(self, value):
+        if self.gid:
+            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+                try: obj.set_fontsize(value)
+                except: pass
+        self.canvas.draw_idle()
+    
+    def get_fontsize(self):
+        try: 
+            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontsize()
+        except Exception as e: print(e)
+    
+    def set_italic (self, bool):
+        if self.gid:
+            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+                try: 
+                    if bool: obj.set_fontstyle('italic')
+                    else: obj.set_fontstyle('normal')
+                except: pass
+        self.canvas.draw_idle()
+    
+    def get_italic (self):
+        try:
+            if find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontstyle() == 'normal':
+                return False
+            return True
+        except Exception as e: print(e)
+
+    def set_bold (self, bool):
+        if self.gid:
+            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+                try: 
+                    if bool: obj.set_fontweight('bold')
+                    else: obj.set_fontweight('normal')
+                except: pass
+        self.canvas.draw_idle()
+
+    def get_bold (self):
+        try:
+            if find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontweight() == 'normal':
+                return False
+            return True
+        except Exception as e: print(e)
     
     def update(self):
-        self.edgecolor.set_value(self.get_edgecolor())
-        self.facecolor.set_value(self.get_facecolor())
-        self.linewidth.set_value(self.get_linewidth())
-        self.linestyle.set_value(self.get_linestyle())
-        self.marker.set_value(self.get_marker())
+        try: self.edgecolor.set_value(self.get_edgecolor())
+        except: pass
+        try: self.facecolor.set_value(self.get_facecolor())
+        except: pass
+        try: self.linewidth.set_value(self.get_linewidth())
+        except: pass
+        try: self.linestyle.set_value(self.get_linestyle())
+        except: pass
+        try: self.marker.set_value(self.get_marker())
+        except: pass
+        try: self.labelfont.set_value(self.get_fontname())
+        except: pass
+        try: self.labelsize.set_value(self.get_fontsize())
+        except: pass
+        try: self.labelstyle.set_value(self.get_italic())
+        except: pass
+        try: self.labelweight.set_value(self.get_bold())
+        except: pass
+    

@@ -17,7 +17,7 @@ class GraphTitle(QDialog):
 
         self.setWindowTitle('Graph Title')
         self.canvas = canvas
-        self.obj = self.canvas.axes.set_title(self.get_title())
+        self.obj = self.canvas.axes.set_title(self.get_title(), gid='title')
             
         layout = QVBoxLayout(self)
         scrollarea = ScrollArea()
@@ -91,7 +91,7 @@ class GraphTitle(QDialog):
         )
     
     def set_title (self, title:str):
-        self.canvas.axes.set_title(title) 
+        self.canvas.axes.set_title(title, gid='title') 
         self.canvas.draw_idle()
     
     def get_title(self):

@@ -51,8 +51,8 @@ class PlotView(QMainWindow):
 
         ### Initialize UI components
         self.setup_visual()
-        self.setup_toolbar()
         self.setup_sidebar()
+        self.setup_toolbar()
 
         ###
         if GLOBAL_DEBUG or DEBUG: self.debug()
@@ -102,18 +102,11 @@ class PlotView(QMainWindow):
         static_layout = QHBoxLayout()
         # static_layout.setContentsMargins(10,0,10,15)
         self.sidebar_layout.addLayout(static_layout)
-
-        self.graphicscreen_btn = TransparentToolButton(
-            icon="stack.png",
-            setter=self.sig_back_to_grScene.emit,
-            layout=static_layout
-        )
  
         self.search_box = SearchBox(parent=self.parent())
         self.search_box.setPlaceholderText("Type / to search")
         static_layout.addWidget(self.search_box)
         
-
         # self.stackedlayout = QStackedLayout()
         # self.sidebar_layout.addLayout(self.stackedlayout)
 

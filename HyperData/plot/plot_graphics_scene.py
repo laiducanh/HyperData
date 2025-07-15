@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import (QGraphicsItem, QGraphicsRectItem, QGraphicsScene, QGraphicsLineItem, QGraphicsTextItem, QGraphicsObject)
-from PySide6.QtGui import QColor, QBrush, QPolygonF
+from PySide6.QtGui import QColor, QBrush, QPolygonF, QPainter, QPen
 from PySide6.QtCore import Signal, Qt, QPointF
 import numpy as np
 from typing import Literal
+from config.settings import config
 
 class MarginIndicator(QGraphicsObject):
     onMoved = Signal()
@@ -29,8 +30,8 @@ class MarginIndicator(QGraphicsObject):
                 QPointF(-width, 2*height)
             ])
     
-    def paint(self, painter, option, widget=None):
-        painter.setBrush(QBrush(QColor("red")))
+    def paint(self, painter:QPainter, option, widget=None):
+        painter.setBrush(QBrush(QColor(config["themecolor"])))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawPolygon(self.triangle)
     
@@ -78,6 +79,18 @@ class MarginIndicator(QGraphicsObject):
         self.onMoved.emit()
         return super().mouseReleaseEvent(event)
 
+class Crosshair(QGraphicsLineItem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setZValue(15)
+    
+    def paint(self, painter:QPainter, option, /, widget = ...):
+        pen = QPen(QColor(config['themecolor']))
+        pen.setStyle(Qt.PenStyle.DashLine)
+        painter.setPen(pen)
+        painter.drawLine(self.line())
+        # return super().paint(painter, option, widget)
 
 class GraphicsScene(QGraphicsScene):
     margin_updated = Signal()
@@ -85,6 +98,17 @@ class GraphicsScene(QGraphicsScene):
         super().__init__(parent=parent, *args, **kwargs)
 
         self.rulerOn = True
+        self.crosshairOn = True
+
+        if self.crosshairOn: 
+            self.draw_crosshair()
+    
+    def draw_crosshair(self):
+        self.vcross = Crosshair()
+        self.addItem(self.vcross)
+
+        self.hcross = Crosshair()
+        self.addItem(self.hcross)
     
     def draw_ruler(self):
 

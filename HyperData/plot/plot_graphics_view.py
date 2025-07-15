@@ -6,6 +6,7 @@ from PySide6.QtCore import QRectF, Signal, Qt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection, EventCollection, QuadMesh
+from matplotlib.text import Text
 from matplotlib.artist import Artist
 from plot.canvas import Canvas, Canvas3D
 import matplotlib, math
@@ -113,7 +114,7 @@ class GraphicsView (QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        
+
         self.canvas = canvas
         self.plotview = WidgetItem(canvas)
         self._scene.addItem(self.plotview) 
@@ -195,16 +196,38 @@ class GraphicsView (QGraphicsView):
 
     def update_margin(self):
         self.canvas.figure.subplots_adjust(
-                left = self._scene.top_margin_left.fraction,
-                right = self._scene.top_margin_right.fraction,
-                top = 1-self._scene.left_margin_top.fraction,
-                bottom = 1-self._scene.left_margin_bot.fraction
-            )
+            left = self._scene.top_margin_left.fraction,
+            right = self._scene.top_margin_right.fraction,
+            top = 1-self._scene.left_margin_top.fraction,
+            bottom = 1-self._scene.left_margin_bot.fraction
+        )
         self.canvas.draw_idle()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        self.mouse_position = self.mapToScene(event.pos())     
+        self.mouse_position = self.mapToScene(event.pos())   
+        self._scene.vcross.setLine(
+            self.mouse_position.x(), 
+            self.sceneRect().top(),
+            self.mouse_position.x(),
+            self.sceneRect().bottom()
+        )
+        self._scene.hcross.setLine(
+            self.sceneRect().left(),
+            self.mouse_position.y(),
+            self.sceneRect().right(),
+            self.mouse_position.y()
+        )
         return super().mouseMoveEvent(event)
+    
+    def leaveEvent(self, event):
+        self._scene.vcross.hide()
+        self._scene.hcross.hide()
+        return super().leaveEvent(event)
+
+    def enterEvent(self, event):
+        self._scene.vcross.show()
+        self._scene.hcross.show()
+        return super().enterEvent(event)
     
     def mousePressEvent(self, event:QMouseEvent):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -370,8 +393,11 @@ class GraphicsView (QGraphicsView):
         #self.canvas.flush_events()
 
     def mpl_mousePress(self, event: MouseEvent):
-        stack = find_mpl_object(source=self.canvas.figure,
-                                match=[Line2D, Rectangle])
+        stack = find_mpl_object(
+            source=self.canvas.figure,
+            match=[Line2D,Collection,Rectangle,Wedge,
+                   PathPatch,FancyBboxPatch, Text]
+        )
         for rect in find_mpl_object(self.canvas.figure, gid='selected'):
             self.canvas.figure.patches.remove(rect)
         self.selected_obj.emit(None)
