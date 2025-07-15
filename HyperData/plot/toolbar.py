@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QToolBar
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap, QPainter, QPen, QIcon, QColor
 from ui.base_widgets.color import ColorToolButton
-from ui.base_widgets.button import TransparentToolButton, TransparentComboBox
+from ui.base_widgets.button import TransparentToolButton, TransparentComboBox, CheckBox
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from config.settings import linestyle_lib, marker_lib
 from plot.canvas import Canvas
@@ -68,12 +68,13 @@ class FaceColor(EdgeColor):
 
 class PlotView_ToolBar(QToolBar):
     sig_back_to_grScene = Signal()
-    sig_update = Signal()
-    def __init__(self, canvas:Canvas, parent=None, *args, **kwargs):
+    sig_ruler = Signal(bool)
+    def __init__(self, canvas:Canvas, parent=None, *args, **kwargs): # parent is PlotView instance
         super().__init__(parent, *args, **kwargs)
 
         self.gid = None
         self.canvas = canvas
+        self._parent = parent
         self.initActions()
     
     def initActions(self):
@@ -114,7 +115,12 @@ class PlotView_ToolBar(QToolBar):
 
         self.addSeparator()
 
-
+        CheckBox(
+            text='Ruler',
+            setter=self._parent.plot_visual._scene.toggle_ruler,
+            getter=lambda: self._parent.plot_visual._scene.rulerOn,
+            layout=self
+        )
     
     def get_edgecolor(self):
         try:
@@ -127,7 +133,7 @@ class PlotView_ToolBar(QToolBar):
             for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
                 try: obj.set_edgecolor(value)
                 except: obj.set_color(value)
-            self.sig_update.emit()
+            self._parent.update_plotlist()
             self.canvas.draw_idle()
             
     def get_facecolor(self):
@@ -141,7 +147,7 @@ class PlotView_ToolBar(QToolBar):
             for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
                 try: obj.set_facecolor(value)
                 except: pass
-            self.sig_update.emit()
+            self._parent.update_plotlist()
             self.canvas.draw_idle()
     
     def get_linewidth(self):
@@ -181,7 +187,7 @@ class PlotView_ToolBar(QToolBar):
             for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
                 try: obj.set_marker(marker)
                 except: pass
-            self.canvas.draw_idle()
+            self.canvas.draw_idle()        
     
     def update(self):
         self.edgecolor.set_value(self.get_edgecolor())

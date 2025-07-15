@@ -54,18 +54,18 @@ class Margin3D(ScrollArea):
         )
     
     def set_top(self,value):
-        self.canvas.figure.subplots_adjust(top=value)
+        self.canvas.figure.subplots_adjust(top=1-value)
         self.canvas.draw_idle()
     
     def get_top(self):
-        return self.canvas.figure.subplotpars.top
+        return 1-self.canvas.figure.subplotpars.top
     
     def set_bottom(self,value):
-        self.canvas.figure.subplots_adjust(bottom=value)
+        self.canvas.figure.subplots_adjust(bottom=1-value)
         self.canvas.draw_idle()
     
     def get_bottom(self):
-        return self.canvas.figure.subplotpars.bottom
+        return 1-self.canvas.figure.subplotpars.bottom
     
     def set_left(self,value):
         self.canvas.figure.subplots_adjust(left=value)

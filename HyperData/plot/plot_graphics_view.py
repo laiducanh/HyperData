@@ -119,7 +119,14 @@ class GraphicsView (QGraphicsView):
         self._scene.addItem(self.plotview) 
 
         self.initMenu()
-        self._scene.draw_ruler() # draw ruler after attaching 
+        self._scene.draw_ruler() # draw ruler after adding Canvas
+        self._scene.margin_updated.connect(self.update_margin)
+        # Initialize margin indicator in ruler
+        self._scene.top_margin_left.fraction = self.canvas.figure.subplotpars.left
+        self._scene.top_margin_right.fraction = self.canvas.figure.subplotpars.right
+        self._scene.left_margin_top.fraction = 1-self.canvas.figure.subplotpars.top # orientation of matplotlib is inverse
+        self._scene.left_margin_bot.fraction = 1-self.canvas.figure.subplotpars.bottom
+
         # self.tooltip = ToolTip()
         # self._scene.addItem(self.tooltip)
         # self.tooltip.hide()
@@ -186,8 +193,17 @@ class GraphicsView (QGraphicsView):
             action.triggered.connect(lambda _, text=text: self.mouse_released.emit(text))
             label.addAction(action)
 
+    def update_margin(self):
+        self.canvas.figure.subplots_adjust(
+                left = self._scene.top_margin_left.fraction,
+                right = self._scene.top_margin_right.fraction,
+                top = 1-self._scene.left_margin_top.fraction,
+                bottom = 1-self._scene.left_margin_bot.fraction
+            )
+        self.canvas.draw_idle()
+
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        self.mouse_position = self.mapToScene(event.pos())        
+        self.mouse_position = self.mapToScene(event.pos())     
         return super().mouseMoveEvent(event)
     
     def mousePressEvent(self, event:QMouseEvent):
@@ -327,6 +343,10 @@ class GraphicsView (QGraphicsView):
                 break
 
     def save_mpl_bg(self, event=None):
+        self._scene.top_margin_left._setPos(self.canvas.figure.subplotpars.left)
+        self._scene.top_margin_right._setPos(self.canvas.figure.subplotpars.right)
+        self._scene.left_margin_top._setPos(1-self.canvas.figure.subplotpars.top) # orientation of matplotlib is inverse
+        self._scene.left_margin_bot._setPos(1-self.canvas.figure.subplotpars.bottom)
         self.mpl_background = self.canvas.copy_from_bbox(self.canvas.figure.bbox)
     
     def mpl_enterFigure(self, event:MouseEvent):

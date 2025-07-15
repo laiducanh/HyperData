@@ -72,7 +72,7 @@ class PlotView(QMainWindow):
     def setup_toolbar(self):
         self.toolbar = PlotView_ToolBar(self.canvas, self)
         self.toolbar.sig_back_to_grScene.connect(self.sig_back_to_grScene.emit)
-        self.toolbar.sig_update.connect(self.update_plotlist)
+        self.toolbar.sig_ruler.connect(self.plot_visual._scene.toggle_ruler)
         self.addToolBar(self.toolbar)
     
     def setup_sidebar(self):
