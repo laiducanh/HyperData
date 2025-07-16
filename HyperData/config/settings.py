@@ -154,6 +154,8 @@ config = {
     "plot_dpi":100, 
     "plot_style":"default",
     "plot_palette":["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
+    "plot_crosshair":False,
+    "plot_crosshair_style":'dash',
     "version": "0.9.31",
     "save_path": str(),
 }

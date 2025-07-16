@@ -1,4 +1,4 @@
-from PySide6.QtGui import QKeyEvent, QAction, QIcon, QColor
+from PySide6.QtGui import QPixmap, QAction, QIcon, QColor, QPainter, QPen
 from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, 
                                QDockWidget, QStackedLayout, QApplication, QGraphicsScene)
 from PySide6.QtCore import QSize, Qt
@@ -113,7 +113,6 @@ class Figure_Style(HTransparentComboBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self._parent: QMainWindow = parent
         style_list = ["default", "matplotlib default"] + matplotlib.style.available
         self.setText("Style")
         self.button.addItems(style_list)
@@ -177,8 +176,9 @@ class Figure_Colors(Frame):
         layout2 = QHBoxLayout()
         layout.addLayout(layout2)
         for idx in range(5):
-            btn = ColorPickerButton(getter=lambda: QColor(config["plot_palette"][idx]))
+            btn = ColorPickerButton()
             btn.setFixedSize(80, 32)
+            btn.setColor(QColor(config["plot_palette"][idx]))
             btn.colorChanged.connect(lambda color, i=idx: self.changeColor(color, i))
             layout2.addWidget(btn)
         
@@ -217,7 +217,58 @@ class Figure_Colors(Frame):
                 color_lib.append(c)
         color_lib = list(dict.fromkeys(color_lib))
         matplotlib.rcParams["axes.prop_cycle"] = cycler.cycler(color=color_lib)
+
+class Figure_Crosshair(HToggle):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.setText('Crosshair')
+        self.button.setChecked(config['plot_crosshair'])
+        self.button.checkedChanged.connect(self.set_crosshair)
     
+    def set_crosshair(self, checked):
+        config['plot_crosshair'] = checked
+
+class Figure_Crosshair_Style(HTransparentComboBox):
+    def __init__(self,  parent=None):
+        super().__init__(parent=parent)
+        
+        self.setText('Crosshair Style')
+
+        self.styles = ['solid','dash','dot','dash dot','dash dot dot']
+        
+        for style in self.styles:
+            pixmap = self.create_pixmap(style)
+            self.button.addItem(pixmap, '')
+        
+        self.button.setIconSize(pixmap.size())
+        self.button.setCurrentIndex(self.styles.index(config['plot_crosshair_style']))
+        self.button.currentIndexChanged.connect(self.set_crosshair_shape)
+    
+    def create_pixmap(self, style:str) -> QPixmap:
+        pixmap = QPixmap(100, 20)
+        pixmap.fill(Qt.GlobalColor.transparent)
+
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        pen = QPen(Qt.GlobalColor.black)        
+
+        if style == 'solid': pen.setStyle(Qt.PenStyle.SolidLine)
+        elif style == 'dash': pen.setStyle(Qt.PenStyle.DashLine)
+        elif style == 'dot': pen.setStyle(Qt.PenStyle.DotLine)
+        elif style == 'dash dot': pen.setStyle(Qt.PenStyle.DashDotLine)
+        elif style == 'dash dot dot': pen.setStyle(Qt.PenStyle.DashDotDotLine)
+
+        painter.setPen(pen)
+        painter.drawLine(5, 10, 95, 10)
+        painter.end()
+
+        return pixmap
+
+    def set_crosshair_shape(self, index:int):
+        config['plot_crosshair_style'] = self.styles[index]
+
 class SettingsWindow(QMainWindow):
     def __init__(self, parent:QMainWindow=None):
         super().__init__(parent)
@@ -257,4 +308,6 @@ class SettingsWindow(QMainWindow):
         figure_layout.addWidget(Figure_Dpi(parent))
         figure_layout.addWidget(Figure_Style(parent))
         figure_layout.addWidget(Figure_Colors(parent))
+        figure_layout.addWidget(Figure_Crosshair(parent))
+        figure_layout.addWidget(Figure_Crosshair_Style(parent))
         figure_layout.addStretch()

@@ -222,11 +222,11 @@ class ComboBox(QComboBox):
     def wheelEvent(self, e):
         e.ignore()
     
-    def addItems(self, texts:list[str]):
+    def _addItems(self, texts:list[str]):
         self.items = texts
         return super().addItems(texts)
     
-    def addItem(self, text:str):
+    def _addItem(self, text:str):
         self.items.append(text)
         return super().addItem(text)
 
@@ -371,8 +371,8 @@ class VButton(Frame):
     def __init__(self, label:str=None, label2:str=None, layout:QLayout=None, parent:QWidget=None):
         super().__init__(parent)
 
-        self.label  = BodyLabel(parent, text=label)
-        self.label2 = InfoLabel(parent, text=label2, wordWrap=True)
+        self.label  = BodyLabel(parent=parent, text=label)
+        self.label2 = InfoLabel(parent=parent, text=label2, wordWrap=True)
         if not label2: self.label2.hide()
 
         vlayout = QVBoxLayout(self)
@@ -417,8 +417,8 @@ class HButton(Frame):
     def __init__(self, label:str=None, label2:str=None, layout:QLayout=None, parent:QWidget=None):
         super().__init__(parent)
 
-        self.label  = BodyLabel(parent, text=label)
-        self.label2 = InfoLabel(parent, text=label2, wordWrap=True)
+        self.label  = BodyLabel(parent=parent, text=label)
+        self.label2 = InfoLabel(parent=parent, text=label2, wordWrap=True)
         if not label2: self.label2.hide()
 
         hlayout = QHBoxLayout(self)

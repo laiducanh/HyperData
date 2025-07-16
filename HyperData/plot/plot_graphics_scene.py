@@ -86,10 +86,20 @@ class Crosshair(QGraphicsLineItem):
         self.setZValue(15)
     
     def paint(self, painter:QPainter, option, /, widget = ...):
-        pen = QPen(QColor(config['themecolor']))
-        pen.setStyle(Qt.PenStyle.DashLine)
-        painter.setPen(pen)
-        painter.drawLine(self.line())
+        if config['plot_crosshair']:
+            pen = QPen(QColor(config['themecolor']))
+            if config['plot_crosshair_style'] == 'solid':
+                pen.setStyle(Qt.PenStyle.SolidLine)
+            elif config['plot_crosshair_style'] == 'dash':
+                pen.setStyle(Qt.PenStyle.DashLine)
+            elif config['plot_crosshair_style'] == 'dot':
+                pen.setStyle(Qt.PenStyle.DotLine)
+            elif config['plot_crosshair_style'] == 'dash dot':
+                pen.setStyle(Qt.PenStyle.DashDotLine)
+            elif config['plot_crosshair_style'] == 'dash dot dot':
+                pen.setStyle(Qt.PenStyle.DashDotDotLine)
+            painter.setPen(pen)
+            painter.drawLine(self.line())
         # return super().paint(painter, option, widget)
 
 class GraphicsScene(QGraphicsScene):
