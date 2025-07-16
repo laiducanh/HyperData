@@ -76,6 +76,9 @@ class PlotView_ToolBar(QToolBar):
         self.canvas = canvas
         self._parent = parent
         self.initActions()
+
+        self.setFloatable(False)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
     
     def initActions(self):
 

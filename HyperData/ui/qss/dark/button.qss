@@ -126,7 +126,7 @@ CheckBox::indicator:indeterminate {
 }
 
 CheckBox::indicator:checked {
-    image: url(ui:icons/black/accept.svg);
+    image: url(ui:icons/black/accept.png);
 }
 
 CheckBox::indicator:indeterminate {
