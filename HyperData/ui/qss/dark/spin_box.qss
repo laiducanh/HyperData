@@ -1,4 +1,4 @@
-_SpinBox, _DoubleSpinBox {
+SpinBox, DoubleSpinBox {
     color: white;
     background-color: rgb(43, 43, 43);
     border: none;
@@ -8,7 +8,12 @@ _SpinBox, _DoubleSpinBox {
     height: 28px;
 }
 
-_SpinBox::up-button, _DoubleSpinBox::up-button {
+TransparentSpinBox, TransparentDoubleSpinBox {
+    border: none;
+    background-color: transparent;
+}
+
+SpinBox::up-button, DoubleSpinBox::up-button {
     subcontrol-origin: margin;
     subcontrol-position: top right;
     position: relative;
@@ -20,7 +25,7 @@ _SpinBox::up-button, _DoubleSpinBox::up-button {
     border-image: url(ui:icons/black/Up_black.svg);
 }
 
-_SpinBox::down-button, _DoubleSpinBox::down-button {
+SpinBox::down-button, DoubleSpinBox::down-button {
     subcontrol-origin: margin;
     subcontrol-position: bottom right;
     left: -10px;
@@ -31,33 +36,37 @@ _SpinBox::down-button, _DoubleSpinBox::down-button {
     border-image: url(ui:icons/black/Down_black.svg);
 }
 
-_SpinBox:hover, _DoubleSpinBox:hover {
+SpinBox:hover, DoubleSpinBox:hover {
     background: rgba(220, 220, 220, 0.1);
 }
 
-_SpinBox:focus, _DoubleSpinBox:focus {
+TransparentSpinBox:hover, TransparentDoubleSpinBox:hover {
+    border: none;
 }
 
-_SpinBox:disabled, _DoubleSpinBox:disabled {
+SpinBox:focus, DoubleSpinBox:focus {
+}
+
+SpinBox:disabled, DoubleSpinBox:disabled {
     color: rgba(0, 0, 0, 150);
     background-color: rgba(249, 249, 249, 0.5);
     border: 1px solid rgba(0, 0, 0, 13);
     border-bottom: 1px solid rgba(0, 0, 0, 13);
 }
 
-_Slider::groove:horizontal {
+Slider::groove:horizontal {
     height: 5px;
     background-color: white;
     border-radius: 2px;
 }
 
-_Slider::sub-page:horizontal {
+Slider::sub-page:horizontal {
     background: --THEMECOLOR-1.0;
     height: 5px;
     border-radius: 2px;
 }
 
-_Slider::handle:horizontal {
+Slider::handle:horizontal {
     background-color: --THEMECOLOR-1.0;
     border: none;
     height: 12px;

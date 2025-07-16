@@ -1,4 +1,4 @@
-_LineEdit, _TextEdit {
+LineEdit, TextEdit {
     color: white;
     background-color: rgb(43, 43, 43);
     border: 1px solid rgba(200, 200, 200, 0.8);
@@ -7,22 +7,22 @@ _LineEdit, _TextEdit {
     font: 15px;
 }
 
-_TextEdit {
+TextEdit {
     padding: 0px 0px 0px 10px;
     border: 1px solid rgba(200, 200, 200, 0.8);
 }
 
-_LineEdit:hover, _TextEdit:hover {
+LineEdit:hover, TextEdit:hover {
     border: 2px solid --THEMECOLOR-1.0;
 }
 
-_LineEdit:focus, _TextEdit:focus {
+LineEdit:focus, TextEdit:focus {
     background-color: rgba(43, 43, 43, 0.5);
     color: white;
     border: 2px solid --THEMECOLOR-1.0;
 }
 
-_LineEdit:disabled, _TextEdit:disabled {
+LineEdit:disabled, TextEdit:disabled {
     color: rgba(0, 0, 0, 150);
     background-color: rgba(249, 249, 249, 0.3);
     border: 1px solid rgba(0, 0, 0, 13);
