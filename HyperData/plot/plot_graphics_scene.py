@@ -158,6 +158,12 @@ class GraphicsScene(QGraphicsScene):
 
         self.update_rulers()
     
+    def _best_interval(self, length:float):
+        interval = 1
+        while length/(10*(interval+1)) > 20:
+            interval += 1
+        return interval if interval % 2 == 0 else interval + 1
+    
     def update_rulers(self):
 
         width = self.views()[0].viewport().width()
@@ -174,14 +180,15 @@ class GraphicsScene(QGraphicsScene):
         self.left_ticks.clear()
 
         # Draw new top ruler ticks
-        for ind, x in enumerate(np.linspace(0, width, 61, endpoint=True)):
-            if ind % 6 == 0:
+        interval = self._best_interval(width)
+        for ind, x in enumerate(np.linspace(0, width, int(interval*10+1), endpoint=True)):
+            if ind % int(interval) == 0:
                 text = QGraphicsTextItem(str(round(x/width, 1)))
                 text.setDefaultTextColor('black')
                 text.setPos(x-text.boundingRect().width()/2, self.ruler_height/2 - text.boundingRect().height()/2)
                 self.addItem(text)
                 self.top_ticks.append(text)
-            elif ind % 6 == 3:
+            elif ind % int(interval) == interval/2:
                 line_big = QGraphicsLineItem(x, 7, x, self.ruler_height-7)
                 self.addItem(line_big)
                 self.top_ticks.append(line_big)
@@ -191,8 +198,9 @@ class GraphicsScene(QGraphicsScene):
                 self.top_ticks.append(line_small)
 
         # Draw new left ruler ticks
-        for ind, y in enumerate(np.linspace(0, height, 61, endpoint=True)):
-            if ind % 6 == 0:
+        interval = self._best_interval(height)
+        for ind, y in enumerate(np.linspace(0, height, int(interval*10+1), endpoint=True)):
+            if ind % int(interval) == 0:
                 text = QGraphicsTextItem(str(round(y/height, 1)))
                 text.setDefaultTextColor('black')
                 text.setTransformOriginPoint(text.boundingRect().center())
@@ -200,7 +208,7 @@ class GraphicsScene(QGraphicsScene):
                 text.setPos(self.ruler_width/2-text.boundingRect().width()/2, y - text.boundingRect().height()/2)
                 self.addItem(text)
                 self.left_ticks.append(text)
-            elif ind % 6 == 3:
+            elif ind % int(interval) == interval/2:
                 line_big = QGraphicsLineItem(7, y, self.ruler_width-7, y)
                 self.addItem(line_big)
                 self.left_ticks.append(line_big)
