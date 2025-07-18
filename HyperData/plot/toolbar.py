@@ -7,6 +7,10 @@ from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from config.settings import linestyle_lib, marker_lib, font_lib
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
+from matplotlib.lines import Line2D
+from matplotlib.text import Text
+from matplotlib.artist import Artist
+from matplotlib.colors import to_hex
 
 class EdgeColor(ColorToolButton):
     def __init__(self, parent=None, *args, **kwargs):
@@ -75,10 +79,14 @@ class PlotView_ToolBar(QToolBar):
         self.gid = None
         self.canvas = canvas
         self._parent = parent
+        self.obj = []
         self.initActions()
 
         self.setFloatable(False)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
+    
+    def findobj(self):
+        return find_mpl_object(self.canvas.figure, gid=self.gid)
     
     def initActions(self):
 
@@ -164,13 +172,13 @@ class PlotView_ToolBar(QToolBar):
     
     def get_edgecolor(self):
         try:
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_edgecolor()
+            return to_hex(self.obj[0].get_edgecolor())
         except:
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_color()
+            return to_hex(self.obj[0].get_color())
     
     def set_edgecolor(self, value):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_edgecolor(value)
                 except: obj.set_color(value)
             self._parent.update_plotlist()
@@ -178,12 +186,13 @@ class PlotView_ToolBar(QToolBar):
             
     def get_facecolor(self):
         try:
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_facecolor()
-        except Exception as e: print(e)
+            return to_hex(self.obj[0].get_facecolor())
+        except:
+            return to_hex(self.obj[0].get_color())
     
     def set_facecolor(self, value):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_facecolor(value)
                 except: pass
             self._parent.update_plotlist()
@@ -191,70 +200,70 @@ class PlotView_ToolBar(QToolBar):
     
     def get_linewidth(self):
         try:
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_linewidth()
+            return self.obj[0].get_linewidth()
         except Exception as e: print(e)
     
     def set_linewidth(self, value):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_linewidth(value)
                 except: pass
             self.canvas.draw_idle()
     
     def get_linestyle(self):
         try:
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_linestyle()
+            return self.obj[0].get_linestyle()
         except Exception as e: print(e)
     
     def set_linestyle(self, value):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_linestyle(value)
                 except: pass
             self.canvas.draw_idle()
     
     def get_marker(self):
         try:
-            if not find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_marker():
+            if not self.obj[0].get_marker():
                 return "None"
-            return marker_lib[find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_marker()]
+            return marker_lib[self.obj[0].get_marker()]
         except Exception as e: print(e)
     
     def set_marker(self, value):
         if self.gid:
             marker = list(marker_lib.keys())[list(marker_lib.values()).index(value.lower())]
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_marker(marker)
                 except: pass
             self.canvas.draw_idle()     
 
     def set_fontname (self, font:str):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_fontname(font.lower())
                 except: pass
         self.canvas.draw_idle()
     
     def get_fontname(self):
         try: 
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontname()
+            return self.obj[0].get_fontname()
         except Exception as e: print(e)
 
     def set_fontsize(self, value):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: obj.set_fontsize(value)
                 except: pass
         self.canvas.draw_idle()
     
     def get_fontsize(self):
         try: 
-            return find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontsize()
+            return self.obj[0].get_fontsize()
         except Exception as e: print(e)
     
     def set_italic (self, bool):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: 
                     if bool: obj.set_fontstyle('italic')
                     else: obj.set_fontstyle('normal')
@@ -263,14 +272,14 @@ class PlotView_ToolBar(QToolBar):
     
     def get_italic (self):
         try:
-            if find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontstyle() == 'normal':
+            if self.obj[0].get_fontstyle() == 'normal':
                 return False
             return True
         except Exception as e: print(e)
 
     def set_bold (self, bool):
         if self.gid:
-            for obj in find_mpl_object(self.canvas.figure, gid=self.gid):
+            for obj in self.obj:
                 try: 
                     if bool: obj.set_fontweight('bold')
                     else: obj.set_fontweight('normal')
@@ -279,28 +288,28 @@ class PlotView_ToolBar(QToolBar):
 
     def get_bold (self):
         try:
-            if find_mpl_object(self.canvas.figure, gid=self.gid)[0].get_fontweight() == 'normal':
+            if self.obj[0].get_fontweight() == 'normal':
                 return False
             return True
         except Exception as e: print(e)
     
-    def update(self):
-        try: self.edgecolor.set_value(self.get_edgecolor())
-        except: pass
-        try: self.facecolor.set_value(self.get_facecolor())
-        except: pass
-        try: self.linewidth.set_value(self.get_linewidth())
-        except: pass
-        try: self.linestyle.set_value(self.get_linestyle())
-        except: pass
-        try: self.marker.set_value(self.get_marker())
-        except: pass
-        try: self.labelfont.set_value(self.get_fontname())
-        except: pass
-        try: self.labelsize.set_value(self.get_fontsize())
-        except: pass
-        try: self.labelstyle.set_value(self.get_italic())
-        except: pass
-        try: self.labelweight.set_value(self.get_bold())
-        except: pass
+    def update(self, gid:str):
+        self.gid = gid
+        if gid:
+            self.obj = self.findobj()
+            if isinstance(self.obj[0], Artist):
+                self.edgecolor.set_value(self.get_edgecolor())
+                self.facecolor.set_value(self.get_facecolor())
+                self.linewidth.set_value(self.get_linewidth())
+                self.linestyle.set_value(self.get_linestyle())
+            elif isinstance(self.obj[0], Text):
+                self.edgecolor.set_value(self.get_edgecolor())
+                self.labelfont.set_value(self.get_fontname())
+                self.labelsize.set_value(self.get_fontsize())
+                self.labelstyle.set_value(self.get_italic())
+                self.labelweight.set_value(self.get_bold())
+            if isinstance(self.obj[0], Line2D):
+                self.marker.set_value(self.get_marker())
+        else: self.obj = []
+
     

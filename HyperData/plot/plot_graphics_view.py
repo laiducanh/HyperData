@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import (QGraphicsView, QStyleOptionGraphicsItem, QGraphicsTextItem, 
-                             QWidget, QGraphicsItem, QGraphicsProxyWidget)
+                             QWidget, QGraphicsItem, QGraphicsProxyWidget, QGraphicsRectItem)
 from PySide6.QtGui import (QKeyEvent, QMouseEvent, QPainter, QPainterPath, QColor, QPen, 
                          QBrush, QTextOption)
-from PySide6.QtCore import QRectF, Signal, Qt
+from PySide6.QtCore import QRectF, Signal, Qt, QPoint, QPointF
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Wedge, PathPatch, FancyBboxPatch
 from matplotlib.collections import Collection, PathCollection, PolyCollection, LineCollection, EventCollection, QuadMesh
@@ -204,7 +204,9 @@ class GraphicsView (QGraphicsView):
         self.canvas.draw_idle()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
+
         self.mouse_position = self.mapToScene(event.pos())   
+
         self._scene.vcross.setLine(
             self.mouse_position.x(), 
             self.sceneRect().top(),
@@ -396,18 +398,18 @@ class GraphicsView (QGraphicsView):
         stack = find_mpl_object(
             source=self.canvas.figure,
             match=[Line2D,Collection,Rectangle,Wedge,
-                   PathPatch,FancyBboxPatch, Text]
+                   PathPatch,FancyBboxPatch,Text]
         )
-        for rect in find_mpl_object(self.canvas.figure, gid='selected'):
-            self.canvas.figure.patches.remove(rect)
+        for rect in find_mpl_object(self.canvas.figure, gid='_selected'):
+            rect.remove()
         self.selected_obj.emit(None)
         self.canvas.draw_idle()
-
+        
         if event.button == 1:
-            for obj in stack:
-                if obj.contains(event)[0] and not obj.get_gid().startswith("_"):
-                    self.selected_obj.emit(obj.get_gid())
+            for obj in reversed(stack):
+                if obj.contains(event)[0] and obj.get_gid() and not obj.get_gid().startswith("_"):
                     self.select_mpl_obj(obj.get_gid())
+                    self.selected_obj.emit(obj.get_gid())
                     break # emit when one and only one object is selected
         
         if isinstance(self.canvas.axes, Axes3D) and event.button == 3:
@@ -416,33 +418,36 @@ class GraphicsView (QGraphicsView):
     def mpl_mouseRelease(self, event: MouseEvent):
         self.save_mpl_bg(event)
     
-    def select_mpl_obj(self, gid:str):        
-        stack = find_mpl_object(source=self.canvas.figure,
-                                gid=gid)
+    def select_mpl_obj(self, gid:str):    
+
+        stack = find_mpl_object(
+            source=self.canvas.figure,
+            gid=gid
+        )
         shrink_pixels = 5
         for obj in stack:
             # Shrink the bbox of the object
             bbox = obj.get_window_extent()
-            x0 = bbox.x0 - shrink_pixels
-            y0 = bbox.y0 - shrink_pixels
-            width = bbox.width + 2 * shrink_pixels
-            height = bbox.height + 2 * shrink_pixels
-            # Convert bbox from display coordinates to data coordinates
-            bbox_data = Bbox.from_bounds(x0, y0, width, height).transformed(self.canvas.figure.transFigure.inverted())
-            # Get coordinates and width/height
-            x0, y0 = bbox_data.x0, bbox_data.y0
-            width, height = bbox_data.width, bbox_data.height
+            bbox = Bbox.from_bounds(
+                bbox.x0 - shrink_pixels,
+                bbox.y0 - shrink_pixels,
+                bbox.width + 2 * shrink_pixels,
+                bbox.height + 2 * shrink_pixels
+            )
+            
+            # Convert bbox from display coordinates to figure coordinates
+            bbox_fig = bbox.transformed(self.canvas.figure.transFigure.inverted())
+            x0, y0, width, height = bbox_fig.bounds
 
             # Create rectangle patch
-            rect = Rectangle(
+            self.canvas.figure.add_artist(
+                Rectangle(
                 (x0, y0), width, height,
                 edgecolor='gray', facecolor='none', 
                 lw=1, ls='dashed',
                 transform=self.canvas.figure.transFigure,
-                gid='selected'
-            )
-            self.canvas.figure.patches.append(rect)
-        self.canvas.draw_idle()
+                gid='_selected'
+            ))
     
     def mouseReleaseEvent(self, event:QMouseEvent):
         if event.button() == Qt.MouseButton.MiddleButton:

@@ -107,11 +107,8 @@ class GraphicsScene(QGraphicsScene):
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
 
-        self.rulerOn = True
-        self.crosshairOn = True
-
-        if self.crosshairOn: 
-            self.draw_crosshair()
+        self.rulerOn = False
+        self.draw_crosshair()
     
     def draw_crosshair(self):
         self.vcross = Crosshair()
@@ -221,6 +218,8 @@ class GraphicsScene(QGraphicsScene):
         self.top_margin_right.update_length(width)
         self.left_margin_top.update_length(height)
         self.left_margin_bot.update_length(height)
+
+        self.toggle_ruler(self.rulerOn)
 
     def toggle_ruler(self, enable:bool):
         self.rulerOn = enable

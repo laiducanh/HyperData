@@ -227,8 +227,7 @@ class PlotView(QMainWindow):
             logger.exception(e)
 
     def update_toolbar(self, gid:str):
-        self.toolbar.gid = gid
-        if gid: self.toolbar.update()
+        self.toolbar.update(gid)
 
     def save_figure(self):
         dialog = FileDialog(
