@@ -53,24 +53,25 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None,
                     gid:str=None, rule:Literal["exact","contain"]="contain") -> list[T]:
 
     """ This function is used to find artist plot (having gid) in matplotlib,
-        for other objects such as text, use matplotlib function findobj() instead """
+        for general uses, use matplotlib function findobj() instead """
 
-    obj_found: list[T] = []
+    
     if not match:
         match = [lines.Line2D,collections.Collection,patches.Patch,AxesImage,legend.Legend,text.Text]
-    
-    for artist_class in match:
-        _found = source.findobj(match=artist_class)
-        for artist in _found:
-            if artist.get_gid():
-                if gid:
-                    if rule == "contain" and gid in artist.get_gid():
-                        obj_found.append(artist)
-                    elif rule == "exact" and gid == artist.get_gid():
-                        obj_found.append(artist)
-                else: obj_found.append(artist)
-        #obj_found += [artist for artist in _found if artist.get_gid() != None]
-    return obj_found
+
+    if not gid:
+        return source.findobj(
+            lambda a: isinstance(a, tuple(match))
+        )    
+    if rule == 'exact':
+        return source.findobj(
+            lambda a: isinstance(a, tuple(match)) and a.get_gid() == gid
+        )
+            
+    elif rule == 'contain':
+        return source.findobj(
+            lambda a: isinstance(a, tuple(match)) and a.get_gid() and gid in a.get_gid()
+        )
 
 def remove_artist (figure: Figure, gid:str) -> list[Artist]:
     """
