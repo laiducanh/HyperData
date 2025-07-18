@@ -4,6 +4,7 @@ from PySide6.QtGui import QPixmap, QPainter, QPen, QIcon, QColor, QFont
 from ui.base_widgets.color import ColorToolButton
 from ui.base_widgets.button import TransparentToolButton, TransparentComboBox, CheckBox, ToggleToolButton
 from ui.base_widgets.spinbox import TransparentDoubleSpinBox
+from ui.base_widgets.menu import Menu, Action
 from config.settings import linestyle_lib, marker_lib, font_lib
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
@@ -70,6 +71,20 @@ class FaceColor(EdgeColor):
         self.setIcon(icon)
         self.setIconSize(pixmap.size())
 
+class DrawObject(TransparentToolButton):
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
+
+        self.setIcon('draw.png')
+
+        menu = Menu(parent=self)
+        for text in ['rectangle','line','ellipse','circle']:
+            action = Action(text=text, parent=menu)
+            action.triggered.connect(lambda _, text=text: self.setter(text))
+            menu.addAction(action)
+
+        self.setMenu(menu)
+
 class PlotView_ToolBar(QToolBar):
     sig_back_to_grScene = Signal()
     sig_ruler = Signal(bool)
@@ -103,6 +118,10 @@ class PlotView_ToolBar(QToolBar):
         self.add_graph = TransparentToolButton(
             icon='curve.png',
             setter=self._parent.insertplot.show,
+            layout=self
+        )
+        self.add_object = DrawObject(
+            setter=self._parent.plot_visual.drawing_object,
             layout=self
         )
 

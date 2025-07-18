@@ -285,6 +285,9 @@ class PlotViewMultiFig (PlotView):
         # self.plot_visual.backtoHome.connect(lambda: self.stackedlayout.setCurrentIndex(0))
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.main_layout.addWidget(self.plot_visual)
+    
+    def setup_toolbar(self):
+        pass
 
     def setup_sidebar(self):
 

@@ -2,7 +2,6 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
-from matplotlib.backend_tools import Cursors
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.copy_objects import copy_Axes
 from config.settings import config, logger
@@ -42,8 +41,6 @@ class Canvas (FigureCanvasQTAgg):
         self.initAxes()
         
         super().__init__(self.figure)
-
-        self.set_cursor(Cursors.SELECT_REGION)
     
     def initAxes (self):
         self.axes = self.figure.add_subplot()
