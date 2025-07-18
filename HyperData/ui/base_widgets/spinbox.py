@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLayout, QSpinBox, QDoubleSpinBox, QSlider
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QContextMenuEvent
 from ui.base_widgets.button import HButton, VButton
+from ui.base_widgets.menu import SpinBox_Menu
 from typing import Callable
 
 class SpinBox(QSpinBox):
@@ -35,6 +36,10 @@ class SpinBox(QSpinBox):
 
     def get_getter(self) -> Callable:
         return self.getter
+
+    def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
+        menu = SpinBox_Menu(parent=self)
+        menu.exec(a0.globalPos())
 
 class TransparentSpinBox(SpinBox):
     """ SpinBox with no border and background color """
@@ -70,6 +75,10 @@ class DoubleSpinBox(QDoubleSpinBox):
 
     def get_getter(self) -> Callable:
         return self.getter
+
+    def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
+        menu = SpinBox_Menu(parent=self)
+        menu.exec(a0.globalPos())
     
 class TransparentDoubleSpinBox (DoubleSpinBox):
     """ DoubleSpinBox with no border and background color """

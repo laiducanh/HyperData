@@ -91,7 +91,33 @@ class LineEdit_Menu (Menu):
         self.selectAllAct.triggered.connect(parent.selectAll)
         self.addAction(self.selectAllAct)
 
+class SpinBox_Menu(Menu):
+    def __init__(self, text = None, parent=None):
+        super().__init__(text, parent)
+
+        self.copyAct = QAction(text="Copy", shortcut=QKeySequence("Ctrl+C"), parent=parent)
+        self.copyAct.triggered.connect(parent.lineEdit().copy)
+        self.addAction(self.copyAct)
+
+        self.pasteAct = QAction(text="Paste", shortcut=QKeySequence("Ctrl+V"), parent=parent)
+        self.pasteAct.triggered.connect(parent.lineEdit().paste)
+        self.addAction(self.pasteAct)
         
+        self.addSeparator()
+
+        self.selectAllAct = QAction(text="Select All", shortcut=QKeySequence("Ctrl+A"), parent=parent)
+        self.selectAllAct.triggered.connect(parent.lineEdit().selectAll)
+        self.addAction(self.selectAllAct)
+
+        self.addSeparator()
+
+        self.stepUp = QAction(text='Step up', parent=parent)
+        self.stepUp.triggered.connect(parent.stepUp)
+        self.addAction(self.stepUp)
+
+        self.stepDown = QAction(text='Step down', parent=parent)
+        self.stepDown.triggered.connect(parent.stepDown)
+        self.addAction(self.stepDown)
 
 
 

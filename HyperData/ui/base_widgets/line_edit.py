@@ -9,10 +9,6 @@ class LineEdit(QLineEdit):
     def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs) 
 
-        self.default_width = 150
-        self.setFixedWidth(self.default_width)
-        self.setMouseTracking(True)
-
         self.getter = getter
         self.setter = setter
 
@@ -41,26 +37,6 @@ class LineEdit(QLineEdit):
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
         menu = LineEdit_Menu(parent=self)
         menu.exec(a0.globalPos())
-    
-    def set_width(self, value:float):
-        self.default_width = value
-        self.setFixedWidth(self.default_width)
-
-    def enterEvent(self, event):
-        self.setMaximumWidth(3*self.default_width)
-        self.setSizePolicy(
-            QSizePolicy.Policy.Maximum,
-            QSizePolicy.Policy.Minimum
-        )
-        return super().enterEvent(event)
-    
-    def leaveEvent(self, event):
-        self.setFixedWidth(self.default_width)
-        self.setSizePolicy(
-            QSizePolicy.Policy.Minimum,
-            QSizePolicy.Policy.Minimum
-        )
-        return super().leaveEvent(event)
     
 class TextEdit(QTextEdit):
     def __init__(self, getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent=None, *args, **kwargs):
