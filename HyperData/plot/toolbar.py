@@ -78,7 +78,7 @@ class DrawObject(TransparentToolButton):
         self.setIcon('draw.png')
 
         menu = Menu(parent=self)
-        for text in ['rectangle','line','ellipse','circle']:
+        for text in ['rectangle','line','ellipse']:
             action = Action(text=text, parent=menu)
             action.triggered.connect(lambda _, text=text: self.setter(text))
             menu.addAction(action)
