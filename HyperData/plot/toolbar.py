@@ -78,7 +78,7 @@ class DrawObject(TransparentToolButton):
         self.setIcon('draw.png')
 
         menu = Menu(parent=self)
-        for text in ['rectangle','line','ellipse']:
+        for text in ['rectangle','line','ellipse','text']:
             action = Action(text=text, parent=menu)
             action.triggered.connect(lambda _, text=text: self.setter(text))
             menu.addAction(action)
@@ -316,17 +316,17 @@ class PlotView_ToolBar(QToolBar):
         self.gid = gid
         if gid:
             self.obj = self.findobj()
-            if isinstance(self.obj[0], Artist):
-                self.edgecolor.set_value(self.get_edgecolor())
-                self.facecolor.set_value(self.get_facecolor())
-                self.linewidth.set_value(self.get_linewidth())
-                self.linestyle.set_value(self.get_linestyle())
-            elif isinstance(self.obj[0], Text):
+            if isinstance(self.obj[0], Text):
                 self.edgecolor.set_value(self.get_edgecolor())
                 self.labelfont.set_value(self.get_fontname())
                 self.labelsize.set_value(self.get_fontsize())
                 self.labelstyle.set_value(self.get_italic())
                 self.labelweight.set_value(self.get_bold())
+            elif isinstance(self.obj[0], Artist):
+                self.edgecolor.set_value(self.get_edgecolor())
+                self.facecolor.set_value(self.get_facecolor())
+                self.linewidth.set_value(self.get_linewidth())
+                self.linestyle.set_value(self.get_linestyle())
             if isinstance(self.obj[0], Line2D):
                 self.marker.set_value(self.get_marker())
         else: self.obj = []
