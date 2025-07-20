@@ -5,7 +5,7 @@ from plot.canvas import Canvas
 from ui.base_widgets.button import SegmentedWidget, HToggle
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import SeparateHLine, ScrollArea
-from ui.base_widgets.spinbox import HTransparentSpinBox
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from plot.utilis import find_mpl_object
 from plot.plotting.plotting import set_legend, get_legend
 from config.settings import GLOBAL_DEBUG, logger
@@ -74,7 +74,7 @@ class GeneralPlot(ScrollArea):
             layout=self.vlayout
         )
 
-        zorder = HTransparentSpinBox(
+        zorder = HTransparentDoubleSpinBox(
             label="Z-order",
             setter=self.set_zorder,
             getter=self.get_zorder,

@@ -692,22 +692,6 @@ class GraphicsView (QGraphicsView):
             )
             self.canvas.figure.draw_artist(rect)
 
-    def _normalize_zorder(self):
-        """ 
-            This function will make zorder values into integers, 
-            keep relative order between artists whose gid.
-        """
-        match=[Line2D,Collection,Patch,Text]
-        artists = self.canvas.figure.findobj(
-            lambda a: isinstance(a, tuple(match)) and a.get_gid()
-        )
-        zorders = [a.get_zorder() for a in artists]
-        zorder_map = {z: i+min(zorders) for i, z in enumerate(sorted(zorders))}
-        for artist in artists:
-            original = artist.get_zorder()
-            normalized = zorder_map[original]
-            artist.set_zorder(normalized)
-
     ##### Matplotlib events
     
     def mpl_onDraw(self, event:MouseEvent):
@@ -716,7 +700,6 @@ class GraphicsView (QGraphicsView):
         self._scene.left_margin_top._setPos(1-self.canvas.figure.subplotpars.top) # orientation of matplotlib is inverse
         self._scene.left_margin_bot._setPos(1-self.canvas.figure.subplotpars.bottom)
         if self.selected_gid: self._draw_selection(self.selected_gid)
-        self._normalize_zorder()
         self._save_mpl_bg()
     
     def mpl_enterFigure(self, event:MouseEvent):

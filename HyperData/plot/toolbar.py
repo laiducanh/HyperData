@@ -337,26 +337,33 @@ class PlotView_ToolBar(QToolBar):
     
     def set_zorder(self, value:str):
         if self.gid:
+            match=[Line2D,Collection,Patch,Text]
+            artists = self.canvas.figure.findobj(
+                lambda a: isinstance(a, tuple(match)) and a.get_gid()
+            )
+            zorders = [a.get_zorder() for a in artists]
             for obj in self.obj:
                 try:
                     if value == 'Send to Back':
-                        match=[Line2D,Collection,Patch,Text]
-                        artists = self.canvas.figure.findobj(
-                            lambda a: isinstance(a, tuple(match)) and a.get_gid()
-                        )
-                        zorders = [a.get_zorder() for a in artists]
-                        obj.set_zorder(min(zorders)-1)
+                        obj.set_zorder(min(zorders)-1e-5)
                     elif value == 'Bring to Front':
-                        match=[Line2D,Collection,Patch,Text]
-                        artists = self.canvas.figure.findobj(
-                            lambda a: isinstance(a, tuple(match)) and a.get_gid()
-                        )
-                        zorders = [a.get_zorder() for a in artists]
-                        obj.set_zorder(max(zorders)+1)
+                        obj.set_zorder(max(zorders)+1e-5)
                     elif value == 'Bring Forward':
-                        obj.set_zorder(obj.get_zorder()+1)
+                        sorted_unique_zorders = sorted(set(zorders))
+                        index = sorted_unique_zorders.index(obj.zorder)
+                        print(sorted_unique_zorders, index)
+                        if index < len(sorted_unique_zorders):
+                            obj.set_zorder(sorted_unique_zorders[index+1])
+                        else:
+                            obj.set_zorder(sorted_unique_zorders[index]+1e-5)
                     elif value == 'Send Backward':
-                        obj.set_zorder(obj.get_zorder()-1)
+                        sorted_unique_zorders = sorted(set(zorders))
+                        index = sorted_unique_zorders.index(obj.zorder)
+                        print(sorted_unique_zorders, index)
+                        if index > 0:
+                            obj.set_zorder(sorted_unique_zorders[index-1])
+                        else:
+                            obj.set_zorder(sorted_unique_zorders[index]-1e-5)
                 except: pass
             self.canvas.draw_idle()
     
