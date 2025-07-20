@@ -67,6 +67,7 @@ class PlotView(QMainWindow):
         self.plot_visual.backtoScene.connect(self.sig_back_to_grScene.emit)
         self.plot_visual.mouse_released.connect(self.treeview_func)
         self.plot_visual.selected_obj.connect(self.update_toolbar)
+        self.plot_visual.draw_obj.connect(self.update_objectlist)
         self.main_layout.addWidget(self.plot_visual)
     
     def setup_toolbar(self):
@@ -84,6 +85,7 @@ class PlotView(QMainWindow):
                 "Pane":["XY Pane","YZ Pane","XZ Pane"],
                 "Figure 3D": [],
                 "Label":["Title","Legend"],
+                "Drawings": []
             }
 
         else:
@@ -91,7 +93,8 @@ class PlotView(QMainWindow):
                 "Manage graph":["Add graph"],
                 "Axis":["Bottom Axis","Left Axis","Top Axis","Right Axis"],
                 "Figure 2D":[],
-                "Label":["Title", "Legend"]
+                "Label":["Title", "Legend"],
+                "Drawings": []
             }
 
         self.sidebar = QWidget()
@@ -225,6 +228,12 @@ class PlotView(QMainWindow):
 
         except Exception as e: 
             logger.exception(e)
+
+    def update_objectlist(self):
+        self.treeview_data["Drawings"] = []
+        for obj in find_mpl_object(self.canvas.figure, gid='drawing'):
+            self.treeview_data["Drawings"].append(obj.get_gid().title())
+        self.treeview.setData(self.treeview_data)
 
     def update_toolbar(self, gid:str):
         self.toolbar.update(gid)

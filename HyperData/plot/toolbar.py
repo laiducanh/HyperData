@@ -9,6 +9,8 @@ from config.settings import linestyle_lib, marker_lib, font_lib
 from plot.canvas import Canvas
 from plot.utilis import find_mpl_object
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+from matplotlib.collections import Collection
 from matplotlib.text import Text
 from matplotlib.artist import Artist
 from matplotlib.colors import to_hex
@@ -85,6 +87,23 @@ class DrawObject(TransparentToolButton):
 
         self.setMenu(menu)
 
+class Arrange(TransparentToolButton):
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
+
+        self.setIcon('arrange.png')
+
+        action_list = ['Bring to Front','Send to Back','Bring Forward','Send Backward']
+        icon_list = ['bring_to_front.png','send_to_back.png','bring_forward.png','send_backward.png']
+
+        menu = Menu(parent=self)
+        for text, icon in zip(action_list, icon_list):
+            action = Action(text=text, icon=icon, parent=menu)
+            action.triggered.connect(lambda _, text=text: self.setter(text))
+            menu.addAction(action)
+
+        self.setMenu(menu)
+
 class PlotView_ToolBar(QToolBar):
     sig_back_to_grScene = Signal()
     sig_ruler = Signal(bool)
@@ -100,7 +119,7 @@ class PlotView_ToolBar(QToolBar):
         self.setFloatable(False)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
     
-    def findobj(self):
+    def findobj(self) -> list[Artist]:
         return find_mpl_object(self.canvas.figure, gid=self.gid)
     
     def initActions(self):
@@ -122,6 +141,10 @@ class PlotView_ToolBar(QToolBar):
         )
         self.add_object = DrawObject(
             setter=self._parent.plot_visual.drawing_object,
+            layout=self
+        )
+        self.arrange = Arrange(
+            setter=self.set_zorder,
             layout=self
         )
 
@@ -261,7 +284,7 @@ class PlotView_ToolBar(QToolBar):
             for obj in self.obj:
                 try: obj.set_fontname(font.lower())
                 except: pass
-        self.canvas.draw_idle()
+            self.canvas.draw_idle()
     
     def get_fontname(self):
         try: 
@@ -273,7 +296,7 @@ class PlotView_ToolBar(QToolBar):
             for obj in self.obj:
                 try: obj.set_fontsize(value)
                 except: pass
-        self.canvas.draw_idle()
+            self.canvas.draw_idle()
     
     def get_fontsize(self):
         try: 
@@ -287,7 +310,7 @@ class PlotView_ToolBar(QToolBar):
                     if bool: obj.set_fontstyle('italic')
                     else: obj.set_fontstyle('normal')
                 except: pass
-        self.canvas.draw_idle()
+            self.canvas.draw_idle()
     
     def get_italic (self):
         try:
@@ -303,7 +326,7 @@ class PlotView_ToolBar(QToolBar):
                     if bool: obj.set_fontweight('bold')
                     else: obj.set_fontweight('normal')
                 except: pass
-        self.canvas.draw_idle()
+            self.canvas.draw_idle()
 
     def get_bold (self):
         try:
@@ -311,6 +334,31 @@ class PlotView_ToolBar(QToolBar):
                 return False
             return True
         except Exception as e: print(e)
+    
+    def set_zorder(self, value:str):
+        if self.gid:
+            for obj in self.obj:
+                try:
+                    if value == 'Send to Back':
+                        match=[Line2D,Collection,Patch,Text]
+                        artists = self.canvas.figure.findobj(
+                            lambda a: isinstance(a, tuple(match)) and a.get_gid()
+                        )
+                        zorders = [a.get_zorder() for a in artists]
+                        obj.set_zorder(min(zorders)-1)
+                    elif value == 'Bring to Front':
+                        match=[Line2D,Collection,Patch,Text]
+                        artists = self.canvas.figure.findobj(
+                            lambda a: isinstance(a, tuple(match)) and a.get_gid()
+                        )
+                        zorders = [a.get_zorder() for a in artists]
+                        obj.set_zorder(max(zorders)+1)
+                    elif value == 'Bring Forward':
+                        obj.set_zorder(obj.get_zorder()+1)
+                    elif value == 'Send Backward':
+                        obj.set_zorder(obj.get_zorder()-1)
+                except: pass
+            self.canvas.draw_idle()
     
     def update(self, gid:str):
         self.gid = gid

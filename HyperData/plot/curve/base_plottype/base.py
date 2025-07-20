@@ -117,8 +117,12 @@ class GeneralPlot(ScrollArea):
             logger.exception(e)
 
     def set_clip(self, bool):
-        for obj in self.find_obj():
-            obj.set_clip_on(bool)
+        try:
+            for obj in self.find_obj():
+                obj.set_clip_on(bool)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)   
     
     def get_clip(self) -> bool:
         return self.find_obj()[0].get_clip_on()
@@ -127,6 +131,9 @@ class GeneralPlot(ScrollArea):
         return int(self.find_obj()[0].get_zorder())
     
     def set_zorder(self, value:float):
-        for obj in self.find_obj():
-            obj.set_zorder(value)
-            value += 1
+        try:
+            for obj in self.find_obj():
+                obj.set_zorder(value)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
