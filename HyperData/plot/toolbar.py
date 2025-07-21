@@ -7,7 +7,7 @@ from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.menu import Menu, Action
 from config.settings import linestyle_lib, marker_lib, font_lib
 from plot.canvas import Canvas
-from plot.utilis import find_mpl_object
+from plot.utilis import find_mpl_object, normalize_zorder
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.collections import Collection
@@ -337,34 +337,46 @@ class PlotView_ToolBar(QToolBar):
     
     def set_zorder(self, value:str):
         if self.gid:
-            match=[Line2D,Collection,Patch,Text]
-            artists = self.canvas.figure.findobj(
-                lambda a: isinstance(a, tuple(match)) and a.get_gid()
-            )
+            artists = self.canvas.figure.artists
             zorders = [a.get_zorder() for a in artists]
-            for obj in self.obj:
+            zorders.insert(0, min(zorders) - 1e-3)
+            zorders.append(max(zorders) + 1e-3)
+            for obj in artists:
                 try:
-                    if value == 'Send to Back':
-                        obj.set_zorder(min(zorders)-1e-5)
-                    elif value == 'Bring to Front':
-                        obj.set_zorder(max(zorders)+1e-5)
-                    elif value == 'Bring Forward':
-                        sorted_unique_zorders = sorted(set(zorders))
-                        index = sorted_unique_zorders.index(obj.zorder)
-                        print(sorted_unique_zorders, index)
-                        if index < len(sorted_unique_zorders):
-                            obj.set_zorder(sorted_unique_zorders[index+1])
-                        else:
-                            obj.set_zorder(sorted_unique_zorders[index]+1e-5)
-                    elif value == 'Send Backward':
-                        sorted_unique_zorders = sorted(set(zorders))
-                        index = sorted_unique_zorders.index(obj.zorder)
-                        print(sorted_unique_zorders, index)
-                        if index > 0:
-                            obj.set_zorder(sorted_unique_zorders[index-1])
-                        else:
-                            obj.set_zorder(sorted_unique_zorders[index]-1e-5)
-                except: pass
+                    if obj.get_gid() == self.gid:
+                        if value == 'Send to Back':
+                            obj.set_zorder(min(zorders))
+                        elif value == 'Bring to Front':
+                            obj.set_zorder(max(zorders))
+                        elif value == 'Bring Forward':
+                            sorted_unique_zorders = sorted(set(zorders))
+                            index = sorted_unique_zorders.index(obj.zorder)
+                            if index < len(sorted_unique_zorders)-1:
+                                obj.set_zorder((
+                                    sorted_unique_zorders[index+1]+ \
+                                    sorted_unique_zorders[index+2]) / 2
+                                )
+                                
+                            else:
+                                obj.set_zorder((
+                                    sorted_unique_zorders[index+1]+ \
+                                    sorted_unique_zorders[index]) / 2
+                                )
+                        elif value == 'Send Backward':
+                            sorted_unique_zorders = sorted(set(zorders))
+                            index = sorted_unique_zorders.index(obj.zorder)
+                            if index > 1:
+                                obj.set_zorder((
+                                    sorted_unique_zorders[index-1]- \
+                                    sorted_unique_zorders[index-2]) / 2
+                                )
+                            else:
+                                obj.set_zorder((
+                                    sorted_unique_zorders[index-1]- \
+                                    sorted_unique_zorders[index]) / 2
+                                )
+                except Exception as e: print(e)
+            normalize_zorder(self.canvas.figure)
             self.canvas.draw_idle()
     
     def update(self, gid:str):

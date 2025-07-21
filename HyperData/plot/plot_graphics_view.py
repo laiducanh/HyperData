@@ -16,7 +16,7 @@ from matplotlib.transforms import Bbox
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.backend_tools import Cursors
 from ui.utils import isDark
-from plot.utilis import get_color, find_mpl_object
+from plot.utilis import get_color, find_mpl_object, normalize_zorder
 from ui.base_widgets.menu import Menu, Action
 from plot.plot_graphics_scene import GraphicsScene
 
@@ -662,35 +662,40 @@ class GraphicsView (QGraphicsView):
         return drawing_resize, moving_start, change_item
 
     def _draw_selection(self, gid:str):    
-        
+
         stack = find_mpl_object(
             source=self.canvas.figure,
+            match=[Artist],
             gid=gid
         )
+        
         shrink_pixels = 5
-        for obj in stack:
-            # Shrink the bbox of the object
-            bbox = obj.get_window_extent()
-            bbox = Bbox.from_bounds(
-                bbox.x0 - shrink_pixels,
-                bbox.y0 - shrink_pixels,
-                bbox.width + 2 * shrink_pixels,
-                bbox.height + 2 * shrink_pixels
-            )
-            
-            # Convert bbox from display coordinates to figure coordinates
-            bbox_fig = bbox.transformed(self.canvas.figure.transFigure.inverted())
-            x0, y0, width, height = bbox_fig.bounds
 
-            # Create rectangle patch to denote selection
-            rect = Rectangle(
-                (x0, y0), width, height,
-                edgecolor='gray', facecolor='none', 
-                lw=1, ls='dashed',
-                transform=self.canvas.figure.transFigure,
-                gid='_selected'
-            )
-            self.canvas.figure.draw_artist(rect)
+        for obj in stack:
+            try:
+                # Shrink the bbox of the object
+                bbox = obj.get_window_extent()
+                bbox = Bbox.from_bounds(
+                    bbox.x0 - shrink_pixels,
+                    bbox.y0 - shrink_pixels,
+                    bbox.width + 2 * shrink_pixels,
+                    bbox.height + 2 * shrink_pixels
+                )
+                
+                # Convert bbox from display coordinates to figure coordinates
+                bbox_fig = bbox.transformed(self.canvas.figure.transFigure.inverted())
+                x0, y0, width, height = bbox_fig.bounds
+
+                # Create rectangle patch to denote selection
+                rect = Rectangle(
+                    (x0, y0), width, height,
+                    edgecolor='gray', facecolor='none', 
+                    lw=1, ls='dashed',
+                    transform=self.canvas.figure.transFigure,
+                    gid='_selected'
+                )
+                self.canvas.figure.draw_artist(rect)
+            except Exception as e: print(e)
 
     ##### Matplotlib events
     
@@ -700,6 +705,7 @@ class GraphicsView (QGraphicsView):
         self._scene.left_margin_top._setPos(1-self.canvas.figure.subplotpars.top) # orientation of matplotlib is inverse
         self._scene.left_margin_bot._setPos(1-self.canvas.figure.subplotpars.bottom)
         if self.selected_gid: self._draw_selection(self.selected_gid)
+        normalize_zorder(self.canvas.figure)
         self._save_mpl_bg()
     
     def mpl_enterFigure(self, event:MouseEvent):
@@ -762,11 +768,7 @@ class GraphicsView (QGraphicsView):
             self.ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
     
     def mpl_mouseRelease(self, event: MouseEvent):
-        stack = find_mpl_object(
-            source=self.canvas.figure,
-            match=[Line2D,Collection,Rectangle,Wedge,Ellipse,
-                   PathPatch,FancyBboxPatch,Text]
-        )
+
         for rect in find_mpl_object(self.canvas.figure, gid='_selected'):
             rect.remove()
         self.selected_obj.emit(None)
@@ -776,24 +778,33 @@ class GraphicsView (QGraphicsView):
             self.canvas.figure.add_artist(self.drawing_item)
             self.draw_obj.emit()
 
+        
         if event.button == 1:
-            for obj in reversed(stack):
-                if self.change_item:
-                    # while resizing the item, mouse position may fall outside the item
-                    self.selected_gid = self.change_item
-                    self.selected_obj.emit(self.change_item)
-                    self.change_item = None
-                    break
-                elif obj.contains(event)[0] and obj.get_gid() and not obj.get_gid().startswith("_"):
-                    self.selected_gid = obj.get_gid()
-                    self.selected_obj.emit(obj.get_gid())
-                    break
-                elif self.drawing_item:
-                    self.selected_gid = f'drawing {self.drawing_index}'
-                    self.selected_obj.emit(f'drawing {self.drawing_index}')
-                    break
-                else: 
-                    self.selected_gid = None
+            zorders = []
+            for obj in self.canvas.figure.artists:
+                if obj.contains(event)[0]:
+                    zorders.append(obj.get_zorder())
+            
+            if self.change_item:
+                # while resizing the item, mouse position may fall outside the item
+                self.selected_gid = self.change_item
+                self.selected_obj.emit(self.change_item)
+                self.change_item = None
+            
+            elif self.drawing_item:
+                self.selected_gid = f'drawing {self.drawing_index}'
+                self.selected_obj.emit(f'drawing {self.drawing_index}')
+            
+            else:
+                for obj in reversed(self.canvas.figure.artists):
+                    if obj.contains(event)[0]:
+                        print(obj.zorder, zorders)
+                    if obj.contains(event)[0] and obj.zorder == max(zorders):
+                        self.selected_gid = obj.get_gid()
+                        self.selected_obj.emit(obj.get_gid())
+                        break
+                    else: 
+                        self.selected_gid = None
         
         self._save_mpl_bg()
         self.canvas.draw_idle()

@@ -117,10 +117,18 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
                 for art_old in artist_old:
                     if art.get_gid() == art_old.get_gid():
                         update_props(art_old, art)
-   
+    
     # update legend if necessary
     set_legend(ax.figure)
+    
+    # ax.figure.canvas.draw_idle()
+    ax.redraw_in_frame()
 
+    # add artist from the drawing axes into figure globally
+    # in order to have better control in zorder
+    for art in artist:
+        ax.figure.add_artist(art)
+    
     ax.figure.canvas.draw_idle()
 
     return artist, props

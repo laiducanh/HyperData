@@ -52,7 +52,9 @@ class Canvas (FigureCanvasQTAgg):
 
         self.axespie.set_axis_off()
         self.axespolar.set_axis_off()
-        self.axesleg.set_axis_off()
+        # self.axesleg.set_axis_off()
+        self.axesleg.set_xticks([])
+        self.axesleg.set_yticks([])
 
         self.axes.xaxis.set_gid("bottom")
         self.axes.yaxis.set_gid("left")

@@ -73,17 +73,25 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None,
             lambda a: isinstance(a, tuple(match)) and a.get_gid() and gid in a.get_gid()
         )
 
-def remove_artist (figure: Figure, gid:str) -> list[Artist]:
+def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     """
-    Remove artist which contains gid from figure
+    Remove artist which contains gid from Axes
     
     """
     artist_removed = list()
-    
-    for artist in find_mpl_object(source=figure,match=[Artist],gid=gid,rule="contain"):
-        artist_removed.append(artist)
-        artist.remove()
-        logger.info(f'Canvas {figure.canvas.id}: remove_artist {artist}.')
+
+    for ax in figure.axes:
+        artists = find_mpl_object(
+            source=ax,
+            match=[Artist],
+            gid=gid
+        )
+        if artists:
+            ax._children = [x for x in ax._children if x not in artists]
+            figure.artists = [x for x in figure.artists if x not in artists]
+            artist_removed += artists
+            logger.info(f'Canvas {figure.canvas.id}: remove_artist {artists}.')
+                        
     return artist_removed
 
 def get_legend(figure: Figure) -> Union[legend.Legend, None]:
@@ -109,3 +117,9 @@ def rescale_plot(figure:Figure) -> None:
     for _ax in figure.axes:
         _ax.relim()
         _ax.autoscale()  
+
+def normalize_zorder(figure:Figure):
+    zorders = [artist.zorder for artist in figure.artists]
+    zorders_map = {z : i+1 for i, z in enumerate(sorted(zorders))}
+    for artist in figure.artists:
+        artist.set_zorder(zorders_map[artist.zorder])
