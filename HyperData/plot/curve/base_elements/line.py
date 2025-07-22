@@ -92,7 +92,7 @@ class Line(ArtistConfigBase):
             logger.exception(e)
     
     def get_linestyle(self):
-        try: return self.find_object()[0].get_linestyle()
+        try: return linestyle_lib[self.find_object()[0].get_linestyle()]
         except: return "solid"
     
     def set_capstyle(self, value):
@@ -318,7 +318,7 @@ class LineCollection(ArtistConfigBase):
         
     def find_object(self) -> list[collections.LineCollection]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.LineCollection],
             gid=self.gid,
         )
@@ -392,7 +392,7 @@ class ErrorBarCollection(LineCollection):
     
     def find_object(self) -> list[collections.LineCollection, lines.Line2D]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.LineCollection, lines.Line2D],
             gid=self.gid,
         )

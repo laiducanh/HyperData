@@ -79,7 +79,7 @@ class Contour (PlotConfigBase):
 
     def find_object(self) -> list[collections.QuadMesh]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.QuadMesh],
             gid=self.gid,
         )

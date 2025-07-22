@@ -4,9 +4,9 @@ from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidge
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import ScrollArea
+from plot.utilis import find_mpl_object, grid
 from plot.canvas import Canvas
-from plot.utilis import find_mpl_object
-from matplotlib import lines, rcParams, colors
+from matplotlib import rcParams, colors, lines
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
 
 DEBUG = False
@@ -95,8 +95,17 @@ class Grid2D(ScrollArea):
             layout=self.vlayout
         )
 
+        self.coord = HTransparentComboBox(
+            items=['bottom-left','bottom-right','top-left'],
+            label='Axes',
+            label2='Choose the base axes to visualize the grid lines',
+            setter=self.set_coord,
+            getter=self.get_coord,
+            layout=self.vlayout
+        )
+
         self.which = HTransparentComboBox(
-            items = ['Major','Minor','Both'],
+            items = ['major','minor','both'],
             label  = 'Type',
             label2 = 'The grid lines to apply the changes on',
             setter=self.set_gridtype,
@@ -107,7 +116,7 @@ class Grid2D(ScrollArea):
         self.axis = HTransparentComboBox(
             label  = 'Axis',
             label2 = 'The axis to apply the changes on',
-            items = ['X','Y','Both'],
+            items = ['x','y','both'],
             getter=self.get_gridaxis,
             setter=self.set_gridaxis,
             layout=self.vlayout
@@ -148,23 +157,22 @@ class Grid2D(ScrollArea):
             layout=self.vlayout
         )
     
+    def findobj(self) -> list[lines.Line2D]:
+        return find_mpl_object(
+            self.canvas.figure, [lines.Line2D],
+            gid='_grid', rule='exact'
+        )
+    
     def set_grid(self):
         try:
             self.canvas._config["grid"].update(
                 visible   = self.visible.button.isChecked(),
-                which     = self.which.button.currentText().lower(), 
-                axis      = self.axis.button.currentText().lower(), 
-                alpha     = self.alpha.button.value()/100,
-                linewidth = self.linewidth.button.value(),
-                linestyle = self.linestyle.button.currentText().lower(), 
-                color     = QColor(self.color.button.color).name(),
+                coord     = self.coord.button.currentText(),
+                which     = self.which.button.currentText(), 
+                axis      = self.axis.button.currentText(), 
             )
-        # Need to redraw grid after any changes
-            self.canvas.axes.grid(visible=False, which='both', axis='both')
-            if self.visible.button.isChecked():
-                self.canvas.axes.grid(gid = "_grid", **self.canvas._config["grid"])
 
-        # Idle Redraw
+            grid(self.canvas.figure)
             self.canvas.draw_idle()
 
         except Exception as e:
@@ -176,47 +184,80 @@ class Grid2D(ScrollArea):
     def get_visible(self) -> bool:
         return self.canvas._config["grid"]["visible"]
 
+    def set_coord(self, value:str):
+        self.set_grid()
+    
+    def get_coord(self) -> str:
+        return self.canvas._config["grid"]["coord"] 
+
     def set_gridtype(self, value:str):
-        #rcParams['axes.grid.which'] = value.lower()
         self.set_grid()
     
     def get_gridtype (self) -> str:
-        return self.canvas._config["grid"]["which"].title()
+        return self.canvas._config["grid"]["which"]
     
     def set_gridaxis(self, value:str):
-        #rcParams['axes.grid.axis'] = value.lower()
         self.set_grid()
 
     def get_gridaxis (self):
-        return self.canvas._config["grid"]["axis"].title()
+        return self.canvas._config["grid"]["axis"]
 
     def set_alpha(self, value:int):
-        #rcParams['grid.alpha'] = value/100
-        self.set_grid()
+        try:
+            for obj in self.findobj():
+                obj.set_alpha(value/100)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
 
     def get_alpha(self):
-        return int(self.canvas._config["grid"]["alpha"]*100)
+        lines = self.findobj()
+        if lines: 
+            if lines[0].get_alpha():
+                return int(lines[0].get_alpha()*100)
+        return int(rcParams['grid.alpha']*100)
     
     def set_linewidth(self, value:float):
-        #rcParams['grid.linewidth'] = value
-        self.set_grid()
+        try:
+            for obj in self.findobj():
+                obj.set_linewidth(value)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
     
     def get_linewidth(self) -> float:
-        return self.canvas._config["grid"]["linewidth"]
+        lines = self.findobj()
+        if lines:
+            return lines[0].get_linewidth()
+        return rcParams['grid.linewidth']
     
     def set_linestyle(self, value:str):
-        #linestyle_lib[rcParams['grid.linestyle']] = value
-        self.set_grid()
+        try:
+            for obj in self.findobj():
+                obj.set_linestyle(value)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
 
     def get_linestyle (self) -> str:
-        return self.canvas._config["grid"]["linestyle"].lower()
+        lines = self.findobj()
+        if lines:
+            return linestyle_lib[lines[0].get_linestyle()]
+        return linestyle_lib[rcParams['grid.linestyle']]
 
     def set_color(self, color):
-        #rcParams['grid.color'] = color
-        self.set_grid()
+        try:
+            for obj in self.findobj():
+                obj.set_color(color)
+            self.canvas.draw_idle()
+        except Exception as e:
+            logger.exception(e)
        
     def get_color(self) -> str:
-        return self.canvas._config["grid"]["color"]
+        lines = self.findobj()
+        if lines:
+            return colors.to_hex(lines[0].get_color())
+        return rcParams['grid.color']
     
 class Pane2D(ScrollArea):
     def __init__(self, canvas: Canvas, parent=None):

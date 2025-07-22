@@ -129,7 +129,7 @@ class Grid3D(ScrollArea):
         self.canvas.draw_idle()
 
     def get_linestyle (self) -> str:
-        return self.axinfo.get('linestyle')
+        return linestyle_lib[self.axinfo.get('linestyle')]
 
     def set_color(self, color):
         self.axinfo.update(color = color)

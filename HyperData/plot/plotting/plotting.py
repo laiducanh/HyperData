@@ -5,8 +5,9 @@ from plot.plotting.base.pie import *
 from plot.plotting.base.stats import *
 from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
-from plot.utilis import find_mpl_object, remove_artist, get_legend, remove_legend, rescale_plot
+from plot.utilis import find_mpl_object, remove_artist, get_legend, remove_legend, rescale_plot, grid
 from plot.copy_objects import update_props, update_legend
+from plot.canvas import Canvas
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
@@ -16,19 +17,22 @@ DEBUG = False
 
 def set_legend(figure:Figure, *args, **kwargs):
     try:   
-        handles = find_mpl_object(figure, match=[Artist], gid="graph ")
+        handles = find_mpl_object(figure, match=[Artist], gid="graph", rule='contain')
         plot_list = set([s.get_gid().split('/')[0] for s in handles])
         
         labels, handles = list(), list()
         for gid in plot_list:
-            arts = find_mpl_object(figure, match=[Artist], gid=gid)
+            arts = find_mpl_object(figure, match=[Artist], gid=gid, rule='contain')
             for art in arts:
                 if art.get_visible() and art.get_label() and not art.get_label().startswith('_'):
                     labels.append(arts[0].get_label())
                     handles.append(arts[0])
                     break # only one visible artist with valid label is used for legend  
 
-        ax = find_mpl_object(figure, match=[Axes, Axes3D], gid='legend axes', rule='exact')[0]
+        ax = figure.findobj(
+            lambda a: isinstance(a, (Axes, Axes3D)) and a.get_gid() \
+            and a.get_gid() == 'legend axes'
+        )[0]
 
         if handles != []:            
             if get_legend(figure): 
@@ -51,7 +55,7 @@ def set_legend(figure:Figure, *args, **kwargs):
 def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwargs) -> tuple[list[Artist], dict]:
 
     # remove selected rectangles:
-    for rect in find_mpl_object(ax.figure, gid='selected'):
+    for rect in find_mpl_object(ax.figure, gid='_selected', rule='exact'):
         ax.figure.patches.remove(rect)
    
     # get old artist that will be replaced
@@ -128,6 +132,10 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     # in order to have better control in zorder
     for art in artist:
         ax.figure.add_artist(art)
+    
+    # adjust grid when plotting
+    if isinstance(ax.figure.canvas, Canvas): 
+        grid(ax.figure)
     
     ax.figure.canvas.draw_idle()
 

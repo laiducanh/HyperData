@@ -5,7 +5,6 @@ from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import ScrollArea, SeparateHLine
 from ui.base_widgets.text import TitleLabel
-from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from plot.tick.tick_2d import TickBase2
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
@@ -61,7 +60,10 @@ class TickBase(ScrollArea):
         )
 
     def find_obj(self) -> Axis:
-        return find_mpl_object(self.canvas.figure, match=[Axis], gid=self.axis)[0]
+        return self.canvas.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self.axis
+        )[0]
     
     def set_visible(self, value):
         try:
@@ -193,10 +195,9 @@ class SpineBase(ScrollArea):
         )
 
     def find_object (self) -> lines.Line2D:
-        return find_mpl_object(
-            self.canvas.figure, 
-            match=[Axis], 
-            gid=self.axis
+        return self.canvas.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self.axis
         )[0].line
     
     def set_visible (self, value:bool):
@@ -232,7 +233,7 @@ class SpineBase(ScrollArea):
         self.canvas.draw_idle()
     
     def get_linestyle(self):
-        return self.obj.get_linestyle()
+        return linestyle_lib[self.obj.get_linestyle()]
 
     def set_linewidth(self, value):
         self.obj.set_linewidth(value)
@@ -328,7 +329,10 @@ class AxisLabel(ScrollArea):
         )
     
     def find_axis(self) -> Axis:
-        return find_mpl_object(self.canvas.figure,[Axis], self.axis)[0]
+        return self.canvas.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self.axis
+        )[0]
     
     def set_label(self, value:str):
         self.ax.set_label_text(value)

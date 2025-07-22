@@ -3,6 +3,7 @@ from matplotlib.artist import Artist
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
 from matplotlib.axes import Axes
+from matplotlib.axis import Axis
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import lines, patches, collections, text, legend
 from typing import Literal, Union, Type, TypeVar
@@ -49,10 +50,10 @@ def complementary_color(color):
     
     return comp_hex
 
-def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None, 
+def find_mpl_object(figure:Figure, match:list[Type[T]]=None, 
                     gid:str=None, rule:Literal["exact","contain","index"]="index") -> list[T]:
 
-    """ This function is used to find artist plot (having gid) in matplotlib,
+    """ This function is used to find artist plot (having gid) in figure,
         for general uses, use matplotlib function findobj() instead """
 
     
@@ -60,24 +61,21 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None,
         match = [lines.Line2D,collections.Collection,patches.Patch,AxesImage,legend.Legend,text.Text]
 
     if not gid:
-        return source.findobj(
-            lambda a: isinstance(a, tuple(match))
-        )    
+        return [x for x in figure.artists if isinstance(x, tuple(match))]
+        
     if rule == 'exact':
-        return source.findobj(
-            lambda a: isinstance(a, tuple(match)) and a.get_gid() and a.get_gid() == gid
-        )
+        return [x for x in figure.artists if isinstance(x, tuple(match)) \
+                and x.get_gid() and x.get_gid() == gid]
             
     elif rule == 'contain':
-        return source.findobj(
-            lambda a: isinstance(a, tuple(match)) and a.get_gid() and gid in a.get_gid()
-        )
+        return [x for x in figure.artists if isinstance(x, tuple(match)) \
+                and x.get_gid() and gid in x.get_gid()]
 
     elif rule == 'index':
-        return source.findobj(
-            lambda a: isinstance(a, tuple(match)) and a.get_gid() \
-                  and gid.split()[-1] == a.get_gid().split('/')[0].split()[-1]
-        )
+        return [x for x in figure.artists if isinstance(x, tuple(match)) \
+                and x.get_gid() \
+                and gid.split()[0] in x.get_gid().split('/')[0] \
+                and gid.split()[-1] == x.get_gid().split('/')[0].split()[-1]]
 
 def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     """
@@ -87,10 +85,10 @@ def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     artist_removed = list()
 
     for ax in figure.axes:
-        artists = find_mpl_object(
-            source=ax,
-            match=[Artist],
-            gid=gid
+        artists = ax.findobj(
+            lambda a: isinstance(a, Artist) and a.get_gid() \
+            and gid.split()[0] in a.get_gid().split('/')[0] \
+            and gid.split()[-1] == a.get_gid().split('/')[0].split()[-1]
         )
         if artists:
             ax._children = [x for x in ax._children if x not in artists]
@@ -101,7 +99,10 @@ def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     return artist_removed
 
 def get_legend(figure: Figure) -> Union[legend.Legend, None]:
-    found = find_mpl_object(source=figure, match=[legend.Legend], gid='legend', rule='exact')
+    found = figure.findobj(
+        lambda a: isinstance(a, legend.Legend) and a.get_gid() \
+        and a.get_gid() == 'legend'
+    )
     if found: return found[0]
     return
 
@@ -173,3 +174,45 @@ def set_zorder(figure:Figure, gid:str,
                         )
         except Exception as e: pass
     normalize_zorder(figure)
+
+def grid(figure: Figure):
+    " Only use for 2D Figure "
+
+    for obj in find_mpl_object(
+        figure, [lines.Line2D],
+        gid='_grid', rule='exact'
+    ):
+        figure.artists.remove(obj)
+
+    xaxis: Axis = figure.findobj(
+        lambda a: isinstance(a, Axis) and a.get_gid() \
+        and a.get_gid() == figure.canvas._config['grid']['coord'].split('-')[0]
+    )[0]
+    yaxis: Axis = figure.findobj(
+        lambda a: isinstance(a, Axis) and a.get_gid() \
+        and a.get_gid() == figure.canvas._config['grid']['coord'].split('-')[1]
+    )[0]
+    
+    if figure.canvas._config['grid']['which'] == 'major':
+        xticks = xaxis.get_major_ticks()
+        yticks = yaxis.get_major_ticks()
+    elif figure.canvas._config['grid']['which'] == 'minor':
+        xticks = xaxis.get_minor_ticks()
+        yticks = yaxis.get_minor_ticks()
+    elif figure.canvas._config['grid']['which'] == 'both':
+        xticks = xaxis.get_major_ticks() + xaxis.get_minor_ticks()
+        yticks = yaxis.get_major_ticks() + yaxis.get_minor_ticks()
+    
+    if figure.canvas._config['grid']['axis'] == 'x':
+        gridlines = [tick.gridline for tick in xticks]
+    elif figure.canvas._config['grid']['axis'] == 'y':
+        gridlines = [tick.gridline for tick in yticks]
+    elif figure.canvas._config['grid']['axis'] == 'both':
+        gridlines = [tick.gridline for tick in xticks + yticks]
+
+    for line in gridlines:
+        line.set(
+            visible = figure.canvas._config['grid']['visible'],
+            gid = '_grid'
+        )
+        figure.add_artist(line)

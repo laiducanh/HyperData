@@ -221,7 +221,7 @@ class GraphicsView (QGraphicsView):
     
     def _get_drawing_index(self) -> int:
         index = 0
-        for obj in find_mpl_object(self.canvas.figure, gid='drawing'):
+        for obj in find_mpl_object(self.canvas.figure, gid='drawing', rule='contain'):
             if index < int(obj.get_gid().split()[-1]):
                 index = int(obj.get_gid().split()[-1])
         return index
@@ -307,7 +307,7 @@ class GraphicsView (QGraphicsView):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key.Key_Delete:
             if self.selected_gid:
-                for obj in find_mpl_object(self.canvas.figure, gid=self.selected_gid):
+                for obj in find_mpl_object(self.canvas.figure, gid=self.selected_gid, rule='exact'):
                     obj.remove()
                 self.draw_obj.emit()
                 self.canvas.draw_idle()
@@ -328,7 +328,7 @@ class GraphicsView (QGraphicsView):
 
     def _tooltip_onShow(self, event: MouseEvent):
         stack = find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[Line2D,Collection,Rectangle,Wedge,
                    PathPatch,FancyBboxPatch]
         )
@@ -454,7 +454,7 @@ class GraphicsView (QGraphicsView):
                         (event.x, event.y)
         )
         self.canvas.set_cursor(Cursors.SELECT_REGION)
-        for obj in find_mpl_object(self.canvas.figure, gid='drawing'):
+        for obj in find_mpl_object(self.canvas.figure, gid='drawing', rule='contain'):
             if isinstance(obj, Patch):
                 bbox = obj.get_window_extent()
                 bbox_fig = bbox.transformed(self.canvas.figure.transFigure.inverted())
@@ -606,7 +606,7 @@ class GraphicsView (QGraphicsView):
         moving_start = None
         change_item = None
 
-        for obj in reversed(find_mpl_object(self.canvas.figure, gid='drawing')):
+        for obj in reversed(find_mpl_object(self.canvas.figure, gid='drawing', rule='contain')):
             if isinstance(obj, Patch):
 
                 bbox = obj.get_window_extent()
@@ -676,7 +676,7 @@ class GraphicsView (QGraphicsView):
     def _draw_selection(self, gid:str):    
 
         stack = find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[Artist],
             gid=gid
         )
@@ -707,7 +707,7 @@ class GraphicsView (QGraphicsView):
                     gid='_selected'
                 )
                 self.canvas.figure.draw_artist(rect)
-            except Exception as e: print(e)
+            except Exception as e: pass
 
     ##### Matplotlib events
     
@@ -747,7 +747,7 @@ class GraphicsView (QGraphicsView):
         
         # Resize or move shape
         if self.change_item:       
-            for obj in find_mpl_object(self.canvas.figure, gid=self.change_item):
+            for obj in find_mpl_object(self.canvas.figure, gid=self.change_item, rule='exact'):
                 a, b, c, d = self.moving_start[:4]
                 dx = event_x - self.moving_start[-2]
                 dy = event_y - self.moving_start[-1]
@@ -780,7 +780,7 @@ class GraphicsView (QGraphicsView):
     
     def mpl_mouseRelease(self, event: MouseEvent):
 
-        for rect in find_mpl_object(self.canvas.figure, gid='_selected'):
+        for rect in find_mpl_object(self.canvas.figure, gid='_selected', rule='exact'):
             rect.remove()
         self.selected_obj.emit(None)
 
@@ -794,7 +794,7 @@ class GraphicsView (QGraphicsView):
         if event.button == 1:
             zorders = []
             for obj in self.canvas.figure.artists:
-                if obj.contains(event)[0]:
+                if obj.contains(event)[0] and obj.get_visible():
                     zorders.append(obj.get_zorder())
             
             if self.change_item:
@@ -809,7 +809,7 @@ class GraphicsView (QGraphicsView):
             
             else:
                 for obj in reversed(self.canvas.figure.artists):
-                    if obj.contains(event)[0] and obj.zorder == max(zorders):
+                    if obj.contains(event)[0] and obj.get_visible() and obj.zorder == max(zorders):
                         self.selected_gid = obj.get_gid()
                         self.selected_obj.emit(obj.get_gid())
                         break

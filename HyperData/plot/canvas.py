@@ -29,10 +29,7 @@ class Canvas (FigureCanvasQTAgg):
                     "visible": False,
                     "which": matplotlib.rcParams['axes.grid.which'],
                     "axis": matplotlib.rcParams['axes.grid.axis'],
-                    "alpha": matplotlib.rcParams['grid.alpha'],
-                    "linewidth": matplotlib.rcParams['grid.linewidth'],
-                    "linestyle": matplotlib.rcParams['grid.linestyle'],
-                    "color": matplotlib.rcParams['grid.color']
+                    "coord": "bottom-left",
                 }
             }
         self.figure = Figure()

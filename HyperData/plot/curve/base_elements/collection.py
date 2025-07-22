@@ -62,7 +62,7 @@ class SingleColorCollection(ArtistConfigBase):
     
     def find_object (self) -> List[Union[collections.Collection, collections.PolyCollection]]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.Collection, collections.PolyCollection],
             gid=self.gid
         )
@@ -213,7 +213,7 @@ class CmapCollection(ArtistConfigBase):
     
     def find_object (self) -> list[collections.Collection]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.Collection],
             gid=self.gid
         )
@@ -392,11 +392,12 @@ class QuadMesh(ArtistConfigBase):
         )
     
     def find_object (self) -> list[collections.QuadMesh]:
-        return find_mpl_object(source=self.canvas.figure,
-                               match=[collections.QuadMesh],
-                               gid=self.gid)
+        return find_mpl_object(
+            figure=self.canvas.figure,
+            match=[collections.QuadMesh],
+            gid=self.gid
+        )
     
-   
     def set_edgewidth (self, value):
         try: 
             for obj in self.find_object():
@@ -413,7 +414,6 @@ class QuadMesh(ArtistConfigBase):
         try: 
             for obj in self.find_object():
                 obj.set_linestyle(value.lower())
-                print(obj, value, obj.get_linestyle())
             self.prepare_update()
         except Exception as e:
             logger.exception(e)
@@ -518,7 +518,7 @@ class Poly3DCollection(ArtistConfigBase):
 
     def find_object(self) -> List[art3d.Poly3DCollection]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[art3d.Poly3DCollection],
             gid=self.gid
         )

@@ -79,7 +79,7 @@ class Pie(PlotConfigBase):
     
     def find_object (self) -> list[patches.Wedge]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[patches.Wedge],
             gid=self.gid
         )

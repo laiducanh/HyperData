@@ -214,9 +214,11 @@ class PlotView_ToolBar(QToolBar):
     
     def get_edgecolor(self):
         try:
+            if isinstance(self.obj[0], Collection):
+                return to_hex(self.obj[0].get_edgecolor()[0])
             return to_hex(self.obj[0].get_edgecolor())
         except:
-            return to_hex(self.obj[0].get_color())
+            self.get_facecolor()
     
     def set_edgecolor(self, value):
         if self.gid:
@@ -228,8 +230,12 @@ class PlotView_ToolBar(QToolBar):
             
     def get_facecolor(self):
         try:
+            if isinstance(self.obj[0], Collection):
+                return to_hex(self.obj[0].get_facecolor()[0])
             return to_hex(self.obj[0].get_facecolor())
         except:
+            if isinstance(self.obj[0], Collection):
+                return to_hex(self.obj[0].get_color()[0])
             return to_hex(self.obj[0].get_color())
     
     def set_facecolor(self, value):
@@ -254,7 +260,19 @@ class PlotView_ToolBar(QToolBar):
     
     def get_linestyle(self):
         try:
-            return self.obj[0].get_linestyle()
+            ls = self.obj[0].get_linestyle()
+            if isinstance(self.obj[0], Line2D):
+                return linestyle_lib[ls]
+            elif isinstance(self.obj[0], Collection):
+                if ls[0][1] == [3.7, 1.6]:
+                    return "dashed"
+                elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
+                    return "dashdot"
+                elif ls[0][1] == [1.0, 1.65]:
+                    return "dotted"
+                else:
+                    return "solid"
+            return ls
         except Exception as e: print(e)
     
     def set_linestyle(self, value):

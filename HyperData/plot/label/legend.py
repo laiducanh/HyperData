@@ -499,7 +499,7 @@ class LegendFrame(LegendBase):
     
     def get_edgestyle(self) -> str:
         if self.legend:
-            return self.legend.legendPatch.get_linestyle()
+            return linestyle_lib[self.legend.legendPatch.get_linestyle()]
         return 'solid'
     
     def set_edgewidth(self, value:float):

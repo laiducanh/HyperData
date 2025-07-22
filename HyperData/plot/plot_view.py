@@ -204,10 +204,9 @@ class PlotView(QMainWindow):
         try:
             # reset treeview items
             self.treeview_data["Manage graph"] = ["Add graph"]
-
             # append list of graphs
-            for obj in find_mpl_object(self.canvas.figure, match=[Artist], gid="graph"):
-                if not obj.get_gid().startswith("_"):
+            for obj in self.canvas.figure.artists:
+                if not obj.get_gid().startswith("_") and 'graph' in obj.get_gid():
                     if obj.get_gid().split('/')[0].title() not in self.treeview_data["Manage graph"]:
                         self.treeview_data["Manage graph"].append(obj.get_gid().split('/')[0].title())
             self.treeview.setData(self.treeview_data)
@@ -234,6 +233,7 @@ class PlotView(QMainWindow):
         for obj in find_mpl_object(self.canvas.figure, gid='drawing'):
             self.treeview_data["Drawings"].append(obj.get_gid().title())
         self.treeview.setData(self.treeview_data)
+        self.update_plotlist()
 
     def update_toolbar(self, gid:str):
         self.toolbar.update(gid)
@@ -280,7 +280,6 @@ class PlotView(QMainWindow):
         return super().paintEvent(a0)
 
     def showEvent(self, event):
-        self.update_plotlist()
         self.update_objectlist()
         return super().showEvent(event)
     

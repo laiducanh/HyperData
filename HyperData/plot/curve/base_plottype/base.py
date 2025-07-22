@@ -105,7 +105,7 @@ class GeneralPlot(ScrollArea):
     
     def find_obj(self):
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[artist.Artist],
             gid=self.gid,
         )

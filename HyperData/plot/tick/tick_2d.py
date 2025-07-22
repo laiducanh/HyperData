@@ -5,7 +5,6 @@ from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import ScrollArea, SeparateHLine
 from ui.base_widgets.text import TitleLabel
-from plot.utilis import find_mpl_object
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
 from matplotlib import ticker, dates, spines, lines, colors, rcParams
@@ -60,8 +59,11 @@ class TickBase(ScrollArea):
         )
         
     def find_obj(self) -> Axis:
-        return find_mpl_object(self.canvas.figure, match=[Axis], gid=self.axis)[0]
-    
+        return self.canvas.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self.axis
+        )[0]
+        
     def set_visible(self, value):
         self.obj.set_visible(value)
         self.canvas.draw_idle()
@@ -911,15 +913,13 @@ class SpineBase(ScrollArea):
         )
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
-        s = find_mpl_object(
-            self.canvas.figure, 
-            [spines.Spine],
-            gid = f"spine {self.axis}",
+        s = self.canvas.figure.findobj(
+            lambda a: isinstance(a, spines.Spines) and a.get_gid() \
+            and a.get_gid() == f"spine {self.axis}"
         )
-        a = find_mpl_object(
-            self.canvas.figure, 
-            [lines.Line2D],
-            gid = f"spine {self.axis}",
+        a = self.canvas.figure.findobj(
+            lambda a: isinstance(a, lines.Line2D) and a.get_gid() \
+            and a.get_gid() == f"spine {self.axis}"
         )
         return s, a
     
@@ -959,7 +959,7 @@ class SpineBase(ScrollArea):
         self.canvas.draw_idle()
     
     def get_linestyle(self):
-        return self.spines[0].get_linestyle()
+        return linestyle_lib[self.spines[0].get_linestyle()]
 
     def set_linewidth(self, value):
         for obj in self.spines+self.arrows:
@@ -1058,8 +1058,11 @@ class AxisLabel(ScrollArea):
         )
     
     def find_axis(self) -> Axis:
-        return find_mpl_object(self.canvas.figure,[Axis], self.axis)[0]
-    
+        return self.canvas.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self.axis
+        )[0]
+        
     def set_label(self, value:str):
         self.ax.set_label_text(value)
         self.canvas.draw_idle()

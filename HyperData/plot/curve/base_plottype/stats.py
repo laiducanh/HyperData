@@ -101,7 +101,7 @@ class Histogram(PlotConfigBase):
     
     def find_object (self) -> list[patches.Rectangle]:
         return find_mpl_object(
-            source=self.canvas.figure, 
+            figure=self.canvas.figure, 
             match=[patches.Rectangle], 
             gid=self.gid
         )
@@ -365,7 +365,7 @@ class Boxplot(PlotConfigBase):
     
     def find_object(self) -> list[Union[lines.Line2D, patches.PathPatch]]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[lines.Line2D, patches.PathPatch],
             gid=self.gid,
         )
@@ -632,7 +632,7 @@ class Violinplot(PlotConfigBase):
     
     def find_object(self) -> list[Union[collections.PolyCollection, collections.LineCollection]]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.PolyCollection, collections.LineCollection],
             gid=self.gid,
         )
@@ -747,7 +747,7 @@ class Eventplot(PlotConfigBase):
     
     def find_object(self) -> list[collections.EventCollection]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.EventCollection],
             gid=self.gid,
         )
@@ -820,7 +820,7 @@ class Hist2d(PlotConfigBase):
 
     def find_object(self) -> list[collections.QuadMesh]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[collections.QuadMesh],
             gid=self.gid,
         )
@@ -898,7 +898,7 @@ class ErrorBar(PlotConfigBase):
     
     def find_object(self) -> lines.Line2D:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[lines.Line2D],
             gid=self.gid,
         )

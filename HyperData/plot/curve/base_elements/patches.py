@@ -59,7 +59,7 @@ class Rectangle(ArtistConfigBase):
 
     def find_object (self) -> list[patches.Patch]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[patches.Rectangle, patches.PathPatch, patches.FancyBboxPatch],
             gid=self.gid,
         )
@@ -127,7 +127,7 @@ class Wedge(Rectangle):
 
     def find_object(self) -> list[patches.Wedge]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[patches.Wedge],
             gid=self.gid
         )
@@ -159,7 +159,7 @@ class Ellipse(Rectangle):
 
     def find_object(self) -> list[patches.Ellipse]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[patches.Ellipse],
             gid=self.gid
         ) 
@@ -187,7 +187,7 @@ class Polygon(Rectangle):
 
     def find_object(self) -> list[patches.Polygon]:
         return find_mpl_object(
-            source=self.canvas.figure,
+            figure=self.canvas.figure,
             match=[patches.Polygon],
             gid=self.gid
         ) 

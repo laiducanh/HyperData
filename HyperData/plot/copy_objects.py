@@ -214,8 +214,14 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
             color=spine.get_edgecolor(),
             gid=spine.get_gid()
         )
-    for obj in find_mpl_object(source_ax, match=[lines.Line2D], gid="spine"):
-        for new_obj in find_mpl_object(destination_ax, match=[lines.Line2D], gid=obj.get_gid()):
+    for obj in source_ax.findobj(
+        lambda a: isinstance(a, lines.Line2D) and a.get_gid() \
+        and 'spine' in a.get_gid()
+    ):
+        for new_obj in destination_ax.findobj(
+            lambda a: isinstance(a, lines.Line2D) and a.get_gid() \
+            and obj.get_gid() == a.get_gid()
+        ):
             new_obj.set(
                 marker=obj.get_marker(),
                 markerfacecolor=obj.get_markerfacecolor(),
@@ -310,8 +316,10 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
                 transform=destination_ax.transAxes
             )
         elif isinstance(artist, legend.Legend):
-            ax = find_mpl_object(destination_ax.figure, match=[Axes, Axes3D],
-                                 gid='legend axes', rule='exact')[0]
+            ax = destination_ax.figure.findobj(
+                lambda a: isinstance(a, (Axes, Axes3D)) and a.get_gid() \
+                and a.get_gid() == 'legend axes'
+            )[0]
             update_legend(artist, ax)
 
         if new_artist:
