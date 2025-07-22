@@ -3,7 +3,7 @@ from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from plot.copy_objects import copy_Axes
+from plot.copy_objects import copy_Figure
 from config.settings import config, logger
 
 matplotlib.use("QtAgg")
@@ -92,7 +92,7 @@ class Canvas (FigureCanvasQTAgg):
             )
             
     def serialize(self):
-
+        
         if config['save_path'] != "":
             with open(os.path.join(config['save_path'], f'canvas_{self.id}.pickle'), 'wb') as file:
                 pickle.dump(self.figure, file)
@@ -110,16 +110,12 @@ class Canvas (FigureCanvasQTAgg):
                 with open(os.path.join(config['save_path'], f'canvas_{self.id}.pickle'),'rb') as file:
                     loaded_fig = pickle.load(file)
 
-            for source_ax, destination_ax in zip(loaded_fig.axes, self.figure.axes):
-                copy_Axes(source_ax, destination_ax)
-            
+            copy_Figure(loaded_fig, self.figure)
             self.draw_idle()
             
         except Exception as e:
             logger.exception(e)
             
-
-        
 class ExplorerCanvas(FigureCanvasQTAgg):
     def __init__(self):
         
@@ -146,27 +142,5 @@ class MultiFigureCanvas(Canvas):
         super().__init__()
 
     def initAxes(self):
-        self.axes = self.figure.add_subplot()
-        self.axesy2 = self.axes.twinx()
-        self.axesx2 = self.axes.twiny()
-
-        self.axes.xaxis.set_gid("bottom")
-        self.axes.yaxis.set_gid("left")
-        self.axesy2.yaxis.set_gid("right")
-        self.axesx2.xaxis.set_gid("top")
-
-        for ax in self.figure.axes:
-            # Turn off spines
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
-            ax.spines['bottom'].set_visible(False)
-            ax.spines['left'].set_visible(False)
-
-            # Turn off ticks
-            ax.xaxis.set_ticks_position('none')
-            ax.yaxis.set_ticks_position('none')
-
-            # Turn off tick labels
-            ax.set_xticklabels([])
-            ax.set_yticklabels([])
+        pass
 

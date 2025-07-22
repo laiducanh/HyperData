@@ -2,11 +2,11 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QSizePolicy
 from PySide6.QtCore import Signal, QTimer
 from plot.insert_plot.insert_plot import NewPlot
 from plot.canvas import Canvas
-from ui.base_widgets.button import SegmentedWidget, HToggle
+from ui.base_widgets.button import SegmentedWidget, HToggle, HButton, TransparentToolButton
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import SeparateHLine, ScrollArea
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
-from plot.utilis import find_mpl_object
+from plot.utilis import find_mpl_object, set_zorder
 from plot.plotting.plotting import set_legend, get_legend
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import artist
@@ -74,11 +74,33 @@ class GeneralPlot(ScrollArea):
             layout=self.vlayout
         )
 
-        zorder = HTransparentDoubleSpinBox(
-            label="Z-order",
-            setter=self.set_zorder,
-            getter=self.get_zorder,
+        zorder = HButton(
+            label="Arrange",
             layout=self.vlayout
+        )
+        TransparentToolButton(
+            icon='bring_to_front.png',
+            toolTip='Bring to Front',
+            setter=lambda: self.set_zorder('Bring to Front'),
+            layout=zorder.butn_layout
+        )
+        TransparentToolButton(
+            icon='send_to_back.png',
+            toolTip='Send to Back',
+            setter=lambda: self.set_zorder('Send to Back'),
+            layout=zorder.butn_layout
+        )
+        TransparentToolButton(
+            icon='bring_forward.png',
+            toolTip='Bring Forward',
+            setter=lambda: self.set_zorder('Bring Forward'),
+            layout=zorder.butn_layout
+        )
+        TransparentToolButton(
+            icon='send_backward.png',
+            toolTip='Send Backward',
+            setter=lambda: self.set_zorder('Send Backward'),
+            layout=zorder.butn_layout
         )
     
     def find_obj(self):
@@ -126,14 +148,10 @@ class GeneralPlot(ScrollArea):
     
     def get_clip(self) -> bool:
         return self.find_obj()[0].get_clip_on()
-
-    def get_zorder(self) -> int:
-        return int(self.find_obj()[0].get_zorder())
     
     def set_zorder(self, value:float):
         try:
-            for obj in self.find_obj():
-                obj.set_zorder(value)
+            set_zorder(self.canvas.figure, self.gid, value)
             self.canvas.draw_idle()
         except Exception as e:
             logger.exception(e)

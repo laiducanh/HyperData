@@ -35,7 +35,7 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = Figure3D(self,parent)
         elif title == 'Multi-Figure':
-            super().__init__(title=title, inputs=[MULTI_IN], outputs=[MULTI_OUT])
+            super().__init__(title=title, inputs=[MULTI_IN], outputs=[])
             self.content = MultiFigure(self,parent)
         elif title == 'Data Reader':
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])

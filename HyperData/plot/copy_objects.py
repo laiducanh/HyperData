@@ -2,6 +2,7 @@ from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.image import AxesImage
 from matplotlib.legend import Legend
+from matplotlib.figure import Figure
 from matplotlib import lines, patches, collections, text, legend, artist
 from plot.utilis import find_mpl_object, remove_legend, get_legend_anchor
 from config.settings import logger
@@ -10,6 +11,7 @@ from typing import Union
 def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
     if isinstance(from_obj, lines.Line2D) and isinstance(to_obj, lines.Line2D):
         to_obj.set(
+            visible = from_obj.get_visible(),
             alpha = from_obj.get_alpha(),
             color = from_obj.get_color(),
             dash_capstyle = from_obj.get_dash_capstyle(),
@@ -28,6 +30,7 @@ def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
         )
     elif isinstance(from_obj, collections.Collection) and isinstance(to_obj, collections.Collection):
         to_obj.set(
+            visible = from_obj.get_visible(),
             alpha = from_obj.get_alpha(),
             cmap = from_obj.get_cmap(),
             edgecolor = from_obj.get_edgecolor(),
@@ -39,6 +42,7 @@ def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
         )
     elif isinstance(from_obj, patches.Patch) and isinstance(to_obj, patches.Patch):
         to_obj.set(
+            visible = from_obj.get_visible(),
             alpha = from_obj.get_alpha(),
             edgecolor = from_obj.get_edgecolor(),
             facecolor = from_obj.get_facecolor(),
@@ -49,6 +53,7 @@ def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
         )
     elif isinstance(from_obj, AxesImage) and isinstance(to_obj, AxesImage):
         to_obj.set(
+            visible = from_obj.get_visible(),
             alpha = from_obj.get_alpha(),
             cmap = from_obj.get_cmap(),
             extent = from_obj.get_extent(),
@@ -61,6 +66,7 @@ def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
         )
     elif isinstance(from_obj, text.Text) and isinstance(to_obj, text.Text):
         to_obj.set(
+            visible = from_obj.get_visible(),
             alpha = from_obj.get_alpha(),
             color = from_obj.get_color(),
             fontfamily = from_obj.get_fontfamily(),
@@ -131,7 +137,13 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
         xscale=source_ax.get_xscale(),
         yscale=source_ax.get_yscale(),
         facecolor=source_ax.get_facecolor(),
+        gid=source_ax.get_gid()
     )
+
+    if isinstance(source_ax, Axes3D) and isinstance(destination_ax, Axes3D):
+        destination_ax._axis3don = source_ax._axis3don
+    else:
+        destination_ax.axison = source_ax.axison
     
     destination_ax.title.set(
         text=source_ax.get_title(),
@@ -229,8 +241,8 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
         hspace=source_ax.figure.subplotpars.hspace
     )
 
-    # Recreate artist
-    for artist in find_mpl_object(source_ax):
+    # Recreate only artist whose gid
+    for artist in source_ax.findobj(lambda a: a.get_gid()):
         new_artist = None
         if "graph" in artist.get_gid():
             if isinstance(artist, lines.Line2D):
@@ -303,6 +315,8 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
             update_legend(artist, ax)
 
         if new_artist:
+            destination_ax.add_artist(new_artist)
+            destination_ax.figure.add_artist(new_artist)
             # Update gid
             new_artist.set_gid(artist.get_gid())
             # Update props
@@ -310,6 +324,45 @@ def copy_Axes(source_ax:Union[Axes,Axes3D], destination_ax:Union[Axes,Axes3D]):
             if not isinstance(new_artist, 
                               (collections.PathCollection, text.Text)):
                 new_artist.set_transform(destination_ax.transData)  
-            destination_ax.add_artist(new_artist)
     logger.info(f'Canvas {destination_ax.figure.canvas.id}: Copy artists from {source_ax.get_gid()} to {destination_ax.get_gid()}.')
-    
+
+def copy_Drawings(source_fig:Figure, destination_fig:Figure):
+    for artist in source_fig.findobj(lambda a: a.get_gid() and "drawing" in a.get_gid()):
+        new_artist = None
+        if isinstance(artist, patches.Rectangle):
+            new_artist = patches.Rectangle(
+                    artist.xy,
+                    artist.get_width(),
+                    artist.get_height(),
+                )
+        elif isinstance(artist, lines.Line2D):
+            new_artist = lines.Line2D(
+                    artist.get_xdata(),
+                    artist.get_ydata(),
+                )
+        elif isinstance(artist, patches.Ellipse):
+            new_artist = patches.Ellipse(
+                artist.get_center(),
+                artist.get_width(),
+                artist.get_height()
+            )
+        elif isinstance(artist, text.Text):
+            new_artist = text.Text(
+                artist.get_position()[0],
+                artist.get_position()[1],
+                artist.get_text(),
+            )
+        if new_artist:
+            # add to figure
+            destination_fig.add_artist(new_artist)
+            # Update gid
+            new_artist.set_gid(artist.get_gid())
+            # Update props
+            update_props(artist, new_artist)
+
+def copy_Figure(source_fig:Figure, destination_fig:Figure):
+
+    copy_Drawings(source_fig, destination_fig)
+
+    for source_ax, destination_ax in zip(source_fig.axes, destination_fig.axes):
+        copy_Axes(source_ax, destination_ax)

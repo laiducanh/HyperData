@@ -429,7 +429,7 @@ class HButton(Frame):
         self.text_layout.addWidget(self.label)
         self.text_layout.addWidget(self.label2)
 
-        self.butn_layout = QVBoxLayout()
+        self.butn_layout = QHBoxLayout()
         hlayout.addLayout(self.butn_layout)
 
         if layout: layout.addWidget(self)

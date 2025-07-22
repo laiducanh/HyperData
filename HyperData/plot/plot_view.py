@@ -222,7 +222,7 @@ class PlotView(QMainWindow):
                         if find_mpl_object(self.canvas.figure,gid=name,rule="exact"):
                             color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="exact")[0])
                         else:
-                            color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="contain")[0])
+                            color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="index")[0])
                         pixmap.fill(QColor(color))
                         item.child(child).setIcon(0,QIcon(pixmap))  
 
@@ -281,6 +281,7 @@ class PlotView(QMainWindow):
 
     def showEvent(self, event):
         self.update_plotlist()
+        self.update_objectlist()
         return super().showEvent(event)
     
 class PlotViewMultiFig (PlotView):

@@ -9,7 +9,7 @@ from ui.base_widgets.frame import Frame, ScrollArea
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from plot.copy_objects import copy_Axes
+from plot.copy_objects import copy_Axes, copy_Drawings, copy_Figure
 
 class SubFigure(Frame):
     sig = Signal()
@@ -150,9 +150,7 @@ class Layout(ScrollArea):
                     
     def redraw_subplot(self, sub:SubFigure):
 
-        for ax in self.canvas.figure.axes:
-            if ax.get_gid() and f"subax {sub.subfig_idx}" == ax.get_gid():
-                ax.remove()
+        self.canvas.figure.clear()
         
         gs = gridspec.GridSpec(
             nrows=self.nrows,
@@ -162,69 +160,35 @@ class Layout(ScrollArea):
         row1, row2 = sub.row1.currentIndex(), sub.row2.currentIndex()
         col1, col2 = sub.col1.currentIndex(), sub.col2.currentIndex()
         fig_idx = sub.fig.currentIndex()
-        proj = None
+        proj3d = False
 
         if fig_idx > 0:
             canvas: Canvas = self.node.input_sockets[0].socket_data[fig_idx-1]
-            proj = "3d" if isinstance(canvas.axes, Axes3D) else None            
+            proj3d = isinstance(canvas.axes, Axes3D)          
         
         if row2 >= row1 and col2 >= col1:
             if row1 == row2 and col1 == col2:
-                ax = self.canvas.figure.add_subplot(gs[row1, col1], projection=proj)
+                subfig = self.canvas.figure.add_subfigure(gs[row1, col1])
             elif row1 == row2:
-                ax = self.canvas.figure.add_subplot(gs[row1, col1:col2+1], projection=proj)
+                subfig = self.canvas.figure.add_subfigure(gs[row1, col1:col2+1])
             elif col1 == col2:
-                ax = self.canvas.figure.add_subplot(gs[row1:row2+1, col1], projection=proj)
+                subfig = self.canvas.figure.add_subfigure(gs[row1:row2+1, col1])
             else:
-                ax = self.canvas.figure.add_subplot(gs[row1:row2+1, col1:col2+1], projection=proj)                    
+                subfig = self.canvas.figure.add_subfigure(gs[row1:row2+1, col1:col2+1])   
             
-            ax.set_gid(f"subax {sub.subfig_idx}")
-
             if fig_idx > 0:
-                # ax.set_title(canvas.axes.get_title())
-                # ax.set_xlabel(canvas.axes.get_xlabel())
-                # ax.set_ylabel(canvas.axes.get_ylabel())
-           
-                if not proj:
+                if not proj3d:
+                    ax = subfig.add_subplot()
                     axy2 = ax.twinx()
                     axx2 = ax.twiny()
-                    axpie = self.canvas.figure.add_subplot(ax.get_subplotspec())
-                    axpolar = self.canvas.figure.add_subplot(ax.get_subplotspec(), projection='polar')
-                    axleg = self.canvas.figure.add_subplot(ax.get_subplotspec())
-
-                    # axy2.set_ylabel(canvas.axesy2.get_ylabel())
-                    # axx2.set_xlabel(canvas.axesx2.get_xlabel())
-
-                    axy2.set_gid(f"subax {sub.subfig_idx}")
-                    axx2.set_gid(f"subax {sub.subfig_idx}")
-                    axpie.set_gid(f"subax {sub.subfig_idx}")
-                    axpolar.set_gid(f"subax {sub.subfig_idx}")
-                    axleg.set_gid(f"subax {sub.subfig_idx}")
-
-                    ax.set_axis_off()
-                    axx2.set_axis_off()
-                    axy2.set_axis_off()
-                    axpie.set_axis_off()
-                    axpolar.set_axis_off()
-                    axleg.set_axis_off()
-                    
-                    if canvas.axesx2.axison: axx2.set_axis_on()
-                    if canvas.axesy2.axison: axy2.set_axis_on()
-                    if canvas.axespie.axison: axpie.set_axis_on()
-                    if canvas.axespolar.axison: axpolar.set_axis_on()
-                    if canvas.axes.axison: 
-                        ax.set_axis_on()
-                        copy_Axes(canvas.axes, ax)    
-                        copy_Axes(canvas.axesx2, axx2)
-                        copy_Axes(canvas.axesy2, axy2)
-                        copy_Axes(canvas.axesleg, axleg)
-                    else:
-                        copy_Axes(canvas.axespie, axpie)
-                        copy_Axes(canvas.axespolar, axpolar)
-                                    
+                    axpie = subfig.add_subplot()
+                    axpolar = subfig.add_subplot(projection='polar')
+                    axleg = subfig.add_subplot(gid='legend axes')
+                     
                 else:
-                    copy_Axes(canvas.axes, ax)     
-                    ax.set_zlabel(canvas.axes.get_zlabel())             
+                    ax = subfig.add_subplot(projection='3d', gid='legend axes')   
+
+            copy_Figure(canvas.figure, subfig)
 
         self.canvas.draw_idle()
 

@@ -134,7 +134,7 @@ class GraphicsView (QGraphicsView):
         # self._scene.addItem(self.tooltip)
         # self.tooltip.hide()
 
-        self.drawing_index = 0
+        self.drawing_index = self._get_drawing_index() # starts with 0
         self.drawing_shape = None
         self.drawing_start = QPointF()
         self.drawing_item = None
@@ -218,6 +218,13 @@ class GraphicsView (QGraphicsView):
     
     def drawing_object(self, shape:str):
         self.drawing_shape = shape
+    
+    def _get_drawing_index(self) -> int:
+        index = 0
+        for obj in find_mpl_object(self.canvas.figure, gid='drawing'):
+            if index < int(obj.get_gid().split()[-1]):
+                index = int(obj.get_gid().split()[-1])
+        return index
     
     def _resizePlot(self):
         size = self.viewport().size()
@@ -492,7 +499,8 @@ class GraphicsView (QGraphicsView):
                 edgecolor='black', facecolor="#454545", 
                 lw=1,
                 transform=self.canvas.figure.transFigure,
-                gid=f'drawing {self.drawing_index}'
+                gid=f'drawing {self.drawing_index+1}',
+                zorder=10000, # ensure on top other artists
             )
             # Temporarily draw the shape
             self.canvas.figure.draw_artist(self.drawing_item)
@@ -501,7 +509,8 @@ class GraphicsView (QGraphicsView):
                 (x0, x1), (y0, y1),
                 lw=1, color="#454545", marker='none',
                 transform=self.canvas.figure.transFigure,
-                gid=f'drawing {self.drawing_index}'
+                gid=f'drawing {self.drawing_index+1}',
+                zorder=10000, # ensure on top other artists
             )
             # Temporarily draw the shape
             self.canvas.figure.draw_artist(self.drawing_item)
@@ -510,7 +519,8 @@ class GraphicsView (QGraphicsView):
                 (x0+w/2, y0+h/2), w, h,
                 edgecolor='black', facecolor="#454545", 
                 transform=self.canvas.figure.transFigure,
-                gid=f'drawing {self.drawing_index}'
+                gid=f'drawing {self.drawing_index+1}',
+                zorder=10000, # ensure on top other artists
             )
             # Temporarily draw the shape
             self.canvas.figure.draw_artist(self.drawing_item)
@@ -519,7 +529,8 @@ class GraphicsView (QGraphicsView):
                 (x0, y0), w, h, 
                 lw=1, ls='dashed',
                 edgecolor="#454545", facecolor='none',
-                transform=self.canvas.figure.transFigure
+                transform=self.canvas.figure.transFigure,
+                zorder=10000, # ensure on top other artists
             )
             # Temporarily draw the box instead of text
             self.canvas.figure.draw_artist(bbox)
@@ -527,7 +538,8 @@ class GraphicsView (QGraphicsView):
                 x0, y0, 'Sample text',
                 figure=self.canvas.figure,
                 transform=self.canvas.figure.transFigure,
-                gid=f'drawing {self.drawing_index}'
+                gid=f'drawing {self.drawing_index+1}',
+                zorder=10000, # ensure on top other artists
             )
     
     def _resize_shape(self, obj:Artist, a, b, c, d, dx, dy):
@@ -757,7 +769,6 @@ class GraphicsView (QGraphicsView):
 
         if event.button == 1:
             if self.drawing_shape:
-                self.drawing_index += 1
                 self.drawing_start = (event_x, event_y)
             else:
                 self.drawing_resize, \
@@ -776,6 +787,7 @@ class GraphicsView (QGraphicsView):
         if self.drawing_item:
             # add shape permanently
             self.canvas.figure.add_artist(self.drawing_item)
+            self.drawing_index += 1
             self.draw_obj.emit()
 
         
@@ -797,8 +809,6 @@ class GraphicsView (QGraphicsView):
             
             else:
                 for obj in reversed(self.canvas.figure.artists):
-                    if obj.contains(event)[0]:
-                        print(obj.zorder, zorders)
                     if obj.contains(event)[0] and obj.zorder == max(zorders):
                         self.selected_gid = obj.get_gid()
                         self.selected_obj.emit(obj.get_gid())

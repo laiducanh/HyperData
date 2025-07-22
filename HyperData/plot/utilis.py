@@ -50,7 +50,7 @@ def complementary_color(color):
     return comp_hex
 
 def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None, 
-                    gid:str=None, rule:Literal["exact","contain"]="contain") -> list[T]:
+                    gid:str=None, rule:Literal["exact","contain","index"]="index") -> list[T]:
 
     """ This function is used to find artist plot (having gid) in matplotlib,
         for general uses, use matplotlib function findobj() instead """
@@ -65,12 +65,18 @@ def find_mpl_object(source:Union[Figure,Axes,Axes3D], match:list[Type[T]]=None,
         )    
     if rule == 'exact':
         return source.findobj(
-            lambda a: isinstance(a, tuple(match)) and a.get_gid() == gid
+            lambda a: isinstance(a, tuple(match)) and a.get_gid() and a.get_gid() == gid
         )
             
     elif rule == 'contain':
         return source.findobj(
             lambda a: isinstance(a, tuple(match)) and a.get_gid() and gid in a.get_gid()
+        )
+
+    elif rule == 'index':
+        return source.findobj(
+            lambda a: isinstance(a, tuple(match)) and a.get_gid() \
+                  and gid.split()[-1] == a.get_gid().split('/')[0].split()[-1]
         )
 
 def remove_artist(figure:Figure, gid:str) -> list[Artist]:
@@ -120,6 +126,50 @@ def rescale_plot(figure:Figure) -> None:
 
 def normalize_zorder(figure:Figure):
     zorders = [artist.zorder for artist in figure.artists]
-    zorders_map = {z : i+1 for i, z in enumerate(sorted(zorders))}
+    zorders_map = {z : i+1 for i, z in enumerate(sorted(set(zorders)))}
     for artist in figure.artists:
         artist.set_zorder(zorders_map[artist.zorder])
+
+def set_zorder(figure:Figure, gid:str, 
+               action:Literal['Send to Back','Bring to Front',
+                              'Bring Forward','Send Backward']):
+
+    artists = figure.artists
+    zorders = [a.get_zorder() for a in artists]
+    zorders.insert(0, min(zorders) - 1e-3)
+    zorders.append(max(zorders) + 1e-3)
+    for obj in artists:
+        try:
+            if obj.get_gid() == gid:
+                if action == 'Send to Back':
+                    obj.set_zorder(min(zorders))
+                elif action == 'Bring to Front':
+                    obj.set_zorder(max(zorders))
+                elif action == 'Bring Forward':
+                    sorted_unique_zorders = sorted(set(zorders))
+                    index = sorted_unique_zorders.index(obj.zorder)
+                    if index < len(sorted_unique_zorders)-1:
+                        obj.set_zorder((
+                            sorted_unique_zorders[index+1]+ \
+                            sorted_unique_zorders[index+2]) / 2
+                        )
+                    else:
+                        obj.set_zorder((
+                            sorted_unique_zorders[index+1]+ \
+                            sorted_unique_zorders[index]) / 2
+                        )
+                elif action == 'Send Backward':
+                    sorted_unique_zorders = sorted(set(zorders))
+                    index = sorted_unique_zorders.index(obj.zorder)
+                    if index > 1:
+                        obj.set_zorder((
+                            sorted_unique_zorders[index-1]+ \
+                            sorted_unique_zorders[index-2]) / 2
+                        )
+                    else:
+                        obj.set_zorder((
+                            sorted_unique_zorders[index-1]+ \
+                            sorted_unique_zorders[index]) / 2
+                        )
+        except Exception as e: pass
+    normalize_zorder(figure)
