@@ -52,6 +52,7 @@ class Canvas (FigureCanvasQTAgg):
         # self.axesleg.set_axis_off()
         self.axesleg.set_xticks([])
         self.axesleg.set_yticks([])
+        self.axesleg.spines[:].set_visible(False)
 
         self.axes.xaxis.set_gid("bottom")
         self.axes.yaxis.set_gid("left")
