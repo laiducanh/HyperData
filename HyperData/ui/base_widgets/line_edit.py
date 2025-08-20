@@ -13,7 +13,7 @@ class LineEdit(QLineEdit):
         self.setter = setter
 
         if getter: self.setText(getter())
-        if setter: self.returnPressed.connect(lambda: setter(self.text()))
+        if setter: self.textEdited.connect(lambda: setter(self.text()))
         if layout: layout.addWidget(self)
     
     def set_value(self, value:str):
