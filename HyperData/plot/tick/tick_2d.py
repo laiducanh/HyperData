@@ -914,7 +914,7 @@ class SpineBase(ScrollArea):
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
         s = self.canvas.figure.findobj(
-            lambda a: isinstance(a, spines.Spines) and a.get_gid() \
+            lambda a: isinstance(a, spines.Spine) and a.get_gid() \
             and a.get_gid() == f"spine {self.axis}"
         )
         a = self.canvas.figure.findobj(
@@ -959,7 +959,7 @@ class SpineBase(ScrollArea):
         self.canvas.draw_idle()
     
     def get_linestyle(self):
-        return linestyle_lib[self.spines[0].get_linestyle()]
+        return self.spines[0].get_linestyle()
 
     def set_linewidth(self, value):
         for obj in self.spines+self.arrows:
