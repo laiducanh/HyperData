@@ -17,22 +17,30 @@ DEBUG = False
 
 def set_legend(figure:Figure, *args, **kwargs):
     try:   
-        handles = find_mpl_object(figure, match=[Artist], gid="graph", rule='contain')
-        plot_list = set([s.get_gid().split('/')[0] for s in handles])
+        # Find list of graphs
+        graphs = figure.findobj(
+            lambda a: a.get_gid() and "graph" in a.get_gid()
+        )
+        plot_list = set([s.get_gid().split('/')[0] for s in graphs])
         
+        # Find labels and handles corresponding to visible graphs
         labels, handles = list(), list()
         for gid in plot_list:
-            arts = find_mpl_object(figure, match=[Artist], gid=gid, rule='contain')
+            arts = figure.findobj(
+                lambda a: a.get_gid() and gid in a.get_gid()
+            )
             for art in arts:
                 if art.get_visible() and art.get_label() and not art.get_label().startswith('_'):
                     labels.append(arts[0].get_label())
                     handles.append(arts[0])
                     break # only one visible artist with valid label is used for legend  
-
+        
+        # Find axes for legend
         ax = figure.findobj(
             lambda a: isinstance(a, (Axes, Axes3D)) and a.get_gid() \
             and a.get_gid() == 'legend axes'
         )[0]
+
 
         if handles != []:            
             if get_legend(figure): 
@@ -48,6 +56,8 @@ def set_legend(figure:Figure, *args, **kwargs):
                 )
                 legend.set_gid('legend')
                 logger.info("Create legend.")
+        else:
+            remove_legend(ax.figure)
         
     except Exception as e:
         logger.exception(e)  
@@ -61,8 +71,6 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     # get old artist that will be replaced
     # but its properties will apply to the new ones  
     artist_old = remove_artist(ax.figure, gid)
-
-    remove_legend(ax.figure)
     
     # rescale all axes while remove old artists and add new artists
     rescale_plot(ax.figure)

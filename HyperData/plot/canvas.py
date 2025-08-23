@@ -40,55 +40,66 @@ class Canvas (FigureCanvasQTAgg):
         super().__init__(self.figure)
     
     def initAxes (self):
-        self.axes = self.figure.add_subplot()
-        self.axesy2 = self.axes.twinx()
-        self.axesx2 = self.axes.twiny()
-        self.axespie = self.figure.add_subplot()
-        self.axespolar = self.figure.add_subplot(projection='polar')
-        self.axesleg = self.figure.add_subplot(gid='legend axes')
 
+        # Bottom-Left Axes
+        self.axes = self.figure.add_subplot()
+        self.axes.spines[:].set_visible(False)
+
+        # Bottom-Right Axes
+        self.axesy2 = self.axes.twinx()
+        self.axesy2.spines[:].set_visible(False)
+
+        # Top-Left Axes
+        self.axesx2 = self.axes.twiny()
+        self.axesx2.spines[:].set_visible(False)
+
+        # Axes for Pie-like plots
+        self.axespie = self.figure.add_subplot()
         self.axespie.set_axis_off()
+
+        # Axes for plots using polar coordinate system
+        self.axespolar = self.figure.add_subplot(projection='polar')
         self.axespolar.set_axis_off()
-        # self.axesleg.set_axis_off()
+
+        # Axes to hold legend, this axes will be on top
+        self.axesleg = self.figure.add_subplot(gid='legend axes')
         self.axesleg.set_xticks([])
         self.axesleg.set_yticks([])
-        self.axesleg.spines[:].set_visible(False)
+        self.axesleg.spines["bottom"].set_gid("spine bottom")
+        self.axesleg.plot(1, 0, marker="none", 
+            color=matplotlib.colors.rgb2hex(self.axesleg.spines["bottom"].get_edgecolor()),
+            transform=self.axesleg.transAxes,
+            clip_on=False,
+            gid="spine bottom"
+        )
+        self.axesleg.spines["top"].set_gid("spine top")
+        self.axesleg.plot(1, 1, marker="none", 
+            color=matplotlib.colors.rgb2hex(self.axesleg.spines["top"].get_edgecolor()),
+            transform=self.axesleg.transAxes,
+            clip_on=False,
+            gid="spine top"
+        )
+        self.axesleg.spines["left"].set_gid("spine left")
+        self.axesleg.plot(0, 1, marker="none", 
+            color=matplotlib.colors.rgb2hex(self.axesleg.spines["left"].get_edgecolor()),
+            transform=self.axesleg.transAxes,
+            clip_on=False,
+            gid="spine left"
+        )
+        self.axesleg.spines["right"].set_gid("spine right")
+        self.axesleg.plot(1, 1, marker="none", 
+            color=matplotlib.colors.rgb2hex(self.axesleg.spines["right"].get_edgecolor()),
+            transform=self.axesleg.transAxes,
+            clip_on=False,
+            gid="spine right"
+        )
 
+        # set gid to axis for tick and labels on axes
         self.axes.xaxis.set_gid("bottom")
         self.axes.yaxis.set_gid("left")
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
         
-        for _ax in [self.axes, self.axesy2, self.axesx2]:     
-            _ax.spines["bottom"].set_gid("spine bottom")
-            _ax.plot(1, 0, marker=",", 
-                     color=matplotlib.colors.rgb2hex(_ax.spines["bottom"].get_edgecolor()),
-                     transform=_ax.transAxes,
-                     clip_on=False,
-                     gid="spine bottom"
-            )
-            _ax.spines["top"].set_gid("spine top")
-            _ax.plot(1, 1, marker=",", 
-                     color=matplotlib.colors.rgb2hex(_ax.spines["top"].get_edgecolor()),
-                     transform=_ax.transAxes,
-                     clip_on=False,
-                     gid="spine top"
-            )
-            _ax.spines["left"].set_gid("spine left")
-            _ax.plot(0, 1, marker=",", 
-                     color=matplotlib.colors.rgb2hex(_ax.spines["left"].get_edgecolor()),
-                     transform=_ax.transAxes,
-                     clip_on=False,
-                     gid="spine left"
-            )
-            _ax.spines["right"].set_gid("spine right")
-            _ax.plot(1, 1, marker=",", 
-                     color=matplotlib.colors.rgb2hex(_ax.spines["right"].get_edgecolor()),
-                     transform=_ax.transAxes,
-                     clip_on=False,
-                     gid="spine right"
-            )
-            
     def serialize(self):
         
         if config['save_path'] != "":

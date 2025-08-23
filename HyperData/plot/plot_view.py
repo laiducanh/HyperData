@@ -27,7 +27,7 @@ from plot.label.legend import LegendLabel
 from plot.toolbar import PlotView_ToolBar
 from config.settings import GLOBAL_DEBUG, logger, config
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from plot.utilis import get_color, find_mpl_object
+from plot.utilis import get_color
 
 DEBUG = False
 
@@ -218,10 +218,16 @@ class PlotView(QMainWindow):
                     name = item.child(child).text(0).lower()
                     if name.startswith("graph"):
                         color = 'white' # whenever color changes to white, there is an error!
-                        if find_mpl_object(self.canvas.figure,gid=name,rule="exact"):
-                            color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="exact")[0])
+                        if self.canvas.figure.findobj(
+                            lambda a: a.get_gid() and a.get_gid()==name
+                        ):
+                            color = get_color(self.canvas.figure.findobj(
+                                lambda a: a.get_gid() and a.get_gid()==name
+                            )[0])
                         else:
-                            color = get_color(find_mpl_object(self.canvas.figure,gid=name,rule="index")[0])
+                            color = get_color(self.canvas.figure.findobj(
+                                lambda a: a.get_gid() and name in a.get_gid()
+                            )[0])
                         pixmap.fill(QColor(color))
                         item.child(child).setIcon(0,QIcon(pixmap))  
 
@@ -230,7 +236,9 @@ class PlotView(QMainWindow):
 
     def update_objectlist(self):
         self.treeview_data["Drawings"] = []
-        for obj in find_mpl_object(self.canvas.figure, gid='drawing'):
+        for obj in self.canvas.figure.findobj(
+            lambda a: a.get_gid() and "drawing" in a.get_gid()
+        ):
             self.treeview_data["Drawings"].append(obj.get_gid().title())
         self.treeview.setData(self.treeview_data)
         self.update_plotlist()
