@@ -51,11 +51,17 @@ class GraphicsEdge(QGraphicsPathItem):
         if self.hovered and self.end_socket is not None:
             painter.setPen(self._pen_hovered)
             painter.drawPath(self.path())
-
+        
         if self.end_socket is None:
             painter.setPen(self._pen_dragging)
+        elif self.isSelected():
+            painter.setPen(self._pen_selected)
+        elif self.start_socket.socket_type == PIPELINE_OUT:
+            self._pen.setStyle(Qt.PenStyle.DotLine)
+            painter.setPen(self._pen)
         else:
-            painter.setPen(self._pen if not self.isSelected() else self._pen_selected)
+            self._pen.setStyle(Qt.PenStyle.SolidLine)
+            painter.setPen(self._pen)
         
         painter.drawPath(self.path())
     
