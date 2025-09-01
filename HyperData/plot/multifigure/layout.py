@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout
-from plot.canvas import Canvas
+from plot.canvas import Canvas, Canvas3D
 from ui.base_widgets.text import TitleLabel, BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.button import TransparentComboBox, TransparentPushButton, PrimaryComboBox
@@ -8,8 +8,7 @@ from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.frame import Frame, ScrollArea
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from matplotlib import gridspec
-from mpl_toolkits.mplot3d.axes3d import Axes3D
-from plot.copy_objects import copy_Axes, copy_Drawings, copy_Figure
+from plot.copy_objects import copy_Figure
 
 class SubFigure(Frame):
     sig = Signal()
@@ -18,7 +17,7 @@ class SubFigure(Frame):
         super().__init__(parent)
 
         layout = QVBoxLayout(self)
-        # layout.setContentsMargins(0,0,0,0)
+        # layout.setContentsMargins(10,0,10,15)
         self.subfig_idx = subfig_idx
         self.total_fig = total_fig
         self.rows = rows
@@ -63,8 +62,6 @@ class SubFigure(Frame):
         self.col2.setMinimumWidth(100)
         self.col2.currentTextChanged.connect(lambda: self.sig.emit())
         hlayout3.addWidget(self.col2)
-
-        layout.addWidget(SeparateHLine())
 
         self.update_layout(self.total_fig, self.rows, self.cols)
     
@@ -118,6 +115,7 @@ class Layout(ScrollArea):
         self.node = node
         self.total_figs = len(self.node.input_sockets[0].socket_data)
         self.current_idx = 0
+        self.gridspec = None
 
         self.vlayout.addWidget(TitleLabel("Grid"))
         self.vlayout.addWidget(SeparateHLine())
@@ -145,38 +143,38 @@ class Layout(ScrollArea):
         self.update_layout()
   
     def redraw_plot(self):
-        for sub in self.findChildren(SubFigure):
-            self.redraw_subplot(sub)
-                    
-    def redraw_subplot(self, sub:SubFigure):
-
         self.canvas.figure.clear()
-        
-        gs = gridspec.GridSpec(
+        self.canvas.figure.suptitle('')
+        self.canvas.figure.supxlabel('')
+        self.canvas.figure.supylabel('')
+        self.gridspec = self.canvas.figure.add_gridspec(
             nrows=self.nrows,
             ncols=self.ncols,
         )
+        for sub in self.findChildren(SubFigure):
+            self.redraw_subplot(sub)
+        self.canvas.draw_idle()
+                    
+    def redraw_subplot(self, sub:SubFigure):
 
         row1, row2 = sub.row1.currentIndex(), sub.row2.currentIndex()
         col1, col2 = sub.col1.currentIndex(), sub.col2.currentIndex()
         fig_idx = sub.fig.currentIndex()
-        proj3d = False
-
-        if fig_idx > 0:
-            canvas: Canvas = self.node.input_sockets[0].socket_data[fig_idx-1]
-            proj3d = isinstance(canvas.axes, Axes3D)          
         
         if row2 >= row1 and col2 >= col1:
             if row1 == row2 and col1 == col2:
-                subfig = self.canvas.figure.add_subfigure(gs[row1, col1])
+                subfig = self.canvas.figure.add_subfigure(self.gridspec[row1, col1])
             elif row1 == row2:
-                subfig = self.canvas.figure.add_subfigure(gs[row1, col1:col2+1])
+                subfig = self.canvas.figure.add_subfigure(self.gridspec[row1, col1:col2+1])
             elif col1 == col2:
-                subfig = self.canvas.figure.add_subfigure(gs[row1:row2+1, col1])
+                subfig = self.canvas.figure.add_subfigure(self.gridspec[row1:row2+1, col1])
             else:
-                subfig = self.canvas.figure.add_subfigure(gs[row1:row2+1, col1:col2+1])   
-            
+                subfig = self.canvas.figure.add_subfigure(self.gridspec[row1:row2+1, col1:col2+1])   
+                        
             if fig_idx > 0:
+                canvas: Canvas = self.node.input_sockets[0].socket_data[fig_idx-1]
+                proj3d = isinstance(canvas, Canvas3D)     
+                
                 if not proj3d:
                     ax = subfig.add_subplot()
                     axy2 = ax.twinx()
@@ -188,9 +186,7 @@ class Layout(ScrollArea):
                 else:
                     ax = subfig.add_subplot(projection='3d', gid='legend axes')   
 
-            copy_Figure(canvas.figure, subfig)
-
-        self.canvas.draw_idle()
+                copy_Figure(canvas.figure, subfig)
 
     def update_layout(self):
         self.nrows = self.rows.button.value()
@@ -205,7 +201,7 @@ class Layout(ScrollArea):
     
     def add_subfigure(self):
         newfig = SubFigure(self.current_idx, self.total_figs, self.nrows, self.ncols, self)
-        newfig.sig.connect(lambda: self.redraw_subplot(newfig))
+        newfig.sig.connect(self.redraw_plot)
         self.vlayout.insertWidget(self.vlayout.count()-1, newfig)
         self.current_idx += 1
         self.redraw_plot()

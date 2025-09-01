@@ -34,6 +34,7 @@ class Canvas (FigureCanvasQTAgg):
             }
         self.figure = Figure()
         self.figure.set_dpi(100)
+        self.figure.suptitle('')
         # self.fig.subplots_adjust(*self._config['margin'])
         self.initAxes()
         
@@ -149,6 +150,11 @@ class Canvas3D (Canvas):
 class MultiFigureCanvas(Canvas):
     def __init__(self):
         super().__init__()
+
+        self.figure.set_layout_engine(layout='constrained')
+        self.figure.suptitle('')
+        self.figure.supxlabel('')
+        self.figure.supylabel('')
 
     def initAxes(self):
         pass
