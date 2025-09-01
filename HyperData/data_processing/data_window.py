@@ -1,11 +1,14 @@
 from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QTableView, QFileDialog,
-                               QApplication, QMainWindow, QDialog)
-from PySide6.QtGui import QIcon, QGuiApplication, QBrush, QColor
+                               QApplication, QMainWindow, QDialog, QLabel)
+from PySide6.QtGui import QIcon, QGuiApplication, QPixmap, QImage
 from PySide6.QtCore import QModelIndex, Signal, Qt, QAbstractTableModel, QSortFilterProxyModel
 import os, missingno
 from time import gmtime, strftime
 import pandas as pd
 import numpy as np
+from io import BytesIO
+from rdkit import Chem
+from rdkit.Chem import Draw
 from config.settings import list_name, GLOBAL_DEBUG, logger
 from ui.base_widgets.button import (HDropDownPushButton, PrimaryPushButton, HComboBox, HToggle, 
                                     ComboBox, TransparentPushButton, TransparentToolButton, 
@@ -502,7 +505,56 @@ class ExploreView(QWidget):
             
         except Exception as e:
             logger.exception(e)
+
+class MolTableView(TableView):
+    selection_onChange = Signal(int)
+    def __init__(self, data, parent=None):
+        super().__init__(data, parent)
     
+    def on_selection(self):
+        data = self.model.getArray()
+
+        # selected first row
+        selectedRow = self.view.selectionModel().selectedRows()[0]
+
+        self.selection_onChange.emit(selectedRow.row())
+
+class MolView(QWidget):
+    def __init__(self, data:list, parent=None):
+        super().__init__(parent=parent)
+
+        ''' data is a list of molecular representations '''
+
+        self.update_data(data)
+        self.initUI()
+    
+    def initUI(self):
+        self.vlayout = QVBoxLayout(self)
+        self.label = QLabel()
+        self.vlayout.addWidget(self.label)
+    
+    def update_image(self, idx=0):
+        print('idksnpc', idx)
+        pixmap = self.mol_to_image(self.data[idx])
+        self.label.setPixmap(pixmap)
+        self.label.setFixedSize(pixmap.size())
+        
+    
+    def mol_to_image(smiles:str) -> QPixmap:
+        mol = Chem.MolFromSmiles(smiles)
+        pil_img = Draw.MolToImage(mol)
+        buffer = BytesIO()
+        pil_img.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        qmig = QImage.fromData(buffer.read(), 'PNG')
+        pixmap = QPixmap.fromImage(qmig)
+        print(pixmap)
+        return pixmap
+
+    def update_data(self, data):
+        self.data = data
+
 class DataView(QMainWindow):
     def __init__(self, data, parent=None):
         super().__init__(parent)
@@ -521,6 +573,29 @@ class DataView(QMainWindow):
 
         self.explore = ExploreView(data, parent)
         layout.addWidget(self.explore)
+    
+    def update_data (self, data):
+        self.tableview.update_data(data)
+        self.explore.update_data(data)
+
+class MolDataView(QMainWindow):
+    def __init__(self, data, parent=None):
+        super().__init__(parent)
+    
+        self.setWindowTitle("Data")
+        self.setWindowIcon(QIcon(os.path.join(get_path(),"ui","icons","data-window.png")))
+
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        self.setCentralWidget(widget)
+        
+        self.tableview = MolTableView(data, parent)
+        layout.addWidget(self.tableview)
+
+        self.explore = MolView(data, parent)
+        layout.addWidget(self.explore)
+
+        self.tableview.selection_onChange.connect(self.explore.update_image)
     
     def update_data (self, data):
         self.tableview.update_data(data)

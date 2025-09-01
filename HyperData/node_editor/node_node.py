@@ -17,6 +17,7 @@ from node_editor.node.predictor import Predictor
 from node_editor.node.misc.misc import *
 from node_editor.node.deep_learning.deep_learning import *
 from node_editor.node.statistics.stats import *
+from node_editor.node.cheminformatics.cheminformatics import *
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -184,6 +185,9 @@ class Node(NodeGraphicsNode):
         elif title == "Distribution Fitter":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DistFitter(self, parent)
+        elif title == "Mol Reader":
+            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
+            self.content = MolReader(self, parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)
