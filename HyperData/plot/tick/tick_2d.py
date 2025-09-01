@@ -1035,19 +1035,19 @@ class AxisLabel(ScrollArea):
             layout=self.vlayout
         )
 
-        # self.backgroundcolor = ColorDropdown(
-        #     text  = 'Background color',
-        #     getter=self.get_backgroundcolor,
-        #     setter=self.set_backgroundcolor,
-        #     layout=layout
-        # )
+        backgroundcolor = HColorDropdown(
+            label  = 'Background color',
+            getter=self.get_backgroundcolor,
+            setter=self.set_backgroundcolor,
+            layout=self.vlayout
+        )
 
-        # edgecolor = ColorDropdown(
-        #     text  = 'Edge color',
-        #     getter=self.get_edgecolor,
-        #     setter=self.set_edgecolor,
-        #     layout=layout
-        # )
+        edgecolor = HColorDropdown(
+            label  = 'Edge color',
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=self.vlayout
+        )
 
         alpha = HTransparentSpinBox(
             label = 'Transparency',
@@ -1101,8 +1101,7 @@ class AxisLabel(ScrollArea):
         return 'white'
     
     def set_edgecolor (self, color):
-        self.text.set_bbox({"edgecolor":color,
-                           "facecolor":self.backgroundcolor.button.color.name()})
+        self.text.set_bbox({"edgecolor":color})
         self.canvas.draw_idle()
     
     def get_edgecolor(self):

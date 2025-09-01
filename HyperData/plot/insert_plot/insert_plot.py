@@ -350,6 +350,10 @@ class InsertPlot(QMainWindow):
             self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dock)
             
         return super().paintEvent(a0)
+    
+    def show(self):
+        self.raise_() # ensure the window is on top of the stacking order
+        return super().show()
                     
 
 

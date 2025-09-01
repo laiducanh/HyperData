@@ -175,7 +175,7 @@ class GraphicsView (QGraphicsView):
         
         axis = Menu(text="&Axis", parent=self.menu)
         self.menu.addMenu(axis)
-        if isinstance(self.canvas.axes, Axes3D): 
+        if isinstance(self.canvas, Canvas3D): 
             axis_list = ["&X Axis","&Y Axis","&Z Axis"]
         else:
             axis_list = ["&Bottom Axis","&Left Axis","&Top Axis","&Right Axis"]
@@ -289,7 +289,7 @@ class GraphicsView (QGraphicsView):
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonRelease(self, event:QMouseEvent):
-        if isinstance(self.canvas.axes, Axes3D):
+        if isinstance(self.canvas, Canvas3D):
             ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
             exec_menu = self.ax_limit == ax_limit
         else: exec_menu = True
@@ -775,7 +775,7 @@ class GraphicsView (QGraphicsView):
                 self.moving_start, \
                 self.change_item = self._prepare_resize_shape(event)
             
-        if isinstance(self.canvas.axes, Axes3D) and event.button == 3:
+        if isinstance(self.canvas, Canvas3D) and event.button == 3:
             self.ax_limit = self.canvas.axes.get_xlim() + self.canvas.axes.get_ylim() + self.canvas.axes.get_zlim()
     
     def mpl_mouseRelease(self, event: MouseEvent):

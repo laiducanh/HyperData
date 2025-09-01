@@ -7,7 +7,7 @@ from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import ScrollArea
 from plot.label.base import FontStyle
 from config.settings import font_lib
-from matplotlib import colors
+from matplotlib import colors, text
 
 DEBUG = False
 
@@ -17,7 +17,6 @@ class GraphTitle(QDialog):
 
         self.setWindowTitle('Graph Title')
         self.canvas = canvas
-        self.obj = self.canvas.axes.set_title(self.get_title(), gid='title')
             
         layout = QVBoxLayout(self)
         scrollarea = ScrollArea()
@@ -48,7 +47,7 @@ class GraphTitle(QDialog):
         )
         
         style = FontStyle(
-            obj = [self.obj], 
+            obj = [self.findobj()], 
             canvas = self.canvas,
             layout=scrollarea.vlayout
         )
@@ -60,19 +59,19 @@ class GraphTitle(QDialog):
             layout=scrollarea.vlayout
         )
 
-        # self.backgroundcolor = ColorDropdown(
-        #     text  = 'Background color',
-        #     getter=self.get_backgroundcolor,
-        #     setter=self.set_backgroundcolor,
-        #     layout=layout
-        # )
+        backgroundcolor = HColorDropdown(
+            label  = 'Background color',
+            getter=self.get_backgroundcolor,
+            setter=self.set_backgroundcolor,
+            layout=scrollarea.vlayout
+        )
 
-        # edgecolor = ColorDropdown(
-        #     text  = 'Edge color',
-        #     getter=self.get_edgecolor,
-        #     setter=self.set_edgecolor,
-        #     layout=layout
-        # )
+        edgecolor = HColorDropdown(
+            label  = 'Edge color',
+            getter=self.get_edgecolor,
+            setter=self.set_edgecolor,
+            layout=scrollarea.vlayout
+        )
 
         # #align = FontAlignment(type='graph')
         # #align.sig.connect(lambda: self.sig.emit())
@@ -90,52 +89,55 @@ class GraphTitle(QDialog):
             layout=scrollarea.vlayout
         )
     
+    def findobj(self) -> text.Text:
+        return self.canvas.figure._suptitle
+    
     def set_title (self, title:str):
-        self.canvas.axes.set_title(title, gid='title') 
+        self.canvas.figure.suptitle(title)
         self.canvas.draw_idle()
     
     def get_title(self):
-        return self.canvas.axes.get_title()
+        return self.canvas.figure.get_suptitle()
 
     def set_fontname (self, font:str):
-        self.obj.set_fontname(font.lower())
+        self.findobj().set_fontname(font.lower())
         self.canvas.draw_idle()
     
     def get_fontname(self):
-        return self.obj.get_fontname().title()
+        return self.findobj().get_fontname().title()
 
     def set_fontsize(self, value):
-        self.obj.set_fontsize(value)
+        self.findobj().set_fontsize(value)
         self.canvas.draw_idle()
     
     def get_fontsize(self):
-        return self.obj.get_fontsize()
+        return self.findobj().get_fontsize()
 
     def set_color (self, color):
-        self.obj.set_color(color)
+        self.findobj().set_color(color)
         self.canvas.draw_idle()
     
     def get_color (self):
-        return colors.to_hex(self.obj.get_color())
+        return colors.to_hex(self.findobj().get_color())
 
     def set_backgroundcolor (self, color):
-        self.obj.set_backgroundcolor(color)
+        self.findobj().set_backgroundcolor(color)
         self.canvas.draw_idle()
     
     def get_backgroundcolor(self):
-        if self.obj.get_bbox_patch():
-            return colors.to_hex(self.obj.get_bbox_patch().get_facecolor())
+        if self.findobj().get_bbox_patch():
+            return colors.to_hex(self.findobj().get_bbox_patch().get_facecolor())
         return 'white'
 
     def set_edgecolor (self, color):
-        self.obj.set_bbox(
+        self.findobj().set_bbox(
             {"edgecolor" : color}
         )
         self.canvas.draw_idle()
     
     def get_edgecolor(self):
-        if self.obj.get_bbox_patch():
-            return colors.to_hex(self.obj.get_bbox_patch().get_edgecolor())
+        if self.findobj().get_bbox_patch():
+            return colors.to_hex(self.findobj().get_bbox_patch().get_edgecolor())
         return 'white'
 
     def set_pad (self, value):
@@ -145,10 +147,10 @@ class GraphTitle(QDialog):
         pass
 
     def set_alpha (self, value):
-        self.obj.set_alpha(value/100)
+        self.findobj().set_alpha(value/100)
         self.canvas.draw_idle()
     
     def get_alpha (self):
-        if self.obj.get_alpha():
-            return int(self.obj.get_alpha()*100)
+        if self.findobj().get_alpha():
+            return int(self.findobj().get_alpha()*100)
         return 100

@@ -15,11 +15,12 @@ from plot.tick.tick_2d import Tick2D
 from plot.tick.tick_3d import Tick3D
 from plot.plot_graphics_view import GraphicsView, GraphicsViewMultiFig
 from plot.multifigure.layout import Layout
+from plot.multifigure.axislabel import MFAxisLabel
 from ui.base_widgets.list import TreeWidget
 from ui.base_widgets.button import TransparentToolButton
 from ui.base_widgets.line_edit import SearchBox
 from ui.base_widgets.window import FileDialog
-from plot.canvas import Canvas
+from plot.canvas import Canvas, Canvas3D
 from plot.axes.axes_2d import Axes2D
 from plot.axes.axes_3d import Axes3D, View3D
 from plot.label.graph_title import GraphTitle
@@ -43,7 +44,7 @@ class PlotView(QMainWindow):
         self.num_plot = 0
         self.current_plot = 0
         self.curvelist = list()
-        self.plot3d = isinstance(self.canvas.axes, mplot3d.axes3d.Axes3D)
+        self.plot3d = isinstance(self.canvas, Canvas3D)
         self.main_layout = QHBoxLayout()
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.main_layout)
@@ -315,11 +316,11 @@ class PlotViewMultiFig (PlotView):
 
         self.sidebar = QWidget()
         self.sidebar_layout = QVBoxLayout()
-        self.sidebar_layout.setContentsMargins(0,0,0,0)
+        # self.sidebar_layout.setContentsMargins(10,0,10,15)
         self.sidebar.setLayout(self.sidebar_layout)
 
         static_layout = QHBoxLayout()
-        static_layout.setContentsMargins(10,0,10,15)
+        # static_layout.setContentsMargins(10,0,10,15)
         self.sidebar_layout.addLayout(static_layout)
 
         self.graphicscreen_btn = TransparentToolButton()
@@ -366,6 +367,9 @@ class PlotViewMultiFig (PlotView):
         elif text == 'title':
             self.title = GraphTitle(self.canvas, self.parent())
             self.title.show()
+        elif text == 'axis label':
+            self.axislabel = MFAxisLabel(self.canvas, self.parent())
+            self.axislabel.show()
     
     def showEvent(self, event):
         return QMainWindow().showEvent(event)
