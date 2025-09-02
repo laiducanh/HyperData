@@ -1,26 +1,32 @@
 ComboBox {
-    border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius: 8px;
-    font: 15px;
     color: rgba(67, 67, 67, 1);
-    background-color: white;
+    background: white;
+    border: 1px solid rgba(200, 200, 200, 0.8);
+    border-radius: 5px;
+    font: 15px;
     text-align: left;
+    padding: 10px 12px 10px 12px;
+    outline: none;
     selection-color: rgba(67, 67, 67, 1);
-    padding: 7px 12px 7px 12px;
 }
 
 ComboBox:hover {
-    background: rgba(220, 220, 220, 0.8);
+    border: 1px solid --THEMECOLOR-1.0;
+}
+
+ComboBox:pressed {
+    border: 2px solid --THEMECOLOR-1.0;
+}
+
+ComboBox:disabled {
+    color: rgba(0, 0, 0, 0.36);
+    background: rgba(220, 220, 220, 0.4);
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 PrimaryComboBox {
-    background-color: --THEMECOLOR-1.0;
     color: white;
-}
-
-PrimaryComboBox:hover {
-    background-color: --THEMECOLOR-0.9;
-    border: 2px solid --THEMECOLOR-1.0;
+    background-color: --THEMECOLOR-1.0;
 }
 
 TransparentComboBox {
@@ -28,17 +34,6 @@ TransparentComboBox {
     border: none;
 }
 
-TransparentComboBox:hover {
-    border: 1px solid rgba(200, 200, 200, 0.8);
-    background-color: rgba(220, 220, 220, 0.8);
-}
-
-ComboBox:disabled, PrimaryComboBox:disabled, TransparentComboBox:disabled {
-    color: rgba(0, 0, 0, 0.36);
-    background: rgba(249, 249, 249, 0.3);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
 
 ComboBox::drop-down, PrimaryComboBox::drop-down, TransparentComboBox::drop-down {
     border: none;
@@ -71,11 +66,10 @@ ComboBox QAbstractItemView {
 ComboBox QAbstractItemView::item {
     color: rgba(67, 67, 67, 1);
     background: white;
-    border-radius: 8px;
-    padding: 7px 10px 7px 10px;
+    border-radius: 5px;
+    padding: 10px 12px 10px 12px;
 }
 
 ComboBox QAbstractItemView::item:hover {
-    background: rgba(220, 220, 220, 0.8);
-    color: black;
+    border: 1px solid --THEMECOLOR-1.0;
 }

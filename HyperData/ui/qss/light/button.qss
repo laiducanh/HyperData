@@ -1,10 +1,10 @@
-PushButton, DropDownPushButton, ToolButton, TogglePushButton, ToggleToolButton {
+PushButton, ToolButton {
     color: rgba(67, 67, 67, 1);
     background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
-    border-radius:8px;
+    border-radius: 5px;
     font: 15px;
-    padding: 7px 12px 7px 12px;
+    padding: 10px 12px 10px 12px;
     outline: none;
 }
 
@@ -12,44 +12,22 @@ ToolButton[hasMenu=true] {
     padding: 5px 20px 6px 8px;
 }
 
-PushButton:hover, DropDownPushButton:hover, ToolButton:hover, 
-TogglePushButton:hover, _ToggleToolButton:hover {
-    background: rgba(220, 220, 220, 0.8);
+PushButton:hover, ToolButton:hover {
+    border: 1px solid --THEMECOLOR-1.0;
 }
 
-PushButton:pressed, ToolButton:pressed, TogglePushButton:pressed, ToggleToolButton:pressed {
-    color: rgba(67, 67, 67, 0.6);
-    background: rgba(220, 220, 220, 0.4);
-    border: 1px solid rgba(200, 200, 200, 0.8);
+PushButton:pressed, ToolButton:pressed {
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
-PushButton:disabled, ToolButton:disabled, TogglePushButton:disabled, ToggleToolButton:disabled {
+PushButton:disabled, ToolButton:disabled {
     color: rgba(0, 0, 0, 0.36);
-    background: rgba(249, 249, 249, 0.3);
+    background: rgba(220, 220, 220, 0.4);
     border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 TransparentPushButton, DropDownTransparentPushButton, TransparentToolButton {
     background-color: transparent;
-    border: none;
-    border-radius: 8px;
-    margin: 0;
-}
-
-TransparentPushButton:hover, DropDownTransparentPushButton:hover, TransparentToolButton:hover {
-    background: rgba(220, 220, 220, 0.8);
-    border: none;
-}
-
-TransparentPushButton:pressed, TransparentToolButton:pressed {
-    color: rgba(0, 0, 0, 0.63);
-    background: rgba(220, 220, 220, 0.4);
-    border: none;
-}
-
-TransparentPushButton:disabled, DropDownTransparentPushButton:disabled, 
-TransparentToolButton:disabled, CheckBox:disabled {
-    background: transparent;
     border: none;
 }
 
@@ -58,29 +36,17 @@ PrimaryPushButton, DropDownPrimaryPushButton, PrimaryToolButton {
     background-color: --THEMECOLOR-1.0;
 }
 
-PrimaryPushButton:hover, DropDownPrimaryPushButton:hover, PrimaryToolButton:hover {
-    background-color: --THEMECOLOR-0.9;
-    border: 2px solid --THEMECOLOR-1.0;
-}
-
-PrimaryPushButton:pressed, PrimaryToolButton:pressed,
-TogglePushButton:checked:pressed, ToggleToolButton:checked:pressed {
-    color: rgba(255, 255, 255, 0.63);
-}
-
-PrimaryPushButton:disabled, DropDownPrimaryPushButton:disabled, PrimaryToolButton:disabled,
-TogglePushButton:checked:disabled, ToggleToolButton:checked:pressed {
-    color: rgba(255, 255, 255, 0.63);
-    background-color: --THEMECOLOR-0.3;
+PrimaryPushButton:pressed, DropDownPrimaryPushButton:pressed, PrimaryToolButton:pressed {
+    border: 2px solid white;
 }
 
 TogglePushButton:checked, ToggleToolButton:checked {
-    border: 2px solid --THEMECOLOR-1.0;
+    color: black;
+    border: 1px solid --THEMECOLOR-1.0;
+    background-color: --THEMECOLOR-0.2;
 }
 
-DropDownPushButton::menu-indicator,
-DropDownTransparentPushButton::menu-indicator,
-ToolButton::menu-indicator {
+DropDownPushButton::menu-indicator, ToolButton::menu-indicator {
     image: url(ui:icons/black/ChevronDown_black.svg);
     width: 10px;
     height: 10px;
@@ -109,29 +75,30 @@ CheckBox {
     margin-left: 8px;
     min-width: 28px;
     min-height: 28px;
+    outline: none;
 }
 
 CheckBox::indicator {
     width: 18px;
     height: 18px;
     border-radius: 5px;
-    border: 1.5px solid rgb(135, 135, 135);
-    background-color: rgb(241, 241, 241);
+    border: 1px solid rgb(135, 135, 135);
+    background-color: white;
 }
 
 CheckBox::indicator:hover {
-    border: 1.5px solid rgb(132, 132, 132);
-    background-color: rgb(232, 232, 232);
+    border: 1px solid --THEMECOLOR-1.0;
+    background-color: rgb(224, 224, 224);
 }
 
 CheckBox::indicator:pressed {
-    border: 1.5px solid rgb(184, 184, 184);
+    border: 1px solid --THEMECOLOR-1.0;
     background-color: rgb(224, 224, 224);
 }
 
 CheckBox::indicator:checked,
 CheckBox::indicator:indeterminate {
-    border: 1.5px solid --THEMECOLOR-1.0;
+    border: 1px solid --THEMECOLOR-1.0;
     background-color: --THEMECOLOR-1.0;
 }
 
@@ -145,14 +112,14 @@ CheckBox::indicator:indeterminate {
 
 CheckBox::indicator:checked:hover,
 CheckBox::indicator:indeterminate:hover {
-    border: 1.5px solid --THEMECOLOR-0.8;
+    border: 1px solid --THEMECOLOR-0.8;
     background-color: --THEMECOLOR-0.8;
 }
 
 CheckBox::indicator:checked:pressed,
 CheckBox::indicator:indeterminate:pressed {
-    border: 1.5px solid --THEMECOLOR-0.6;
-    background-color: --THEMECOLOR-0.6;
+    border: 1px solid --THEMECOLOR-1.0;
+    background-color: --THEMECOLOR-1.0;
 }
 
 CheckBox:disabled {
@@ -160,13 +127,13 @@ CheckBox:disabled {
 }
 
 CheckBox::indicator:disabled {
-    border: 1.5px solid #bbbbbb;
+    border: 1px solid rgb(135, 135, 135);
     background-color: rgb(224, 224, 224);
 }
 
 CheckBox::indicator:checked:disabled,
 CheckBox::indicator:indeterminate:disabled {
-    border: 1.5px solid rgb(199, 199, 199);
+    border: 1px solid rgb(199, 199, 199);
     background-color: rgb(199, 199, 199);
 }
 
@@ -176,13 +143,14 @@ RadioButton {
     background-color: transparent;
     font: 15px;
     color: rgba(67, 67, 67, 1);
+    outline: none;
 }
 
 RadioButton::indicator {
     width: 18px;
     height: 18px;
-    border-radius: 11px;
-    border: 2px solid #999999;
+    border-radius: 9px;
+    border: 1px solid #999999;
     background-color: rgba(0, 0, 0, 5);
     margin-right: 4px;
 }
@@ -192,7 +160,7 @@ RadioButton::indicator:hover {
 }
 
 RadioButton::indicator:pressed {
-    border: 2px solid #bbbbbb;
+    border: 1px solid #bbbbbb;
     background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5,
             stop:0 rgb(255, 255, 255),
             stop:0.5 rgb(255, 255, 255),
@@ -201,10 +169,10 @@ RadioButton::indicator:pressed {
 }
 
 RadioButton::indicator:checked {
-    height: 22px;
-    width: 22px;
+    height: 20px;
+    width: 20px;
     border: none;
-    border-radius: 11px;
+    border-radius: 9px;
     background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5,
             stop:0 rgb(255, 255, 255),
             stop:0.5 rgb(255, 255, 255),
@@ -233,6 +201,6 @@ RadioButton:disabled {
 }
 
 RadioButton::indicator:disabled {
-    border: 2px solid #bbbbbb;
+    border: 1px solid #bbbbbb;
     background-color: rgba(0, 0, 0, 0);
 }

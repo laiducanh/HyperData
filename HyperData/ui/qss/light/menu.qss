@@ -1,10 +1,10 @@
 Menu {
+    color: rgba(67, 67, 67, 1);
+    background: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
     /* border-radius: 8px; */
     font: 15px;
-    background-color: white;
     padding: 4px 3px 4px 3px;
-    color: rgba(67, 67, 67, 1);
     outline: none;
 }
 
@@ -25,22 +25,17 @@ Menu::separator {
 Menu::item {
     color: rgba(67, 67, 67, 1);
     background: white;
-    padding: 7px 30px 7px 20px;
-    border-radius: 8px;
+    padding: 10px 30px 10px 20px;
+    border-radius: 5px;
     border: none;
-    
 }
 
 Menu::item:hover {
-    background: rgba(220, 220, 220, 0.8);
-    color: black;
+    border: 1px solid --THEMECOLOR-1.0;
 }
 
 Menu::item:selected {
-    border-width: 1px;
-    border-color: rgb(212, 212, 212);
-    background: rgba(0, 0, 0, 25);
-    color: black;
+    border: 1px solid --THEMECOLOR-1.0;
 }
 
 Menu::icon {

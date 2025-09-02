@@ -1,26 +1,26 @@
 ComboBox {
-    border: none;
-    border-radius: 8px;
-    padding: 7px 12px 7px 12px;
-    font: 15px;
     color: white;
-    background-color: rgb(43, 43, 43);
+    background: rgb(43, 43, 43);
+    border: none;
+    border-radius: 5px;
+    font: 15px;
+    padding: 10px 12px 10px 12px;
+    outline: none;
     text-align: left;
 }
 
 ComboBox:hover {
-    background-color: rgba(220, 220, 220, 0.1);
-    color: white;
+    border: 1px solid --THEMECOLOR-1.0;
 }
 
-TransparentComboBox {
-    background-color: transparent;
-    border: none;
+ComboBox:pressed {
+    border: 2px solid --THEMECOLOR-1.0;
 }
 
-TransparentComboBox:hover {
-    background: rgba(220, 220, 220, 0.1);
-    border: none;
+ComboBox:disabled {
+    color: rgba(0, 0, 0, 0.36);
+    background: rgba(220, 220, 220, 0.4);
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 PrimaryComboBox {
@@ -28,16 +28,10 @@ PrimaryComboBox {
     color: white;
 }
 
-PrimaryComboBox:hover {
-    background-color: --THEMECOLOR-0.9;
-    border: 2px solid --THEMECOLOR-1.0;
-}
 
-ComboBox:disabled {
-    color: rgba(0, 0, 0, 0.36);
-    background: rgba(249, 249, 249, 0.3);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+TransparentComboBox {
+    background-color: transparent;
+    border: none;
 }
 
 ComboBox::drop-down {
@@ -65,10 +59,10 @@ ComboBox QAbstractItemView {
 ComboBox QAbstractItemView::item {
     color: white;
     background: transparent;
-    padding: 7px 10px 7px 10px;
-    border-radius: 8px;
+    padding: 10px 12px 10px 12px;
+    border-radius: 5px;
 }
 
 ComboBox QAbstractItemView::item:hover {
-    background: rgba(220, 220, 220, 0.1);
+    border: 1px solid --THEMECOLOR-1.0;
 }

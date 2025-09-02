@@ -1,9 +1,11 @@
 Menu {
+    color: white;
     border: 1px solid rgba(200, 200, 200, 0.8);
     /* border-radius: 8px; */
     background: rgb(43, 43, 43);
     padding: 4px 3px 4px 3px;
     outline: none;
+    font: 15px;
 }
 
 Menu::right-arrow {
@@ -24,21 +26,18 @@ Menu::item {
     color: white;
     background: transparent;
     font: 15px;
-    padding: 7px 30px 7px 20px;
-    border-radius: 8px;
+    padding: 10px 30px 10px 20px;
+    border-radius: 5px;
     border: none;
     
 }
 
 Menu::item:hover {
-    background: rgba(220, 220, 220, 0.8);
-    color: white;
+    border: 1px solid --THEMECOLOR-1.0;
 }
 
 Menu::item:selected {
-    border-width: 1px;
-    border-color: rgb(212, 212, 212);
-    background: rgba(220, 220, 220, 0.1);
+    border: 1px solid --THEMECOLOR-1.0;
 }
 
 Menu::icon {
