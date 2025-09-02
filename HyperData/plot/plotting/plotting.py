@@ -7,7 +7,7 @@ from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
 from plot.utilis import find_mpl_object, remove_artist, get_legend, remove_legend, rescale_plot, grid
 from plot.copy_objects import update_props, update_legend
-from plot.canvas import Canvas
+from plot.canvas import Canvas3D, MultiFigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
@@ -142,7 +142,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         ax.figure.add_artist(art)
     
     # adjust grid when plotting
-    if isinstance(ax.figure.canvas, Canvas): 
+    if not isinstance(ax.figure.canvas, (Canvas3D, MultiFigureCanvas)): 
         grid(ax.figure)
     
     ax.figure.canvas.draw_idle()

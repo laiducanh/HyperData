@@ -8,11 +8,11 @@ import pandas as pd
 import numpy as np
 from io import BytesIO
 from rdkit import Chem
-from rdkit.Chem import Draw
+from rdkit.Chem import Draw, AllChem
 from config.settings import list_name, GLOBAL_DEBUG, logger
 from ui.base_widgets.button import (HDropDownPushButton, PrimaryPushButton, HComboBox, HToggle, 
                                     ComboBox, TransparentPushButton, TransparentToolButton, 
-                                    ToolButton, ToggleToolButton)
+                                    ToolButton, ToggleToolButton, CheckBox)
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.line_edit import SearchBox
 from ui.base_widgets.menu import Menu, Action
@@ -510,50 +510,120 @@ class MolTableView(TableView):
     selection_onChange = Signal(int)
     def __init__(self, data, parent=None):
         super().__init__(data, parent)
+
+        self.view.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.view.setSelectionMode(QTableView.SelectionMode.SingleSelection)
     
+    def initUI(self):
+
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        frame = Frame()
+        self.hlayout = QHBoxLayout(frame)
+        self.vlayout.addWidget(frame)
+        header = ToggleToolButton(icon='header.png')
+        header.setToolTip('Toggle header')
+        header.setChecked(True)
+        header.toggled.connect(self.toggle_header)
+        self.hlayout.addWidget(header)
+        self.savedata = ToolButton(icon='save.png')
+        self.savedata.setToolTip('Export data as csv')
+        self.savedata.clicked.connect(self.save_data)
+        self.hlayout.addWidget(self.savedata)
+        self.search_box = SearchBox()
+        self.search_box.setPlaceholderText('Search from data')
+        self.search_box.textChanged.connect(lambda string: self.filter.setFilterFixedString(string))
+        self.hlayout.addWidget(self.search_box)
+        self.time_update = BodyLabel()
+        self.hlayout.addWidget(self.time_update)
+
+        self.view = QTableView(self.parent())
+        self.update_data(self.data)
+        self.vlayout.addWidget(self.view)
+        
     def on_selection(self):
-        data = self.model.getArray()
-
-        # selected first row
         selectedRow = self.view.selectionModel().selectedRows()[0]
-
         self.selection_onChange.emit(selectedRow.row())
 
 class MolView(QWidget):
-    def __init__(self, data:list, parent=None):
+    def __init__(self, smiles:str, parent=None):
         super().__init__(parent=parent)
 
         ''' data is a list of molecular representations '''
-
-        self.update_data(data)
+        self.smiles = None
         self.initUI()
     
     def initUI(self):
         self.vlayout = QVBoxLayout(self)
-        self.label = QLabel()
-        self.vlayout.addWidget(self.label)
-    
-    def update_image(self, idx=0):
-        print('idksnpc', idx)
-        pixmap = self.mol_to_image(self.data[idx])
-        self.label.setPixmap(pixmap)
-        self.label.setFixedSize(pixmap.size())
+        self.hlayout1 = QHBoxLayout()
+        self.vlayout.addLayout(self.hlayout1)
+        self.addHs = CheckBox(
+            text='Nonpolar Hydrogens',
+            setter=self.update_image,
+            layout=self.hlayout1
+        )
+        self.atLabel = CheckBox(
+            text='Atom Labels',
+            setter=self.update_image,
+            layout=self.hlayout1
+        )
+        self.stereo = CheckBox(
+            text='Stereocenters',
+            setter=self.update_image,
+            layout=self.hlayout1
+        )
+        self.hlayout2 = QHBoxLayout()
+        self.vlayout.addLayout(self.hlayout2)
+        self.atIdx = CheckBox(
+            text='Atom Indices',
+            setter=self.update_image,
+            layout=self.hlayout2
+        )
+        self.bondIdx = CheckBox(
+            text='Bond Indices',
+            setter=self.update_image,
+            layout=self.hlayout2
+        )
         
+        self.image2D = QLabel()
+        self.vlayout.addWidget(self.image2D)
+        self.update_image()
     
-    def mol_to_image(smiles:str) -> QPixmap:
+    def update_image(self):
+        pixmap = self.mol_to_image(self.smiles)
+        self.image2D.setPixmap(pixmap)
+        self.image2D.setFixedSize(pixmap.size())
+           
+    def string_to_mol(self, smiles:str):
         mol = Chem.MolFromSmiles(smiles)
-        pil_img = Draw.MolToImage(mol)
-        buffer = BytesIO()
-        pil_img.save(buffer, format='PNG')
-        buffer.seek(0)
+        if self.addHs.isChecked():
+            mol = AllChem.AddHs(mol, addCoords=True)
+        return mol
+    
+    def mol_to_image(self, smiles:str, size=(500,500)) -> QPixmap:
+        try:
+            mol = self.string_to_mol(smiles)
+            drawop = Draw.MolDrawOptions()
+            drawop.addAtomIndices=self.atIdx.isChecked()
+            drawop.addBondIndices=self.bondIdx.isChecked()
+            drawop.addStereoAnnotation=self.stereo.isChecked()
+            drawop.noAtomLabels= not self.atLabel.isChecked()
+            pil_img = Draw.MolToImage(mol, size, bgcolor=(255,255,255), options=drawop)
+            buffer = BytesIO()
+            pil_img.save(buffer, format='PNG')
+            buffer.seek(0)
+            qmig = QImage.fromData(buffer.read(), 'PNG')
+            pixmap = QPixmap.fromImage(qmig)
+        except Exception:   
+            pixmap = QPixmap(*size)
+            pixmap.fill(Qt.GlobalColor.white)
 
-        qmig = QImage.fromData(buffer.read(), 'PNG')
-        pixmap = QPixmap.fromImage(qmig)
-        print(pixmap)
         return pixmap
 
-    def update_data(self, data):
-        self.data = data
+    def update_data(self, smiles):
+        self.smiles = smiles
+        self.update_image()
 
 class DataView(QMainWindow):
     def __init__(self, data, parent=None):
@@ -584,22 +654,27 @@ class MolDataView(QMainWindow):
     
         self.setWindowTitle("Data")
         self.setWindowIcon(QIcon(os.path.join(get_path(),"ui","icons","data-window.png")))
+        self.data = data
 
         widget = QWidget()
         layout = QHBoxLayout(widget)
         self.setCentralWidget(widget)
         
         self.tableview = MolTableView(data, parent)
+        self.tableview.selection_onChange.connect(self.selection_onChange)
         layout.addWidget(self.tableview)
 
         self.explore = MolView(data, parent)
         layout.addWidget(self.explore)
 
-        self.tableview.selection_onChange.connect(self.explore.update_image)
-    
+        
     def update_data (self, data):
+        self.data = data
         self.tableview.update_data(data)
         self.explore.update_data(data)
+    
+    def selection_onChange(self, idx:int):
+        self.explore.update_data(self.data.iloc[idx, 0])
 
 class DataSelection(QDialog):
     sig = Signal(str)
