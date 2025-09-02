@@ -17,22 +17,26 @@ from config.settings import config
 import os, darkdetect, re, matplotlib, itertools, cycler, numpy
 
 def set_stylesheet():
-        app: QApplication = QApplication.instance()
-        theme = config["theme"]
-        if theme == 'Auto': theme = darkdetect.theme()
-        qss = str()
-        path = os.path.join(get_path(), "ui","qss", theme)
-        for file in os.listdir(path):
-            with open(os.path.join(path, file), 'r') as f:
-                qss += f.read()
+    app: QApplication = QApplication.instance()
+    theme = config["theme"]
+    if theme == 'Auto': theme = darkdetect.theme()
+    qss = str()
+    path = os.path.join(get_path(), "ui","qss", theme)
+    for file in os.listdir(path):
+        with open(os.path.join(path, file), 'r') as f:
+            qss += f.read()
+    while True:
+        match = re.search(r'--THEMECOLOR-([0-1]\.\d+)', qss)
+        if not match: 
+            break
+        start, end = match.span()
         color = list(int(config["themecolor"].lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
-        color.append(re.search(r'--THEMECOLOR-([0-1]\.\d+)', qss).group(1))
-        qss = re.sub(r'--THEMECOLOR-[0-1]\.\d+', 
-                     f"rgba({color[0]}, {color[1]}, {color[2]}, {color[3]})", qss)
-        app.setStyleSheet(qss)
-        for widget in app.allWidgets():
-            try: widget._update()
-            except: pass
+        color.append(float(re.search(r'--THEMECOLOR-([0-1]\.\d+)', qss).group(1)))  
+        qss = qss[:start] + f"rgba({color[0]}, {color[1]}, {color[2]}, {color[3]})" + qss[end:]
+    app.setStyleSheet(qss)
+    for widget in app.allWidgets():
+        try: widget._update()
+        except: pass
 
 class Theme(HTransparentComboBox):
     def __init__(self, parent:QMainWindow=None):
