@@ -493,7 +493,7 @@ class GridGroupRadioButton(QWidget):
 
 class SegmentedWidget(HFrame):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.hlayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 

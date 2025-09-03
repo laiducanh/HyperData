@@ -148,7 +148,7 @@ class Figure_Colors(Frame):
         layout = QVBoxLayout()
         self.setLayout(layout)
         self.palette_dict = {
-            "default": ["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
+            "default": ["#006EA8","#04A87D","#7A04DD","#DC7821","#8F0043"],
             "red": ["#03071e","#6a040f","#d00000","#e85d04","#faa307"], 
             "blue": ["#03045e","#0077b6","#00b4d8","#90e0ef","#caf0f8"],
             "black": ["#212529","#343a40","#495057","#6c757d","#adb5bd"],
@@ -186,7 +186,7 @@ class Figure_Colors(Frame):
             btn.colorChanged.connect(lambda color, i=idx: self.changeColor(color, i))
             layout2.addWidget(btn)
         
-        self.createPalette()
+        self.set_color_cyle()
 
     def changePalette(self, palette:str):
         palette = self.palette_dict[palette].copy()
@@ -201,7 +201,7 @@ class Figure_Colors(Frame):
                 btn: ColorPickerButton
                 palette[idx] = matplotlib.colors.to_hex(btn.color.getRgbF())
             config.update(plot_palette = palette)
-        self.createPalette()
+        self.set_color_cyle()
         
     def changeColor(self, color:str, idx:int):
         custom = self.palette_dict[self._palette.currentText()].copy()
@@ -210,7 +210,7 @@ class Figure_Colors(Frame):
         config.update(plot_palette = custom)
         self._palette.setCurrentText("custom")
     
-    def createPalette(self):
+    def set_color_cyle(self):
         color_lib = config["plot_palette"].copy()
         for i in range(3):
             for point in range(len(color_lib)-1):

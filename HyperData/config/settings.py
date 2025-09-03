@@ -153,7 +153,7 @@ config = {
     "plot_tooltip":False, 
     "plot_dpi":100, 
     "plot_style":"default",
-    "plot_palette":["#4285f4","#34a853","#f2fe01","#fbbc05","#ea4335"],
+    "plot_palette":["#006EA8","#04A87D","#7A04DD","#DC7821","#8F0043"],
     "plot_crosshair":False,
     "plot_crosshair_style":'dash',
     "version": "0.9.31",
