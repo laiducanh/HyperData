@@ -53,7 +53,7 @@ def complementary_color(color):
 def find_mpl_object(figure:Figure, match:list[Type[T]]=None, 
                     gid:str=None, rule:Literal["exact","contain","index"]="index") -> list[T]:
 
-    """ This function is used to find artist plot (having gid) in figure,
+    """ This function is used to find artist (having gid) in artists list of the figure,
         for general uses, use matplotlib function findobj() instead """
 
     
@@ -177,12 +177,21 @@ def set_zorder(figure:Figure, gid:str,
 
 def grid(figure: Figure):
     " Only use for 2D Figure "
-
-    for obj in find_mpl_object(
-        figure, [lines.Line2D],
-        gid='_grid', rule='exact'
+    
+    # Default grid properties, adapted from rcParams
+    props = {
+        'color':'#b0b0b0',
+        'linewidth':0.8,
+        'linestyle':'solid',
+        'alpha':1,
+        'zorder':2
+    }
+    for obj in figure.findobj(
+        lambda a: isinstance(a, lines.Line2D) and a.get_gid() \
+        and a.get_gid() == "_grid" 
     ):
-        figure.artists.remove(obj)
+        obj.remove()
+        props = obj.properties()
 
     xaxis: Axis = figure.findobj(
         lambda a: isinstance(a, Axis) and a.get_gid() \
@@ -203,16 +212,36 @@ def grid(figure: Figure):
         xticks = xaxis.get_major_ticks() + xaxis.get_minor_ticks()
         yticks = yaxis.get_major_ticks() + yaxis.get_minor_ticks()
     
-    if figure.canvas._config['grid']['axis'] == 'x':
-        gridlines = [tick.gridline for tick in xticks]
-    elif figure.canvas._config['grid']['axis'] == 'y':
-        gridlines = [tick.gridline for tick in yticks]
-    elif figure.canvas._config['grid']['axis'] == 'both':
-        gridlines = [tick.gridline for tick in xticks + yticks]
+    xlim = xaxis.axes.get_xlim()
+    ylim = yaxis.axes.get_ylim()
+    gridlines: list[lines.Line2D] = [] # only contains visible gridlines
+    if figure.canvas._config['grid']['axis'] in ['x','both']:
+        for tick in xticks:
+            if xlim[0] <= tick.gridline.get_xdata()[0] <= xlim[1]:
+                gridlines.append(line)
+    if figure.canvas._config['grid']['axis'] in ['y','both']:
+        for tick in yticks:
+            if ylim[0] <= tick.gridline.get_ydata()[0] <= ylim[1]:
+                gridlines.append(line)
 
     for line in gridlines:
-        line.set(
+        line.set(visible = False)
+        # Get the path in display (pixel) coordinates
+        path = line.get_path().transformed(line.get_transform())        
+        # Convert display coords to figure coordinates
+        fig_coords = figure.transFigure.inverted().transform(path.vertices)
+        # Clone the gridline and add to Figure
+        figline = lines.Line2D(
+            xdata=fig_coords[:, 0],
+            ydata=fig_coords[:, 1],
+            transform=figure.transFigure,
             visible = figure.canvas._config['grid']['visible'],
-            gid = '_grid'
+            color=props['color'],
+            linewidth=props["linewidth"],
+            linestyle=props["linestyle"],
+            alpha=props["alpha"],
+            zorder=props["zorder"],
+            marker='none',
+            gid = '_grid',
         )
-        figure.add_artist(line)
+        figure.add_artist(figline) 

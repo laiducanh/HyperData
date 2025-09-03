@@ -139,7 +139,11 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     # add artist from the drawing axes into figure globally
     # in order to have better control in zorder
     for art in artist:
-        ax.figure.add_artist(art)
+        # remove artist from current Axes 
+        if art._remove_method:
+            art.remove() 
+        # then add to Figure
+        ax.figure.add_artist(art) 
     
     # adjust grid when plotting
     if not isinstance(ax.figure.canvas, (Canvas3D, MultiFigureCanvas)): 
