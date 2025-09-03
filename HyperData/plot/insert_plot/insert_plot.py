@@ -59,15 +59,21 @@ class NewPlot(Frame):
         self.text = TitleLabel(self.plot_gid.title())
         layout.addWidget(self.text)
         layout.addStretch()
-        self.type = DropDownPrimaryPushButton()
-        self.type.setText(self.plot_type)
-        
+        self.type = TransparentToolButton(
+            icon='play.png',
+            setter=self.plotting,
+            layout=layout
+        )        
 
         if plot3d: self.menu = Menu_type_3D(self)
         else: self.menu = Menu_type_2D(self)
         self.menu.sig.connect(self.update_layout)
-        self.type.setMenu(self.menu)
-        layout.addWidget(self.type)
+
+        DropDownPrimaryPushButton(
+            text=self.plot_type,
+            menu=self.menu,
+            layout=layout
+        )
 
         self.progressbar = ProgressBar()
         mainlayout.addWidget(self.progressbar)
@@ -136,7 +142,7 @@ class NewPlot(Frame):
         elif self.plot_type == "3d scatter":                self.widget = Scatter3D(*args)
         elif self.plot_type == "3d bubble":                 self.widget = Bubble3D(*args)
 
-        self.widget.sig.connect(self.plotting)
+        # self.widget.sig.connect(self.plotting)
         self.layout_input.addWidget(self.widget)
 
         self.update_config()
