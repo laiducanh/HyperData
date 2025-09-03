@@ -79,22 +79,28 @@ def find_mpl_object(figure:Figure, match:list[Type[T]]=None,
 
 def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     """
-    Remove artist which contains gid from Axes
+    Remove artist which contains gid from Figure
     
     """
     artist_removed = list()
-
-    for ax in figure.axes:
-        artists = ax.findobj(
-            lambda a: isinstance(a, Artist) and a.get_gid() \
-            and gid.split()[0] in a.get_gid().split('/')[0] \
-            and gid.split()[-1] == a.get_gid().split('/')[0].split()[-1]
-        )
-        if artists:
-            ax._children = [x for x in ax._children if x not in artists]
-            figure.artists = [x for x in figure.artists if x not in artists]
-            artist_removed += artists
-            logger.info(f'Canvas {figure.canvas.id}: remove_artist {artists}.')
+    # for ax in figure.axes:
+    #     artists = ax.findobj(
+    #         lambda a: isinstance(a, Artist) and a.get_gid() \
+    #         and gid.split()[0] in a.get_gid().split('/')[0] \
+    #         and gid.split()[-1] == a.get_gid().split('/')[0].split()[-1]
+    #     )
+    #     if artists:
+    #         ax._children = [x for x in ax._children if x not in artists]
+    #         figure.artists = [x for x in figure.artists if x not in artists]
+    #         artist_removed += artists
+    #         logger.info(f'Canvas {figure.canvas.id}: remove_artist {artists}.')
+    for artist in figure.findobj(
+        lambda a: isinstance(a, Artist) and a.get_gid() \
+            and gid in a.get_gid().split('/')[0] \
+            and gid == a.get_gid().split('/')[0].split('.')[0]
+    ):
+        artist_removed.append(artist)
+        artist.remove()
                         
     return artist_removed
 

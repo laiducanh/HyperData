@@ -59,7 +59,7 @@ class NewPlot(Frame):
         self.text = TitleLabel(self.plot_gid.title())
         layout.addWidget(self.text)
         layout.addStretch()
-        self.type = TransparentToolButton(
+        TransparentToolButton(
             icon='play.png',
             setter=self.plotting,
             layout=layout
@@ -69,8 +69,8 @@ class NewPlot(Frame):
         else: self.menu = Menu_type_2D(self)
         self.menu.sig.connect(self.update_layout)
 
-        DropDownPrimaryPushButton(
-            text=self.plot_type,
+        self.type = DropDownPrimaryPushButton(
+            text=self.plot_type.title(),
             menu=self.menu,
             layout=layout
         )
