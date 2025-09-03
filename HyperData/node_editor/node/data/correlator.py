@@ -5,8 +5,8 @@ from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import HTransparentComboBox, HToggle
 from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.text import TitleLabel, BodyLabel
+from ui.base_widgets.frame import SeparateHLine, VFrame
+from ui.base_widgets.text import TitleLabel
 
 DEBUG = False
 
@@ -27,11 +27,12 @@ class DataCorrelator (NodeContentWidget):
         dialog = Dialog("Configuration", self.parent)
         dialog.main_layout.addWidget(TitleLabel("Correlation and Covariance"))
         dialog.main_layout.addWidget(SeparateHLine())
+        fr = VFrame(dialog.main_layout)
         method = HTransparentComboBox(
             label="Type", 
             items=["correlation","covariance"],
             getter=lambda: self._config['type'],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         function = HTransparentComboBox(
             items=["pearson","kendall","spearman"],
@@ -39,15 +40,16 @@ class DataCorrelator (NodeContentWidget):
             label2="Method of correlation: Pearson (standard) correlation coefficient, " \
             "Kendall Tau correlation coefficient, Spearman rank correlation",
             getter=lambda: self._config['method'],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
+        fr = VFrame(dialog.main_layout)
         min_periods = HTransparentSpinBox(
             minimum=1,
             label="Minimum observations",
             label2="Minimum number of observations required per pair of columns to have a valid result. " \
             "Currently only available for Pearson, Spearman correlation, and covariance analyses.",
             getter=lambda: self._config["min_periods"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         ddof = HTransparentSpinBox(
             minimum=1,
@@ -55,12 +57,12 @@ class DataCorrelator (NodeContentWidget):
             label2="To determine the divisor used in calculations. This option is applicable only " \
             "when no missing data is in the DataFrame",
             getter=lambda: self._config["ddof"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         overwrite = HToggle(
             label="Include only float, int or boolean data",
             getter=lambda: self._config["numeric_only"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec():

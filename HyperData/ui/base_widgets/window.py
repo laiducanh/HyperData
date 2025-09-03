@@ -4,7 +4,7 @@ from PySide6.QtCore import (Qt, QPropertyAnimation, Property, QEasingCurve
                             ,QParallelAnimationGroup, QSequentialAnimationGroup)
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QBrush
 import math, typing
-from ui.base_widgets.button import PrimaryPushButton, TransparentPushButton
+from ui.base_widgets.button import PushButton, TransparentPushButton
 from ui.utils import isDark
 from typing import Literal
 
@@ -34,19 +34,22 @@ class Dialog (QDialog):
         self.groupButton = QHBoxLayout(widget)
         self.vlayout.addWidget(widget)
         self.groupButton.addStretch()
-        self.ok_btn = PrimaryPushButton("Save Changes")
-        #self.ok_btn.setMinimumWidth(200)
-        self.ok_btn.clicked.connect(self.accept)
-        self.groupButton.addWidget(self.ok_btn)
-        self.cancel_btn = TransparentPushButton("Cancel")
-        #self.cancel_btn.setMinimumWidth(200)
-        self.cancel_btn.clicked.connect(self.reject)
-        self.groupButton.addWidget(self.cancel_btn)
+        self.ok_btn = PushButton(
+            text="Save Changes",
+            icon="accept.png",
+            setter=self.accept,
+            layout=self.groupButton
+        )
+        self.cancel_btn = TransparentPushButton(
+            text="Cancel",
+            icon="close.png",
+            setter=self.reject,
+            layout=self.groupButton
+        )
     
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
         # Create rounded rectangle path
         # path = QPainterPath()
         # path.addRoundedRect(self.rect().toRectF(), 10, 10)
@@ -56,6 +59,7 @@ class Dialog (QDialog):
         #     painter.fillPath(path, QBrush(QColor(32,32,32)))
         # else:
         #     painter.fillPath(path, QBrush(QColor(250,250,250)))
+        super().paintEvent(event)
     
     def showEvent(self, event):
         

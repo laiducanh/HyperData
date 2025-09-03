@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QFrame, QScrollArea, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QFrame, QScrollArea, QVBoxLayout, QHBoxLayout, QLayout
 from PySide6.QtGui import QPainter, QColor, QPainterPath
 from PySide6.QtCore import Qt
 from ui.utils import isDark
@@ -106,6 +106,20 @@ class Frame(QFrame):
         rect = self.rect().adjusted(1, 1, -1, -1)
         painter.setBrush(QColor(bc.red(), bc.green(), bc.blue(), alpha))
         painter.drawRoundedRect(rect, r, r)
+
+class VFrame(Frame):
+    def __init__(self, layout:QLayout=None, parent=None):
+        super().__init__(parent)
+
+        if layout: layout.addWidget(self)
+        self.vlayout = QVBoxLayout(self)
+
+class HFrame(Frame):
+    def __init__(self, layout:QLayout=None, parent=None):
+        super().__init__(parent)
+
+        if layout: layout.addWidget(self)
+        self.hlayout = QHBoxLayout(self)
 
 class ScrollArea(QScrollArea):
     def __init__(self, vlayout=True, parent=None):

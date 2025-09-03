@@ -30,12 +30,12 @@ TransparentPushButton, DropDownTransparentPushButton, TransparentToolButton {
     border: none;
 }
 
-PrimaryPushButton, PrimaryToolButton {
+PrimaryPushButton, DropDownPrimaryPushButton, PrimaryToolButton {
     color: white;
     background-color: --THEMECOLOR-1.0;
 }
 
-PrimaryPushButton:pressed, PrimaryToolButton:pressed {
+PrimaryPushButton:pressed, DropDownPrimaryPushButton:pressed, PrimaryToolButton:pressed {
     border: 2px solid white;
 }
 

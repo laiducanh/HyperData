@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import GridGroupRadioButton
+from ui.base_widgets.button import TransparentComboBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.text import TitleLabel, BodyLabel
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel, InfoLabel
+from ui.base_widgets.frame import SeparateHLine, VFrame
 
 DEBUG = False
 
@@ -20,18 +20,22 @@ class DataCombiner(NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
+        dialog.setMinimumSize(600, 200)
         dialog.main_layout.addWidget(TitleLabel("Combine by function"))
         dialog.main_layout.addWidget(BodyLabel("Combines two DataFrames using a function"))
         dialog.main_layout.addWidget(SeparateHLine())
-        function = GridGroupRadioButton(
+        fr = VFrame(dialog.main_layout)
+
+        self.label  = BodyLabel(text="Function")
+        self.label2 = InfoLabel(text="Function to merge DataFrames column by columns", wordWrap=False)
+        fr.vlayout.addWidget(self.label)
+        fr.vlayout.addWidget(self.label2)
+        function = TransparentComboBox(
             items=["addition", "subtraction", "multiplication", "dot product",
                    "floating division", "integer division","modulo", 
                    "take smaller","take bigger","minimum","maximum","mean"],
-            label="Function",
-            label2="Function to merge DataFrames column by columns",
-            grid=(4,3),
             getter=lambda: self._config["func"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec():

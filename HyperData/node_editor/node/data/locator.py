@@ -3,7 +3,9 @@ import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.line_edit import HCompleterLineEdit
+from ui.base_widgets.line_edit import CompleterLineEdit
+from ui.base_widgets.text import BodyLabel, TitleLabel
+from ui.base_widgets.frame import SeparateHLine
 
 DEBUG = False
 
@@ -36,41 +38,45 @@ class DataLocator (NodeContentWidget):
         self._data = self.node.input_sockets[0].socket_data.copy()
     
     def config(self):
-        dialog = Dialog("Locate Data", self.parent)
+        dialog = Dialog("Configuration", self.parent)
+        dialog.setMinimumSize(600, 300)
+        dialog.main_layout.addWidget(TitleLabel("Locate Data"))
+        dialog.main_layout.addWidget(BodyLabel("Selection of rows and columns"))
+        dialog.main_layout.addWidget(SeparateHLine())
 
-        col_from = HCompleterLineEdit(label="From column")
-        dialog.main_layout.addWidget(col_from)
+        dialog.main_layout.addWidget(BodyLabel("From column"))
+        col_from = CompleterLineEdit(layout=dialog.main_layout)
 
-        col_to = HCompleterLineEdit(label="To column")
-        dialog.main_layout.addWidget(col_to)
+        dialog.main_layout.addWidget(BodyLabel("To column"))
+        col_to = CompleterLineEdit(layout=dialog.main_layout)
 
-        row_from = HCompleterLineEdit(label="From row")
-        dialog.main_layout.addWidget(row_from)
+        dialog.main_layout.addWidget(BodyLabel("From row"))
+        row_from = CompleterLineEdit(layout=dialog.main_layout)
 
-        row_to = HCompleterLineEdit(label="To row")
-        dialog.main_layout.addWidget(row_to)
+        dialog.main_layout.addWidget(BodyLabel("To row"))
+        row_to = CompleterLineEdit(layout=dialog.main_layout)
         
         if self.node.input_sockets[0].socket_data.shape[0] < 1000:
             try:
-                row_from.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
-                row_to.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
+                row_from._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
+                row_to._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.index+1)))
             except: pass
         if self.node.input_sockets[0].socket_data.shape[1] < 1000:
             try:
-                col_from.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
-                col_to.button._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
+                col_from._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
+                col_to._addItems(items=list(map(str, self.node.input_sockets[0].socket_data.columns)))
             except: pass
 
-        col_from.button.setCurrentText(str(self._config["column_from"]))
-        col_to.button.setCurrentText(str(self._config["column_to"]))
-        row_from.button.setCurrentText(str(self._config["row_from"]))
-        row_to.button.setCurrentText(str(self._config["row_to"]))
+        col_from.setCurrentText(str(self._config["column_from"]))
+        col_to.setCurrentText(str(self._config["column_to"]))
+        row_from.setCurrentText(str(self._config["row_from"]))
+        row_to.setCurrentText(str(self._config["row_to"]))
         
         if dialog.exec():
-            self._config["column_from"] = col_from.button.currentText()
-            self._config["column_to"] = col_to.button.currentText()
-            self._config["row_from"] = row_from.button.currentText()
-            self._config["row_to"] = row_to.button.currentText()
+            self._config["column_from"] = col_from.currentText()
+            self._config["column_to"] = col_to.currentText()
+            self._config["row_from"] = row_from.currentText()
+            self._config["row_to"] = row_to.currentText()
             self.exec()
 
     def func(self):

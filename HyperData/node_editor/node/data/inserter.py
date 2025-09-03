@@ -6,7 +6,7 @@ from ui.base_widgets.button import HToggle, HGroupRadioButton
 from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import TitleLabel, BodyLabel
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, VFrame
 
 DEBUG = False
 
@@ -25,39 +25,42 @@ class DataInserter(NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
+        dialog.setMinimumSize(600, 400)
         dialog.main_layout.addWidget(TitleLabel("Data Insertion"))
         dialog.main_layout.addWidget(BodyLabel("Insert a DataFrame into another DataFrame at "
                                                "a specific location along a particular axis"))
         dialog.main_layout.addWidget(SeparateHLine())
+        fr = VFrame(dialog.main_layout)
         axis = HGroupRadioButton(
             items=["index","columns"], 
             label='Axis',
             label2='Choose axis to concatenate along',
             getter=lambda: self._config['axis'],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         join = HGroupRadioButton(
             items=['inner','outer'],
             label='Join',
             label2='How to handle indexes on other axis',
             getter=lambda: self._config['join'],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
+        fr = VFrame(dialog.main_layout)
         loc = HTransparentSpinBox(
             label="Location",
             label2="Insertion index",
             getter=lambda: self._config["loc"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         ignore_index = HToggle(
             label="Do not use the index values along the concatenation axis", 
             getter=lambda: self._config['ignore_index'],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         sort = HToggle(
             label='Sort non-concatenation axis if it is not already aligned',
             getter=lambda: self._config["sort"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec(): 

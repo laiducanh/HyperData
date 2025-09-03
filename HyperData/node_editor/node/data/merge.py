@@ -1,7 +1,9 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import VGroupRadioButton
+from ui.base_widgets.button import TransparentComboBox
+from ui.base_widgets.frame import VFrame, SeparateHLine
+from ui.base_widgets.text import TitleLabel, BodyLabel, InfoLabel
 from config.settings import logger, GLOBAL_DEBUG
 import pandas as pd
 
@@ -19,13 +21,20 @@ class DataMerge (NodeContentWidget):
         )
     
     def config(self):
-        dialog = Dialog("Merge Data", self.parent)    
-  
-        how = VGroupRadioButton(
-            label="Merge method",label2="Type of merge to be performed",
+        dialog = Dialog("Merge Data", self.parent)
+        dialog.setMinimumSize(600, 200)    
+        dialog.main_layout.addWidget(TitleLabel("Merge Data"))
+        dialog.main_layout.addWidget(BodyLabel("Merge DataFrame with a database-style join"))
+        dialog.main_layout.addWidget(SeparateHLine())
+        fr = VFrame(dialog.main_layout)
+        label1 = BodyLabel(text="Merge method")
+        label2 = InfoLabel(text="Type of merge to be performed", wordWrap=False)
+        fr.vlayout.addWidget(label1)
+        fr.vlayout.addWidget(label2)
+        how = TransparentComboBox(
             items=["inner","outer","left","right","cross"],
             getter=lambda: self._config["how"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec():

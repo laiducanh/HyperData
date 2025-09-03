@@ -7,9 +7,10 @@ from ui.base_widgets.button import HToggle, HTransparentComboBox, HGroupRadioBut
 from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.frame import SeparateHLine
 from ui.base_widgets.text import TitleLabel
+from ui.base_widgets.frame import VFrame, HFrame
 from data_processing.data_window import TableModel
 from config.settings import logger, encode, GLOBAL_DEBUG
-from PySide6.QtWidgets import QTableView, QHBoxLayout, QFileDialog
+from PySide6.QtWidgets import QTableView, QHBoxLayout, QVBoxLayout, QFileDialog
 from PySide6.QtCore import QFileSystemWatcher
 
 DEBUG = False
@@ -51,44 +52,50 @@ class DataReader (NodeContentWidget):
     def config(self):
         # Note that this configuration works for csv file
         dialog = Dialog("Data Reading", self.parent)
-        dialog.main_layout.addWidget(TitleLabel("File Watcher"))
-        dialog.main_layout.addWidget(SeparateHLine())
+        dialog.setMinimumSize(1000, 400)
+        hlayout = QHBoxLayout()
+        dialog.main_layout.addLayout(hlayout)
+
+        vlayout = QVBoxLayout()
+        hlayout.addLayout(vlayout)
+        vlayout.addWidget(TitleLabel("File Watcher"))
+        vlayout.addWidget(SeparateHLine())
+        fr = VFrame(vlayout)
         self.auto_update = HToggle(
             label="Auto update", 
             label2="Update data file automatically when the file is modified externally",
             getter=lambda: self._config["auto_update"],
             setter=lambda v: self._config.update({"auto_update":v}),
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
-        dialog.main_layout.addWidget(TitleLabel("Processing"))
-        dialog.main_layout.addWidget(SeparateHLine())
+        vlayout.addWidget(TitleLabel("Processing"))
+        vlayout.addWidget(SeparateHLine())
 
-        hlayout = QHBoxLayout()
-        dialog.main_layout.addLayout(hlayout)
+        fr = HFrame(vlayout)
         self.header = HToggle(
             label="Header",
             getter=lambda: True if self._config["header"]==0 else False,
             setter=self.update_preview,
-            layout=hlayout
+            layout=fr.hlayout
         )
-        
         self.skip_blank_lines = HToggle(
             label="Skip blank lines",
             getter=lambda: self._config["skip_blank_lines"],
             setter=self.update_preview,
-            layout=hlayout
+            layout=fr.hlayout
         )
 
+        fr = VFrame(vlayout)
         self._delimiterDict = dict(Tab="\t",Semicolon=";",Comma=",",Space=" ")
-        self.delimiter = HGroupRadioButton(
+        self.delimiter = HTransparentComboBox(
             items=["Tab","Semicolon","Comma","Space"],
             label="Delimiter",
             label2="Character to treat as the separation",
             getter=lambda: list(self._delimiterDict.keys())
             [list(self._delimiterDict.values()).index(self._config["delimiter"])],
             setter=self.update_preview,
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         self.encoding = HTransparentComboBox(
             items=encode,
@@ -96,16 +103,17 @@ class DataReader (NodeContentWidget):
             label2="Encoding to use for UTF when reading",
             getter=lambda: self._config["encoding"],
             setter=self.update_preview,
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
+        fr = VFrame(vlayout)
         self.nrows = HTransparentSpinBox(
             minimum=-1, maximum=1000000000, 
             label="Number of rows",
             label2="Maximum lines to read",
             getter=lambda: -1 if not self._config["nrows"] else self._config["nrows"],
             setter=self.update_preview,
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         self.sheet_name = HTransparentComboBox(
@@ -116,13 +124,16 @@ class DataReader (NodeContentWidget):
             self.sheet_name.button.addItems(pd.ExcelFile(self.selectedFiles).sheet_names)
             self.sheet_name.button.setCurrentText(self._config["sheet_name"])
         self.sheet_name.button.currentTextChanged.connect(self.update_preview)
-        dialog.main_layout.addWidget(self.sheet_name)
+        fr.vlayout.addWidget(self.sheet_name)
+
+        vlayout = QVBoxLayout()
+        hlayout.addLayout(vlayout)
         
-        dialog.main_layout.addWidget(TitleLabel("Preview"))
-        dialog.main_layout.addWidget(SeparateHLine())
+        vlayout.addWidget(TitleLabel("Preview"))
+        vlayout.addWidget(SeparateHLine())
         self.preview = QTableView()
         self.update_preview()
-        dialog.main_layout.addWidget(self.preview)
+        vlayout.addWidget(self.preview)
         
         if dialog.exec(): 
             super().exec()

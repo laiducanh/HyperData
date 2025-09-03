@@ -5,7 +5,8 @@ from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, VFrame
+from ui.base_widgets.text import TitleLabel, BodyLabel
 
 DEBUG = False
 
@@ -40,23 +41,26 @@ class DataSplitter (NodeContentWidget):
         self._data = self.node.input_sockets[0].socket_data.copy()
     
     def config(self):
-        dialog = Dialog("Split Data", self.parent)
+        dialog = Dialog("Configuration", self.parent)
+        dialog.setMinimumSize(600, 200)
+        dialog.main_layout.addWidget(TitleLabel("Split Data"))
+        dialog.main_layout.addWidget(BodyLabel("Slide DataFrame along a column or a row"))
+        dialog.main_layout.addWidget(SeparateHLine())
 
+        fr = VFrame(dialog.main_layout)
         type = HTransparentComboBox(
             items=["columns","rows"], 
             label="Type",
             getter=lambda: self._config["type"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
-
-        dialog.main_layout.addWidget(SeparateHLine())
 
         idx = HTransparentSpinBox(
             minimum=0, maximum=1000000,
             label="Index",
             label2="Position of the slice",
             getter=lambda: self._config["idx"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         
         if dialog.exec():

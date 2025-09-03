@@ -1,18 +1,17 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 import pandas as pd
 from node_editor.base.node_graphics_node import NodeGraphicsNode
-from config.settings import logger, encode, GLOBAL_DEBUG
+from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import Frame
-from ui.base_widgets.button import TransparentComboBox, TransparentToolButton, TransparentPushButton
-from PySide6.QtWidgets import QHBoxLayout, QApplication
+from ui.base_widgets.frame import HFrame
+from ui.base_widgets.button import TransparentComboBox, TransparentToolButton, TransparentPushButton, CheckBox
+from PySide6.QtWidgets import QApplication, QSizePolicy
 
 DEBUG = False
 
-class SorterWidget(Frame):
+class SorterWidget(HFrame):
     def __init__(self, data:pd.DataFrame, by:str, order:bool, parent:Dialog):
-        super().__init__(parent)
-        self.hlayout = QHBoxLayout(self)
+        super().__init__(parent=parent)
         # self.hlayout.setContentsMargins(0,0,0,0)
 
         idx = parent.main_layout.count()-1
@@ -20,16 +19,16 @@ class SorterWidget(Frame):
 
         self.col = TransparentComboBox(parent=parent)
         self.col.setObjectName("by")
+        self.col.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         try: self.col.addItems(data.columns)
         except: pass
         if by in self.col.items: self.col.setCurrentText(by)
         else: self.col.setCurrentIndex(-1)
         self.hlayout.addWidget(self.col)
 
-        self.ascending = TransparentComboBox(["ascending","descending"],parent=parent)
+        self.ascending = CheckBox(text="ascending",parent=parent)
         self.ascending.setObjectName("ascending")
-        if order: self.ascending.setCurrentText("ascending")
-        else: self.ascending.setCurrentText("descending")
+        self.ascending.setChecked(order)
         self.hlayout.addWidget(self.ascending)
 
         delete = TransparentToolButton(parent=parent)
@@ -62,6 +61,7 @@ class DataSorter (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Sort Data", self.parent)
+        dialog.setMinimumSize(600, 100)
         def add(by="", order=True):
             SorterWidget(self.node.input_sockets[0].socket_data, by, order, dialog)
 
@@ -80,7 +80,7 @@ class DataSorter (NodeContentWidget):
                 if btn.objectName() == "by":
                     self._config["by"].append(btn.currentText())
                 if btn.objectName() == "ascending":
-                    self._config["ascending"].append(True if btn.currentText()=="ascending" else False)
+                    self._config["ascending"].append(btn.isChecked())
             self.exec()
 
     def func(self):

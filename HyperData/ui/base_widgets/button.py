@@ -5,30 +5,30 @@ from PySide6.QtGui import QIcon
 from typing import Iterable, Union
 from ui.base_buttons.button import *
 from ui.base_widgets.text import BodyLabel, InfoLabel
-from ui.base_widgets.frame import SeparateHLine, Frame
+from ui.base_widgets.frame import SeparateHLine, HFrame
 from ui.utils import isDark
 from config.settings import config
 from typing import Callable, Union
 
-class VButton(Frame):
+class VButton(QWidget):
     """" Button Widget in vertical layout """
     def __init__(self, label:str=None, label2:str=None, layout:QLayout=None, parent:QWidget=None):
         super().__init__(parent)
 
         self.label  = BodyLabel(parent=parent, text=label)
-        self.label2 = InfoLabel(parent=parent, text=label2, wordWrap=True)
+        self.label2 = InfoLabel(parent=parent, text=label2, wordWrap=False)
         if not label2: self.label2.hide()
 
-        vlayout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
 
         self.text_layout = QVBoxLayout()
-        vlayout.addLayout(self.text_layout)
+        self.vlayout.addLayout(self.text_layout)
         self.text_layout.addWidget(self.label)
         self.text_layout.addWidget(self.label2)
 
         self.butn_layout = QVBoxLayout()
-        vlayout.addLayout(self.butn_layout)
+        self.vlayout.addLayout(self.butn_layout)
 
         if layout: layout.addWidget(self)
 
@@ -56,25 +56,25 @@ class VButton(Frame):
     def get_getter(self) -> Callable:
         return self.button.getter
     
-class HButton(Frame): 
+class HButton(QWidget): 
     """" Button Widget in horizontal layout """
     def __init__(self, label:str=None, label2:str=None, layout:QLayout=None, parent:QWidget=None):
         super().__init__(parent)
 
         self.label  = BodyLabel(parent=parent, text=label)
-        self.label2 = InfoLabel(parent=parent, text=label2, wordWrap=True)
+        self.label2 = InfoLabel(parent=parent, text=label2, wordWrap=False)
         if not label2: self.label2.hide()
 
-        hlayout = QHBoxLayout(self)
+        self.hlayout = QHBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
 
         self.text_layout = QVBoxLayout()
-        hlayout.addLayout(self.text_layout)
+        self.hlayout.addLayout(self.text_layout)
         self.text_layout.addWidget(self.label)
         self.text_layout.addWidget(self.label2)
 
         self.butn_layout = QHBoxLayout()
-        hlayout.addLayout(self.butn_layout)
+        self.hlayout.addLayout(self.butn_layout)
 
         if layout: layout.addWidget(self)
 
@@ -360,7 +360,7 @@ class VToggle(VButton):
         
         self.button = Toggle(setter=setter, getter=getter, layout=self.butn_layout, parent=parent)
 
-class VGroupRadioButton(Frame):
+class VGroupRadioButton(QWidget):
     checkChanged = Signal(str)
     def __init__(self, label:str=None, label2:str=None, items:Iterable[str]=None,
                  setter:Callable=None, getter:Callable=None, layout:QLayout=None, parent = None):
@@ -371,19 +371,19 @@ class VGroupRadioButton(Frame):
         self.getter = getter
 
         self.label  = BodyLabel(parent, text=label)
-        self.label2 = InfoLabel(parent, text=label2, wordWrap=True)
+        self.label2 = InfoLabel(parent, text=label2, wordWrap=False)
         if not label2: self.label2.hide()
 
-        vlayout = QVBoxLayout(self)
+        hlayout = QHBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
 
         self.text_layout = QVBoxLayout()
-        vlayout.addLayout(self.text_layout)
+        hlayout.addLayout(self.text_layout)
         self.text_layout.addWidget(self.label)
         self.text_layout.addWidget(self.label2)
 
         self.butn_layout = QVBoxLayout()
-        vlayout.addLayout(self.butn_layout)
+        hlayout.addLayout(self.butn_layout)
 
         for item in items:
             btn = RadioButton(text=item, parent=self, layout=self.butn_layout)
@@ -401,7 +401,7 @@ class VGroupRadioButton(Frame):
         for btn in self.findChildren(RadioButton):
             if btn.text() == value: btn.set_value(True)
     
-class HGroupRadioButton(Frame):
+class HGroupRadioButton(QWidget):
     checkChanged = Signal(str)
     def __init__(self, label:str=None, label2:str=None, items:Iterable[str]=None,
                  getter:Callable=None, setter:Callable=None, layout:QLayout=None, parent = None):
@@ -412,19 +412,19 @@ class HGroupRadioButton(Frame):
         self.getter = getter
 
         self.label  = BodyLabel(parent, text=label)
-        self.label2 = InfoLabel(parent, text=label2, wordWrap=True)
+        self.label2 = InfoLabel(parent, text=label2, wordWrap=False)
         if not label2: self.label2.hide()
 
-        vlayout = QVBoxLayout(self)
+        hlayout = QHBoxLayout(self)
         #layout.setContentsMargins(0,0,0,0)
 
         self.text_layout = QVBoxLayout()
-        vlayout.addLayout(self.text_layout)
+        hlayout.addLayout(self.text_layout)
         self.text_layout.addWidget(self.label)
         self.text_layout.addWidget(self.label2)
 
         self.butn_layout = QHBoxLayout()
-        vlayout.addLayout(self.butn_layout)
+        hlayout.addLayout(self.butn_layout)
 
         for item in items:
             btn = RadioButton(text=item, parent=self, layout=self.butn_layout)
@@ -442,7 +442,7 @@ class HGroupRadioButton(Frame):
         for btn in self.findChildren(RadioButton):
             if btn.text() == value: btn.set_value(True)
 
-class GridGroupRadioButton(Frame):
+class GridGroupRadioButton(QWidget):
     checkChanged = Signal(str)
     def __init__(self, label:str=None, label2:str=None, items:Iterable[str]=None,
                  grid:tuple[float,float]=(0,0), layout:QLayout=None, 
@@ -454,7 +454,7 @@ class GridGroupRadioButton(Frame):
         self.getter = getter
 
         self.label  = BodyLabel(parent, text=label)
-        self.label2 = InfoLabel(parent, text=label2, wordWrap=True)
+        self.label2 = InfoLabel(parent, text=label2, wordWrap=False)
         if not label2: self.label2.hide()
 
         vlayout = QVBoxLayout(self)
@@ -491,13 +491,11 @@ class GridGroupRadioButton(Frame):
         for btn in self.findChildren(RadioButton):
             if btn.text() == value: btn.set_value(True)
 
-class SegmentedWidget(Frame):
+class SegmentedWidget(HFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._layout = QHBoxLayout(self)
-        # self._layout.setContentsMargins(0,0,0,5)
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.hlayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.buttons = list()
         self.funcs = list()
@@ -508,7 +506,7 @@ class SegmentedWidget(Frame):
         button.clicked.connect(lambda: self._onClick(text))
         self.buttons.append(button.text())
         self.funcs.append(func)
-        self._layout.addWidget(button)
+        self.hlayout.addWidget(button)
 
     def _onClick (self, button_text:str):
         self.setCurrentWidget(button_text)

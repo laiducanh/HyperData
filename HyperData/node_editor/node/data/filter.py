@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import HTransparentComboBox
-from ui.base_widgets.line_edit import Completer, HTextEdit, HCompleterLineEdit
+from ui.base_widgets.line_edit import Completer, VTextEdit, HCompleterLineEdit
 
 DEBUG = False
 
@@ -20,6 +20,7 @@ class DataFilter (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Data Filter", self.parent)
+        dialog.setMinimumSize(800, 400)
 
         def func1():
             try:
@@ -28,22 +29,7 @@ class DataFilter (NodeContentWidget):
                 else:
                     labels.button.setCompleter(Completer([str(i) for i in self.node.input_sockets[0].socket_data.index])) 
             except: pass
-
-        axis = HTransparentComboBox(
-            items=["columns","index"], 
-            label="Filter by",
-            setter=func1,
-            getter=lambda: self._config["axis"],
-            layout=dialog.main_layout
-        )
-        type = HTransparentComboBox(
-            items=["items","contains","regular expression"], 
-            label="filter type",
-            getter=lambda: self._config["type"],
-            setter=func2,
-            layout=dialog.main_layout
-        )
-
+        
         def func2 ():
             if type.button.currentText().lower() == "items":
                 if apply.button.toPlainText() == '':
@@ -56,12 +42,28 @@ class DataFilter (NodeContentWidget):
                 apply.button.setText(labels.button.currentText())
             labels.button.clear()
 
-        labels = HCompleterLineEdit(label="labels")
+        axis = HTransparentComboBox(
+            items=["columns","index"], 
+            label="Filter by",
+            setter=func1,
+            getter=lambda: self._config["axis"],
+            layout=dialog.main_layout
+        )
+        type = HTransparentComboBox(
+            items=["items","contains","regex"], 
+            label="Filter type",
+            getter=lambda: self._config["type"],
+            setter=func2,
+            layout=dialog.main_layout
+        )
+        
+
+        labels = HCompleterLineEdit(label="Labels")
         labels.button.lineedit.returnPressed.connect(func2)
         func1()
         dialog.main_layout.addWidget(labels)
 
-        apply = HTextEdit(
+        apply = VTextEdit(
             label="Keep labels",
             getter=lambda: ",".join(self._config["apply"]),
             layout=dialog.main_layout
@@ -94,7 +96,7 @@ class DataFilter (NodeContentWidget):
                     axis=self._config["axis"],
                     like=self._config["apply"][0]
                 )
-            elif self._config["type"] == "regular expression":
+            elif self._config["type"] == "regex":
                 data = self.node.input_sockets[0].socket_data.filter(
                     axis=self._config["axis"],
                     regex=self._config["apply"][0]

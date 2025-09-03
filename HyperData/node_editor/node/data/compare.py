@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import HToggle, HGroupRadioButton
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, VFrame
 from ui.base_widgets.text import TitleLabel, BodyLabel
 
 DEBUG = False
@@ -21,26 +21,28 @@ class DataCompare(NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="Configuration", parent=self.parent)
+        dialog.setMinimumSize(700, 300)
         dialog.main_layout.addWidget(TitleLabel("Data Comparison"))
         dialog.main_layout.addWidget(BodyLabel("Compare two DataFrames and show the differences"))
         dialog.main_layout.addWidget(SeparateHLine())
 
+        fr = VFrame(dialog.main_layout)
         align_axis = HGroupRadioButton(
             items=["index","columns"],
             label="Axis",
             label2="Determine which axis to align the comparison on",
             getter=lambda: self._config["align_axis"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         keep_shape = HToggle(
             label="Keep all rows and columns",
             getter=lambda: self._config["keep_shape"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         keep_equal = HToggle(
             label="Keep values that are equal",
             getter=lambda: self._config["keep_equal"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec():
