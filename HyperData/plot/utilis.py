@@ -221,11 +221,11 @@ def grid(figure: Figure):
     xlim = xaxis.axes.get_xlim()
     ylim = yaxis.axes.get_ylim()
     gridlines: list[lines.Line2D] = [] # only contains visible gridlines
-    if figure.canvas._config['grid']['axis'] in ['x','both']:
+    if figure.canvas._config['grid']['xaxis']:
         for tick in xticks:
             if xlim[0] <= tick.gridline.get_xdata()[0] <= xlim[1]:
                 gridlines.append(tick.gridline)
-    if figure.canvas._config['grid']['axis'] in ['y','both']:
+    if figure.canvas._config['grid']['yaxis']:
         for tick in yticks:
             if ylim[0] <= tick.gridline.get_ydata()[0] <= ylim[1]:
                 gridlines.append(tick.gridline)

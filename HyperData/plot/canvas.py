@@ -28,7 +28,8 @@ class Canvas (FigureCanvasQTAgg):
                 "grid": {
                     "visible": False,
                     "which": matplotlib.rcParams['axes.grid.which'],
-                    "axis": matplotlib.rcParams['axes.grid.axis'],
+                    "xaxis": matplotlib.rcParams['axes.grid.axis'] in ['x','both'],
+                    "yaxis": matplotlib.rcParams['axes.grid.axis'] in ['y','both'],                  
                     "coord": "bottom-left",
                 }
             }

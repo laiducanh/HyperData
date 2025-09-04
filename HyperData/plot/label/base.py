@@ -1,11 +1,10 @@
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QLayout
 from ui.base_widgets.button import TransparentComboBox, ToggleToolButton
 from ui.base_widgets.text import BodyLabel
-from ui.base_widgets.frame import Frame
 from matplotlib.text import Text
 from plot.canvas import Canvas
 
-class FontStyle(Frame):
+class FontStyle(QWidget):
     def __init__(self, obj:list[Text], canvas: Canvas, layout:QLayout=None, parent=None):
         super().__init__(parent)
 

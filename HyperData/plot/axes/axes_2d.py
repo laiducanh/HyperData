@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QStackedLayout
 from PySide6.QtGui import QColor
-from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget
+from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget, ToggleToolButton, HButton
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from ui.base_widgets.color import HColorDropdown
-from ui.base_widgets.frame import ScrollArea
+from ui.base_widgets.frame import ScrollArea, HFrame, VFrame
 from plot.utilis import find_mpl_object, grid
 from plot.canvas import Canvas
 from matplotlib import rcParams, colors, lines
@@ -16,6 +16,7 @@ class Margin2D(ScrollArea):
         super().__init__(parent=parent)
 
         self.canvas = canvas
+        fr = VFrame(self.vlayout)
 
         top = HTransparentDoubleSpinBox(
             label  = 'Margin top',
@@ -23,7 +24,7 @@ class Margin2D(ScrollArea):
             minimum = 0, maximum = 1, singleStep = 0.05,
             getter=self.get_top,
             setter=self.set_top,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         bottom = HTransparentDoubleSpinBox(
@@ -32,7 +33,7 @@ class Margin2D(ScrollArea):
             minimum = 0, maximum = 1, singleStep = 0.05,
             getter=self.get_bottom,
             setter=self.set_bottom,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         left = HTransparentDoubleSpinBox(
@@ -41,7 +42,7 @@ class Margin2D(ScrollArea):
             minimum = 0, maximum = 1, singleStep = 0.05,
             setter=self.set_left,
             getter=self.get_left,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         right = HTransparentDoubleSpinBox(
@@ -50,7 +51,7 @@ class Margin2D(ScrollArea):
             minimum = 0, maximum = 1, singleStep = 0.05,
             setter=self.set_right,
             getter=self.get_right,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_top(self,value):
@@ -87,21 +88,23 @@ class Grid2D(ScrollArea):
 
         self.canvas = canvas
 
+        fr = HFrame(self.vlayout)
         self.visible = HToggle(
             label  = 'Visible',
             label2 = 'Whether to show the grid lines',
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=self.vlayout
+            layout=fr.hlayout
         )
 
+        fr = VFrame(self.vlayout)
         self.coord = HTransparentComboBox(
             items=['bottom-left','bottom-right','top-left'],
             label='Axes',
             label2='Choose the base axes to visualize the grid lines',
             setter=self.set_coord,
             getter=self.get_coord,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.which = HTransparentComboBox(
@@ -110,25 +113,35 @@ class Grid2D(ScrollArea):
             label2 = 'The grid lines to apply the changes on',
             setter=self.set_gridtype,
             getter=self.get_gridtype,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
-
-        self.axis = HTransparentComboBox(
+        
+        btn = HButton(
             label  = 'Axis',
             label2 = 'The axis to apply the changes on',
-            items = ['x','y','both'],
-            getter=self.get_gridaxis,
-            setter=self.set_gridaxis,
-            layout=self.vlayout
+            layout=fr.vlayout
+        )
+        self.xaxis = ToggleToolButton(
+            icon="vertical_col.png",
+            setter=self.set_xaxis,
+            getter=self.get_xaxis,
+            layout=btn.hlayout
+        )
+        self.yaxis = ToggleToolButton(
+            icon="horizontal_col.png",
+            setter=self.set_yaxis,
+            getter=self.get_yaxis,
+            layout=btn.hlayout
         )
 
+        fr = VFrame(self.vlayout)
         self.linewidth = HTransparentDoubleSpinBox(
             label  = 'Line Width',
             label2 = 'Set the width of the grid lines',
             minimum = 0.1, maximum = 10, singleStep = 0.5,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.linestyle = HTransparentComboBox(
@@ -137,7 +150,7 @@ class Grid2D(ScrollArea):
             items = linestyle_lib.values(),
             getter=self.get_linestyle,
             setter=self.set_linestyle,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.color = HColorDropdown(
@@ -145,7 +158,7 @@ class Grid2D(ScrollArea):
             label2 = 'Set the color of the grid',
             getter=self.get_color,
             setter=self.set_color,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.alpha = HTransparentSpinBox(
@@ -154,7 +167,7 @@ class Grid2D(ScrollArea):
             singleStep  = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def findobj(self) -> list[lines.Line2D]:
@@ -165,13 +178,6 @@ class Grid2D(ScrollArea):
     
     def set_grid(self):
         try:
-            self.canvas._config["grid"].update(
-                visible   = self.visible.button.isChecked(),
-                coord     = self.coord.button.currentText(),
-                which     = self.which.button.currentText(), 
-                axis      = self.axis.button.currentText(), 
-            )
-
             grid(self.canvas.figure)
             self.canvas.draw_idle()
 
@@ -179,28 +185,39 @@ class Grid2D(ScrollArea):
             logger.exception(e)
     
     def set_visible(self, value:bool):
+        self.canvas._config["grid"]["visible"] = value
         self.set_grid()
     
     def get_visible(self) -> bool:
         return self.canvas._config["grid"]["visible"]
 
     def set_coord(self, value:str):
+        self.canvas._config["grid"]["coord"] = value
         self.set_grid()
     
     def get_coord(self) -> str:
         return self.canvas._config["grid"]["coord"] 
 
     def set_gridtype(self, value:str):
+        self.canvas._config["grid"]["which"] = value
         self.set_grid()
     
     def get_gridtype (self) -> str:
         return self.canvas._config["grid"]["which"]
     
-    def set_gridaxis(self, value:str):
+    def set_xaxis(self, value:bool):
+        self.canvas._config["grid"]["xaxis"] = value
         self.set_grid()
 
-    def get_gridaxis (self):
-        return self.canvas._config["grid"]["axis"]
+    def get_xaxis (self):
+        return self.canvas._config["grid"]["xaxis"]
+
+    def set_yaxis(self, value:bool):
+        self.canvas._config["grid"]["yaxis"] = value
+        self.set_grid()
+    
+    def get_yaxis(self):
+        return self.canvas._config["grid"]["yaxis"]
 
     def set_alpha(self, value:int):
         try:
@@ -265,20 +282,22 @@ class Pane2D(ScrollArea):
 
         self.canvas = canvas
 
+        fr = VFrame(self.vlayout)
         self.visible = HToggle(
             label  = 'Visible',
             label2 = 'Whether to show the color',
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
+        fr = VFrame(self.vlayout)
         self.facecolor = HColorDropdown(
             label  = 'Color',
             label2 = 'Set the color of the Pane',
             getter=self.get_color,
             setter=self.set_color,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.edgecolor = HColorDropdown(
@@ -286,7 +305,7 @@ class Pane2D(ScrollArea):
             label2='Set the frame color of the Figure',
             getter=self.get_framecolor,
             setter=self.set_framecolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.alpha = HTransparentSpinBox(
@@ -295,7 +314,7 @@ class Pane2D(ScrollArea):
             singleStep  = 10, minimum = 0, maximum = 100,
             setter=self.set_patch_alpha,
             getter=self.get_patch_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_visible(self,value):

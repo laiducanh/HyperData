@@ -183,9 +183,10 @@ class PrimaryToolButton(ToolButton):
 class ToggleToolButton(ToolButton):
     def __init__(self, icon:Union[str, QIcon]=None, menu:QMenu=None, setter:Callable=None, getter:Callable=None,
                  layout:QLayout=None, parent=None, *args, **kwargs):
-        super().__init__(icon=icon, menu=menu, getter=getter, setter=setter, layout=layout, parent=parent, *args, **kwargs)
+        super().__init__(icon=icon, menu=menu, setter=setter, layout=layout, parent=parent, *args, **kwargs)
 
         self.setCheckable(True)
+        if getter: self.setChecked(getter())
 
 class ComboBox(QComboBox):
     def __init__(self, items:list[str]=[], getter:Callable=None, setter:Callable=None, 
