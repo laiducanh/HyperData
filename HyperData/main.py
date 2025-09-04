@@ -5,7 +5,8 @@ import sys, os, json, logging
 os.environ["QT_QUICK_BACKEND"] = "software"
 
 from PySide6.QtCore import QThreadPool, Qt, QDir
-from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, QFileDialog)
+from PySide6.QtWidgets import (QWidget, QStackedLayout, QApplication, QMainWindow, QStyleFactory, 
+                               QFileDialog, QVBoxLayout, QTextBrowser)
 from PySide6.QtGui import (QCloseEvent, QGuiApplication, QKeyEvent, QMouseEvent, QPaintEvent)
 
 from plot.plot_view import PlotView, PlotViewMultiFig
@@ -13,6 +14,7 @@ from node_editor.node_view import NodeView, NodeUserDefine
 from node_editor.node_node import Node, Figure2D, Figure3D, MultiFigure, UserDefine
 from window.menu_bar import MenuBar
 from ui.base_widgets.window import FileDialog
+from ui.base_widgets.text import TextEditLogger
 from config.settings import GLOBAL_DEBUG, config, logger
 from ui.utils import get_path
 
@@ -26,7 +28,7 @@ except ImportError as e:
 
 __version__ = config["version"]
 
-DEBUG = False
+DEBUG = True
 
 class Main(QMainWindow):
     def __init__(self):
@@ -42,16 +44,27 @@ class Main(QMainWindow):
         self.setMenuBar(menu_bar)
 
         self.central_widget = QWidget()
-        self.mainlayout = QStackedLayout(self.central_widget)
+        self.vlayout = QVBoxLayout(self.central_widget)
         self.setCentralWidget(self.central_widget)
+
+        widget = QWidget()
+        self.mainlayout = QStackedLayout(widget)
+        self.vlayout.addWidget(widget)            
+
+        if GLOBAL_DEBUG or DEBUG: self.debug()
         
         # show Node view as default
         self.add_node_view()
-
-        if GLOBAL_DEBUG or DEBUG: self.debug()
     
     def debug(self):
+        logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
+        text = QTextBrowser()
+        text.setMinimumHeight(200)
+        log_handler = TextEditLogger(text)
+        log_handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+        logger.addHandler(log_handler)
+        self.vlayout.addWidget(text)
 
     def add_node_view (self):
         self.node_view = NodeView(self)
