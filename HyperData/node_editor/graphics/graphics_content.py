@@ -23,7 +23,6 @@ class GraphicsContent(QWidget):
         self.menu = Menu()
         self.comment = NodeComment() 
         self.comment.hide()
-        self.name = type(self).__name__
 
         self.initUI()
         self.initMenu()

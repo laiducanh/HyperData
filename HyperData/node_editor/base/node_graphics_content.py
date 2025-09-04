@@ -14,6 +14,7 @@ class NodeContentWidget(GraphicsContent):
   
         self.node = node
         self.parent = parent
+        self.name = self.node.title
         self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
         self._config = dict()

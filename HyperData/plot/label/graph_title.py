@@ -4,7 +4,7 @@ from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
 from ui.base_widgets.color import HColorDropdown
-from ui.base_widgets.frame import ScrollArea
+from ui.base_widgets.frame import ScrollArea, VFrame, SeparateHLine
 from plot.label.base import FontStyle
 from config.settings import font_lib
 from matplotlib import colors, text
@@ -16,6 +16,7 @@ class GraphTitle(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle('Graph Title')
+        self.setMinimumWidth(500)
         self.canvas = canvas
             
         layout = QVBoxLayout(self)
@@ -30,47 +31,52 @@ class GraphTitle(QDialog):
         )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
+        scrollarea.vlayout.addWidget(SeparateHLine())
+
+        fr = VFrame(scrollarea.vlayout)
+
         font = HTransparentComboBox(
             items = font_lib,
             label  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
+        font.button.setMinimumWidth(300)
 
         size = HTransparentDoubleSpinBox(
             label = 'Font size',
             minimum = 1, maximum = 100, singleStep = 2,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
         
         style = FontStyle(
             obj = [self.findobj()], 
             canvas = self.canvas,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
 
         color = HColorDropdown(
             label  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
 
         backgroundcolor = HColorDropdown(
             label  = 'Background color',
             getter=self.get_backgroundcolor,
             setter=self.set_backgroundcolor,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
 
         edgecolor = HColorDropdown(
             label  = 'Edge color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
 
         # #align = FontAlignment(type='graph')
@@ -86,7 +92,7 @@ class GraphTitle(QDialog):
             singleStep = 10, minimum = 0, maximum = 100,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=scrollarea.vlayout
+            layout=fr.vlayout
         )
     
     def findobj(self) -> text.Text:

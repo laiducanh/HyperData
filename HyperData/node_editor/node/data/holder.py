@@ -25,14 +25,14 @@ class DataHolder (NodeContentWidget):
             # write log
             connect_to_edge = self.node.input_sockets[0].edges[0]
             connect_to_node = connect_to_edge.start_socket.node
-            logger.info(f"{self.name} {self.node.id}: copied data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
+            logger.info(f"{self.name} {self.node.id}: copy data from {connect_to_node.content.name} {connect_to_node.id} successfully.")
            
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = data.copy()

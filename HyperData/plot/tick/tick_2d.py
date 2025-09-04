@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QVBoxLayout, QStackedLayout, QDialog, QSizePolicy
-from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget, VGroupRadioButton
+from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidget
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.line_edit import HLineEdit
-from ui.base_widgets.frame import ScrollArea, SeparateHLine
+from ui.base_widgets.frame import ScrollArea, SeparateHLine, VFrame
 from ui.base_widgets.text import TitleLabel
 from plot.label.base import FontStyle
 from config.settings import logger, marker_lib, linestyle_lib, font_lib
@@ -24,13 +24,15 @@ class TickBase(ScrollArea):
         self.initUI()
     
     def initUI(self):
+        
+        fr = VFrame(self.vlayout)
 
         HToggle(
             label  = "Visible",
             label2 = f"Toggle {self.axis} ticks' visibility",
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         HLineEdit(
@@ -38,7 +40,7 @@ class TickBase(ScrollArea):
             label2 = f"Set {self.axis} axis view minimum",
             setter=self.set_min,
             getter=self.get_min,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         HLineEdit(
@@ -46,16 +48,16 @@ class TickBase(ScrollArea):
             label2 = f"Set {self.axis} axis view maximum",
             setter=self.set_max,
             getter=self.get_max,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
-        VGroupRadioButton(
+        HTransparentComboBox(
             label='Scale',
             label2=f"Set {self.axis} axis' scale",
             items=['linear','log','symlog','logit','asinh'],
             setter=self.set_scale,
             getter=self.get_scale,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
         
     def find_obj(self) -> Axis:
@@ -124,6 +126,8 @@ class TickBase2(TickBase):
         self.vlayout.addWidget(TitleLabel('Tick Parameters'))
         self.vlayout.addWidget(SeparateHLine())
 
+        fr = VFrame(self.vlayout)
+
         self.ticklocator = HTransparentComboBox(
             items=['Auto','Interval','Fixed Values','Max Number','Linear Scale',
                    'Log Scale','Sym Log Scale','Logit Scale','Asinh Scale',
@@ -132,7 +136,7 @@ class TickBase2(TickBase):
             label='Type',
             setter=self.set_tick,
             getter=self.get_ticklocator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.nbins = HTransparentSpinBox(
@@ -141,7 +145,7 @@ class TickBase2(TickBase):
             label2='Maximum number of intervals',
             getter=self.get_nbins,
             setter=self.set_tick,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.min_n_ticks = HTransparentSpinBox(
@@ -150,7 +154,7 @@ class TickBase2(TickBase):
             label2='Minimum number of tick marks',
             getter=self.get_min_n_ticks,
             setter=self.set_tick,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.basescale = HTransparentDoubleSpinBox(
@@ -158,7 +162,7 @@ class TickBase2(TickBase):
             label2='Base of the scale',
             setter=self.set_tick,
             getter=self.get_base,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.interval = HTransparentDoubleSpinBox(
@@ -167,7 +171,7 @@ class TickBase2(TickBase):
             decimals=5,
             setter=self.set_tick,
             getter=self.get_interval,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.thresh = HTransparentDoubleSpinBox(
@@ -175,7 +179,7 @@ class TickBase2(TickBase):
             label2='The threshold to be used in type: Sym Log Scale, Asinh Scale',
             setter=self.set_tick,
             getter=self.get_thresh,
-            layout=self.vlayout,
+            layout=fr.vlayout,
         )
 
         self.value = HLineEdit(
@@ -183,7 +187,7 @@ class TickBase2(TickBase):
             label2=f"Set {self.axis} axis' tick positions",
             setter=self.set_tick,
             getter=self.get_tickvalues,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.linear_width = HTransparentDoubleSpinBox(
@@ -191,8 +195,10 @@ class TickBase2(TickBase):
             label2='The scale parameter defining the extent of the quasi-linear region.',
             setter=self.set_tick,
             getter=self.get_linear_width,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+
+        fr = VFrame(self.vlayout)
 
         tick_direction = HTransparentComboBox(
             label  = 'Tick direction',
@@ -200,14 +206,14 @@ class TickBase2(TickBase):
             items = ['In','Out','InOut'],
             setter=self.set_tickdir,
             getter=self.get_tickdir,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         tickcolor = HColorDropdown(
             label  = 'Tick color', 
             getter=self.get_tickcolor,
             setter=self.set_tickcolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         tick_length = HTransparentDoubleSpinBox(
@@ -215,7 +221,7 @@ class TickBase2(TickBase):
             minimum = 0, maximum = 50, singleStep = 0.5,
             setter=self.set_ticklength,
             getter=self.get_ticklength,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         tick_width = HTransparentDoubleSpinBox(
@@ -223,18 +229,20 @@ class TickBase2(TickBase):
             minimum = 0, maximum = 50, singleStep = 0.5,
             setter=self.set_tickwidth,
             getter=self.get_tickwidth,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.vlayout.addWidget(TitleLabel('Tick Labels'))
         self.vlayout.addWidget(SeparateHLine())
+
+        fr = VFrame(self.vlayout)
 
         self.label = HToggle(
             label='Label',
             label2=f"Toggle {self.axis} axis' {self.ticktype} tick label",
             getter=self.get_label,
             setter=self.set_tick,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.fmt = HLineEdit(
@@ -242,46 +250,7 @@ class TickBase2(TickBase):
             label2='Define how tick values is formatted as a string',
             getter=self.get_fmt,
             setter=self.set_tick,
-            layout=self.vlayout
-        )
-
-        tick_labelsize = HTransparentDoubleSpinBox(
-            label  = 'Label size',
-            label2 = f"Set {self.axis} axis' {self.ticktype} tick label size",
-            minimum = 1, maximum = 100, singleStep = 1,
-            setter=self.set_labelsize,
-            getter=self.get_labelsize,
-            layout=self.vlayout
-        )
-
-        font = HTransparentComboBox(
-            items = font_lib,
-            label  = 'Font',
-            setter=self.set_fontname,
-            getter=self.get_fontname,
-            layout=self.vlayout
-        )
-
-        tick_labelcolor = HColorDropdown(
-            label  = 'Label color', 
-            setter=self.set_labelcolor,
-            getter=self.get_labelcolor,
-            layout=self.vlayout
-        )
-
-        style = FontStyle(
-            obj = self.obj.get_majorticklabels() if self.ticktype == 'major'
-                else self.obj.get_minorticklabels(), 
-            canvas = self.canvas,
-            layout=self.vlayout
-        )
-
-        alpha = HTransparentSpinBox(
-            label = 'Transparency',
-            singleStep = 10, maximum = 100, minimum = 0,
-            setter=self.set_alpha,
-            getter=self.get_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         tick_rotation = HTransparentDoubleSpinBox(
@@ -289,7 +258,7 @@ class TickBase2(TickBase):
             minimum = -180, maximum = 180, singleStep = 10,
             setter=self.set_labelrotation,
             getter=self.get_labelrotation,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         tick_labelpad = HTransparentDoubleSpinBox(
@@ -297,7 +266,49 @@ class TickBase2(TickBase):
             minimum = 0, maximum = 50, singleStep = 0.5,
             setter=self.set_tickpadding,
             getter=self.get_tickpadding,
-            layout=self.vlayout
+            layout=fr.vlayout
+        )
+
+        fr = VFrame(self.vlayout)
+
+        tick_labelsize = HTransparentDoubleSpinBox(
+            label  = 'Label size',
+            label2 = f"Set {self.axis} axis' {self.ticktype} tick label size",
+            minimum = 1, maximum = 100, singleStep = 1,
+            setter=self.set_labelsize,
+            getter=self.get_labelsize,
+            layout=fr.vlayout
+        )
+
+        font = HTransparentComboBox(
+            items = font_lib,
+            label  = 'Font',
+            setter=self.set_fontname,
+            getter=self.get_fontname,
+            layout=fr.vlayout
+        )
+        font.button.setMinimumWidth(300)
+
+        tick_labelcolor = HColorDropdown(
+            label  = 'Label color', 
+            setter=self.set_labelcolor,
+            getter=self.get_labelcolor,
+            layout=fr.vlayout
+        )
+
+        style = FontStyle(
+            obj = self.obj.get_majorticklabels() if self.ticktype == 'major'
+                else self.obj.get_minorticklabels(), 
+            canvas = self.canvas,
+            layout=fr.vlayout
+        )
+
+        alpha = HTransparentSpinBox(
+            label = 'Transparency',
+            singleStep = 10, maximum = 100, minimum = 0,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=fr.vlayout
         )
 
     def set_tick(self):
@@ -859,11 +870,13 @@ class SpineBase(ScrollArea):
 
     def initUI(self):
 
+        fr = VFrame(self.vlayout)
+
         visible = HToggle(
             label='Spine visible',
             setter=self.set_visible,
             getter=self.get_visible,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         arrow = HTransparentComboBox(
@@ -871,21 +884,21 @@ class SpineBase(ScrollArea):
             items = marker_lib.values(),
             setter=self.set_arrow,
             getter=self.get_arrow,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         color = HColorDropdown(
             label='Spine color',
             setter=self.set_color,
             getter=self.get_color,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
         
         arrowcolor = HColorDropdown(
             label="Arrow color",
             setter=self.set_arrowcolor,
             getter=self.get_arrowcolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         alpha = HTransparentSpinBox(
@@ -893,7 +906,7 @@ class SpineBase(ScrollArea):
             minimum = 0, maximum = 100, singleStep = 10,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         linestyle = HTransparentComboBox(
@@ -901,7 +914,7 @@ class SpineBase(ScrollArea):
             items = linestyle_lib.values(),
             setter=self.set_linestyle,
             getter=self.get_linestyle,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         linewidth = HTransparentDoubleSpinBox(
@@ -909,7 +922,7 @@ class SpineBase(ScrollArea):
             minimum = 0, maximum = 20, singleStep = 0.5,
             setter=self.set_linewidth,
             getter=self.get_linewidth,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
     def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
@@ -997,12 +1010,14 @@ class AxisLabel(ScrollArea):
         self.initUI()
     
     def initUI(self):
+        
+        fr = VFrame(self.vlayout)
 
         label = HLineEdit(
             label='Label',
             getter=self.get_label,
             setter=self.set_label,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -1011,42 +1026,43 @@ class AxisLabel(ScrollArea):
             label  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+        font.button.setMinimumWidth(300)
 
         size = HTransparentDoubleSpinBox(
             label = 'Font size',
             minimum = 1, maximum = 100, singleStep = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         style = FontStyle(
             obj = [self.text], 
             canvas = self.canvas,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         color = HColorDropdown(
             label  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         backgroundcolor = HColorDropdown(
             label  = 'Background color',
             getter=self.get_backgroundcolor,
             setter=self.set_backgroundcolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         edgecolor = HColorDropdown(
             label  = 'Edge color',
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         alpha = HTransparentSpinBox(
@@ -1054,7 +1070,7 @@ class AxisLabel(ScrollArea):
             singleStep = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def find_axis(self) -> Axis:

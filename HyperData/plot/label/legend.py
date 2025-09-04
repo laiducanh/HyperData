@@ -4,7 +4,7 @@ from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.button import HTransparentComboBox, SegmentedWidget, HToggle
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from ui.base_widgets.color import HColorDropdown
-from ui.base_widgets.frame import ScrollArea
+from ui.base_widgets.frame import ScrollArea, VFrame, SeparateHLine
 from plot.utilis import get_legend
 from plot.copy_objects import update_legend
 from config.settings import font_lib, logger, linestyle_lib
@@ -41,20 +41,23 @@ class LegendEntries(LegendBase):
 
     def initUI(self):
         
+        fr = VFrame(self.vlayout)
+
         font = HTransparentComboBox(
             items = font_lib,
             label  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+        font.button.setMinimumWidth(300)
 
         size = HTransparentDoubleSpinBox(
             label = 'Font size',
             minimum = 1, maximum = 100, singleStep = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         # # style = FontStyle(obj=self.obj.get_texts(), canvas=self.canvas)
@@ -64,15 +67,17 @@ class LegendEntries(LegendBase):
             label  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+
+        fr = VFrame(self.vlayout)
 
         markerscale = HTransparentDoubleSpinBox(
             label = 'Marker Size',
             minimum = 0, maximum = 1000, singleStep = 5,
             setter=self.set_markerscale,
             getter=self.get_markerscale,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         ncols = HTransparentSpinBox(
@@ -80,7 +85,7 @@ class LegendEntries(LegendBase):
             minimum = 1, maximum = 10, singleStep = 1,
             setter=self.set_ncols,
             getter=self.get_ncols,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         npoints = HTransparentSpinBox(
@@ -88,14 +93,14 @@ class LegendEntries(LegendBase):
             minimum = 0, maximum = 10, singleStep = 1,
             setter=self.set_npoints,
             getter=self.get_npoints,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         columnspacing = HTransparentDoubleSpinBox(
             label="Column spacing",
             setter=self.set_columnspacing,
             getter=self.get_columnspacing,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_fontname (self, font:str):
@@ -205,27 +210,32 @@ class LegendTitle(LegendBase):
         )
         self.title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
+        self.vlayout.addWidget(SeparateHLine())
+
+        fr = VFrame(self.vlayout)
+
         font = HTransparentComboBox(
             items = font_lib,
             label  = 'Font',
             setter=self.set_fontname,
             getter=self.get_fontname,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+        font.button.setMinimumWidth(300)
 
         size = HTransparentDoubleSpinBox(
             label = 'Font size',
             minimum = 1, maximum = 100, singleStep = 1,
             setter=self.set_fontsize,
             getter=self.get_fontsize,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         color = HColorDropdown(
             label  = 'Font color',
             getter=self.get_color,
             setter=self.set_color,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         # self.backgroundcolor = ColorDropdown(
@@ -247,7 +257,7 @@ class LegendTitle(LegendBase):
             items = ["center","left","right"],
             setter=self.set_alignment,
             getter=self.get_alignment,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
         
         # #pad = DoubleSpinBox(text='label pad',min=-100,max=100,step=5)
@@ -259,7 +269,7 @@ class LegendTitle(LegendBase):
             singleStep = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
     def set_title (self, label:str):
@@ -354,33 +364,37 @@ class LegendFrame(LegendBase):
         super().__init__(canvas, parent)
     
     def initUI(self):
-    
+        
+        fr = VFrame(self.vlayout)
+
         frameon = HToggle(
             label='Visible',
             setter=self.set_frameon,
             getter=self.get_frameon,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         shadow = HToggle(
             label='Shadow',
             setter=self.set_shadow,
             getter=self.get_shadow,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+
+        fr = VFrame(self.vlayout)
 
         facecolor = HColorDropdown(
             label  = 'Face Color', 
             getter=self.get_facecolor,
             setter=self.set_facecolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         edgecolor = HColorDropdown(
             label  = 'Edge Color', 
             getter=self.get_edgecolor,
             setter=self.set_edgecolor,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         edgestyle = HTransparentComboBox(
@@ -388,7 +402,7 @@ class LegendFrame(LegendBase):
             items = linestyle_lib.values(),
             getter=self.get_edgestyle,
             setter=self.set_edgestyle,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         edgewidth = HTransparentDoubleSpinBox(
@@ -396,7 +410,7 @@ class LegendFrame(LegendBase):
             minimum = 0, maximum = 5, singleStep = 0.1,
             getter=self.get_edgewidth,
             setter=self.set_edgewidth,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         alpha = HTransparentSpinBox(
@@ -404,15 +418,17 @@ class LegendFrame(LegendBase):
             singleStep = 10, maximum = 100, minimum = 0,
             setter=self.set_alpha,
             getter=self.get_alpha,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
+
+        fr = VFrame(self.vlayout)
 
         borderpad = HTransparentDoubleSpinBox(
             label = 'Border pad',
             minimum = 0, maximum = 5, singleStep = 0.1,
             setter=self.set_borderpad,
             getter=self.get_borderpad,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         handlelength = HTransparentDoubleSpinBox(
@@ -420,7 +436,7 @@ class LegendFrame(LegendBase):
             minimum = 0, maximum = 10, singleStep = 0.5,
             setter=self.set_handlelength,
             getter=self.get_handlelength,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         handleheight = HTransparentDoubleSpinBox(
@@ -428,7 +444,7 @@ class LegendFrame(LegendBase):
             minimum = 0, maximum = 10, singleStep = 0.5,
             setter=self.set_handleheight,
             getter=self.get_handleheight,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         handletextpad = HTransparentDoubleSpinBox(
@@ -436,7 +452,7 @@ class LegendFrame(LegendBase):
             minimum = 0, maximum = 10, singleStep = 0.5,
             setter=self.set_handletextpad,
             getter=self.get_handletextpad,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_frameon(self, value:bool):
@@ -579,6 +595,7 @@ class LegendLabel(QDialog):
         super().__init__(parent)
 
         layout = QVBoxLayout(self)
+        self.setMinimumWidth(500)
 
         self.canvas = canvas
     
