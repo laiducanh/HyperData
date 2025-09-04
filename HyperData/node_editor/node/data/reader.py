@@ -136,6 +136,7 @@ class DataReader (NodeContentWidget):
         vlayout.addWidget(self.preview)
         
         if dialog.exec(): 
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             super().exec()
     
     def update_preview (self):
@@ -178,6 +179,7 @@ class DataReader (NodeContentWidget):
         if self._config["auto_update"]:
             super().exec(self.selectedFiles)
             self.worker.signals.finished.connect(lambda: self.view.update_data(self.data_to_view))
+            logger.info(f"{self.name} {self.node.id}: update data.")
             
     def exec (self):    
         
@@ -195,7 +197,7 @@ class DataReader (NodeContentWidget):
             # check filetype for reading
             self.check_filetype(self.selectedFiles)
             # write log
-            logger.info(f"{self.name} {self.node.id}: Selected {self.selectedFiles}.")
+            logger.info(f"{self.name} {self.node.id}: select {self.selectedFiles}.")
             # reset status of the node before executing the main function
             self.resetNode()
             # execute main function
@@ -214,7 +216,7 @@ class DataReader (NodeContentWidget):
                     encoding=self._config["encoding"]
                 )
                 # write log
-                logger.info(f"{self.name} {self.node.id}: Loaded a csv file.")
+                logger.info(f"{self.name} {self.node.id}: load a csv file.")
 
             elif self.filetype == "excel":
                 data = pd.read_excel(
@@ -224,7 +226,7 @@ class DataReader (NodeContentWidget):
                     sheet_name=self._config["sheet_name"] if self._config["sheet_name"] else 0
                 )
                 # write log
-                logger.info(f"{self.name} {self.node.id}: Loaded an excel file.")
+                logger.info(f"{self.name} {self.node.id}: load an excel file.")
             
             # change progressbar's color
             self.progress.changeColor('success')
@@ -233,8 +235,8 @@ class DataReader (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.warning(f"{self.name} {self.node.id}: Couldn't read data file, return an empty DataFrame.")
-            logger.info(f"{self.name} {self.node.id}: failed, file format is not supported.")
+            logger.warning(f"{self.name} {self.node.id}: cannot read data file, return an empty DataFrame.")
+            logger.info(f"{self.name} {self.node.id}: fail, file format is not supported.")
         
         self.node.output_sockets[0].socket_data = data.copy()
         self.data_to_view = data.copy()

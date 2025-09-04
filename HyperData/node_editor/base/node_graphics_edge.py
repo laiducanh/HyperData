@@ -37,7 +37,7 @@ class NodeGraphicsEdge(GraphicsEdge):
     
     def updatePath(self):
         """ Will handle drawing QPainterPath from Point A to B """
-        raise NotImplemented("This method has to be overriden in a child class")
+        pass
 
     def updatePositions(self):
         source_pos = self.start_socket.getSocketPosition()        

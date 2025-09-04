@@ -5,6 +5,7 @@ from config.settings import logger, GLOBAL_DEBUG
 from sklearn.preprocessing import normalize
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.frame import VFrame
 
 DEBUG = False
 
@@ -19,23 +20,28 @@ class DataNormalizer (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Data Normalization", self.parent)
+        dialog.setMinimumSize(600, 400)
+
+        fr = VFrame(dialog.main_layout)
+
         norm = HTransparentComboBox(
             label="Norm",
             items=["l1","l2","max"],
             getter=lambda: self._config["norm"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         axis = HTransparentComboBox(
             items=["row","column"],
             label="Axis",
             getter=lambda: "row" if self._config["axis"] else "column",
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec():
             self._config["norm"] = norm.button.currentText()
             self._config["axis"] = 1 if axis.button.currentText() == "row" else 2
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
         
     def func(self):
@@ -54,14 +60,14 @@ class DataNormalizer (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: normalized data successfully.")
+            logger.info(f"{self.name} {self.node.id}: normalize data successfully.")
            
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = data.copy()

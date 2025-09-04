@@ -25,8 +25,9 @@ class DataTransformer (NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="configuration", parent=self.parent)
-        
+        dialog.setMinimumSize(600, 400)
         method = HTransparentComboBox(items=self.method_list, label="Transformer")
+        method.button.setMinimumWidth(300)
         method.button.setCurrentText(self._config["method"])
         dialog.main_layout.addWidget(method)
         dialog.main_layout.addWidget(SeparateHLine())
@@ -46,6 +47,7 @@ class DataTransformer (NodeContentWidget):
                 method = method.button.currentText(),
                 config = self.currentWidget()._config
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def currentWidget(self) -> MethodBase:
@@ -74,14 +76,14 @@ class DataTransformer (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: transformed data successfully.")
+            logger.info(f"{self.name} {self.node.id}: transform data successfully.")
 
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

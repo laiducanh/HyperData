@@ -1,5 +1,6 @@
 from node_editor.node.data_transformation.base import MethodBase
 from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.frame import VFrame
 
 class Power(MethodBase):
     def __init__(self, parent=None):
@@ -15,13 +16,20 @@ class Power(MethodBase):
         )
         else: self._config = config
 
-        self.method = HTransparentComboBox(items=["yeo-johnson","box-cox"], label="Method")
-        self.method.button.setCurrentText(self._config["method"])
-        self.vlayout.addWidget(self.method)
+        fr = VFrame(self.vlayout)
 
-        self.standardize = HToggle(label="Standardize")
-        self.standardize.button.setChecked(self._config["standardize"])
-        self.vlayout.addWidget(self.standardize)
+        self.method = HTransparentComboBox(
+            items=["yeo-johnson","box-cox"], 
+            label="Method",
+            getter=lambda: self._config["method"],
+            layout=fr.vlayout
+        )
+
+        self.standardize = HToggle(
+            label="Standardize",
+            getter=lambda: self._config["standardize"],
+            layout=fr.vlayout
+        )
         
     def update_config(self):
         self._config.update(

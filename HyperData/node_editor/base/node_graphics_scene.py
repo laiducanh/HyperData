@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneDragDropEvent
 from PySide6.QtGui import QColor, QKeyEvent, QPen
-from PySide6.QtCore import Signal, Qt, QThreadPool, QTimer
+from PySide6.QtCore import Signal
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.base.node_graphics_edge import NodeGraphicsEdge
 from node_editor.node_node import Node
@@ -70,20 +70,20 @@ class NodeGraphicsScene(QGraphicsScene):
         self.addItem(node)
         self.nodes.append(node)
         if node.content: node.content.sig.connect(lambda: self.sig.emit(node))
-        logger.info(f"Scene::addNode: add node {node.title} {node.id}, Scene.nodes {[i.id for i in self.nodes]}.")
+        logger.info(f"NodeGraphicsScene::addNode: add node {node.title} {node.id}, Scene.nodes {[i.id for i in self.nodes]}.")
 
     def addEdge(self, edge:NodeGraphicsEdge):
         self.addItem(edge)
         self.edges.append(edge)
-        logger.info(f"Scene::addEdge: add edge {edge.id}, Scene.edges {[i.id for i in self.edges]}.")
+        logger.info(f"NodeGraphicsScene::addEdge: add edge {edge.id}, Scene.edges {[i.id for i in self.edges]}.")
 
     def removeNode(self, node:Node):
         try:
             self.nodes.remove(node)
             self.removeItem(node)
-            logger.info(f"Scene::removeNode: remove node {node.title} {node.id}, Scene.nodes {[i.id for i in self.nodes]}.")
+            logger.info(f"NodeGraphicsScene::removeNode: remove node {node.title} {node.id}, Scene.nodes {[i.id for i in self.nodes]}.")
         except Exception as e:
-            logger.warning(f"Scene::removeNode: cannot remove node {node.title} {node.id}.")
+            logger.warning(f"NodeGraphicsScene::removeNode: cannot remove node {node.title} {node.id}.")
             logger.exception(e)
 
     def removeEdge(self, edge:NodeGraphicsEdge):
@@ -91,18 +91,16 @@ class NodeGraphicsScene(QGraphicsScene):
             self.edges.remove(edge)
             self.removeItem(edge)
             edge.remove()
-            logger.info(f"Scene::removeEdgge: remove edge {edge.id}, Scene.edges {[i.id for i in self.edges]}.")
+            logger.info(f"NodeGraphicsScene::removeEdge: remove edge {edge.id}, Scene.edges {[i.id for i in self.edges]}.")
         except Exception as e: 
-            logger.warning(f"Scene::removeEdge: cannot remove edge {edge.id}.")
+            logger.warning(f"NodeGraphicsScene::removeEdge: cannot remove edge {edge.id}.")
             logger.exception(e)
     
     def clear(self):
         for item in self.items():
             if isinstance(item,(NodeGraphicsNode,NodeGraphicsEdge)):
                 self.removeItem(item)
-                logger.info(f"Scene::clear: remove item {item.id}.")
+                logger.info(f"NodeGraphicsScene::clear: remove item {item.id}.")
         self.nodes = []
         self.edges = []
-        logger.info(f"Scene::clear: remove all items, reset self.nodes {[i.id for i in self.nodes]} and self.edges {[i.id for i in self.edges]}.")
-
-    
+        logger.info(f"NodeGraphicsScene::clear: remove all items, reset self.nodes {[i.id for i in self.nodes]} and self.edges {[i.id for i in self.edges]}.")

@@ -3,6 +3,7 @@ from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.frame import VFrame
 from node_editor.node.interpolation.base import FitBase
 from plot.canvas import Canvas
 from scipy.interpolate import make_interp_spline
@@ -69,15 +70,21 @@ class BSpline (FitBase):
             bc_type = "not-a-knot"
         )
         else: self._config = config
-    
-        self.k = HTransparentSpinBox(label="B-Spline degree")
-        self.k.button.setValue(self._config["k"])
-        self.vlayout.addWidget(self.k)
 
-        self.bc_type = HTransparentComboBox(items=["clamped","natural","not-a-knot","periodic"], 
-                                label="Boundary condition")
-        self.bc_type.button.setCurrentText(self._config["bc_type"])
-        self.vlayout.addWidget(self.bc_type)
+        fr = VFrame(self.vlayout)
+
+        self.k = HTransparentSpinBox(
+            label="B-Spline degree",
+            getter=lambda: self._config["k"],
+            layout=fr.vlayout
+        )
+
+        self.bc_type = HTransparentComboBox(
+            items=["clamped","natural","not-a-knot","periodic"], 
+            label="Boundary condition",
+            getter=lambda: self._config["bc_type"],
+            layout=fr.vlayout
+        )
     
     def update_config(self):
         self._config.update(

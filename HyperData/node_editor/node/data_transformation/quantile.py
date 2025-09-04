@@ -1,6 +1,7 @@
 from node_editor.node.data_transformation.base import MethodBase
 from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.spinbox import HTransparentSpinBox
+from ui.base_widgets.frame import VFrame
 
 class Quantile(MethodBase):
     def __init__(self, parent=None):
@@ -17,17 +18,30 @@ class Quantile(MethodBase):
         )
         else: self._config = config
 
-        self.n_quantiles = HTransparentSpinBox(maximum=100000, singleStep=1000, label="Number of quantiles")
-        self.n_quantiles.button.setValue(self._config["n_quantiles"])
-        self.vlayout.addWidget(self.n_quantiles)
+        fr = VFrame(self.vlayout)
 
-        self.output_dist = HTransparentComboBox(items=["uniform","normal"],label="Marginal distribution")
-        self.output_dist.button.setCurrentText(self._config["output_distribution"])
-        self.vlayout.addWidget(self.output_dist)
+        self.n_quantiles = HTransparentSpinBox(
+            maximum=100000, 
+            singleStep=1000, 
+            label="Number of quantiles",
+            getter=lambda: self._config["n_quantiles"],
+            layout=fr.vlayout
+        )
 
-        self.subsample = HTransparentSpinBox(maximum=100000, singleStep=1000, label="Maximum of subsamples")
-        self.subsample.button.setValue(self._config["subsample"])
-        self.vlayout.addWidget(self.subsample)
+        self.output_dist = HTransparentComboBox(
+            items=["uniform","normal"],
+            label="Marginal distribution",
+            getter=lambda: self._config["output_distribution"],
+            layout=fr.vlayout
+        )
+
+        self.subsample = HTransparentSpinBox(
+            maximum=100000, 
+            singleStep=1000, 
+            label="Maximum of subsamples",
+            getter=lambda: self._config["subsample"],
+            layout=fr.vlayout
+        )
         
     def update_config(self):
         self._config.update(

@@ -77,6 +77,7 @@ class DataLocator (NodeContentWidget):
             self._config["column_to"] = col_to.currentText()
             self._config["row_from"] = row_from.currentText()
             self._config["row_to"] = row_to.currentText()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def func(self):
@@ -99,14 +100,14 @@ class DataLocator (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: located data successfully.")
+            logger.info(f"{self.name} {self.node.id}: locate data successfully.")
 
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.") 
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

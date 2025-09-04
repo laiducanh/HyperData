@@ -66,6 +66,7 @@ class DataSplitter (NodeContentWidget):
         if dialog.exec():
             self._config["type"] = type.button.currentText()
             self._config["idx"] = idx.button.value()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def func(self):
@@ -91,14 +92,14 @@ class DataSplitter (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: located data successfully.")
+            logger.info(f"{self.name} {self.node.id}: split data successfully.")
 
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.") 
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data1.copy()

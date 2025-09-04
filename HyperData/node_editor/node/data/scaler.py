@@ -4,7 +4,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn import preprocessing
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import HToggle, HPrimaryComboBox, HTransparentComboBox
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, VFrame
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout, QScrollArea
@@ -61,18 +61,20 @@ class StandardScaler (ScalerBase):
         )
         else: self._config = config
     
+        fr = VFrame(self.vlayout)
+
         self.with_mean = HToggle(
             label="Center data",
             getter=lambda: self._config["with_mean"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.with_std = HToggle(
             label="Unit variance",
             getter=lambda: self._config["with_std"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_estimator(self):
@@ -92,26 +94,28 @@ class MinMaxScaler(ScalerBase):
             clip = False
         )
         else: self._config = config
-    
+
+        fr = VFrame(self.vlayout)
+
         self.min = HTransparentDoubleSpinBox(
             label="Min",
             getter=lambda: self._config["feature_range"][0],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.max = HTransparentDoubleSpinBox(
             label="Max",
             getter=lambda: self._config["feature_range"][1],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.clip = HToggle(
             label="Clip",
             getter=lambda: self._config["clip"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_estimator(self):
@@ -137,26 +141,28 @@ class RobustScaler(ScalerBase):
             unit_variance = False
         )
         else: self._config = config
-    
+
+        fr = VFrame(self.vlayout)
+
         self.with_centering = HToggle(
             label="Center data",
             getter=lambda: self._config["with_centering"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.unit_variance = HToggle(
             label="Unit variance",
             getter=lambda: self._config["unit_variance"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.with_scaling = HToggle(
             label="Scale to interquartile",
             getter=lambda: self._config["with_scaling"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_estimator(self):
@@ -178,13 +184,15 @@ class QuantileTransfomer(ScalerBase):
             subsample = 10000
         )
         else: self._config = config
+
+        fr = VFrame(self.vlayout)
     
         self.n_quantiles = HTransparentSpinBox(
             minimum=1, maximum=10000, singleStep=1000,
             label="Number of quantiles",
             getter=lambda: self._config["n_quantiles"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.output_distribution = HTransparentComboBox(
@@ -192,14 +200,14 @@ class QuantileTransfomer(ScalerBase):
             label="Distribution",
             getter=lambda: self._config["output_distribution"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.subsampleOn = HToggle(
             label="Subsample",
             getter=lambda: True if self._config["subsample"] else False,
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.subsample = HTransparentSpinBox(
@@ -207,7 +215,7 @@ class QuantileTransfomer(ScalerBase):
             label="Number of subsamples",
             getter=lambda: self._config["subsample"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_estimator(self):
@@ -228,20 +236,22 @@ class PowerTransformer(ScalerBase):
             standardize = True
         )
         else: self._config = config
-    
+
+        fr = VFrame(self.vlayout)
+
         self.method = HTransparentComboBox(
             items=["yeo-johnson","box-cox"], 
             label="Method",
             getter=lambda: self._config["method"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
 
         self.standardize = HToggle(
             label="Standardize",
             getter=lambda: self._config["standardize"],
             setter=self.set_estimator,
-            layout=self.vlayout
+            layout=fr.vlayout
         )
     
     def set_estimator(self):
@@ -265,6 +275,7 @@ class DataScaler (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Data Scaling", self.parent)
+        dialog.setMinimumSize(600, 400)
         scaler = HPrimaryComboBox(items=self.scaler_list,label="Scaler")
         scaler.button.setMinimumWidth(250)
         scaler.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.scaler_list.index(s)))
@@ -287,6 +298,7 @@ class DataScaler (NodeContentWidget):
                 config    = self.currentWidget()._config,
                 scaler = scaler.button.currentText()
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def func(self):
@@ -329,7 +341,7 @@ class DataScaler (NodeContentWidget):
             # change progressbar's color   
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty Dataframe.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty Dataframe.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = data.copy()

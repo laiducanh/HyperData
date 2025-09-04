@@ -3,6 +3,7 @@ from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.frame import VFrame
 from node_editor.node.interpolation.base import FitBase
 from plot.canvas import Canvas
 from sympy import sympify, lambdify
@@ -91,18 +92,26 @@ class EquationFit (FitBase):
             variable = "x",
         )
         else: self._config = config
-    
-        self.params = HLineEdit(label="Parameters")
-        self.params.button.setText(self._config["params"])
-        self.vlayout.addWidget(self.params)
-
-        self.var = HLineEdit(label="Variable")
-        self.var.button.setText(self._config["variable"])
-        self.vlayout.addWidget(self.var)
         
-        self.func = HLineEdit(label="Function")
-        self.func.button.setText(self._config["input"])
-        self.vlayout.addWidget(self.func)
+        fr = VFrame(self.vlayout)
+
+        self.params = HLineEdit(
+            label="Parameters",
+            getter=lambda: self._config["params"],
+            layout=fr.vlayout
+        )
+
+        self.var = HLineEdit(
+            label="Variable",
+            getter=lambda: self._config["variable"],
+            layout=fr.vlayout
+        )
+        
+        self.func = HLineEdit(
+            label="Function",
+            getter=lambda: self._config["input"],
+            layout=fr.vlayout
+        )
     
     def update_config(self):
         self._config.update(

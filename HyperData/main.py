@@ -47,9 +47,8 @@ class Main(QMainWindow):
         self.vlayout = QVBoxLayout(self.central_widget)
         self.setCentralWidget(self.central_widget)
 
-        widget = QWidget()
-        self.mainlayout = QStackedLayout(widget)
-        self.vlayout.addWidget(widget)            
+        self.mainlayout = QStackedLayout()
+        self.vlayout.addLayout(self.mainlayout)            
 
         if GLOBAL_DEBUG or DEBUG: self.debug()
         
@@ -62,7 +61,7 @@ class Main(QMainWindow):
         text = QTextBrowser()
         text.setMinimumHeight(200)
         log_handler = TextEditLogger(text)
-        log_handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+        log_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
         logger.addHandler(log_handler)
         self.vlayout.addWidget(text)
 

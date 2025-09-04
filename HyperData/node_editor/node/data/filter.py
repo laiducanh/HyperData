@@ -73,6 +73,7 @@ class DataFilter (NodeContentWidget):
             self._config["axis"] = axis.button.currentText()
             self._config["type"] = type.button.currentText()
             self._config["apply"] = apply.button.toPlainText().split(",")
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
 
@@ -104,14 +105,14 @@ class DataFilter (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: filtered data successfully.")
+            logger.info(f"{self.name} {self.node.id}: filter data successfully.")
 
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.") 
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.") 
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

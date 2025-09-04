@@ -175,6 +175,7 @@ class PairwiseMeasurer (NodeContentWidget):
                 config    = self.currentWidget()._config,
                 method = method.button.currentText()
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
 
@@ -217,7 +218,7 @@ class PairwiseMeasurer (NodeContentWidget):
             # change progressbar's color   
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty Dataframe.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty Dataframe.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = data.copy()

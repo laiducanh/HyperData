@@ -5,8 +5,8 @@ from ui.base_widgets.button import HTransparentComboBox
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.spinbox import HTransparentSpinBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import SeparateHLine
-from ui.base_widgets.text import TitleLabel, BodyLabel
+from ui.base_widgets.frame import SeparateHLine, VFrame
+from ui.base_widgets.text import TitleLabel
 import pandas as pd
 import numpy as np
 import math
@@ -26,37 +26,39 @@ class DataCreator (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Data Creator", self.parent)
-
+        dialog.setMinimumSize(600, 400)
         dialog.main_layout.addWidget(TitleLabel("Dimensions"))
         dialog.main_layout.addWidget(SeparateHLine())
 
+        fr = VFrame(dialog.main_layout)
         num_rows = HTransparentSpinBox(
             maximum=1000000, 
             label="Number of rows",
             getter=lambda: self._config["num_rows"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         num_cols = HTransparentSpinBox(
             maximum=1000000, 
             label="Number of columns",
             getter=lambda: self._config["num_cols"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         dialog.main_layout.addWidget(TitleLabel("Data structure"))
         dialog.main_layout.addWidget(SeparateHLine())
 
+        fr = VFrame(dialog.main_layout)
         structure = HTransparentComboBox(
             items=["full","diagonal","triangular"],
             label="Structure",
             getter=lambda: self._config["structure"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         fill_values = HLineEdit(
             label="Fill values",
             label2="Values to fill to DataFrame",
             getter=lambda: str(self._config["fill_values"]),
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )        
         
         if dialog.exec():
@@ -66,6 +68,7 @@ class DataCreator (NodeContentWidget):
                 fill_values = fill_values.get_value(),
                 structure = structure.get_value()
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -93,14 +96,14 @@ class DataCreator (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: created data successfully.")
+            logger.info(f"{self.name} {self.node.id}: create data successfully.")
         
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

@@ -49,6 +49,7 @@ class DataCompare(NodeContentWidget):
             self._config["align_axis"] = align_axis.get_value()
             self._config["keep_shape"] = keep_shape.get_value()
             self._config["keep_equal"] = keep_equal.get_value()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -70,14 +71,14 @@ class DataCompare(NodeContentWidget):
             # write log
             node1 = self.node.input_sockets[0].edges[0].start_socket.node
             node2 = self.node.input_sockets[1].edges[0].start_socket.node
-            logger.info(f"{self.name} {self.node.id}: compared data from {node1} {node1.id} and {node2} {node2.id} successfully.")
+            logger.info(f"{self.name} {self.node.id}: compare data from {node1} {node1.id} and {node2} {node2.id} successfully.")
 
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

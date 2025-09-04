@@ -6,7 +6,7 @@ from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import HDropDownTransparentPushButton
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
-from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.frame import SeparateHLine, VFrame
 from ui.base_widgets.menu import Menu, Action
 from ui.base_widgets.text import TitleLabel, BodyLabel
 
@@ -23,6 +23,7 @@ class DataComputation(NodeContentWidget):
     
     def config(self):
         dialog = Dialog(title="Configuration", parent=self.parent)
+        dialog.setMinimumSize(600, 400)
         dialog.main_layout.addWidget(TitleLabel("Data Computation"))
         dialog.main_layout.addWidget(BodyLabel("Arithmetic operation on the DataFrame"))
         dialog.main_layout.addWidget(SeparateHLine())
@@ -63,17 +64,18 @@ class DataComputation(NodeContentWidget):
             action.triggered.connect(lambda _, text=text: func.set_value(text))
             linalg.addAction(action)
         
+        fr = VFrame(dialog.main_layout)
         base = HTransparentDoubleSpinBox(
             label='Base',
             getter=lambda: self._config['base'],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         func = HDropDownTransparentPushButton(
             label='Function',
             getter=lambda: self._config['function'],
             menu=menu, 
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
 
         if dialog.exec():
@@ -81,6 +83,7 @@ class DataComputation(NodeContentWidget):
                 function = func.get_value(),
                 base = base.get_value()
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()    
         
     def func(self):
@@ -177,7 +180,7 @@ class DataComputation(NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = data.copy()

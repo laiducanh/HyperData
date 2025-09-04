@@ -5,9 +5,10 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from sklearn.experimental import enable_iterative_imputer # is required to load sklear.impute
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.button import HPrimaryComboBox, HTransparentComboBox, HToggle
 from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
 from ui.base_widgets.line_edit import HLineEdit
+from ui.base_widgets.frame import Frame
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
@@ -38,22 +39,26 @@ class NAImputer (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        imputer = HTransparentComboBox(items=["univariate","multivariate","KNN"], label='Imputer')
-        imputer.button.setCurrentText(self._config['imputer'])
-        imputer.button.currentTextChanged.connect(lambda: stacklayout.setCurrentIndex(imputer.button.currentIndex()))
-        dialog.main_layout.addWidget(imputer)
+        dialog.setMinimumSize(600, 400)
+        imputer = HPrimaryComboBox(
+            items=["univariate","multivariate","KNN"], 
+            label='Imputer',
+            getter=lambda: self._config["imputer"],
+            setter=lambda: stacklayout.setCurrentIndex(imputer.button.currentIndex()),
+            layout=dialog.main_layout
+        )
 
         stacklayout = QStackedLayout()
         dialog.main_layout.addLayout(stacklayout)
 
-        univariate_widget = QWidget()
+        univariate_widget = Frame()
         univariate_layout = QVBoxLayout()
         univariate_layout.setContentsMargins(0,0,0,0)
         univariate_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         univariate_widget.setLayout(univariate_layout)
         stacklayout.addWidget(univariate_widget)
-        u_strategy = HTransparentComboBox(items=["next valid observation", "last valid observation", "mean","median","most_frequent","constant"],label='strategy')
-        
+        u_strategy = HTransparentComboBox(items=["next valid observation", "last valid observation", "mean","median","most_frequent","constant"],label='Strategy')
+        u_strategy.button.setMinimumWidth(300)
         u_strategy.button.setCurrentText(self._config['u_strategy'])
         univariate_layout.addWidget(u_strategy)
         u_fill_value = HLineEdit(label='Fill value')
@@ -63,7 +68,7 @@ class NAImputer (NodeContentWidget):
                                                    else u_fill_value.button.setEnabled(False))
         univariate_layout.addWidget(u_fill_value)
 
-        multivariate_widget = QWidget()
+        multivariate_widget = Frame()
         multivariate_layout = QVBoxLayout()
         multivariate_layout.setContentsMargins(0,0,0,0)
         multivariate_widget.setLayout(multivariate_layout)
@@ -100,18 +105,18 @@ class NAImputer (NodeContentWidget):
         skip_complete.button.setChecked(self._config["skip_complete"])
         multivariate_layout.addWidget(skip_complete)
 
-        knn_widget = QWidget()
+        knn_widget = Frame()
         knn_layout = QVBoxLayout()
         knn_layout.setContentsMargins(0,0,0,0)
         knn_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         knn_widget.setLayout(knn_layout)
         stacklayout.addWidget(knn_widget)
 
-        n_neighbors = HTransparentSpinBox(minimum=0, maximum=1000, singleStep=5, label='neighbors')
+        n_neighbors = HTransparentSpinBox(minimum=0, maximum=1000, singleStep=5, label='Neighbors')
         n_neighbors.button.setValue(self._config["n_neighbors"])
         knn_layout.addWidget(n_neighbors)
 
-        weights = HTransparentComboBox(items=['uniform','distance'], label='weights')
+        weights = HTransparentComboBox(items=['uniform','distance'], label='Weights')
         weights.button.setCurrentText(self._config["weights"])
         knn_layout.addWidget(weights)
 
@@ -130,6 +135,7 @@ class NAImputer (NodeContentWidget):
             self._config["skip_complete"] = skip_complete.button.isChecked()
             self._config["n_neighbors"] = n_neighbors.button.value()
             self._config["weights"] = weights.button.currentText()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def func(self):
@@ -186,14 +192,14 @@ class NAImputer (NodeContentWidget):
             self.progress.changeColor('success')       
             # write log
             if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else: logger.info(f"{self.name} {self.node.id}: imputed NaNs successfully.")
+            else: logger.info(f"{self.name} {self.node.id}: impute NaNs successfully.")
 
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
     
         self.node.output_sockets[0].socket_data = data.copy()

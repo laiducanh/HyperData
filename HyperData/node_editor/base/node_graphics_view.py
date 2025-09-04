@@ -8,7 +8,7 @@ from node_editor.node_node import Node
 from ui.base_widgets.menu import Menu, Action
 from config.settings import logger
 
-MODE_EDGE_DRAG = True
+DEBUG = False
 
 EDGE_DRAG_START_THRESHOLD = 10
 SINGLE_IN = 1
@@ -167,9 +167,8 @@ class NodeGraphicsView(QGraphicsView):
             self.dragEdge.update()
             
         for item in self.grScene.selectedItems():
-            if isinstance(item, (Node, NodeEditor)): item.updateConnectedEdges()
-            pass
-                
+            if isinstance(item, (Node, NodeEditor)): 
+                item.updateConnectedEdges()                
 
         super().mouseMoveEvent(event)
 
@@ -187,7 +186,6 @@ class NodeGraphicsView(QGraphicsView):
                                 Qt.MouseButton.LeftButton, event.buttons() & ~Qt.MouseButton.LeftButton, event.modifiers())
         super().mouseReleaseEvent(fakeEvent)
         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-
 
     def leftMouseButtonPress(self, event:QMouseEvent):
         super().mousePressEvent(event)
@@ -213,9 +211,6 @@ class NodeGraphicsView(QGraphicsView):
             res = self.edgeDragEnd(item)
             if res: return
 
-        
-
-
     def leftMouseButtonRelease(self, event:QMouseEvent):
         super().mouseReleaseEvent(event)
 
@@ -229,8 +224,6 @@ class NodeGraphicsView(QGraphicsView):
             if self.distanceBetweenClickAndReleaseIsOff(event):
                 res = self.edgeDragEnd(item)
                 if res: return
-        
-
 
     def rightMouseButtonPress(self, event:QMouseEvent):
         super().mousePressEvent(event)
@@ -327,18 +320,16 @@ class NodeGraphicsView(QGraphicsView):
         else:
             self._numScheduledScalings += 1
         
-        logger.info(f"View: current scale {self.currentScale}.")
+        logger.info(f"NodeGraphicsView: current scale {self.currentScale}.")
     
     def edgeDragStart(self, item:NodeGraphicsSocket):
         
-        #self.last_start_socket = item
         self.dragEdge = NodeGraphicsEdgeBezier(start_socket=item, end_socket=None)
-        #item.addEdge(self.dragEdge)
         self.dragEdge.updatePositions()
         self.grScene.addEdge(self.dragEdge)
-
-        logger.info(f'View::edgeDragStart: start dragging edge {self.dragEdge.id} from socket {item.id}.')
-        logger.info(f'View::edgeDragStart: assign start socket to socket index {item.index} of node {item.node.id} to drag edge.')
+        if DEBUG:
+            logger.info(f'NodeGraphicsView::edgeDragStart: start dragging edge {self.dragEdge.id} from socket {item.id}.')
+            logger.info(f'NodeGraphicsView::edgeDragStart: assign start socket to socket index {item.index} of node {item.node.id} to drag edge.')
 
     def edgeDragEnd(self, item):
         """ return True if skip the rest of the code """
@@ -349,37 +340,38 @@ class NodeGraphicsView(QGraphicsView):
                 self.dragEdge.end_socket = item
                 self.dragEdge.end_socket.addEdge(self.dragEdge)
                 self.dragEdge.updatePositions()
-                logger.info(f"View::edgeDragEnd: end dragging edge {self.dragEdge.id} to socket {item.id}.")
-                logger.info(f'View::edgeDragEnd: assign end socket to socket index {item.index} of node {item.node.id} to drag edge.')
+                if DEBUG:
+                    logger.info(f"NodeGraphicsView::edgeDragEnd: end dragging edge {self.dragEdge.id} to socket {item.id}.")
+                    logger.info(f'NodeGraphicsView::edgeDragEnd: assign end socket to socket index {item.index} of node {item.node.id} to drag edge.')
                 return True
 
         elif isinstance(item, NodeGraphicsSocket) and item.socket_type in [SINGLE_IN, MULTI_IN, CONNECTOR_IN] and item.node != self.dragEdge.start_socket.node:
             # remove edge in single in, connector in
             if item.socket_type in [SINGLE_IN, CONNECTOR_IN] and item.hasEdge(): 
                 for edge in item.edges:
-                    edge.remove()
                     self.grScene.removeEdge(edge) 
-                    logger.info(f'View::edgeDragEnd: remove Edge for single-in socket.')
+                    if DEBUG:
+                        logger.info(f'NodeGraphicsView::edgeDragEnd: remove Edge for single-in socket.')
                             
             # remove edge in single out
             if self.dragEdge.start_socket.socket_type in [SINGLE_OUT]: 
                 for edge in self.dragEdge.start_socket.edges:
                     if edge != self.dragEdge:
-                        edge.remove()
                         self.grScene.removeEdge(edge)
-                        logger.info(f'View::edgeDragEnd: remove Edge for single-out socket')
+                        if DEBUG:
+                            logger.info(f'NodeGraphicsView::edgeDragEnd: remove Edge for single-out socket')
                         
             self.dragEdge.end_socket = item
             self.dragEdge.end_socket.addEdge(self.dragEdge)
-
-            logger.info(f'View::edgeDragEnd: assign end socket index {item.index} of node {item.node.id} to drag edge.')
+            if DEBUG:
+                logger.info(f'NodeGraphicsView::edgeDragEnd: assign end socket index {item.index} of node {item.node.id} to drag edge.')
             self.dragEdge.updatePositions()
             return True
 
-        logger.info('View::edgeDragEnd: finish dragging edge.')
+        if DEBUG:
+            logger.info('NodeGraphicsView::edgeDragEnd: finish dragging edge.')
         self.grScene.removeEdge(self.dragEdge)
         self.dragEdge = None
-        logger.info('View::edgeDragEnd: everything done.')
 
         return False
 
@@ -392,7 +384,6 @@ class NodeGraphicsView(QGraphicsView):
         return (dist_scene.x()*dist_scene.x() + dist_scene.y()*dist_scene.y()) > edge_drag_threshold_sq
 
     def keyPressEvent(self, event:QKeyEvent):
-        logger.info(f"View::keyPressEvent: {Qt.Key(event.key()).name} pressed.")
 
         if event.key() == Qt.Key.Key_Delete:
             self.deleteSelected()
@@ -408,14 +399,23 @@ class NodeGraphicsView(QGraphicsView):
             super().keyPressEvent(event)
 
     def selectAll(self):
+
+        logger.info(f"NodeGraphicsView: select all.")
+
         for item in self.grScene.items(): 
             item.setSelected(True)
     
     def deselectSelected(self):
+
+        logger.info(f"NodeGraphicsView: deselect selected.")
+
         for item in self.grScene.selectedItems():
             item.setSelected(False)
 
     def deleteSelected(self):
+
+        logger.info(f"NodeGraphicsView: delete selected.")
+
         for item in self.grScene.selectedItems():
             if isinstance(item, NodeGraphicsEdge):
                 self.grScene.removeEdge(item)
@@ -429,7 +429,7 @@ class NodeGraphicsView(QGraphicsView):
                     self.grScene.removeEdge(item)
     
     def serialize(self):
-        logger.info("View: starting serialization.")
+        logger.info("NodeGraphicsView: start serialization.")
 
         nodes, edges = dict(), dict()
         for node in self.grScene.nodes: nodes[node.id] = node.serialize()
@@ -442,7 +442,7 @@ class NodeGraphicsView(QGraphicsView):
                 "edges":edges}
 
     def deserialize(self, data, hashmap={}):
-        logger.info("View: starting deserialization.")
+        logger.info("NodeGraphicsView: start deserialization.")
 
         self.grScene.clear()
         hashmap = {}

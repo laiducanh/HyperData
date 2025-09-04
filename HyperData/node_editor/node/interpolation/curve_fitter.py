@@ -47,8 +47,9 @@ class CurveFitter (NodeContentWidget):
     
     def initDialog(self):
         self.dialog = Dialog("Configuration", self.parent)
-        
+        self.dialog.setMinimumSize(600, 400)
         self.method = HPrimaryComboBox(items=self.method_list, label="Method")
+        self.method.button.setMinimumWidth(300)
         self.method.button.setCurrentText(self._config["method"])
         self.method.button.currentIndexChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(s))
         self.dialog.main_layout.addWidget(self.method)
@@ -74,6 +75,7 @@ class CurveFitter (NodeContentWidget):
                 method = self.method.button.currentText(),
                 config = self.currentWidget()._config
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def currentWidget(self) -> FitBase:
@@ -108,7 +110,7 @@ class CurveFitter (NodeContentWidget):
                 # change progressbar's color
                 self.progress.changeColor('fail')
                 # write log
-                logger.info(f"{self.name} {self.node.id}: failed.")
+                logger.info(f"{self.name} {self.node.id}: fail.")
                 
             
         except Exception as e:
@@ -116,7 +118,7 @@ class CurveFitter (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = self

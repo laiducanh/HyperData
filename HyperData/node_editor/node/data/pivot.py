@@ -5,6 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import HTransparentComboBox, HToggle, ListCheckBox
 from ui.base_widgets.window import Dialog
+from ui.base_widgets.frame import VFrame
 
 DEBUG = False
 
@@ -26,28 +27,29 @@ class DataPivot(NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Data Pivot", parent=self.parent)
+        fr = VFrame(dialog.main_layout)
         aggfunc = HTransparentComboBox(
             items=["mean","sum","min","max"],
             label="Function",
             label2='Function will be used to calculate the partial aggregates',
             getter=lambda: self._config["aggfunc"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         margins = HToggle(
             label='Add aggregate columns and rows across the categories',
             getter=lambda: self._config["margins"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         dropna = HToggle(
             label='Do not include columns whose entries are all NaN',
             getter=lambda: self._config["dropna"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         sort = HToggle(
             label="Sort",
             label2='Specifies if the result should be sorted',
             getter=lambda: self._config["sort"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
         values = ListCheckBox(data.columns, text="Values",
                               states=[i in self._config["values"] for i in data.columns])
@@ -69,6 +71,7 @@ class DataPivot(NodeContentWidget):
                 index = list(compress(data.columns, indexes.states)),
                 columns = list(compress(data.columns, columns.states))
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -118,7 +121,7 @@ class DataPivot(NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()
@@ -145,11 +148,13 @@ class DataUnpivot(NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Data Unpivot", parent=self.parent)
+        dialog.setMinimumSize(600, 200)
 
+        fr = VFrame(dialog.main_layout)
         ignore_index = HToggle(
             label="Ignore index",
             getter=lambda: self._config["ignore_index"],
-            layout=dialog.main_layout
+            layout=fr.vlayout
         )
      
         id_vars = ListCheckBox(
@@ -171,6 +176,7 @@ class DataUnpivot(NodeContentWidget):
                 value_vars = list(compress(data.columns, value_vars.states)),
                 ignore_index = ignore_index.button.isChecked()
             )
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):

@@ -51,7 +51,7 @@ class NodeView (QMainWindow):
 
         self.setup_layout()
 
-        logger.info("Initialize View.")
+        logger.info("NodeView: Initialize View.")
     
     def setup_layout (self):
         self.mainlayout = QHBoxLayout()
@@ -101,10 +101,14 @@ class NodeView (QMainWindow):
         return super().paintEvent(a0)
         
     def keyPressEvent(self, event: QKeyEvent) -> None:
+
+        logger.info(f"NodeView::keyPressEvent: {Qt.Key(event.key()).name} is pressed.")
+
         if event.key() == Qt.Key.Key_Slash:
             self.search_box.setFocus()
-            
-        return super().keyPressEvent(event)
+            logger.info(f"NodeView::SearchBox: get focus.")
+        else:
+            super().keyPressEvent(event)
 
     def addNode(self, title):
         node = Node(title,self.node_view)

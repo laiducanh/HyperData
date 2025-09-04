@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 from PySide6.QtCore import Qt
 from ui.base_widgets.button import HButton
+from ui.base_widgets.frame import VFrame, HFrame
 
 class FitBase (QWidget):
     def __init__(self, parent=None):
@@ -27,7 +28,7 @@ class FitBase (QWidget):
         for i in reversed(range(self.vlayout.count())):
             item = self.vlayout.itemAt(i)
             widget = item.widget()
-            if isinstance(widget, HButton):
+            if isinstance(widget, (HButton, VFrame, HFrame)):
                 self.vlayout.removeWidget(widget)
                 widget.deleteLater()
     

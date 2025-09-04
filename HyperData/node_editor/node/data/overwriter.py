@@ -31,14 +31,14 @@ class DataOverwriter (NodeContentWidget):
             if not DEBUG and not GLOBAL_DEBUG:
                 node1 = self.node.input_sockets[0].edges[0].start_socket.node
                 node2 = self.node.input_sockets[1].edges[0].start_socket.node
-                logger.info(f"{self.name} {self.node.id}: compute data from {node2} {node2.id} and {node1} {node1.id} successfully.")
+                logger.info(f"{self.name} {self.node.id}: overwrite data from {node2} {node2.id} and {node1} {node1.id} successfully.")
            
         except Exception as e:
             data = pd.DataFrame()
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = data.copy()

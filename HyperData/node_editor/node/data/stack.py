@@ -21,6 +21,7 @@ class DataStack (NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Stack Data", parent=self.parent)
+        dialog.setMinimumSize(400, 100)
         level = HTransparentComboBox(
             items=[str(i) for i in range(-1,data.columns.nlevels)], 
             label="Level",
@@ -30,6 +31,7 @@ class DataStack (NodeContentWidget):
 
         if dialog.exec():
             self._config.update(level = int(level.button.currentText()))
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -55,7 +57,7 @@ class DataStack (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()
@@ -80,6 +82,7 @@ class DataUnstack (NodeContentWidget):
     def config(self):
         data = self.node.input_sockets[0].socket_data
         dialog = Dialog(title="Unstack Data", parent=self.parent)
+        dialog.setMinimumSize(400, 100)
         level = HTransparentComboBox(
             items=[str(i) for i in range(-1,data.index.nlevels)], 
             label="Level",
@@ -89,6 +92,7 @@ class DataUnstack (NodeContentWidget):
 
         if dialog.exec():
             self._config.update(level = int(level.button.currentText()))
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -112,7 +116,7 @@ class DataUnstack (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

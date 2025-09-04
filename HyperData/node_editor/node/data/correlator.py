@@ -71,6 +71,7 @@ class DataCorrelator (NodeContentWidget):
             self._config["type"] = method.get_value()
             self._config["min_periods"]=min_periods.get_value()
             self._config["ddof"]=ddof.get_value()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -106,7 +107,7 @@ class DataCorrelator (NodeContentWidget):
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return an empty DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()

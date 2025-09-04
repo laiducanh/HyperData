@@ -172,7 +172,7 @@ config['save_path'] = ''
 
 logging.getLogger('matplotlib.font_manager').disabled = True
 # Create and configure logger
-logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s',filemode='w')
+logging.basicConfig(filename=logFile,format="%(asctime)s - %(levelname)s - %(message)s",filemode='w')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 

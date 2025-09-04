@@ -4,6 +4,7 @@ import numpy as np
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.button import HTransparentComboBox, HToggle
+from ui.base_widgets.frame import VFrame
 from config.settings import logger, GLOBAL_DEBUG
 
 DEBUG = False
@@ -19,18 +20,27 @@ class DropDuplicate (NodeContentWidget):
     
     def config(self):
         dialog = Dialog("Configuration", self.parent)
+        dialog.setMinimumSize(600, 200)
 
-        keep = HTransparentComboBox(items=["first","last","none"], label='keep')
-        keep.button.setCurrentText(self._config["keep"])
-        dialog.main_layout.addWidget(keep)
+        fr = VFrame(dialog.main_layout)
 
-        ignore_index = HToggle(label='ignore index')
-        ignore_index.button.setChecked(self._config["ignore_index"])
-        dialog.main_layout.addWidget(ignore_index)
+        keep = HTransparentComboBox(
+            items=["first","last","none"], 
+            label='Keep',
+            getter=lambda: self._config["keep"],
+            layout=fr.vlayout
+        )
+
+        ignore_index = HToggle(
+            label='Ignore index',
+            getter=lambda: self._config["ignore_index"],
+            layout=fr.vlayout
+        )
 
         if dialog.exec():
             self._config["keep"] = keep.button.currentText()
             self._config["ignore_index"] = ignore_index.button.isChecked()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def func(self):
@@ -63,13 +73,13 @@ class DropDuplicate (NodeContentWidget):
             self.progress.changeColor('success')       
             # write log
             if DEBUG or GLOBAL_DEBUG: print('data out', data)
-            else: logger.info(f"{self.name} {self.node.id}: dropped duplicated values successfully.")
+            else: logger.info(f"{self.name} {self.node.id}: drop duplicated values successfully.")
         except Exception as e:
             data = self.node.input_sockets[0].socket_data
             # change progressbar's color
             self.progress.changeColor('fail')       
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return the original DataFrame.")
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.")
             logger.exception(e)
         
         self.node.output_sockets[0].socket_data = data.copy()
