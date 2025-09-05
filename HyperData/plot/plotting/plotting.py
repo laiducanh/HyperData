@@ -149,6 +149,9 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     if not isinstance(ax.figure.canvas, (Canvas3D, MultiFigureCanvas)): 
         grid(ax.figure)
     
+    # draw colorbar
+    ax.figure.canvas.draw_colorbar("bottom")
+    
     ax.figure.canvas.draw_idle()
 
     return artist, props

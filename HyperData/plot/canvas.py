@@ -5,6 +5,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.copy_objects import copy_Figure
 from config.settings import config, logger
+from typing import Literal
 
 matplotlib.use("QtAgg")
 #matplotlib.style.use('bmh')
@@ -63,6 +64,10 @@ class Canvas (FigureCanvasQTAgg):
         self.axespolar = self.figure.add_subplot(projection='polar')
         self.axespolar.set_axis_off()
 
+        # Axes for colorbar
+        self.cax = self.figure.add_subplot()
+        # self.cax.set_axis_off()
+
         # Axes to hold legend, this axes will be on top
         self.axesleg = self.figure.add_subplot(gid='legend axes')
         self.axesleg.set_xticks([])
@@ -101,6 +106,20 @@ class Canvas (FigureCanvasQTAgg):
         self.axes.yaxis.set_gid("left")
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
+    
+    def colorbar(self, position:Literal["right","left","bottom"], size=0.05, pad=0.05):
+        axes_pos = self.axes.get_position()
+        fig_margins = self.figure.subplotpars
+        lowest = axes_pos.x0
+        if position == 'bottom':
+            rect = [
+                fig_margins.left,
+                fig_margins.bottom,
+                fig_margins.right-fig_margins.left,
+                size
+            ]
+            self.cax.set_position(rect)
+            
         
     def serialize(self):
         
