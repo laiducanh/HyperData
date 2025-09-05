@@ -301,10 +301,10 @@ class Pane2D(ScrollArea):
         )
 
         self.edgecolor = HColorDropdown(
-            label='Frame color',
-            label2='Set the frame color of the Figure',
-            getter=self.get_framecolor,
-            setter=self.set_framecolor,
+            label='Figure color',
+            label2='Set the color of the Figure',
+            getter=self.get_figcolor,
+            setter=self.set_figcolor,
             layout=fr.vlayout
         )
 
@@ -318,33 +318,33 @@ class Pane2D(ScrollArea):
         )
     
     def set_visible(self,value):
-        self.canvas.axesleg.patch.set_visible(value)
+        self.canvas.axes.patch.set_visible(value)
         self.canvas.draw_idle()
     
     def get_visible(self):
-        return self.canvas.axesleg.patch.get_visible()
+        return self.canvas.axes.patch.get_visible()
     
     def set_color(self, color):
-        self.canvas.axesleg.patch.set_color(color)
+        self.canvas.axes.patch.set_color(color)
         self.canvas.draw_idle()
     
     def get_color(self):
-        try: return colors.to_hex(self.canvas.axesleg.patch.get_facecolor())
+        try: return colors.to_hex(self.canvas.axes.patch.get_facecolor())
         except: return rcParams['axes.facecolor']
 
     def set_patch_alpha (self, value):
-        self.canvas.axesleg.patch.set_alpha(value/100)
+        self.canvas.axes.patch.set_alpha(value/100)
         self.canvas.draw_idle()
     
     def get_patch_alpha (self):
-        if self.canvas.axesleg.patch.get_alpha() != None: return int(self.canvas.axesleg.patch.get_alpha()*100)
+        if self.canvas.axes.patch.get_alpha() != None: return int(self.canvas.axes.patch.get_alpha()*100)
         else: return 100
     
-    def set_framecolor(self, color):
+    def set_figcolor(self, color):
         self.canvas.figure.set_facecolor(color)
         self.canvas.draw_idle()
     
-    def get_framecolor(self):
+    def get_figcolor(self):
         return colors.to_hex(self.canvas.figure.get_facecolor())
 
 class Axes2D(QDialog):

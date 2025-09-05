@@ -188,7 +188,6 @@ class NewPlot(Frame):
             self.canvas.axes.set_axis_on()
             self.canvas.axesx2.set_axis_on()
             self.canvas.axesy2.set_axis_on()
-            self.canvas.axesleg.set_axis_on()
             self.canvas.axespie.set_axis_off()
             self.canvas.axespolar.set_axis_off()
 
@@ -200,13 +199,14 @@ class NewPlot(Frame):
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
-                self.canvas.axesleg.set_axis_off()
                 self.canvas.axespolar.set_axis_on()
-            else:
+            elif _ax == "pie":
                 ax = self.canvas.axespie
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
+            else:
+                raise ValueError(f"Canvas {self.canvas.id}::NewPlot: Cannot recognize axes.")
             
             # Turn off spines for some plot types
             for spine in self.canvas.figure.findobj(

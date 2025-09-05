@@ -5,9 +5,8 @@ from plot.canvas import Canvas
 from ui.base_widgets.button import SegmentedWidget, HToggle, HButton, TransparentToolButton
 from ui.base_widgets.line_edit import HLineEdit
 from ui.base_widgets.frame import SeparateHLine, ScrollArea
-from ui.base_widgets.spinbox import HTransparentDoubleSpinBox
-from plot.utilis import find_mpl_object, set_zorder
-from plot.plotting.plotting import set_legend, get_legend
+from plot.utilis import find_mpl_object, set_zorder, get_legend
+from plot.plotting.plotting import set_legend
 from config.settings import GLOBAL_DEBUG, logger
 from matplotlib import artist
 

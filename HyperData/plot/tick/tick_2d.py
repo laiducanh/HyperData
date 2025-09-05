@@ -864,7 +864,7 @@ class SpineBase(ScrollArea):
 
         self.axis = axis
         self.canvas = canvas
-        self.spines, self.arrows = self.find_object()
+        self.spine = self.find_object()
 
         self.initUI()
 
@@ -879,33 +879,10 @@ class SpineBase(ScrollArea):
             layout=fr.vlayout
         )
 
-        arrow = HTransparentComboBox(
-            label  = 'Arrow Style',
-            items = marker_lib.values(),
-            setter=self.set_arrow,
-            getter=self.get_arrow,
-            layout=fr.vlayout
-        )
-
         color = HColorDropdown(
             label='Spine color',
             setter=self.set_color,
             getter=self.get_color,
-            layout=fr.vlayout
-        )
-        
-        arrowcolor = HColorDropdown(
-            label="Arrow color",
-            setter=self.set_arrowcolor,
-            getter=self.get_arrowcolor,
-            layout=fr.vlayout
-        )
-
-        alpha = HTransparentSpinBox(
-            label ='Transparent',
-            minimum = 0, maximum = 100, singleStep = 10,
-            setter=self.set_alpha,
-            getter=self.get_alpha,
             layout=fr.vlayout
         )
 
@@ -925,78 +902,135 @@ class SpineBase(ScrollArea):
             layout=fr.vlayout
         )
 
-    def find_object (self) -> tuple[list[spines.Spine], list[lines.Line2D]]:
-        s = self.canvas.figure.findobj(
-            lambda a: isinstance(a, spines.Spine) and a.get_gid() \
-            and a.get_gid() == f"spine {self.axis}"
+        fr = VFrame(self.vlayout)
+
+        arrow = HTransparentComboBox(
+            label  = 'Arrow Style',
+            items = marker_lib.values(),
+            setter=self.set_arrow,
+            getter=self.get_arrow,
+            layout=fr.vlayout
         )
-        a = self.canvas.figure.findobj(
+
+        arrowsize = HTransparentDoubleSpinBox(
+            label = 'Arrow Size',
+            minimum = 0, singleStep = 2,
+            getter=self.get_arrowsize,
+            setter=self.set_arrowsize,
+            layout=fr.vlayout
+        )
+        
+        arrowfacecolor = HColorDropdown(
+            label="Arrow face color",
+            setter=self.set_arrowfacecolor,
+            getter=self.get_arrowfacecolor,
+            layout=fr.vlayout
+        )
+
+        arrowedgecolor = HColorDropdown(
+            label="Arrow edge color",
+            setter=self.set_arrowedgecolor,
+            getter=self.get_arrowedgecolor,
+            layout=fr.vlayout
+        )
+
+        arrowedgewidth = HTransparentDoubleSpinBox(
+            label = 'Arrow edge width',
+            minimum = 0, maximum = 5, singleStep = 0.5,
+            getter=self.get_arrowedgewidth,
+            setter=self.set_arrowedgewidth,
+            layout=fr.vlayout
+        )
+
+        alpha = HTransparentSpinBox(
+            label ='Transparent',
+            minimum = 0, maximum = 100, singleStep = 10,
+            setter=self.set_alpha,
+            getter=self.get_alpha,
+            layout=fr.vlayout
+        )
+
+    def find_object (self) -> lines.Line2D:
+        return self.canvas.figure.findobj(
             lambda a: isinstance(a, lines.Line2D) and a.get_gid() \
             and a.get_gid() == f"spine {self.axis}"
-        )
-        return s, a
+        )[0]
     
     def set_visible (self, value:bool):
-        for obj in self.spines+self.arrows:
-            obj.set_visible(value)
+        self.spine.set_visible(value)
         self.canvas.draw_idle()
     
     def get_visible (self):
-        return self.spines[0].get_visible()  
+        return self.spine.get_visible()  
 
     def set_arrow(self, marker):
         try:
             marker = list(marker_lib.keys())[list(marker_lib.values()).index(marker.lower())]
-            for obj in self.arrows:
-                obj.set_marker(marker)
+            self.spine.set_marker(marker)
         except Exception as e:
             logger.exception(e)
         self.canvas.draw_idle()
     
     def get_arrow(self):
-        return marker_lib[self.arrows[0].get_marker()]
+        return marker_lib[self.spine.get_marker()]
     
     def set_alpha (self, value):
-        for obj in self.spines+self.arrows:
-            obj.set_alpha(float(value/100))
+        self.spine.set_alpha(float(value/100))
         self.canvas.draw_idle()
     
     def get_alpha(self):
-        if self.spines[0].get_alpha() == None:
+        if self.spine.get_alpha() == None:
             return 100
-        return self.spines[0].get_alpha()*100
+        return self.spine.get_alpha()*100
     
     def set_linestyle(self, value):
-        for obj in self.spines:
-            obj.set_linestyle(value)
+        self.spine.set_linestyle(value)
         self.canvas.draw_idle()
     
     def get_linestyle(self):
-        return self.spines[0].get_linestyle()
+        return self.spine.get_linestyle()
 
     def set_linewidth(self, value):
-        for obj in self.spines+self.arrows:
-            obj.set_linewidth(value)
+        self.spine.set_linewidth(value)
         self.canvas.draw_idle()
     
     def get_linewidth (self):
-        return self.spines[0].get_linewidth()
+        return self.spine.get_linewidth()
 
     def set_color(self, color):
-        for obj in self.spines+self.arrows:
-            obj.set_color(color)
+        self.spine.set_color(color)
         self.canvas.draw_idle()
     
     def get_color(self):
-        return colors.rgb2hex(self.spines[0].get_edgecolor())
+        return colors.rgb2hex(self.spine.get_color())
 
-    def set_arrowcolor(self, color):
-        for obj in self.arrows:
-            obj.set_markerfacecolor(color)
+    def set_arrowfacecolor(self, color):
+        self.spine.set_markerfacecolor(color)
         self.canvas.draw_idle()
     
-    def get_arrowcolor(self):
-        return colors.rgb2hex(self.arrows[0].get_markerfacecolor())
+    def get_arrowfacecolor(self):
+        return colors.rgb2hex(self.spine.get_markerfacecolor())
+
+    def set_arrowedgecolor(self, color):
+        self.spine.set_markeredgecolor(color)
+        self.canvas.draw_idle()
+    
+    def get_arrowedgecolor(self):
+        return colors.rgb2hex(self.spine.get_markeredgecolor())
+    
+    def set_arrowsize(self, value):
+        self.spine.set_markersize(value)
+        self.canvas.draw_idle()
+    
+    def get_arrowsize(self):
+        return self.spine.get_markersize()
+
+    def set_arrowedgewidth(self, value):
+        self.spine.set_markeredgewidth(value)
+        self.canvas.draw_idle()
+    
+    def get_arrowedgewidth(self):
+        return self.spine.get_markeredgewidth()
 
 class AxisLabel(ScrollArea):
     def __init__(self, axis:str, canvas: Canvas, parent=None):

@@ -2,6 +2,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.copy_objects import copy_Figure
 from config.settings import config, logger
@@ -39,7 +40,7 @@ class Canvas (FigureCanvasQTAgg):
         self.figure.suptitle('')
         # self.fig.subplots_adjust(*self._config['margin'])
         self.initAxes()
-        
+
         super().__init__(self.figure)
     
     def initAxes (self):
@@ -66,46 +67,62 @@ class Canvas (FigureCanvasQTAgg):
 
         # Axes for colorbar
         self.cax = self.figure.add_subplot()
-        # self.cax.set_axis_off()
-
-        # Axes to hold legend, this axes will be on top
-        self.axesleg = self.figure.add_subplot(gid='legend axes')
-        self.axesleg.set_xticks([])
-        self.axesleg.set_yticks([])
-        self.axesleg.spines["bottom"].set_gid("spine bottom")
-        self.axesleg.plot(1, 0, marker="none", 
-            color=matplotlib.colors.rgb2hex(self.axesleg.spines["bottom"].get_edgecolor()),
-            transform=self.axesleg.transAxes,
-            clip_on=False,
-            gid="spine bottom"
-        )
-        self.axesleg.spines["top"].set_gid("spine top")
-        self.axesleg.plot(1, 1, marker="none", 
-            color=matplotlib.colors.rgb2hex(self.axesleg.spines["top"].get_edgecolor()),
-            transform=self.axesleg.transAxes,
-            clip_on=False,
-            gid="spine top"
-        )
-        self.axesleg.spines["left"].set_gid("spine left")
-        self.axesleg.plot(0, 1, marker="none", 
-            color=matplotlib.colors.rgb2hex(self.axesleg.spines["left"].get_edgecolor()),
-            transform=self.axesleg.transAxes,
-            clip_on=False,
-            gid="spine left"
-        )
-        self.axesleg.spines["right"].set_gid("spine right")
-        self.axesleg.plot(1, 1, marker="none", 
-            color=matplotlib.colors.rgb2hex(self.axesleg.spines["right"].get_edgecolor()),
-            transform=self.axesleg.transAxes,
-            clip_on=False,
-            gid="spine right"
-        )
+        self.cax.set_axis_off()
 
         # set gid to axis for tick and labels on axes
         self.axes.xaxis.set_gid("bottom")
         self.axes.yaxis.set_gid("left")
         self.axesy2.yaxis.set_gid("right")
         self.axesx2.xaxis.set_gid("top")
+
+        # Init spines
+        self.spines()
+    
+    def spines(self):
+        self.spine_bottom = Line2D(
+            [1, 0], [0, 0], 
+            marker='none',
+            markevery=2,
+            color=matplotlib.rcParams['axes.edgecolor'],
+            linewidth=1.0,
+            transform=self.axes.transAxes,
+            clip_on=False,
+            gid='spine bottom'
+        )
+        self.figure.add_artist(self.spine_bottom)
+        self.spine_left = Line2D(
+            [0, 0], [1, 0],
+            marker='none',
+            markevery=2,
+            color=matplotlib.rcParams['axes.edgecolor'],
+            linewidth=1.0,
+            transform=self.axes.transAxes,
+            clip_on=False,
+            gid='spine left'
+        )
+        self.figure.add_artist(self.spine_left)
+        self.spine_top = Line2D(
+            [1, 0], [1, 1],
+            marker='none',
+            markevery=2,
+            color=matplotlib.rcParams['axes.edgecolor'],
+            linewidth=1.0,
+            transform=self.axes.transAxes,
+            clip_on=False,
+            gid='spine top'
+        )
+        self.figure.add_artist(self.spine_top)
+        self.spine_right = Line2D(
+            [1, 1], [1, 0],
+            marker='none',
+            markevery=2,
+            color=matplotlib.rcParams['axes.edgecolor'],
+            linewidth=1.0,
+            transform=self.axes.transAxes,
+            clip_on=False,
+            gid='spine right'
+        )
+        self.figure.add_artist(self.spine_right)
     
     def colorbar(self, position:Literal["right","left","bottom"], size=0.05, pad=0.05):
         axes_pos = self.axes.get_position()

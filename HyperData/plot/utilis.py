@@ -120,6 +120,7 @@ def get_legend_anchor(figure: Figure):
     inv_fig = figure.transFigure.inverted()
     # get lower-left corner of bbox
     anchor_point = inv_fig.transform(bbox)[0]
+
     return anchor_point
 
 def remove_legend(figure: Figure):

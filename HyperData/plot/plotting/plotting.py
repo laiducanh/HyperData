@@ -5,11 +5,12 @@ from plot.plotting.base.pie import *
 from plot.plotting.base.stats import *
 from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
-from plot.utilis import find_mpl_object, remove_artist, get_legend, remove_legend, rescale_plot, grid
-from plot.copy_objects import update_props, update_legend
+from plot.utilis import find_mpl_object, remove_artist, remove_legend, rescale_plot, grid, get_legend
+from plot.copy_objects import update_props, get_legend_props
 from plot.canvas import Canvas3D, MultiFigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
+from matplotlib.legend import Legend
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.artist import Artist
 
@@ -35,29 +36,31 @@ def set_legend(figure:Figure, *args, **kwargs):
                     handles.append(arts[0])
                     break # only one visible artist with valid label is used for legend  
         
-        # Find axes for legend
-        ax = figure.findobj(
-            lambda a: isinstance(a, (Axes, Axes3D)) and a.get_gid() \
-            and a.get_gid() == 'legend axes'
-        )[0]
+        old_legend = get_legend(figure)
+        props = get_legend_props(old_legend)
+        
+        remove_legend(figure)
 
+        if handles != []:  
+            legend = Legend(
+                parent=figure, 
+                handles=handles, labels=labels, 
+                draggable=True,
+                *args, **kwargs, **props
+            )
+            legend.set_gid('legend')
+            figure.add_artist(legend)
 
-        if handles != []:            
-            if get_legend(figure): 
-                update_legend(
-                    get_legend(figure), ax,
-                    handles=handles, labels=labels
-                )
-            else:
-                legend = ax.legend(
-                    handles=handles, labels=labels, 
-                    draggable=True,
-                    *args, *kwargs
-                )
-                legend.set_gid('legend')
-                logger.info("Create legend.")
-        else:
-            remove_legend(ax.figure)
+            if old_legend is not None:
+                legend_title = old_legend.get_title()
+                legend_texts = old_legend.get_texts()
+                legend_patch = old_legend.legendPatch
+                update_props(legend_title, legend.get_title())
+                for new_text, old_text in zip(legend.get_texts(), legend_texts):
+                    update_props(old_text, new_text)
+                update_props(legend_patch, legend.legendPatch)
+
+            logger.info(f"Canvas {figure.canvas.id:}: Create legend.")
         
     except Exception as e:
         logger.exception(e)  
@@ -150,7 +153,7 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
         grid(ax.figure)
     
     # draw colorbar
-    ax.figure.canvas.draw_colorbar("bottom")
+    ax.figure.canvas.colorbar("bottom")
     
     ax.figure.canvas.draw_idle()
 

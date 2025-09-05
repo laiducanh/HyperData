@@ -88,45 +88,53 @@ def update_props(from_obj: artist.Artist, to_obj: artist.Artist) -> None:
         )
     logger.info(f"Canvas {to_obj.figure.canvas.id}: Update artist properties from {from_obj} to {to_obj}.")
 
-def update_legend(old_legend:Legend, ax:Axes, **kwargs) -> Legend:
-    
+def get_legend_props(legend: Legend) -> dict:
+    if legend is not None:
+        return {
+            "numpoints": legend.numpoints,
+            "scatterpoints": legend.scatterpoints,
+            "ncols": legend._ncols,
+            "columnspacing": legend.columnspacing,
+            "shadow": legend.shadow,
+            "borderpad": legend.borderpad,
+            "handlelength": legend.handlelength,
+            "handleheight": legend.handleheight,
+            "handletextpad": legend.handletextpad,
+            "title": legend.get_title().get_text()
+        }
+    return {}
+
+def update_legend(old_legend:Legend, **kwargs) -> Legend:
+
+    figure = old_legend.figure
     legend_title = old_legend.get_title()
     legend_texts = old_legend.get_texts()
     legend_patch = old_legend.legendPatch
-    params = {
-        "handles": old_legend.legend_handles,
-        "numpoints": old_legend.numpoints,
-        "scatterpoints": old_legend.scatterpoints,
-        "ncols": old_legend._ncols,
-        "columnspacing": old_legend.columnspacing,
-        "shadow": old_legend.shadow,
-        "borderpad": old_legend.borderpad,
-        "handlelength": old_legend.handlelength,
-        "handleheight": old_legend.handleheight,
-        "handletextpad": old_legend.handletextpad,
-        "title": old_legend.get_title().get_text()
-    }
+    handles = old_legend.legend_handles
+    labels = [s.get_text() for s in old_legend.texts]
+    params = get_legend_props(old_legend)
     params.update(**kwargs)
     anchor_point = get_legend_anchor(old_legend.figure)
-    bbox_transform = old_legend.figure.transFigure
     # remove the old legend
     remove_legend(old_legend.figure)
     # draw new legend based on anchor point of the old one.
-    legend = ax.legend(
+    legend = Legend(
+        parent=figure,
+        handles=handles,
+        labels=labels,
         loc=anchor_point,
-        bbox_to_anchor=anchor_point,
-        bbox_transform=bbox_transform,
         draggable=True,
         **params
     )
     legend.set_gid('legend')
+    figure.add_artist(legend)
 
     update_props(legend_title, legend.get_title())
     for new_text, old_text in zip(legend.get_texts(), legend_texts):
         update_props(old_text, new_text)
     update_props(legend_patch, legend.legendPatch)
 
-    logger.info(f"Canvas {ax.figure.canvas.id}: Update legend.")
+    logger.info(f"Canvas {legend.figure.canvas.id}: Update legend.")
 
     return legend
 
