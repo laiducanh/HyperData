@@ -19,6 +19,7 @@ from plot.plotting.plotting import rescale_plot, plotting
 from node_editor.base.node_graphics_node import NodeGraphicsNode
 from plot.insert_plot.utilis import load_InputIcon, load_MenuIcon
 from config.settings import GLOBAL_DEBUG, logger, config
+from matplotlib import lines, spines
 
 DEBUG = False
 
@@ -187,6 +188,7 @@ class NewPlot(Frame):
             self.canvas.axes.set_axis_on()
             self.canvas.axesx2.set_axis_on()
             self.canvas.axesy2.set_axis_on()
+            self.canvas.axesleg.set_axis_on()
             self.canvas.axespie.set_axis_off()
             self.canvas.axespolar.set_axis_off()
 
@@ -198,13 +200,24 @@ class NewPlot(Frame):
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
+                self.canvas.axesleg.set_axis_off()
                 self.canvas.axespolar.set_axis_on()
             else:
                 ax = self.canvas.axespie
                 self.canvas.axes.set_axis_off()
                 self.canvas.axesx2.set_axis_off()
                 self.canvas.axesy2.set_axis_off()
-                self.canvas.axespolar.set_axis_off()
+            
+            # Turn off spines for some plot types
+            for spine in self.canvas.figure.findobj(
+                lambda a: isinstance(a, (lines.Line2D, spines.Spine)) and \
+                a.get_gid() and "spine" in a.get_gid()
+            ):
+                if self.plot_type in ["treemap","pie","coxcomb","radar",
+                    "doughnut","multilevel doughnut","semicircle doughnut"]:
+                    spine.set_visible(False)
+                else:
+                    spine.set_visible(True)
 
         X, Y, Z, T  = list(), list(), list(), list()
         if len(self.widget.input) >= 1:

@@ -74,8 +74,8 @@ def find_mpl_object(figure:Figure, match:list[Type[T]]=None,
     elif rule == 'index':
         return [x for x in figure.artists if isinstance(x, tuple(match)) \
                 and x.get_gid() \
-                and gid.split()[0] in x.get_gid().split('/')[0] \
-                and gid.split()[-1] == x.get_gid().split('/')[0].split()[-1]]
+                and gid.split('/')[0] in x.get_gid().split('/')[0] \
+                and gid.split('/')[0].split()[-1] == x.get_gid().split('/')[0].split()[-1]]
 
 def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     """
@@ -96,8 +96,8 @@ def remove_artist(figure:Figure, gid:str) -> list[Artist]:
     #         logger.info(f'Canvas {figure.canvas.id}: remove_artist {artists}.')
     for artist in figure.findobj(
         lambda a: isinstance(a, Artist) and a.get_gid() \
-            and gid in a.get_gid().split('/')[0] \
-            and gid == a.get_gid().split('/')[0].split('.')[0]
+            and gid in a.get_gid().split('_')[-1].split('/')[0] \
+            and gid == a.get_gid().split('_')[-1].split('/')[0].split('.')[0]
     ):
         artist_removed.append(artist)
         artist.remove()
@@ -251,3 +251,29 @@ def grid(figure: Figure):
             gid = '_grid',
         )
         figure.add_artist(figline) 
+
+def get_dash_pattern(dashes:Union[list, str]):
+    LOOKUP = {
+        "dashed": [3.7, 1.6],
+        "dashdot": [6.4, 1.6, 1.0, 1.6],
+        "dotted": [1.0, 1.65],
+    }
+
+    dashes = lines._get_dash_pattern(dashes)
+
+    if dashes == [0, None] or dashes is None:
+        return "solid"
+    else:
+        for _d in LOOKUP.values():
+            if len(dashes) in [2, 4]:
+                for i in range(len(dashes)):
+                    if dashes[i] != 0:
+                        scale = _d[i] / dashes[i]
+                        break
+            if all(abs(_d[i] - scale * dashes[i]) < 1e-5 for i in range(len(dashes))):
+                for k, v in LOOKUP.items():
+                    if v == _d: return k
+        
+    logger.error("Unrecognized dashes pattern, return solid as default.")
+    return "solid"
+    

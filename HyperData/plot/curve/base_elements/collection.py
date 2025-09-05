@@ -5,7 +5,7 @@ from ui.base_widgets.color import HColorDropdown
 from plot.curve.base_elements.base import ArtistConfigBase
 from config.settings import GLOBAL_DEBUG, logger, linestyle_lib
 from plot.canvas import Canvas
-from plot.utilis import find_mpl_object
+from plot.utilis import find_mpl_object, get_dash_pattern
 from matplotlib import scale, colors, collections, rcParams
 from matplotlib.pyplot import colormaps
 from mpl_toolkits.mplot3d import art3d
@@ -64,7 +64,8 @@ class SingleColorCollection(ArtistConfigBase):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[collections.Collection, collections.PolyCollection],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
     
     def set_edgewidth (self, value):
@@ -89,17 +90,8 @@ class SingleColorCollection(ArtistConfigBase):
             logger.exception(e)
     
     def get_edgestyle (self):
-        try:
-            ls = self.find_object()[0].get_linestyle()
-            if ls[0][1] == [3.7, 1.6]:
-                return "dashed"
-            elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
-                return "dashdot"
-            elif ls[0][1] == [1.0, 1.65]:
-                return "dotted"
-            else:
-                return "solid"
-        except: return "solid"
+        dashes = self.find_object()[0].get_linestyle()[0][1]
+        return get_dash_pattern(dashes)
     
     def set_facecolor (self, value):
         try: 
@@ -215,7 +207,8 @@ class CmapCollection(ArtistConfigBase):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[collections.Collection],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
     
     def set_cmap_on (self, checked):
@@ -251,15 +244,8 @@ class CmapCollection(ArtistConfigBase):
             logger.exception(e)
     
     def get_edgestyle (self):
-        ls = self.find_object()[0].get_linestyle()
-        if ls[0][1] == [3.7, 1.6]:
-            return "dashed"
-        elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
-            return "dashdot"
-        elif ls[0][1] == [1.0, 1.65]:
-            return "dotted"
-        else:
-            return "solid"
+        dashes = self.find_object()[0].get_linestyle()[0][1]
+        return get_dash_pattern(dashes)
     
     def set_cmap(self, value:Union[str,None]):
         try:
@@ -395,7 +381,8 @@ class QuadMesh(ArtistConfigBase):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[collections.QuadMesh],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
     
     def set_edgewidth (self, value):
@@ -419,18 +406,8 @@ class QuadMesh(ArtistConfigBase):
             logger.exception(e)
     
     def get_edgestyle (self):
-        try: 
-            ls = self.find_object()[0].get_linestyle()
-            if ls[0][1] == [3.7, 1.6]:
-                return "dashed"
-            elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
-                return "dashdot"
-            elif ls[0][1] == [1.0, 1.65]:
-                return "dotted"
-            else:
-                return "solid"
-        except Exception as e:
-            logger.exception(e)
+        dashes = self.find_object()[0].get_linestyle()[0][1]
+        return get_dash_pattern(dashes)
     
     def set_edgecolor (self, value):
         try: 
@@ -520,7 +497,8 @@ class Poly3DCollection(ArtistConfigBase):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[art3d.Poly3DCollection],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
     
     def update_props(self):

@@ -69,7 +69,8 @@ class Line(ArtistConfigBase):
         return find_mpl_object(
             self.canvas.figure, 
             match=[lines.Line2D], 
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
     
     def set_visible(self, value:bool):
@@ -211,7 +212,8 @@ class Marker(ArtistConfigBase):
         return find_mpl_object(
             self.canvas.figure, 
             [lines.Line2D], 
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
     
     def set_marker (self, marker):
@@ -321,6 +323,7 @@ class LineCollection(ArtistConfigBase):
             figure=self.canvas.figure,
             match=[collections.LineCollection],
             gid=self.gid,
+            rule='exact'
         )
 
     def set_visible(self, value:bool):
@@ -395,4 +398,5 @@ class ErrorBarCollection(LineCollection):
             figure=self.canvas.figure,
             match=[collections.LineCollection, lines.Line2D],
             gid=self.gid,
+            rule='exact'
         )

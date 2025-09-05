@@ -62,6 +62,7 @@ class Rectangle(ArtistConfigBase):
             figure=self.canvas.figure,
             match=[patches.Rectangle, patches.PathPatch, patches.FancyBboxPatch],
             gid=self.gid,
+            rule='exact'
         )
 
     def set_edgestyle(self, value:str):
@@ -129,7 +130,8 @@ class Wedge(Rectangle):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[patches.Wedge],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         )
 
 class MultiWedges(Wedge):
@@ -161,7 +163,8 @@ class Ellipse(Rectangle):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[patches.Ellipse],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         ) 
     
 class Polygon(Rectangle):
@@ -189,5 +192,6 @@ class Polygon(Rectangle):
         return find_mpl_object(
             figure=self.canvas.figure,
             match=[patches.Polygon],
-            gid=self.gid
+            gid=self.gid,
+            rule='exact'
         ) 

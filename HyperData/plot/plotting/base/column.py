@@ -602,9 +602,13 @@ def marimekko (X, ax:Axes, gid, orientation="vertical", *args, **kwargs) -> tupl
         art.Xshow = art.get_center()[0]
         art.Yshow = art.get_center()[1]
 
-    ax.set_xlim(pos[0]-width[0]/2,pos[-1]+width[-1]/2)
-    ax.set_ylim(0,1)
     ax.set_axis_on()
+    if orientation == 'vertical':
+        ax.set_xlim(pos[0]-width[0]/2,pos[-1]+width[-1]/2)
+        ax.set_ylim(0,1)
+    if orientation == 'horizontal':
+        ax.set_xlim(0, 1)
+        ax.set_ylim(pos[0]-width[0]/2,pos[-1]+width[-1]/2)
 
     return artist, props
 
@@ -716,7 +720,7 @@ def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=
                     xy=(x-width/2,_bottom+y),
                     width=width,
                     height=abs(y),
-                    color='red',
+                    color='#d93a3d',
                     gid=f"{gid}/negative",
                 )
             else: # draw positive bars
@@ -724,7 +728,7 @@ def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=
                     xy=(x-width/2,_bottom),
                     width=width,
                     height=y,
-                    color='blue',
+                    color='#1870b8',
                     gid=f"{gid}/positive",
                 )
             _bottom += y
@@ -767,6 +771,7 @@ def waterfall_bar(X, Y, ax:Axes, gid, orientation="vertical", width=0.8, bottom=
 
     lines = LineCollection(
         segments,
+        color='black',
         gid=f"_{gid}/line",
     )
     lines.Xdata = None

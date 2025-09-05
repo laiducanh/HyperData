@@ -1,7 +1,7 @@
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.collections import PathCollection
-import matplotlib
+import matplotlib, random
 from config.settings import GLOBAL_DEBUG
 
 DEBUG = False
@@ -9,8 +9,9 @@ DEBUG = False
 def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> tuple[list[PathCollection], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
-        X = [1,2]
-        Y = [2,5]
+        X = [random.randint(1, 100) for _ in range(20)]
+        Y = [random.randint(1, 100) for _ in range(20)]
+
     props = {"sizes": sizes}
     artist = ax.scatter(X, Y, gid=gid, s=matplotlib.rcParams["lines.markersize"]**2*sizes, *args, **kwargs)
 
@@ -24,9 +25,10 @@ def scatter2d (X, Y, ax:Axes, gid, sizes=1, *args, **kwargs) -> tuple[list[PathC
 def scatter3d(X, Y, Z, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs) -> tuple[list[PathCollection], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
-        X = [1,2]
-        Y = [2,5]
-        Z = [3,6]
+        X = [random.randint(1, 100) for _ in range(20)]
+        Y = [random.randint(1, 100) for _ in range(20)]
+        Z = [random.randint(1, 100) for _ in range(20)]
+
     props = {
         "sizes": sizes,
         "depthshade": depthshade
@@ -39,9 +41,10 @@ def scatter3d(X, Y, Z, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs
 def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1, *args, **kwargs) -> tuple[list[PathCollection], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
-        X = [1,2]
-        Y = [2,5]
-        Z = [10,15]
+        X = [random.randint(1, 100) for _ in range(20)]
+        Y = [random.randint(1, 100) for _ in range(20)]
+        Z = [random.randint(1, 100) for _ in range(20)]
+
     props = {"sizes": sizes}
 
     artist = ax.scatter(X, Y, s=Z*sizes, gid=gid, *args, **kwargs)
@@ -56,10 +59,11 @@ def bubble2d (X, Y, Z, ax:Axes, gid, sizes=1, *args, **kwargs) -> tuple[list[Pat
 def bubble3d (X, Y, Z, T, ax:Axes3D, gid, sizes=1, depthshade=True, *args, **kwargs) -> tuple[list[PathCollection], dict]:
 
     if DEBUG or GLOBAL_DEBUG:
-        X = [1,2]
-        Y = [2,5]
-        Z = [3,6]
-        T = [10,15]
+        X = [random.randint(1, 100) for _ in range(20)]
+        Y = [random.randint(1, 100) for _ in range(20)]
+        Z = [random.randint(1, 100) for _ in range(20)]
+        T = [random.randint(1, 100) for _ in range(20)]
+        
     props = {
         "sizes": sizes,
         "depthshade": depthshade

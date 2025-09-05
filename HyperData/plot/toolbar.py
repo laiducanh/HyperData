@@ -7,7 +7,7 @@ from ui.base_widgets.spinbox import TransparentDoubleSpinBox
 from ui.base_widgets.menu import Menu, Action
 from config.settings import linestyle_lib, marker_lib, font_lib
 from plot.canvas import Canvas
-from plot.utilis import find_mpl_object, set_zorder
+from plot.utilis import find_mpl_object, set_zorder, get_dash_pattern
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.collections import Collection
@@ -120,7 +120,7 @@ class PlotView_ToolBar(QToolBar):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
     
     def findobj(self) -> list[Artist]:
-        return find_mpl_object(self.canvas.figure, gid=self.gid)
+        return find_mpl_object(self.canvas.figure, gid=self.gid, rule='exact')
     
     def initActions(self):
 
@@ -264,15 +264,7 @@ class PlotView_ToolBar(QToolBar):
             if isinstance(self.obj[0], Line2D):
                 return linestyle_lib[ls]
             elif isinstance(self.obj[0], Collection):
-                if ls[0][1] == [3.7, 1.6]:
-                    return "dashed"
-                elif ls[0][1] == [6.4, 1.6, 1.0, 1.6]:
-                    return "dashdot"
-                elif ls[0][1] == [1.0, 1.65]:
-                    return "dotted"
-                else:
-                    return "solid"
-            return ls
+                return get_dash_pattern(ls[0][1])
         except Exception as e: print(e)
     
     def set_linestyle(self, value):

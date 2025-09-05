@@ -52,23 +52,21 @@ def contour(X, ax:Axes, gid, fill=False, cmap=matplotlib.rcParams["image.cmap"],
         )
         artist.append(art)
         
-    idx = 0
     for level, color in zip(contours.levels, contours._mapped_colors):
         conts = measure.find_contours(X, level=level)
         for cont in conts:
             line = ax.plot(
                 cont[:, 1], 
                 cont[:, 0],
-                gid=f"{gid}/{idx}",
-                color=color
+                marker='none',
+                gid=f"{gid}/lines",
+                color=color if not fill else 'black'
             )
-            idx += 1
             artist += line
 
     contours.remove()
     ax.set_axis_on()
        
-    #print(artist)
     return artist, props
         
         

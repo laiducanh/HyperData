@@ -73,7 +73,7 @@ class Contour (PlotConfigBase):
             layout=self.general.addlayout
         )
 
-        line = Line(self.gid, self.canvas)
+        line = Line(f"{self.gid}/lines", self.canvas)
         line.onChanged.connect(self._onChange)
         self.stackedlayout.addWidget(line)
 

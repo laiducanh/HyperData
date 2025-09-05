@@ -268,7 +268,7 @@ class Dot(PlotConfigBase):
 
         alpha = HTransparentSpinBox(
             label = 'Transparent',
-            singleStep = 10,
+            minimum  = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=marker.vlayout
@@ -406,7 +406,7 @@ class ClusteredDot(Dot):
 
         alpha = HTransparentSpinBox(
             label = 'Transparent',
-            singleStep = 10,
+            minimum  = 0, maximum = 100, singleStep = 10,
             getter=self.get_alpha,
             setter=self.set_alpha,
             layout=marker.vlayout
