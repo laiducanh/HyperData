@@ -16,7 +16,7 @@ from matplotlib.transforms import Bbox
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib.backend_tools import Cursors
 from ui.utils import isDark
-from plot.utilis import get_color, find_mpl_object, normalize_zorder, grid
+from plot.utilis import get_color, find_mpl_object, normalize_zorder
 from ui.base_widgets.menu import Menu, Action
 from plot.plot_graphics_scene import GraphicsScene
 
@@ -214,7 +214,10 @@ class GraphicsView (QGraphicsView):
             top = 1-self._scene.left_margin_top.fraction,
             bottom = 1-self._scene.left_margin_bot.fraction
         )
-        grid(self.canvas.figure)
+        # When figure margins are updated
+        # grid and colorbar need to be updated as well
+        self.canvas.grid()
+        self.canvas.colorbar()
         self.canvas.draw_idle()
     
     def drawing_object(self, shape:str):

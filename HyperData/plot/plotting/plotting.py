@@ -5,7 +5,7 @@ from plot.plotting.base.pie import *
 from plot.plotting.base.stats import *
 from plot.plotting.base.mesh import *
 from config.settings import GLOBAL_DEBUG, logger
-from plot.utilis import find_mpl_object, remove_artist, remove_legend, rescale_plot, grid, get_legend
+from plot.utilis import find_mpl_object, remove_artist, remove_legend, rescale_plot, get_legend
 from plot.copy_objects import update_props, get_legend_props
 from plot.canvas import Canvas3D, MultiFigureCanvas
 from matplotlib.figure import Figure
@@ -150,10 +150,10 @@ def plotting(X, Y, Z, T, ax:Axes, gid:str=None, plot_type:str=None, *args, **kwa
     
     # adjust grid when plotting
     if not isinstance(ax.figure.canvas, (Canvas3D, MultiFigureCanvas)): 
-        grid(ax.figure)
+        ax.figure.canvas.grid()
     
     # draw colorbar
-    ax.figure.canvas.colorbar("bottom")
+    ax.figure.canvas.colorbar()
     
     ax.figure.canvas.draw_idle()
 

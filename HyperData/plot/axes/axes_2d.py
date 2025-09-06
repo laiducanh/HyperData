@@ -4,7 +4,7 @@ from ui.base_widgets.button import HTransparentComboBox, HToggle, SegmentedWidge
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 from ui.base_widgets.color import HColorDropdown
 from ui.base_widgets.frame import ScrollArea, HFrame, VFrame
-from plot.utilis import find_mpl_object, grid
+from plot.utilis import find_mpl_object
 from plot.canvas import Canvas
 from matplotlib import rcParams, colors, lines
 from config.settings import linestyle_lib, GLOBAL_DEBUG, logger
@@ -56,6 +56,8 @@ class Margin2D(ScrollArea):
     
     def set_top(self,value):
         self.canvas.figure.subplots_adjust(top=1-value)
+        self.canvas.grid()
+        self.canvas.colorbar()
         self.canvas.draw_idle()
     
     def get_top(self):
@@ -63,6 +65,8 @@ class Margin2D(ScrollArea):
     
     def set_bottom(self,value):
         self.canvas.figure.subplots_adjust(bottom=1-value)
+        self.canvas.grid()
+        self.canvas.colorbar()
         self.canvas.draw_idle()
     
     def get_bottom(self):
@@ -70,6 +74,8 @@ class Margin2D(ScrollArea):
     
     def set_left(self,value):
         self.canvas.figure.subplots_adjust(left=value)
+        self.canvas.grid()
+        self.canvas.colorbar()
         self.canvas.draw_idle()
     
     def get_left(self):
@@ -77,6 +83,8 @@ class Margin2D(ScrollArea):
     
     def set_right(self,value):
         self.canvas.figure.subplots_adjust(right=value)
+        self.canvas.grid()
+        self.canvas.colorbar()
         self.canvas.draw_idle()
     
     def get_right(self):
@@ -178,7 +186,7 @@ class Grid2D(ScrollArea):
     
     def set_grid(self):
         try:
-            grid(self.canvas.figure)
+            self.canvas.grid()
             self.canvas.draw_idle()
 
         except Exception as e:

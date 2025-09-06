@@ -23,6 +23,7 @@ from ui.base_widgets.window import FileDialog
 from plot.canvas import Canvas, Canvas3D
 from plot.axes.axes_2d import Axes2D
 from plot.axes.axes_3d import Axes3D, View3D
+from plot.axes.cax import ColorBar
 from plot.label.graph_title import GraphTitle
 from plot.label.legend import LegendLabel
 from plot.toolbar import PlotView_ToolBar
@@ -93,7 +94,7 @@ class PlotView(QMainWindow):
             self.treeview_data = {
                 "Manage graph":["Add graph"],
                 "Axis":["Bottom Axis","Left Axis","Top Axis","Right Axis"],
-                "Figure 2D":[],
+                "Figure 2D":["Grid", "Colorbar"],
                 "Label":["Title", "Legend"],
                 "Drawings": []
             }
@@ -185,9 +186,13 @@ class PlotView(QMainWindow):
             self.xpane = Axes3D('YZ Pane', self.canvas, self)
             self.xpane.exec()
         
-        elif text == 'figure 2d':
+        elif text == 'grid':
             self.axes  = Axes2D(self.canvas, self)
             self.axes.exec()
+        
+        elif text == 'colorbar':
+            self.cbar = ColorBar(self.canvas, self)
+            self.cbar.exec()
         
         elif text == 'figure 3d':
             self.axes = View3D(self.canvas, self)

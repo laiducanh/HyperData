@@ -182,77 +182,6 @@ def set_zorder(figure:Figure, gid:str,
         except Exception as e: pass
     normalize_zorder(figure)
 
-def grid(figure: Figure):
-    " Only use for 2D Figure "
-    
-    # Default grid properties, adapted from rcParams
-    props = {
-        'color':'#b0b0b0',
-        'linewidth':0.8,
-        'linestyle':'solid',
-        'alpha':1,
-        'zorder':2
-    }
-    for obj in figure.findobj(
-        lambda a: isinstance(a, lines.Line2D) and a.get_gid() \
-        and a.get_gid() == "_grid" 
-    ):
-        obj.remove()
-        props = obj.properties()
-
-    xaxis: Axis = figure.findobj(
-        lambda a: isinstance(a, Axis) and a.get_gid() \
-        and a.get_gid() == figure.canvas._config['grid']['coord'].split('-')[0]
-    )[0]
-    yaxis: Axis = figure.findobj(
-        lambda a: isinstance(a, Axis) and a.get_gid() \
-        and a.get_gid() == figure.canvas._config['grid']['coord'].split('-')[1]
-    )[0]
-    
-    if figure.canvas._config['grid']['which'] == 'major':
-        xticks = xaxis.get_major_ticks()
-        yticks = yaxis.get_major_ticks()
-    elif figure.canvas._config['grid']['which'] == 'minor':
-        xticks = xaxis.get_minor_ticks()
-        yticks = yaxis.get_minor_ticks()
-    elif figure.canvas._config['grid']['which'] == 'both':
-        xticks = xaxis.get_major_ticks() + xaxis.get_minor_ticks()
-        yticks = yaxis.get_major_ticks() + yaxis.get_minor_ticks()
-    
-    xlim = xaxis.axes.get_xlim()
-    ylim = yaxis.axes.get_ylim()
-    gridlines: list[lines.Line2D] = [] # only contains visible gridlines
-    if figure.canvas._config['grid']['xaxis']:
-        for tick in xticks:
-            if xlim[0] <= tick.gridline.get_xdata()[0] <= xlim[1]:
-                gridlines.append(tick.gridline)
-    if figure.canvas._config['grid']['yaxis']:
-        for tick in yticks:
-            if ylim[0] <= tick.gridline.get_ydata()[0] <= ylim[1]:
-                gridlines.append(tick.gridline)
-
-    for line in gridlines:
-        line.set(visible = False)
-        # Get the path in display (pixel) coordinates
-        path = line.get_path().transformed(line.get_transform())        
-        # Convert display coords to figure coordinates
-        fig_coords = figure.transFigure.inverted().transform(path.vertices)
-        # Clone the gridline and add to Figure
-        figline = lines.Line2D(
-            xdata=fig_coords[:, 0],
-            ydata=fig_coords[:, 1],
-            transform=figure.transFigure,
-            visible = figure.canvas._config['grid']['visible'],
-            color=props['color'],
-            linewidth=props["linewidth"],
-            linestyle=props["linestyle"],
-            alpha=props["alpha"],
-            zorder=props["zorder"],
-            marker='none',
-            gid = '_grid',
-        )
-        figure.add_artist(figline) 
-
 def get_dash_pattern(dashes:Union[list, str]):
     LOOKUP = {
         "dashed": [3.7, 1.6],
@@ -260,9 +189,12 @@ def get_dash_pattern(dashes:Union[list, str]):
         "dotted": [1.0, 1.65],
     }
 
+    if dashes is None:
+        return "solid"
+
     dashes = lines._get_dash_pattern(dashes)
 
-    if dashes == [0, None] or dashes is None:
+    if dashes == [0, None]:
         return "solid"
     else:
         for _d in LOOKUP.values():

@@ -2,8 +2,11 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
+from matplotlib.axes import Axes
+from matplotlib.axis import Axis
 from matplotlib.lines import Line2D
-from matplotlib.text import Text
+from matplotlib.colorbar import Colorbar
+from matplotlib.cm import ScalarMappable
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.copy_objects import copy_Figure
 from config.settings import config, logger
@@ -35,6 +38,12 @@ class Canvas (FigureCanvasQTAgg):
                     "xaxis": matplotlib.rcParams['axes.grid.axis'] in ['x','both'],
                     "yaxis": matplotlib.rcParams['axes.grid.axis'] in ['y','both'],                  
                     "coord": "bottom-left",
+                }, 
+                "cbar": {
+                    "visible": True,
+                    "size": 0.05,
+                    "pad": 0.05,
+                    "loc": "right"
                 }
             }
         self.figure = Figure()
@@ -69,7 +78,7 @@ class Canvas (FigureCanvasQTAgg):
 
         # Axes for colorbar
         self.cax = self.figure.add_subplot()
-        # self.cax.set_axis_off()
+        self.cax.set_axis_off()
 
         # set gid to axis for tick and labels on axes
         self.axes.xaxis.set_gid("bottom")
@@ -126,53 +135,189 @@ class Canvas (FigureCanvasQTAgg):
         )
         self.figure.add_artist(self.spine_right)
     
-    def colorbar(self, position:Literal["right","left","bottom"], size=0.05, pad=0.05):
-        axes_pos = self.axes.get_position()
-        renderer = self.get_renderer()
-        transfom = self.figure.transFigure.inverted()
-        labels: list[Text] = []
-        margins = []
-        for ax in [self.axes, self.axesx2, self.axesy2, self.axespie, self.axespolar]:
-            labels += ax.get_xticklabels() + ax.get_yticklabels()
-        labels = self.axes.get_xticklabels()
+    def colorbar(self, *args, **kwargs):
 
-        for text in labels:
-            bbox = text.get_window_extent(renderer)
-            margins.append(transfom.transform((bbox.x0, bbox.x1))) # this not correct!
+        loc = self._config["cbar"]["loc"]
+        size = self._config["cbar"]["size"]
+        pad = self._config["cbar"]["pad"]
+        visible = self._config["cbar"]["visible"]
+
+        self.cax.cla()
+
+        if visible:
+            renderer = self.get_renderer()
+            transform = self.figure.transFigure.inverted()
+            
+            xmargins, ymargins = [], []
+            for ax in [self.axes, self.axesx2, self.axesy2]:
+                ax: Axes
+                xlim = ax.get_xlim()
+                ylim = ax.get_ylim()
+                for text in ax.get_xticklabels() + ax.get_yticklabels():
+                    bbox = text.get_window_extent(renderer).transformed(transform)
+                    if bbox.width > 0 and bbox.height > 0: # skip empty labels
+                        if xlim[0] <= text.get_position()[0] <= xlim[1] and \
+                        ylim[0] <= text.get_position()[1] <= ylim[1]:
+                            xmargins += [bbox.x0, bbox.x1]
+                            ymargins += [bbox.y0, bbox.y1]
+                for text in [ax.xaxis.get_label(), ax.yaxis.get_label()]:
+                    bbox = text.get_window_extent(renderer).transformed(transform)
+                    if bbox.width > 0 and bbox.height > 0: # skip empty labels
+                        xmargins += [bbox.x0, bbox.x1]
+                        ymargins += [bbox.y0, bbox.y1]  
+                        
+            # Compute extent of the ticks and labels from spine locations
+            spine_margins = [
+                self.spine_bottom.get_tightbbox(renderer).transformed(transform).y0,
+                self.spine_top.get_tightbbox(renderer).transformed(transform).y1,
+                self.spine_left.get_tightbbox(renderer).transformed(transform).x0,
+                self.spine_right.get_tightbbox(renderer).transformed(transform).x1
+            ]
+            
+            lb_margins = [
+                abs(min(ymargins) - spine_margins[0]), # bottom
+                abs(max(ymargins) - spine_margins[1]), # top
+                abs(min(xmargins) - spine_margins[2]), # left
+                abs(max(xmargins) - spine_margins[3]), # right
+            ]
+
+            self.cax.set_axis_on()
+            fig_margins = self.figure.subplotpars
+
+            if loc == 'bottom':
+                self.axes.set_position([
+                    fig_margins.left,
+                    fig_margins.bottom + size + pad + lb_margins[0],
+                    fig_margins.right - fig_margins.left,
+                    fig_margins.top - fig_margins.bottom - size - pad - lb_margins[0]
+                ])
+                self.cax.set_position([
+                    fig_margins.left,
+                    fig_margins.bottom,
+                    fig_margins.right - fig_margins.left,
+                    size
+                ])
+            elif loc == 'right':
+                self.axes.set_position([
+                    fig_margins.left,
+                    fig_margins.bottom,
+                    fig_margins.right - fig_margins.left - size - pad - lb_margins[3],
+                    fig_margins.top - fig_margins.bottom
+                ])
+                self.cax.set_position([
+                    fig_margins.right - size,
+                    fig_margins.bottom,
+                    size,
+                    fig_margins.top - fig_margins.bottom
+                ])
+            elif loc == 'left':
+                self.axes.set_position([
+                    fig_margins.left + size + pad + lb_margins[2],
+                    fig_margins.bottom,
+                    fig_margins.right - fig_margins.left - size - pad - lb_margins[2],
+                    fig_margins.top - fig_margins.bottom
+                ])
+                self.cax.set_position([
+                    fig_margins.left,
+                    fig_margins.bottom,
+                    size,
+                    fig_margins.top - fig_margins.bottom
+                ])
+            
+            mappable = self.figure.findobj(
+                lambda a: isinstance(a, ScalarMappable) and \
+                a.get_gid() and "graph" in a.get_gid()
+            )
+            if mappable != []:
+                mappable = mappable[0]
+            else:
+                mappable = None
+            
+            Colorbar(self.cax, mappable, location=loc, *args, **kwargs)
         
-        print(margins, np.min(margins, axis=0), np.max(margins, axis=0))
-        fig_margins = self.figure.subplotpars
-        print('margins', fig_margins.bottom, fig_margins.top, fig_margins.left, fig_margins.right)
-        lowest = 0
-        if position == 'bottom':
+        else:
+            fig_margins = self.figure.subplotpars
             self.axes.set_position([
                 fig_margins.left,
-                fig_margins.bottom + size + pad + lowest,
-                fig_margins.right - fig_margins.left,
-                fig_margins.top - fig_margins.bottom - size - pad - lowest
-            ])
-            self.cax.set_position([
-                fig_margins.left,
                 fig_margins.bottom,
                 fig_margins.right - fig_margins.left,
-                size
-            ])
-        if position == 'right':
-            self.axes.set_position([
-                fig_margins.left,
-                fig_margins.bottom,
-                fig_margins.right - fig_margins.left - size - pad,
                 fig_margins.top - fig_margins.bottom
-            ])
-            self.cax.set_position([
-                fig_margins.right + pad,
-                fig_margins.bottom,
-                size,
-                fig_margins.top - fig_margins.bottom
-            ])
-            
-            
+            ])   
+            self.cax.set_axis_off()
         
+        self.draw_idle()
+
+    def grid(self):
+        " Only use for 2D Figure "
+
+        # Default grid properties, adapted from rcParams
+        props = {
+            'color':'#b0b0b0',
+            'linewidth':0.8,
+            'linestyle':'solid',
+            'alpha':1,
+            'zorder':2
+        }
+        for obj in self.figure.findobj(
+            lambda a: isinstance(a, Line2D) and a.get_gid() \
+            and a.get_gid() == "_grid" 
+        ):
+            obj.remove()
+            props = obj.properties()
+
+        xaxis: Axis = self.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self._config['grid']['coord'].split('-')[0]
+        )[0]
+        yaxis: Axis = self.figure.findobj(
+            lambda a: isinstance(a, Axis) and a.get_gid() \
+            and a.get_gid() == self._config['grid']['coord'].split('-')[1]
+        )[0]
+        
+        if self._config['grid']['which'] == 'major':
+            xticks = xaxis.get_major_ticks()
+            yticks = yaxis.get_major_ticks()
+        elif self._config['grid']['which'] == 'minor':
+            xticks = xaxis.get_minor_ticks()
+            yticks = yaxis.get_minor_ticks()
+        elif self._config['grid']['which'] == 'both':
+            xticks = xaxis.get_major_ticks() + xaxis.get_minor_ticks()
+            yticks = yaxis.get_major_ticks() + yaxis.get_minor_ticks()
+        
+        xlim = xaxis.axes.get_xlim()
+        ylim = yaxis.axes.get_ylim()
+        gridlines: list[Line2D] = [] # only contains visible gridlines
+        if self._config['grid']['xaxis']:
+            for tick in xticks:
+                if xlim[0] <= tick.gridline.get_xdata()[0] <= xlim[1]:
+                    gridlines.append(tick.gridline)
+        if self._config['grid']['yaxis']:
+            for tick in yticks:
+                if ylim[0] <= tick.gridline.get_ydata()[0] <= ylim[1]:
+                    gridlines.append(tick.gridline)
+
+        for line in gridlines:
+            line.set(visible = False)
+            # Get the path in display (pixel) coordinates
+            path = line.get_path().transformed(line.get_transform())        
+            # Convert display coords to figure coordinates
+            fig_coords = self.figure.transFigure.inverted().transform(path.vertices)
+            # Clone the gridline and add to Figure
+            figline = Line2D(
+                xdata=fig_coords[:, 0],
+                ydata=fig_coords[:, 1],
+                transform=self.figure.transFigure,
+                visible=self._config['grid']['visible'],
+                color=props['color'],
+                linewidth=props["linewidth"],
+                linestyle=props["linestyle"],
+                alpha=props["alpha"],
+                zorder=props["zorder"],
+                marker='none',
+                gid = '_grid',
+            )
+            self.figure.add_artist(figline)      
+
     def serialize(self):
         
         if config['save_path'] != "":
