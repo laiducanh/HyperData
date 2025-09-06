@@ -3,10 +3,12 @@ from PySide6.QtCore import Signal
 import matplotlib, pickle, os
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from matplotlib.text import Text
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from plot.copy_objects import copy_Figure
 from config.settings import config, logger
 from typing import Literal
+import numpy as np
 
 matplotlib.use("QtAgg")
 #matplotlib.style.use('bmh')
@@ -67,7 +69,7 @@ class Canvas (FigureCanvasQTAgg):
 
         # Axes for colorbar
         self.cax = self.figure.add_subplot()
-        self.cax.set_axis_off()
+        # self.cax.set_axis_off()
 
         # set gid to axis for tick and labels on axes
         self.axes.xaxis.set_gid("bottom")
@@ -126,16 +128,49 @@ class Canvas (FigureCanvasQTAgg):
     
     def colorbar(self, position:Literal["right","left","bottom"], size=0.05, pad=0.05):
         axes_pos = self.axes.get_position()
+        renderer = self.get_renderer()
+        transfom = self.figure.transFigure.inverted()
+        labels: list[Text] = []
+        margins = []
+        for ax in [self.axes, self.axesx2, self.axesy2, self.axespie, self.axespolar]:
+            labels += ax.get_xticklabels() + ax.get_yticklabels()
+        labels = self.axes.get_xticklabels()
+
+        for text in labels:
+            bbox = text.get_window_extent(renderer)
+            margins.append(transfom.transform((bbox.x0, bbox.x1))) # this not correct!
+        
+        print(margins, np.min(margins, axis=0), np.max(margins, axis=0))
         fig_margins = self.figure.subplotpars
-        lowest = axes_pos.x0
+        print('margins', fig_margins.bottom, fig_margins.top, fig_margins.left, fig_margins.right)
+        lowest = 0
         if position == 'bottom':
-            rect = [
+            self.axes.set_position([
+                fig_margins.left,
+                fig_margins.bottom + size + pad + lowest,
+                fig_margins.right - fig_margins.left,
+                fig_margins.top - fig_margins.bottom - size - pad - lowest
+            ])
+            self.cax.set_position([
                 fig_margins.left,
                 fig_margins.bottom,
-                fig_margins.right-fig_margins.left,
+                fig_margins.right - fig_margins.left,
                 size
-            ]
-            self.cax.set_position(rect)
+            ])
+        if position == 'right':
+            self.axes.set_position([
+                fig_margins.left,
+                fig_margins.bottom,
+                fig_margins.right - fig_margins.left - size - pad,
+                fig_margins.top - fig_margins.bottom
+            ])
+            self.cax.set_position([
+                fig_margins.right + pad,
+                fig_margins.bottom,
+                size,
+                fig_margins.top - fig_margins.bottom
+            ])
+            
             
         
     def serialize(self):

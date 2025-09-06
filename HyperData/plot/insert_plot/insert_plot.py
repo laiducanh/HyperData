@@ -239,7 +239,7 @@ class NewPlot(Frame):
             self.progressbar.changeColor('success')
 
             logger.info(f"Canvas {self.canvas.id}: Plot {self.plot_gid} ({len(self.artist)} artists), "
-                        f"type {self.plot_type}, on {self.widget.axes}.")
+                        f"type {self.plot_type}, on Axes {self.widget.axes}.")
 
         except Exception as e:
             self.progressbar.changeColor('fail')
