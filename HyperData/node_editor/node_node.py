@@ -185,9 +185,12 @@ class Node(NodeGraphicsNode):
         elif title == "Distribution Fitter":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DistFitter(self, parent)
-        elif title == "Mol Reader":
-            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
+        elif title == "Molecule Reader":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = MolReader(self, parent)
+        elif title == "SDF Reader":
+            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
+            self.content = SDFReader(self, parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)

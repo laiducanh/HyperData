@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from io import BytesIO
 from rdkit import Chem
-from rdkit.Chem import Draw, AllChem
+from rdkit.Chem import Draw
 from config.settings import list_name, GLOBAL_DEBUG, logger
 from ui.base_widgets.button import (HDropDownPushButton, PrimaryPushButton, HComboBox, HToggle, 
                                     ComboBox, TransparentPushButton, TransparentToolButton, 
@@ -549,18 +549,19 @@ class MolTableView(TableView):
 
 class MolView(QWidget):
     def __init__(self, parent=None):
+        ''' mols is a list of molecular representations '''
         super().__init__(parent=parent)
 
-        ''' data is a list of molecular representations '''
-        self.string = None
+        self.mol = None # current visualized molecule
         self.initUI()
     
     def initUI(self):
         self.vlayout = QVBoxLayout(self)
+
         self.hlayout1 = QHBoxLayout()
         self.vlayout.addLayout(self.hlayout1)
-        self.addHs = CheckBox(
-            text='Nonpolar Hydrogens',
+        self.implicitHs = CheckBox(
+            text='Implitcit hydrogens',
             setter=self.update_image,
             layout=self.hlayout1
         )
@@ -581,74 +582,57 @@ class MolView(QWidget):
             setter=self.update_image,
             layout=self.hlayout2
         )
-        self.molfrom = HComboBox(
-            label="From",
-            items=['SMILES','InChI','SMARTS','FASTA','HELM',
-                   'SDF','PDB','MOL','MOL2','XYZ'],
-            setter=self.update_image,
-            layout=self.vlayout
-        )
         
         self.image2D = QLabel()
         self.vlayout.addWidget(self.image2D)
-        self.update_image()
     
-    def update_image(self):
-        pixmap = self.mol_to_image(self.string)
-        self.image2D.setPixmap(pixmap)
-        self.image2D.setFixedSize(pixmap.size())
-           
-    def string_to_mol(self, string:str):
-        molfrom = self.molfrom.get_value()
-        if molfrom == 'SMILES':
-            mol = Chem.MolFromSmiles(str(string))
-        elif molfrom == 'InChI':
-            mol = Chem.MolFromInchi(str(string))
-        elif molfrom == 'SMARTS':
-            mol = Chem.MolFromSmarts(str(string))
-        elif molfrom == 'FASTA':
-            mol = Chem.MolFromFASTA(str(string))
-        elif molfrom == 'HELM':
-            mol = Chem.MolFromHELM(str(string))
-        elif molfrom == 'SDF':
-            # read the first conformation in .sdf file
-            mol = Chem.SDMolSupplier(os.path.abspath(string))[0]
-        elif molfrom == 'PDB':
-            mol = Chem.MolFromPDBFile(os.path.abspath(string))
-        elif molfrom == 'MOL':
-            mol = Chem.MolFromMolFile(os.path.abspath(string))
-        elif molfrom == 'MOL2':
-            mol = Chem.MolFromMol2File(os.path.abspath(string))
-        elif molfrom == 'XYZ':
-            mol = Chem.MolFromXYZFile(os.path.abspath(string))
-        if molfrom in ['SMILES','InChI','SMARTS','FASTA','HELM']:
-            if self.addHs.isChecked():
-                mol = AllChem.AddHs(mol, addCoords=True)
+    def _remove_nonpolarHs(self):
+        ''' Remove nonpolar hydrogens '''
+        remove_ids = []
+        for atom in self.mol.GetAtoms():
+            if atom.GetAtomicNum() == 1:
+                neighbor = atom.GetNeighbors()[0]
+                if neighbor.GetAtomicNum() == 6:
+                    remove_ids.append(atom.GetIdx())
+        editable = Chem.EditableMol(self.mol)
+        for idx in sorted(remove_ids, reverse=True):
+            editable.RemoveAtom(idx)
+        mol = editable.GetMol()
+        Chem.SanitizeMol(mol)
         return mol
+            
+    def update_image(self):
+        pixmap = self.mol_to_image()
+        self.image2D.setPixmap(pixmap)
+        self.image2D.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image2D.setFixedSize(pixmap.size())
     
-    def mol_to_image(self, string:str, size=(500,500)) -> QPixmap:
+    def mol_to_image(self, size=(500,500)) -> QPixmap:
         try:
-            mol = self.string_to_mol(string)
             drawop = Draw.MolDrawOptions()
             drawop.addAtomIndices=self.atIdx.isChecked()
             drawop.addBondIndices=self.bondIdx.isChecked()
             drawop.addStereoAnnotation=self.stereo.isChecked()
+            mol = self.mol
+            if not self.implicitHs.isChecked():
+                mol = self._remove_nonpolarHs()
             pil_img = Draw.MolToImage(mol, size, bgcolor=(255,255,255), options=drawop)
             buffer = BytesIO()
             pil_img.save(buffer, format='PNG')
             buffer.seek(0)
             qmig = QImage.fromData(buffer.read(), 'PNG')
             pixmap = QPixmap.fromImage(qmig)
-        except Exception:   
+
+        except Exception as e:
             pixmap = QPixmap(*size)
             pixmap.fill(Qt.GlobalColor.white)
 
         return pixmap
-
-    def update_data(self, string):
-        self.string = string
+    
+    def update_mol(self, mol:Chem.Mol):
+        self.mol = mol
         self.update_image()
-
+        
 class DataView(QMainWindow):
     def __init__(self, data, parent=None):
         super().__init__(parent)
@@ -692,13 +676,12 @@ class MolDataView(QMainWindow):
         layout.addWidget(self.explore)
 
         
-    def update_data (self, data):
+    def update_data(self, data):
         self.data = data
         self.tableview.update_data(data)
-        self.explore.update_data(data)
     
     def selection_onChange(self, idx:int):
-        self.explore.update_data(self.data.iloc[idx, 0])
+        self.explore.update_mol(self.data.iloc[idx,-1])
 
 class DataSelection(QDialog):
     sig = Signal(str)

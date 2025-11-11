@@ -127,6 +127,12 @@ class NodeGraphicsView(QGraphicsView):
             action = Action(text=text, parent=visualization)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             visualization.addAction(action)
+        cheminformatics = Menu(text='Cheminformatics')
+        self.menu.addMenu(cheminformatics)
+        for text in ['Molecule Reader','SDF Reader']:
+            action = Action(text=text, parent=cheminformatics)
+            action.triggered.connect(lambda _, text=text: self.addNode(text))
+            cheminformatics.addAction(action)
         misc = Menu(text="Misc")
         self.menu.addMenu(misc)
         for text in ["Executor", "Looper", "Undefined Node"]:
