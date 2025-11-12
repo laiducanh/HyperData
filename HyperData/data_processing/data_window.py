@@ -12,7 +12,7 @@ from rdkit.Chem import Draw
 from config.settings import list_name, GLOBAL_DEBUG, logger
 from ui.base_widgets.button import (HDropDownPushButton, PrimaryPushButton, HComboBox, HToggle, 
                                     ComboBox, TransparentPushButton, TransparentToolButton, 
-                                    ToolButton, ToggleToolButton, CheckBox)
+                                    ToolButton, ToggleToolButton, CheckBox, HTransparentComboBox)
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.line_edit import SearchBox
 from ui.base_widgets.menu import Menu, Action
@@ -532,12 +532,15 @@ class MolTableView(TableView):
         self.savedata.setToolTip('Export data as csv')
         self.savedata.clicked.connect(self.save_data)
         self.hlayout.addWidget(self.savedata)
+        self.savemol = ToolButton(icon='benzene.png')
+        self.savemol.clicked.connect(self.save_mol)
+        self.savemol.setToolTip('Export molecules')
+        self.hlayout.addWidget(self.savemol)
         self.search_box = SearchBox()
         self.search_box.setPlaceholderText('Search from data')
         self.search_box.textChanged.connect(lambda string: self.filter.setFilterFixedString(string))
         self.hlayout.addWidget(self.search_box)
         self.time_update = BodyLabel()
-        self.hlayout.addWidget(self.time_update)
 
         self.view = QTableView(self.parent())
         self.update_data(self.data)
@@ -546,6 +549,73 @@ class MolTableView(TableView):
     def on_selection(self):
         selectedRow = self.view.selectionModel().selectedRows()[0]
         self.selection_onChange.emit(selectedRow.row())
+    
+    def save_mol(self):
+        dialog = Dialog("Export molecules")
+        dialog.setMinimumSize(600, 200)
+        
+        fmt = HTransparentComboBox(
+            items=['SDF','PDB','XYZ','MOL'],
+            label='Format',
+            layout=dialog.main_layout
+        )
+        single = HTransparentComboBox(
+            items=['Single','Multiple'],
+            label='Type',
+            layout=dialog.main_layout
+        )
+        
+        if dialog.exec():
+            self.open_saveDialog(
+                fmt.get_value(),
+                single.get_value()
+            )
+    
+    def open_saveDialog(self, fmt, export_type):        
+        dialog = FileDialog()
+        dialog.setFileMode(QFileDialog.FileMode.Directory)
+        dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
+        fmt = fmt.lower()
+        if dialog.exec():
+            selectedFiles = dialog.selectedFiles()[0]            
+            if export_type == 'Single':
+                for idx, mol in enumerate(self.data['_molread']):
+                    path = os.path.join(selectedFiles, f'mol_{idx}.{fmt}')
+                    if fmt == 'sdf':
+                        w = Chem.SDWriter(path)
+                        w.write(mol)
+                        w.close()
+                    elif fmt == 'pdb':
+                        Chem.MolToPDBFile(mol, path, flavor=32)
+                    elif fmt == 'xyz':
+                        Chem.MolToXYZFile(mol, path)
+                    elif fmt == 'mol':
+                        Chem.MolToV3KMolFile(mol, path)
+            else:
+                path = os.path.join(selectedFiles, f'mol.{fmt}')
+                
+                if fmt == 'sdf':
+                    w = Chem.SDWriter(path)
+                    for mol in self.data['_molread']:
+                        w.write(mol)
+                elif fmt == 'pdb':
+                    w = open(path, 'w')
+                    for mol in self.data['_molread']:
+                        w.write(Chem.MolToPDBBlock(mol, flavor=32))
+                        w.write('END\n')
+                elif fmt == 'xyz':
+                    w = open(path, 'w')
+                    for mol in self.data['_molread']:
+                        w.write(Chem.MolToXYZBlock(mol))
+                        w.write('\n')
+                elif fmt == 'mol':
+                    w = open(path, 'w')
+                    for mol in self.data['_molread']:
+                        w.write(Chem.MolToV3KMolBlock(mol))
+                        w.write('\n')
+                w.close()
+
 
 class MolView(QWidget):
     def __init__(self, parent=None):
@@ -681,7 +751,7 @@ class MolDataView(QMainWindow):
         self.tableview.update_data(data)
     
     def selection_onChange(self, idx:int):
-        self.explore.update_mol(self.data.iloc[idx,-1])
+        self.explore.update_mol(self.data['_molread'][idx])
 
 class DataSelection(QDialog):
     sig = Signal(str)

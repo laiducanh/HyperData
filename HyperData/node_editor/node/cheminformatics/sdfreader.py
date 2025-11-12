@@ -36,7 +36,7 @@ class SDFReader(NodeContentWidget):
     
     def func(self):
         try:
-            data = PandasTools.LoadSDF(self.selectedFiles, molColName='_readmol')
+            data = PandasTools.LoadSDF(self.selectedFiles, molColName='_molread')
             # write log
             logger.info(f"{self.name} {self.node.id}: load sdf file successfully.")
             # change progressbar's color
