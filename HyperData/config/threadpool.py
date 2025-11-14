@@ -48,6 +48,7 @@ class Worker(QRunnable):
         self.args = args
         self.kwargs = kwargs
         self.signals = WorkerSignals()
+        self._stop = False
 
         # Add the callback to our kwargs
 
@@ -59,7 +60,8 @@ class Worker(QRunnable):
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
-            result = self.fn(*self.args, **self.kwargs)
+            while not self._stop:
+                result = self.fn(*self.args, **self.kwargs)
 
         except:
             traceback.print_exc()
@@ -70,3 +72,6 @@ class Worker(QRunnable):
         finally:
             self.signals.finished.emit()  # Done
 
+    @Slot()
+    def stop(self):
+        self._stop = True

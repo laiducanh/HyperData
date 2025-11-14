@@ -18,6 +18,7 @@ class NodeContentWidget(GraphicsContent):
         self.threadpool = QThreadPool().globalInstance()
         self.num_signal_pipeline = 0
         self._config = dict()
+        self.running = False # keep track on state of node
         self.resetNode()
 
     def config(self):
@@ -32,13 +33,20 @@ class NodeContentWidget(GraphicsContent):
     def exec (self, *args, **kwargs):
         """ use to process data_out
          this function will be called when pressing execute button """
-        self.num_signal_pipeline = 0 # reset number of pipeline signal
-        for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
-            edge.end_socket.node.content.resetNode()
-        self.exec_btn.setIcon("stop.png")
-        self.progress.set_type('indeterminate')
-        self.progress.setValue(0)
-        self.run_threadpool(*args, **kwargs)
+        if self.running:
+            self.running = False
+            self.worker.stop()
+            self.exec_btn.setIcon("play.png")
+            self.resetNode()
+        else:
+            self.running = True
+            self.num_signal_pipeline = 0 # reset number of pipeline signal
+            for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
+                edge.end_socket.node.content.resetNode()
+            self.exec_btn.setIcon("stop.png")
+            self.progress.set_type('indeterminate')
+            self.progress.setValue(0)
+            self.run_threadpool(*args, **kwargs)
 
     def func(self, *args, **kwargs):
         """ main function of the node """
