@@ -18,21 +18,24 @@ class SDFReader(NodeContentWidget):
         self.selectedFiles = None
 
     def exec (self):    
-        dialog = FileDialog(
-            filter="""Structure Data File (*.sdf)""",
-            acceptMode=QFileDialog.AcceptMode.AcceptOpen,
-        )
-        if self.selectedFiles: 
-            dialog.setDirectory(os.path.dirname(self.selectedFiles))
-            dialog.selectFile(self.selectedFiles)
-        if dialog.exec():
-            self.selectedFiles = dialog.selectedFiles()[0]
-            # write log
-            logger.info(f"{self.name} {self.node.id}: select {self.selectedFiles}.")
-            # reset status of the node before executing the main function
-            self.resetNode()
-            # execute main function
+        if self.running:
             super().exec()
+        else:
+            dialog = FileDialog(
+                filter="""Structure Data File (*.sdf)""",
+                acceptMode=QFileDialog.AcceptMode.AcceptOpen,
+            )
+            if self.selectedFiles: 
+                dialog.setDirectory(os.path.dirname(self.selectedFiles))
+                dialog.selectFile(self.selectedFiles)
+            if dialog.exec():
+                self.selectedFiles = dialog.selectedFiles()[0]
+                # write log
+                logger.info(f"{self.name} {self.node.id}: select {self.selectedFiles}.")
+                # reset status of the node before executing the main function
+                self.resetNode()
+                # execute main function
+                super().exec()
     
     def func(self):
         try:

@@ -36,10 +36,10 @@ class NodeGraphicsNode(GraphicsNode):
             self.addSocket(index=index,socket_type=item)
 
         # add pipeline sockets
-        self.socket_pipeline_in = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_IN, parent=self)
-        self.socket_pipeline_in.setPos(0, self.getSocketPosition(index=0, socket_type=PIPELINE_IN)[1])
-        self.socket_pipeline_out = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_OUT, parent=self)
-        self.socket_pipeline_out.setPos(self._width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
+        # self.socket_pipeline_in = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_IN, parent=self)
+        # self.socket_pipeline_in.setPos(0, self.getSocketPosition(index=0, socket_type=PIPELINE_IN)[1])
+        # self.socket_pipeline_out = NodeGraphicsSocket(node=self, index=0, socket_type=PIPELINE_OUT, parent=self)
+        # self.socket_pipeline_out.setPos(self._width, self.getSocketPosition(index=0, socket_type=PIPELINE_OUT)[1])
 
         logger.info(f"Initialize node {self.title} {self.id}, Node.input_sockets {[i.id for i in self.input_sockets]}, "
                     f"Node.output_sockets {[i.id for i in self.output_sockets]}.")
@@ -49,10 +49,10 @@ class NodeGraphicsNode(GraphicsNode):
         for socket in self.input_sockets + self.output_sockets:
             for edge in socket.edges:
                 edge.updatePositions()
-        for edge in self.socket_pipeline_in.edges:
-            edge.updatePositions()
-        for edge in self.socket_pipeline_out.edges:
-            edge.updatePositions()
+        # for edge in self.socket_pipeline_in.edges:
+        #     edge.updatePositions()
+        # for edge in self.socket_pipeline_out.edges:
+        #     edge.updatePositions()
 
 
     def paint(self, painter:QPainter, QStyleOptionGraphicsItem, widget=None):
@@ -68,7 +68,7 @@ class NodeGraphicsNode(GraphicsNode):
             # update socket positions when content was enlarged
             for socket in self.output_sockets:
                 socket.setPos(self._width, socket.pos().y())
-            self.socket_pipeline_out.setPos(self._width, self.socket_pipeline_out.pos().y())
+            # self.socket_pipeline_out.setPos(self._width, self.socket_pipeline_out.pos().y())
             # update title position
             self.title_item.setTextWidth(self._width)
             # update edges
@@ -97,7 +97,7 @@ class NodeGraphicsNode(GraphicsNode):
     def addSocket(self, index, socket_type):
       
         # add data sockets
-        index += 1
+        # index += 1
         socket = NodeGraphicsSocket(node=self, index=index, socket_type=socket_type, parent=self)
         socket.setPos(*self.getSocketPosition(index=index, socket_type=socket_type))
                 
@@ -106,7 +106,7 @@ class NodeGraphicsNode(GraphicsNode):
 
     def removeSocket(self, index=None, socket_type=None, socket:NodeGraphicsSocket=None):
         if index and socket_type:
-            index += 1
+            # index += 1
             for _socket in self.childItems():
                 if isinstance(_socket, NodeGraphicsSocket):
                     if index == _socket.index and socket_type == _socket.socket_type:

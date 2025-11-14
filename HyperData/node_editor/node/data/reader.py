@@ -182,26 +182,28 @@ class DataReader (NodeContentWidget):
             logger.info(f"{self.name} {self.node.id}: update data.")
             
     def exec (self):    
-        
-        dialog = FileDialog(
-            filter="""All Files (*);;Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)""",
-            acceptMode=QFileDialog.AcceptMode.AcceptOpen,
-        )
-        if self.selectedFiles: 
-            dialog.setDirectory(os.path.dirname(self.selectedFiles))
-            dialog.selectFile(self.selectedFiles)
-        if dialog.exec():
-            self.selectedFiles = dialog.selectedFiles()[0]
-            # add file path for watcher
-            self.watcher.addPath(self.selectedFiles)
-            # check filetype for reading
-            self.check_filetype(self.selectedFiles)
-            # write log
-            logger.info(f"{self.name} {self.node.id}: select {self.selectedFiles}.")
-            # reset status of the node before executing the main function
-            self.resetNode()
-            # execute main function
+        if self.running:
             super().exec()
+        else:
+            dialog = FileDialog(
+                filter="""All Files (*);;Microsoft excel (*.xlsx *.xls);;Comma-separated values (*.csv)""",
+                acceptMode=QFileDialog.AcceptMode.AcceptOpen,
+            )
+            if self.selectedFiles: 
+                dialog.setDirectory(os.path.dirname(self.selectedFiles))
+                dialog.selectFile(self.selectedFiles)
+            if dialog.exec():
+                self.selectedFiles = dialog.selectedFiles()[0]
+                # add file path for watcher
+                self.watcher.addPath(self.selectedFiles)
+                # check filetype for reading
+                self.check_filetype(self.selectedFiles)
+                # write log
+                logger.info(f"{self.name} {self.node.id}: select {self.selectedFiles}.")
+                # reset status of the node before executing the main function
+                self.resetNode()
+                # execute main function
+                super().exec()
     
     def func (self):
         data = pd.DataFrame()

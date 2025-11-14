@@ -35,14 +35,15 @@ class NodeContentWidget(GraphicsContent):
          this function will be called when pressing execute button """
         if self.running:
             self.running = False
-            self.worker.stop()
-            self.exec_btn.setIcon("play.png")
+            self.worker.signals.blockSignals(True)
             self.resetNode()
         else:
             self.running = True
             self.num_signal_pipeline = 0 # reset number of pipeline signal
-            for edge in self.node.socket_pipeline_out.edges: # reset data for the connected nodes
-                edge.end_socket.node.content.resetNode()
+            for socket in self.node.output_sockets:
+                for edge in socket.edges:
+                    # reset data for the connected nodes
+                    edge.end_socket.node.content.resetNode()
             self.exec_btn.setIcon("stop.png")
             self.progress.set_type('indeterminate')
             self.progress.setValue(0)
@@ -59,6 +60,7 @@ class NodeContentWidget(GraphicsContent):
     
     def exec_done(self):
         """ this function will be called when threadpool finishes running"""
+        self.running = False
         self.progress.set_type('normal')
         self.label.setText(f"Shape: {self.data_to_view.shape}")    
         
@@ -75,13 +77,16 @@ class NodeContentWidget(GraphicsContent):
         self.exec_btn.setIcon("play.png")
 
     def pipeline (self):
-
-        for edge in self.node.socket_pipeline_out.edges:
-            edge.end_socket.node.content.pipeline_signal()
+        for socket in self.node.output_sockets:
+            for edge in socket.edges:
+                edge.end_socket.node.content.pipeline_signal()            
     
     def pipeline_signal (self):
         self.num_signal_pipeline += 1
-        if self.num_signal_pipeline >= len(self.node.socket_pipeline_in.edges):
+        num_inputs = 0
+        for socket in self.node.input_sockets:
+            num_inputs += len(socket.edges)
+        if self.num_signal_pipeline == num_inputs:
             self.exec()
     
     def resetNode(self):
@@ -90,7 +95,9 @@ class NodeContentWidget(GraphicsContent):
             socket.socket_data = None
         self.progress.setValue(0)
         self.progress.changeColor("success")
+        self.progress.set_type('normal')
         self.label.setText('Shape: (--, --)') 
+        self.exec_btn.setIcon("play.png")
     
     def showColorDialog(self):
         dialog = QColorDialog(self.node._brush_background.color(), self.parent)
