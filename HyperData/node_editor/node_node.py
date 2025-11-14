@@ -18,6 +18,7 @@ from node_editor.node.misc.misc import *
 from node_editor.node.deep_learning.deep_learning import *
 from node_editor.node.statistics.stats import *
 from node_editor.node.cheminformatics.cheminformatics import *
+from node_editor.node.mol_descriptors.descal import DescCal
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -191,6 +192,9 @@ class Node(NodeGraphicsNode):
         elif title == "SDF Reader":
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
             self.content = SDFReader(self, parent)
+        elif title == "Descriptor Calculation":
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
+            self.content = DescCal(self, parent)
         elif title == "Executor":
             super().__init__(title=title, inputs=[], outputs=[])
             self.content = Executor(self,parent)

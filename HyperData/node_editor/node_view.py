@@ -44,7 +44,7 @@ class NodeView (QMainWindow):
             "Deep Learning": ["Input Layer","Dense Layer","Normalization Layer","Model Compiler"],
             "Statistics": ["Distribution","One Sample Tester","Multi-Sample Tester",
                            "Correlation Tester","Distribution Fitter"],
-            "Cheminformatics": ["Molecule Reader","SDF Reader"],
+            "Cheminformatics": ["Molecule Reader","SDF Reader","Descriptor Calculation"],
             "Visualization": ["Figure 2D", "Figure 3D","Multi-Figure"],
             "Misc": ["Executor", "Looper", "Undefined Node"]
         }

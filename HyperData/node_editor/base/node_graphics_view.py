@@ -129,7 +129,7 @@ class NodeGraphicsView(QGraphicsView):
             visualization.addAction(action)
         cheminformatics = Menu(text='Cheminformatics')
         self.menu.addMenu(cheminformatics)
-        for text in ['Molecule Reader','SDF Reader']:
+        for text in ['Molecule Reader','SDF Reader','Descriptor Calculation']:
             action = Action(text=text, parent=cheminformatics)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             cheminformatics.addAction(action)
