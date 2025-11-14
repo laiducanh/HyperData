@@ -39,7 +39,7 @@ class Levene(TestBase):
         self.center.button.setCurrentText(self._config["center"])
         self.vlayout.addWidget(self.center)
 
-        self.proprotiontocut = HTransparentDoubleSpinBox(step=0.01, label="Proportion to cut")
+        self.proprotiontocut = HTransparentDoubleSpinBox(singleStep=0.01, label="Proportion to cut")
         self.proprotiontocut.button.setValue(self._config["proportiontocut"])
         self.vlayout.addWidget(self.proprotiontocut)
     

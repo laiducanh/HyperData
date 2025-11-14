@@ -2,7 +2,7 @@ from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPainterPath
 from node_editor.graphics.graphics_socket import GraphicsSocket
 from node_editor.graphics.graphics_edge import GraphicsEdge
-from config.settings import logger
+from config.settings import logger, config
 import math
 
 EDGE_TYPE_DIRECT = 1
@@ -35,10 +35,6 @@ class NodeGraphicsEdge(GraphicsEdge):
     def setDestination(self, x, y):
         self.posDestination = [x, y]
     
-    def updatePath(self):
-        """ Will handle drawing QPainterPath from Point A to B """
-        pass
-
     def updatePositions(self):
         source_pos = self.start_socket.getSocketPosition()        
         source_pos[0] = self.start_socket.scenePos().x()
@@ -68,43 +64,73 @@ class NodeGraphicsEdge(GraphicsEdge):
         self.start_socket = hashmap[data['start']]
         self.end_socket = hashmap[data['end']]
 
-
-
-class NodeGraphicsEdgeDirect(NodeGraphicsEdge):
     def updatePath(self):
-        path = QPainterPath(QPointF(self.posSource[0], self.posSource[1]))
-        path.lineTo(self.posDestination[0], self.posDestination[1])
-        self.setPath(path)
 
+        x1, y1 = self.posSource
+        x2, y2 = self.posDestination
+        path = QPainterPath(QPointF(x1, y1))
+        style = config['nodeview_edgestyle']
+        radius = min(config['nodeview_edgeradius'], abs(y2 - y1) / 2)
 
-class NodeGraphicsEdgeBezier(NodeGraphicsEdge):
-    def updatePath(self):
-        s = self.posSource
-        d = self.posDestination
-        dist = (d[0] - s[0]) * 0.5
-        cpx_s = +dist
-        cpx_d = -dist
-        cpy_s = 0
-        cpy_d = 0
+        if style == 'Straight': 
+            path.lineTo(self.posDestination[0], self.posDestination[1])
+        
+        elif style == 'Bezier':
+            dist = (x2 - x1) * 0.5
+            cpx_s = +dist
+            cpx_d = -dist
+            cpy_s = 0
+            cpy_d = 0
 
-        sspos = self.start_socket.socket_type
+            sspos = self.start_socket.socket_type
 
-        if (s[0] > d[0] and sspos in (SINGLE_OUT, MULTI_OUT, PIPELINE_OUT, CONNECTOR_OUT)) or (s[0] < d[0] and sspos in (SINGLE_IN, MULTI_IN, PIPELINE_IN, CONNECTOR_IN)):
-            cpx_d *= -1
-            cpx_s *= -1
+            if (x1 > x2 and sspos in (SINGLE_OUT, MULTI_OUT, PIPELINE_OUT, CONNECTOR_OUT)) or (x1 < x2 and sspos in (SINGLE_IN, MULTI_IN, PIPELINE_IN, CONNECTOR_IN)):
+                cpx_d *= -1
+                cpx_s *= -1
 
-            cpy_d = (
-                (s[1] - d[1]) / math.fabs(
-                    (s[1] - d[1]) if (s[1] - d[1]) != 0 else 0.00001
-                )
-            ) * EDGE_CP_ROUNDNESS
-            cpy_s = (
-                (d[1] - s[1]) / math.fabs(
-                    (d[1] - s[1]) if (d[1] - s[1]) != 0 else 0.00001
-                )
-            ) * EDGE_CP_ROUNDNESS
+                cpy_d = (
+                    (y1 - y2) / math.fabs(
+                        (y1 - y2) if (y1 - y2) != 0 else 0.00001
+                    )
+                ) * radius
+                cpy_s = (
+                    (y2 - y1) / math.fabs(
+                        (y2 - y1) if (y2 - y1) != 0 else 0.00001
+                    )
+                ) * radius
 
+            path.cubicTo(x1 + cpx_s, y1 + cpy_s, x2 + cpx_d, y2 + cpy_d, x2, y2)
+        
+        elif style == 'Orthogonal':
+            mid_x = (x1 + x2) / 2
+            mid_y = (y1 + y2) / 2
+            if x2 > x1:
+                path.lineTo(mid_x - radius, y1)
+                if y2 > y1:
+                    path.arcTo(mid_x - radius, y1, radius, radius, 90, -90)
+                    path.lineTo(mid_x, y2 - radius)
+                    path.arcTo(mid_x, y2 - radius, radius, radius, 180, 90)
+                else:
+                    path.arcTo(mid_x - radius, y1 - radius, radius, radius, -90, 90)
+                    path.lineTo(mid_x, y2 + radius)
+                    path.arcTo(mid_x, y2, radius, radius, 180, -90)
+            else:
+                if y2 > y1:
+                    path.arcTo(x1, y1, radius, radius, 90, -90)
+                    path.lineTo(x1 + radius, mid_y - radius)
+                    path.arcTo(x1, mid_y - radius, radius, radius, 0, -90)
+                    path.lineTo(x2, mid_y)
+                    path.arcTo(x2 - radius, mid_y, radius, radius, 90, 90)
+                    path.lineTo(x2 - radius, y2 - radius)
+                    path.arcTo(x2 - radius, y2 - radius, radius, radius, 180, 90)
+                else:
+                    path.arcTo(x1, y1 - radius, radius, radius, -90, 90)
+                    path.lineTo(x1 + radius, mid_y + radius)
+                    path.arcTo(x1, mid_y, radius, radius, 0, 90)
+                    path.lineTo(x2, mid_y)
+                    path.arcTo(x2 - radius, mid_y - radius, radius, radius, -90, -90)
+                    path.lineTo(x2 - radius, y2 + radius)
+                    path.arcTo(x2 - radius, y2, radius, radius, 180, -90)
+            path.lineTo(x2, y2) 
 
-        path = QPainterPath(QPointF(self.posSource[0], self.posSource[1]))
-        path.cubicTo( s[0] + cpx_s, s[1] + cpy_s, d[0] + cpx_d, d[1] + cpy_d, self.posDestination[0], self.posDestination[1])
         self.setPath(path)

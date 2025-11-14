@@ -192,7 +192,7 @@ class Node(NodeGraphicsNode):
         elif title == "SDF Reader":
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
             self.content = SDFReader(self, parent)
-        elif title == "Descriptor Calculation":
+        elif title == "Molecular Descriptor":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = DescCal(self, parent)
         elif title == "Executor":

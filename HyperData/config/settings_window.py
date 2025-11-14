@@ -5,13 +5,13 @@ from PySide6.QtCore import QSize, Qt
 import matplotlib.pyplot
 import matplotlib.style
 
-from ui.base_widgets.button import TransparentComboBox, HTransparentComboBox, HToggle
+from ui.base_widgets.button import TransparentComboBox, HTransparentComboBox, HToggle, HGroupRadioButton
 from ui.base_widgets.color import ColorPickerButton, HColorDropdown
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import Frame
 from ui.base_widgets.list import ListWidget
-from ui.base_widgets.spinbox import HTransparentSpinBox
+from ui.base_widgets.spinbox import HTransparentSpinBox, HTransparentDoubleSpinBox
 from ui.utils import get_path
 from config.settings import config
 import os, darkdetect, re, matplotlib, itertools, cycler, numpy
@@ -87,6 +87,32 @@ class DockWidget_Position(HTransparentComboBox):
             
     def setPos (self, pos):
         config["dock area"] = pos
+
+class NodeView_EdgeStyle(HGroupRadioButton):
+    def __init__(self, parent=None):
+        super().__init__(label='Edge style', items=['Straight', 'Bezier', 'Orthogonal'],
+                         parent=parent)
+
+        self.set_value(config['nodeview_edgestyle'])
+        self.checkChanged.connect(self.set_edgestyle)
+    
+    def set_edgestyle(self, style:str):
+        config['nodeview_edgestyle'] = style
+
+class NodeView_EdgeRadius(HTransparentDoubleSpinBox):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.setText('Edge radius')
+        self.button.setSingleStep(10.0)
+        self.button.setMaximum(200)
+        self.button.setMinimum(0)
+        self.button.setValue(config['nodeview_edgeradius'])
+        self.button.valueChanged.connect(self.set_radius)
+    
+    def set_radius(self, value:float):
+        config['nodeview_edgeradius'] = float(value)
+
 
 class Figure_Tooltip(HToggle):
     def __init__(self, parent=None):
@@ -278,7 +304,7 @@ class SettingsWindow(QMainWindow):
         super().__init__(parent)
 
         self.sidebar = ListWidget()
-        self.sidebar.addItems(["Appearance","Figure"])
+        self.sidebar.addItems(["Appearance","Node View", "Figure"])
         self.sidebar.setCurrentRow(0)
         self.sidebar.currentRowChanged.connect(lambda: layout.setCurrentIndex(self.sidebar.currentRow()))
 
@@ -303,6 +329,13 @@ class SettingsWindow(QMainWindow):
         appearance_layout.addWidget(ThemeColor(parent))
         appearance_layout.addWidget(DockWidget_Position(parent))
         appearance_layout.addStretch()
+
+        nodeview = QWidget()
+        nodeview_layout = QVBoxLayout(nodeview)
+        layout.addWidget(nodeview)
+
+        nodeview_layout.addWidget(NodeView_EdgeStyle(parent))
+        nodeview_layout.addWidget(NodeView_EdgeRadius(parent))
 
         figure = QWidget()
         figure_layout = QVBoxLayout(figure)

@@ -150,6 +150,8 @@ config = {
     "theme":"Light", 
     "themecolor":"#0078d7", 
     "dock area":"Left",  
+    "nodeview_edgestyle": "Orthogonal",
+    "nodeview_edgeradius": 20.0,
     "plot_tooltip":False, 
     "plot_dpi":100, 
     "plot_style":"default",

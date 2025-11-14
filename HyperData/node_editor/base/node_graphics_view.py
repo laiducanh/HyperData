@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtCore import Qt, QEvent, QTimeLine
 from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent, QDragEnterEvent, QDropEvent, QWheelEvent, QKeyEvent
 from node_editor.base.node_graphics_node import NodeGraphicsSocket, NodeGraphicsNode, NodeEditor
-from node_editor.base.node_graphics_edge import NodeGraphicsEdgeBezier, NodeGraphicsEdge
+from node_editor.base.node_graphics_edge import NodeGraphicsEdge
 from node_editor.base.node_graphics_scene import NodeGraphicsScene
 from node_editor.node_node import Node
 from ui.base_widgets.menu import Menu, Action
@@ -129,7 +129,7 @@ class NodeGraphicsView(QGraphicsView):
             visualization.addAction(action)
         cheminformatics = Menu(text='Cheminformatics')
         self.menu.addMenu(cheminformatics)
-        for text in ['Molecule Reader','SDF Reader','Descriptor Calculation']:
+        for text in ['Molecule Reader','SDF Reader','Molecular Descriptor']:
             action = Action(text=text, parent=cheminformatics)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             cheminformatics.addAction(action)
@@ -330,7 +330,7 @@ class NodeGraphicsView(QGraphicsView):
     
     def edgeDragStart(self, item:NodeGraphicsSocket):
         
-        self.dragEdge = NodeGraphicsEdgeBezier(start_socket=item, end_socket=None)
+        self.dragEdge = NodeGraphicsEdge(start_socket=item, end_socket=None)
         self.dragEdge.updatePositions()
         self.grScene.addEdge(self.dragEdge)
         if DEBUG:
@@ -466,7 +466,7 @@ class NodeGraphicsView(QGraphicsView):
         for edge_id in edges.keys():
             start_socket = hashmap[edges[edge_id]['start']]
             end_socket = hashmap[edges[edge_id]['end']]
-            edge = NodeGraphicsEdgeBezier(start_socket, end_socket)
+            edge = NodeGraphicsEdge(start_socket, end_socket)
             edge.updatePositions()
             self.grScene.addEdge(edge)
             edge.deserialize(edges[edge_id], hashmap)    
