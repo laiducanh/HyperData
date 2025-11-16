@@ -10,5 +10,7 @@ class DLBase (NodeContentWidget):
         super().__init__(node, parent)
         
         self.label.clicked.disconnect()
+        self.node.input_sockets[0].setSocketLabel("Data in")
+        self.node.output_sockets[0].setSocketLabel("Data out")
 
         

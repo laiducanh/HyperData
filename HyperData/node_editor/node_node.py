@@ -169,7 +169,7 @@ class Node(NodeGraphicsNode):
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = NormalizationLayer(self,parent)
         elif title == "Model Compiler":
-            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = ModelCompiler(self,parent)
         elif title == "Distribution":
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])

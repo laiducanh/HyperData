@@ -20,6 +20,9 @@ class ModelCompiler (DLBase):
             shuffle = True,
         )
 
+        self.node.input_sockets[0].setSocketLabel("Data in")
+        self.node.input_sockets[1].setSocketLabel("Optimizer")
+        self.node.input_sockets[2].setSocketLabel("Loss function")
         self.node.output_sockets[0].setSocketLabel("Model")
         self.node.output_sockets[1].setSocketLabel("Estimator")
         self.node.output_sockets[2].setSocketLabel("Data out")

@@ -11,7 +11,7 @@ class InputLayer (DLBase):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
-        self.node.input_sockets[0].setSocketLabel("Train/Test")
+        self.node.input_sockets[0].setSocketLabel("Splitter")
 
         self._config = dict(
             # name = f"{self.name}_{self.node.id}"
