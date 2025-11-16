@@ -655,6 +655,8 @@ class MolView(QWidget):
         
         self.image2D = QLabel()
         self.vlayout.addWidget(self.image2D)
+
+        self.vlayout.addStretch()
     
     def _remove_nonpolarHs(self):
         ''' Remove nonpolar hydrogens '''
@@ -684,8 +686,8 @@ class MolView(QWidget):
             drawop.addBondIndices=self.bondIdx.isChecked()
             drawop.addStereoAnnotation=self.stereo.isChecked()
             mol = self.mol
-            if not self.implicitHs.isChecked():
-                mol = self._remove_nonpolarHs()
+            # if not self.implicitHs.isChecked():
+            #     mol = self._remove_nonpolarHs()
             pil_img = Draw.MolToImage(mol, size, bgcolor=(255,255,255), options=drawop)
             buffer = BytesIO()
             pil_img.save(buffer, format='PNG')
@@ -699,7 +701,7 @@ class MolView(QWidget):
 
         return pixmap
     
-    def update_mol(self, mol:Chem.Mol):
+    def update_mol(self, mol):
         self.mol = mol
         self.update_image()
         

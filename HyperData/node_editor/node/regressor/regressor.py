@@ -1,6 +1,6 @@
 from node_editor.base.node_graphics_content import NodeContentWidget
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (DropDownPrimaryPushButton, TransparentPushButton)
+from ui.base_widgets.button import (HDropDownPrimaryPushButton, TransparentPushButton)
 from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger, GLOBAL_DEBUG
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
@@ -84,7 +84,7 @@ class Regressor(NodeContentWidget):
         menu = AlgorithmMenu()
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: self.stackedlayout.setCurrentIndex(self.estimator_list.index(string)))
-        algorithm = DropDownPrimaryPushButton(text="Algorithm")
+        algorithm = HDropDownPrimaryPushButton(text="Algorithm")
         algorithm.button.setText(self._config["estimator"])
         algorithm.button.setMenu(menu)
         dialog.main_layout.addWidget(algorithm)
@@ -206,11 +206,12 @@ class Regressor(NodeContentWidget):
             self.score_function = dialog.score_function
     
     def eval(self):
+        self.resetNode()
         # reset input sockets
         for socket in self.node.input_sockets:
             socket.socket_data = None
         # reset socket data
-        self.node.input_sockets[0].socket_data = [[],pd.DataFrame(), pd.DataFrame()]
+        self.node.input_sockets[0].socket_data = [[], pd.DataFrame(), pd.DataFrame()]
         # update input sockets
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data

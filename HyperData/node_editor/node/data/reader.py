@@ -11,7 +11,7 @@ from ui.base_widgets.frame import VFrame, HFrame
 from data_processing.data_window import TableModel
 from config.settings import logger, encode, GLOBAL_DEBUG
 from PySide6.QtWidgets import QTableView, QHBoxLayout, QVBoxLayout, QFileDialog
-from PySide6.QtCore import QFileSystemWatcher
+from PySide6.QtCore import QFileSystemWatcher, Qt
 
 DEBUG = False
 
@@ -125,6 +125,7 @@ class DataReader (NodeContentWidget):
             self.sheet_name.button.setCurrentText(self._config["sheet_name"])
         self.sheet_name.button.currentTextChanged.connect(self.update_preview)
         fr.vlayout.addWidget(self.sheet_name)
+        vlayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         vlayout = QVBoxLayout()
         hlayout.addLayout(vlayout)

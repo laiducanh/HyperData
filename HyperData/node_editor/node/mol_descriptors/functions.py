@@ -17,6 +17,31 @@ def MW(type):
     elif type == 'h':
         return Descriptors.HeavyAtomMolWt
 
+def AtmCount(atom):
+    if atom == 'Hetero':
+        return Lipinski.NumHeteroatoms
+    elif atom == 'NHOH':
+        return Lipinski.NHOHCount
+    elif atom == 'NO':
+        return Lipinski.NOCount
+    elif atom == 'Hdonors':
+        try:
+            return Calculator(HydrogenBond.HBondDonor)
+        except: 
+            return Lipinski.NumHDonors
+    elif atom == 'Hacceptors':
+        try:
+            return Calculator(HydrogenBond.HBondAcceptor)
+        except:
+            return Lipinski.NumHAcceptors
+    return Calculator(AtomCount.AtomCount(atom))
+
+def ElecCount(type):
+    if type == 'Valence':
+        return Descriptors.NumValenceElectrons
+    elif type == 'Radical':
+        return Descriptors.NumRadicalElectrons
+    
 def TPSA():
     return MolSurf.TPSA
 

@@ -42,7 +42,7 @@ class VotingClassifier(NodeContentWidget):
     def config(self):
         dialog = Dialog("Configuration", self.parent)
 
-        multiclass = HPrimaryComboBox(items=["One vs. Rest","One vs. One"],lable="Multiclass strategy")
+        multiclass = HPrimaryComboBox(items=["One vs. Rest","One vs. One"],label="Multiclass strategy")
         dialog.main_layout.addWidget(multiclass)
 
         voting = HTransparentComboBox(items=["hard","soft"],label="Voting rule")

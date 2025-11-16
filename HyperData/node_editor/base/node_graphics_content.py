@@ -19,7 +19,7 @@ class NodeContentWidget(GraphicsContent):
         self.num_signal_pipeline = 0
         self._config = dict()
         self.running = False # keep track on state of node
-        self.resetNode()
+        self.eval()
 
     def config(self):
         pass

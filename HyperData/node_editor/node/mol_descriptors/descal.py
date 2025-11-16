@@ -4,13 +4,13 @@ from node_editor.base.node_graphics_content import NodeContentWidget
 from node_editor.node.mol_descriptors.descal_dict import desc_total
 from data_processing.data_window import MolDataView
 from config.settings import logger, GLOBAL_DEBUG
-from ui.base_widgets.button import PushButton
+from ui.base_widgets.button import PushButton, HTransparentComboBox
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.frame import SeparateHLine, VFrame
-from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import BodyLabel, TitleLabel
 from ui.base_widgets.list import TreeWidget, QTreeWidgetItem
 from ui.base_widgets.line_edit import SearchBox
-from PySide6.QtWidgets import QHeaderView, QHBoxLayout
+from PySide6.QtWidgets import QHeaderView, QHBoxLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
 DEBUG = False
@@ -48,6 +48,7 @@ class _TreeWidget(TreeWidget):
         self.setHeaderHidden(False)
         self.setHeaderLabels(['Code','Description','Tags'])
         # self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.itemChanged.connect(self.onChanged)
         self.itemPressed.connect(self.onPressed)
 
@@ -62,12 +63,10 @@ class _TreeWidget(TreeWidget):
             item = QTreeWidgetItem([group,'',''])   
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             for code, desc in group_values.items():
-                child = QTreeWidgetItem([code,'',''])
+                child = QTreeWidgetItem([code, desc[0],''])
                 child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                 item.addChild(child)
                 self.total_items += 1
-                for i, d in enumerate(desc):
-                    child.setText(i+1, d)
                 if code in selected:
                     child.setCheckState(0, Qt.CheckState.Checked)        
                     self.selected.append(code)
@@ -142,46 +141,87 @@ class DescCal(NodeContentWidget):
 
         self.view = MolDataView(self.data_to_view, parent)
         self._config = dict(
-            descriptors = []
+            descriptors = [],
+            source = None
         )
     
     def config(self):
         dialog = Dialog(title="Configuration", parent=self.parent)
         dialog.setMinimumSize(600, 400)
 
-        search_box = _SearchBox()
-        search_box.setPlaceholderText("Type / to search")
-        dialog.main_layout.addWidget(search_box)
+        dialog.main_layout.addWidget(TitleLabel('Molecular Descriptors'))
+        dialog.main_layout.addWidget(SeparateHLine())
 
-        self.tree = _TreeWidget(self.parent)
-        self.tree.setData(desc_total, self._config["descriptors"])
-        search_box.set_TreeView(self.tree)
-        dialog.main_layout.addWidget(self.tree)
+        source = HTransparentComboBox(
+            items=list(self.node.input_sockets[0].socket_data.columns),
+            label='Source',
+            label2='Column to read molecules',
+            getter=lambda: self._config["source"],
+            layout=dialog.main_layout
+        )
 
         hlayout = QHBoxLayout()
         dialog.main_layout.addLayout(hlayout)
 
         self.num_selected = BodyLabel()
-        self.update_selected()
-        self.tree.selectedChange.connect(self.update_selected)
         hlayout.addWidget(self.num_selected)
 
         hlayout.addStretch()
         selectAll = PushButton('Select All')
-        selectAll.pressed.connect(self.tree.selectAll)
         hlayout.addWidget(selectAll)
 
         deselectAll = PushButton('Deselect All')
-        deselectAll.pressed.connect(self.tree.clearSelection)
         hlayout.addWidget(deselectAll)
 
+        self.tree = _TreeWidget(self.parent)
+        self.tree.setData(desc_total, self._config["descriptors"])
+        self.tree.selectedChange.connect(self.update_selected)
+        self.update_selected()
+        selectAll.pressed.connect(self.tree.selectAll)
+        deselectAll.pressed.connect(self.tree.clearSelection)
+        dialog.main_layout.addWidget(self.tree)
+
+        search_box = _SearchBox()
+        search_box.set_TreeView(self.tree)
+        search_box.setPlaceholderText("Filter descriptors")
+        dialog.main_layout.addWidget(search_box)
+
         if dialog.exec():
-            self._config.update(descriptors=self.tree.selected)
+            self._config.update(
+                descriptors=self.tree.selected,
+                source=source.get_value()
+            )
             logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
     
     def update_selected(self):
         self.num_selected.setText(f"Selected: {len(self.tree.selected)}/{self.tree.total_items}")
+
+    def func(self, *args, **kwargs):       
+        try:
+            data = self.node.input_sockets[0].socket_data.copy()
+            for index in data.index:
+                mol = data.loc[index, self._config['source']]
+                for desc in self._config["descriptors"]:
+                    for values in desc_total.values():
+                        if desc in values:
+                            func = values[desc][-1]
+                            data.loc[index, desc] = func(mol)
+
+            # write log
+            logger.info(f"{self.name} {self.node.id}: compute molecular descriptors successfully.")
+            # change progressbar's color
+            self.progress.changeColor('success')
+        except Exception as e:
+            data = self.node.input_sockets[0].socket_data.copy()
+            # change progressbar's color
+            self.progress.changeColor('fail')
+            # write log
+            logger.error(f"{self.name} {self.node.id}: fail, return the original DataFrame.") 
+            logger.exception(e)
+        
+        self.node.output_sockets[0].socket_data = data.copy()
+        self.data_to_view = data.copy()
 
     def eval(self):
         self.resetNode()

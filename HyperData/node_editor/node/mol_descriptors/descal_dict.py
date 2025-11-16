@@ -7,27 +7,27 @@ desc_composition = {
     "aMW": ["Average molecular weight", MW('a')],
     "eMW": ["Exact molecular weight", MW('e')],
     "hMW": ["Average molecular weight excluding hydrogens", MW('h')],
-    "nAtom": ["Number of atoms", Calculator(AtomCount.AtomCount('Atom')), None],
-    "nhAtom": ["Number of non-hydrogen atoms", Lipinski.HeavyAtomCount, Calculator(AtomCount.AtomCount('HeavyAtom'))],
-    "nHAtoms": ["Number of heteroatoms", Lipinski.NumHeteroatoms, None],
-    "nH": ["Number of H atoms", Calculator(AtomCount.AtomCount('H')), None],
-    "nB": ["Number of B atoms", Calculator(AtomCount.AtomCount('B')), None],
-    "nC": ["Number of C atoms", Calculator(AtomCount.AtomCount('C')), None],
-    "nN": ["Number of N atoms", Calculator(AtomCount.AtomCount('N')), None],
-    "nO": ["Number of O atoms", Calculator(AtomCount.AtomCount('C')), None],
-    "nS": ["Number of S atoms", Calculator(AtomCount.AtomCount('S')), None],
-    "nP": ["Number of P atoms", Calculator(AtomCount.AtomCount('P')), None],
-    "nF": ["Number of F atoms", Calculator(AtomCount.AtomCount('F')), None],
-    "nCl": ["Number of Cl atoms", Calculator(AtomCount.AtomCount('Cl')), None],
-    "nBr": ["Number of Br atoms", Calculator(AtomCount.AtomCount('Br')), None],
-    "nI": ["Number of I atoms", Calculator(AtomCount.AtomCount('I')), None],
-    "nX": ["Number of halogen atoms", Calculator(AtomCount.AtomCount('X')), None],
-    "nNHOH": ["Number of NHs or OHs", Lipinski.NHOHCount, None],
-    "nNO": ["Number of N and O atoms", Lipinski.NOCount, None],
-    "nHdonors": ["Number of hydrogen bond donors", Lipinski.NumHDonors, Calculator(HydrogenBond.HBondDonor)],
-    "nHacceptors": ["Number of hydrogen bond acceptors", Lipinski.NumHAcceptors, Calculator(HydrogenBond.HBondAcceptor)],
-    "nValelec": ["Number of valence electrons", Descriptors.NumValenceElectrons, None],
-    "nRadielec": ["Number of radical electrons", Descriptors.NumRadicalElectrons, None],
+    "nAtom": ["Number of atoms", AtmCount('Atom')],
+    "nhAtom": ["Number of non-hydrogen atoms", AtmCount('HeavyAtom')],
+    "nHAtoms": ["Number of heteroatoms", AtmCount('Hetero')],
+    "nH": ["Number of H atoms", AtmCount('H')],
+    "nB": ["Number of B atoms", AtmCount('B')],
+    "nC": ["Number of C atoms", AtmCount('C')],
+    "nN": ["Number of N atoms", AtmCount('N')],
+    "nO": ["Number of O atoms", AtmCount('O')],
+    "nS": ["Number of S atoms", AtmCount('S')],
+    "nP": ["Number of P atoms", AtmCount('P')],
+    "nF": ["Number of F atoms", AtmCount('F')],
+    "nCl": ["Number of Cl atoms", AtmCount('Cl')],
+    "nBr": ["Number of Br atoms", AtmCount('Br')],
+    "nI": ["Number of I atoms", AtmCount('I')],
+    "nX": ["Number of halogen atoms", AtmCount('X')],
+    "nNHOH": ["Number of NHs or OHs", AtmCount('NHOH')],
+    "nNO": ["Number of N and O atoms", AtmCount('NO')],
+    "nHdonors": ["Number of hydrogen bond donors", AtmCount('Hdonnors')],
+    "nHacceptors": ["Number of hydrogen bond acceptors", AtmCount('Hacceptors')],
+    "nValelec": ["Number of valence electrons", ElecCount('Valence')],
+    "nRadielec": ["Number of radical electrons", ElecCount('Radical')],
 }
 
 # Topological descriptors: connectivity
@@ -267,7 +267,6 @@ desc_misc = {
 
 
 desc_total = {
-    "Composition": {}
+    "Composition": desc_composition,
+    "Shape": desc_shape
 }
-for key, value in desc_composition.items():
-    desc_total["Composition"][key] = [value[0]]

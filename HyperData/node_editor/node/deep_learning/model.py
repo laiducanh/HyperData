@@ -70,10 +70,11 @@ class ModelCompiler (DLBase):
             logger.info(f"{self.name} {self.node.id}: run successfully.")
            
         except Exception as e:
+            data = pd.DataFrame()
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log
-            logger.error(f"{self.name} {self.node.id}: failed.")
+            logger.error(f"{self.name} {self.node.id}: failed, return an empty DataFrame.")
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = model

@@ -24,7 +24,7 @@ class DenseLayer (DLBase):
             bias_regularizer = None,
             kernel_constraint = None,
             bias_constraint = None,
-            name = f"{self.name}_{self.node.id}"
+            # name = f"{self.name}_{self.node.id}"
         )
     
     def config(self):
@@ -63,13 +63,13 @@ class DenseLayer (DLBase):
             cv, X, Y, input_layer, output_layer = self.node.input_sockets[0].socket_data
             # create layer
             output_layer = layers.Dense(**self._config)(output_layer)
-            print(output_layer.shape)
             # change progressbar's color
             self.progress.changeColor('success')
             # write log
             logger.info(f"{self.name} {self.node.id}: run successfully.")
            
         except Exception as e:
+            cv, X, Y, input_layer, output_layer = None, None, None, None, None
             # change progressbar's color
             self.progress.changeColor('fail')
             # write log

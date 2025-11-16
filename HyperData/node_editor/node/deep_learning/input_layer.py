@@ -5,7 +5,7 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.deep_learning.base import DLBase
 from config.settings import logger, GLOBAL_DEBUG
 
-DEBUG = False
+DEBUG = True
 
 class InputLayer (DLBase):
     def __init__(self, node: NodeGraphicsNode, parent=None):
@@ -14,7 +14,7 @@ class InputLayer (DLBase):
         self.node.input_sockets[0].setSocketLabel("Train/Test")
 
         self._config = dict(
-            name = f"{self.name}_{self.node.id}"
+            # name = f"{self.name}_{self.node.id}"
         )
         
     def func(self):
@@ -57,6 +57,7 @@ class InputLayer (DLBase):
             logger.exception(e)
 
         self.node.output_sockets[0].socket_data = [cv, X, Y, layer, layer]
+        self.data_to_view = X
 
     def eval(self):
         self.resetNode()

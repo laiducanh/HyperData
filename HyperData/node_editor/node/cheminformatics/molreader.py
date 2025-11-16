@@ -99,6 +99,8 @@ class MolReader(NodeContentWidget):
             mols = []
             for string in source:
                 mol = self.string_to_mol(string, fmt)
+                if mol is None:
+                    raise Exception(f'Cannot read {fmt} for input: {string}')
                 mols.append(mol)
             data['_molread'] = mols
             # change progressbar's color
@@ -116,6 +118,7 @@ class MolReader(NodeContentWidget):
         
         self.node.output_sockets[0].socket_data = data.copy()
         self.data_to_view = data.copy()
+        self.view.data = data.copy()        
     
     def eval(self):
         self.resetNode()
