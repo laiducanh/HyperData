@@ -86,7 +86,8 @@ class NodeContentWidget(GraphicsContent):
         num_inputs = 0
         for socket in self.node.input_sockets:
             num_inputs += len(socket.edges)
-        if self.num_signal_pipeline == num_inputs:
+        num_inputs = max(num_inputs, len(self.node.input_sockets))
+        if self.num_signal_pipeline >= num_inputs:
             self.exec()
     
     def resetNode(self):

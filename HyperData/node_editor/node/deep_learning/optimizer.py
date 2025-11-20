@@ -377,7 +377,7 @@ class Optimizer(NodeContentWidget):
         self.node.output_sockets[0].setSocketLabel("Optimizer")
         
         self._config = dict(
-            optimizer = "Adam",
+            optimizer = "RMSprop",
             config = dict(),
         )
         
