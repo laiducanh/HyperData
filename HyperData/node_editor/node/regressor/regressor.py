@@ -16,21 +16,17 @@ from node_editor.node.regressor.lars_lasso import LarsLasso
 from node_editor.node.regressor.omp import OrthogonalMatchingPursuit
 from node_editor.node.regressor.bayesian_ridge import BayesianRidgeRegression
 from node_editor.node.regressor.ard import ARD
-from node_editor.node.regressor.tweedie import TweedieRegression
-from node_editor.node.regressor.poisson import PoissonRegression
-from node_editor.node.regressor.gamma import GammaRegression
-from node_editor.node.regressor.sgd import StochasticGradientDescent
-from node_editor.node.regressor.passive_aggressive import PassiveAggressiveRegression
-from node_editor.node.regressor.ransac import RANSAC
-from node_editor.node.regressor.huber import HuberRegression
+from node_editor.node.regressor.tweedie import Tweedie
+from node_editor.node.regressor.poisson import Poisson
+from node_editor.node.regressor.gamma import Gamma
+from node_editor.node.regressor.huber import Huber
 from node_editor.node.regressor.theilsen import TheilSenRegression
-from node_editor.node.regressor.quantile import QuantileRegression
+from node_editor.node.regressor.quantile import Quantile
 from node_editor.node.regressor.svr import SVR
 from node_editor.node.regressor.nu_svr import NuSVR
-from node_editor.node.regressor.linear_svr import LinearSVR
-from node_editor.node.regressor.kneighbors import KNeighborsRegression
-from node_editor.node.regressor.radius_neighbors import RadiusNeighborsRegression
-from node_editor.node.regressor.gaussian_process import GaussianProcessRegression
+from node_editor.node.regressor.kneighbors import KNeighbors
+from node_editor.node.regressor.radius_neighbors import RadiusNeighbors
+from node_editor.node.regressor.gaussian_process import GaussianProcess
 from PySide6.QtWidgets import QStackedLayout
 from sklearn import linear_model, base
 import pandas as pd
@@ -64,20 +60,19 @@ class Regressor(NodeContentWidget):
                                "Least Angle Regression","LARS Lasso","Orthogonal Matching Pursuit",
                                "Bayesian Ridge Regression","Automatic Relevance Determination",
                                "Tweedie Regression","Poisson Regression","Gamma Regression",
-                               "Stochastic Gradient Descent","Passive Aggressive Regression",
-                               "Randon Sample Consensus","Huber Regression","Theil-Sen Regression",
-                               "Quantile Regression","SVR","NuSVR","Linear SVR","K Neighbors Regression",
-                               "Radius Neighbors Regression","Gaussian Process Regression"]
+                               "Huber Regression","Theil-Sen Regression","Quantile Regression",
+                               "SVR","NuSVR","K Neighbors Regression","Radius Neighbors Regression",
+                               "Gaussian Process Regression"]
 
         self.estimator = linear_model.LinearRegression(**self._config["config"])
 
     def currentWidget(self) -> RegressorBase:
         return self.stackedlayout.currentWidget()
 
-    def create_model(self):
+    def create_model(self) -> base.BaseEstimator:
         """ construct a new unfitted estimator with the same parameters """
         """ only self.model is fitted, self.estimator is always the unfitted estimator"""
-        self.model = base.clone(self.estimator)
+        return base.clone(self.estimator)
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
@@ -100,21 +95,17 @@ class Regressor(NodeContentWidget):
         self.stackedlayout.addWidget(OrthogonalMatchingPursuit())
         self.stackedlayout.addWidget(BayesianRidgeRegression())
         self.stackedlayout.addWidget(ARD())
-        self.stackedlayout.addWidget(TweedieRegression())
-        self.stackedlayout.addWidget(PoissonRegression())
-        self.stackedlayout.addWidget(GammaRegression())
-        self.stackedlayout.addWidget(StochasticGradientDescent())
-        self.stackedlayout.addWidget(PassiveAggressiveRegression())
-        self.stackedlayout.addWidget(RANSAC())
-        self.stackedlayout.addWidget(HuberRegression())
+        self.stackedlayout.addWidget(Tweedie())
+        self.stackedlayout.addWidget(Poisson())
+        self.stackedlayout.addWidget(Gamma())
+        self.stackedlayout.addWidget(Huber())
         self.stackedlayout.addWidget(TheilSenRegression())
-        self.stackedlayout.addWidget(QuantileRegression())
+        self.stackedlayout.addWidget(Quantile())
         self.stackedlayout.addWidget(SVR())
         self.stackedlayout.addWidget(NuSVR())
-        self.stackedlayout.addWidget(LinearSVR())
-        self.stackedlayout.addWidget(KNeighborsRegression())
-        self.stackedlayout.addWidget(RadiusNeighborsRegression())
-        self.stackedlayout.addWidget(GaussianProcessRegression())
+        self.stackedlayout.addWidget(KNeighbors())
+        self.stackedlayout.addWidget(RadiusNeighbors())
+        self.stackedlayout.addWidget(GaussianProcess())
 
         if dialog.exec():
             self.estimator = self.currentWidget().estimator
@@ -157,7 +148,7 @@ class Regressor(NodeContentWidget):
                     X_train, X_test = self.X[train_idx], self.X[test_idx]
                     Y_train, Y_test = self.Y[train_idx], self.Y[test_idx]
 
-                    self.create_model()                   
+                    self.model = self.create_model()                   
                     self.model.fit(X_train, Y_train)
                     Y_pred = self.model.predict(X_test)
                     Y_pred_all = self.model.predict(self.X)
@@ -215,3 +206,8 @@ class Regressor(NodeContentWidget):
         # update input sockets
         for edge in self.node.input_sockets[0].edges:
             self.node.input_sockets[0].socket_data = edge.start_socket.socket_data
+    
+    def resetNode(self):
+        try: self.score_btn.setText(f"Score: --")
+        except: pass
+        return super().resetNode()

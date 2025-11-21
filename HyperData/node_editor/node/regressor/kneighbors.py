@@ -1,9 +1,69 @@
 from node_editor.node.regressor.base import RegressorBase
 from sklearn import neighbors
+from ui.base_widgets.button import HTransparentComboBox, HToggle, HGroupRadioButton
+from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 
-class KNeighborsRegression(RegressorBase):
+class KNeighbors(RegressorBase):
     def __init__(self, parent=None):
         super().__init__(parent)
     
-    def setEstimator(self):
+    def set_config(self, config):
+        self.clear_layout()
+
+        if not config: self._config = dict(
+            n_neighbors=5,
+            weights='uniform',
+            algorithm='auto',
+            leaf_size=30,
+            metric='minkowski',
+        )
+        else: self._config = config
+        self.estimator = neighbors.KNeighborsRegressor(**self._config)
+
+        self.neighbors = HTransparentSpinBox(
+            label='Number of neighbors',
+            getter=lambda: self._config['n_neighbors'],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
+
+        self.weights = HGroupRadioButton(
+            label='Weight function',
+            items=['uniform','distance'],
+            getter=self._config['weights'],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
+
+        self.algorithm = HTransparentComboBox(
+            items=['auto','ball_tree','kd_tree','brute'],
+            label='Algorithm',
+            getter=lambda: self._config['algorithm'],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
+
+        self.leaf_size = HTransparentSpinBox(
+            label='Leaf size',
+            getter=lambda: self._config['leaf_size'],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
+
+        self.metric_ = HTransparentComboBox(
+            label='Metric',
+            label2='Use for distance computation',
+            items=['cityblock','cosine','euclidean','haversine','l1','l2',
+                   'manhattan','nan_euclidean','minkowski'],
+            getter=lambda: self._config['metric'],
+            setter=self.set_estimator,
+            layout=self.vlayout
+        )
+        
+    def set_estimator(self):
+        self._config['n_neighbors'] = self.neighbors.get_value()
+        self._config['weights'] = self.weights.get_value()
+        self._config['algorithm'] = self.algorithm.get_value()
+        self._config['leaf_size'] = self.leaf_size.get_value()
+        self._config['metric'] = self.metric_.get_value()
         self.estimator = neighbors.KNeighborsRegressor(**self._config)
