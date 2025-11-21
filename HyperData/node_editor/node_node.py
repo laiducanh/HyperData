@@ -19,8 +19,6 @@ from node_editor.node.deep_learning.deep_learning import *
 from node_editor.node.statistics.stats import *
 from node_editor.node.cheminformatics.cheminformatics import *
 from node_editor.node.mol_descriptors.descal import DescCal
-from node_editor.node.deep_learning.optimizer import Optimizer
-from node_editor.node.deep_learning.loss import Loss
 
 SINGLE_IN = 1
 MULTI_IN = 2
@@ -170,14 +168,8 @@ class Node(NodeGraphicsNode):
         elif title == "Normalization Layer":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT])
             self.content = NormalizationLayer(self,parent)
-        elif title == 'Optimizer':
-            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
-            self.content = Optimizer(self, parent)
-        elif title == 'Loss Function':
-            super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])
-            self.content = Loss(self, parent)
         elif title == "Model Compiler":
-            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = ModelCompiler(self,parent)
         elif title == "Distribution":
             super().__init__(title=title, inputs=[], outputs=[MULTI_OUT])

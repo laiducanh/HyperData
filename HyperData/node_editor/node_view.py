@@ -42,7 +42,7 @@ class NodeView (QMainWindow):
                                 "Label Encoder","Feature Encoder",
                                 ],
             "Neural Network": ["Input Layer","Dense Layer","Normalization Layer",
-                              "Optimizer", "Loss Function", "Model Compiler"],
+                               "Model Compiler"],
             "Statistics": ["Distribution","One Sample Tester","Multi-Sample Tester",
                            "Correlation Tester","Distribution Fitter"],
             "Cheminformatics": ["Molecule Reader","SDF Reader","Molecular Descriptor"],

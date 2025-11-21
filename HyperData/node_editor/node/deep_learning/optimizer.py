@@ -369,39 +369,29 @@ class SGD(AlgorithmBase):
             layout=self.vlayout
         )
 
-class Optimizer(NodeContentWidget):
-    def __init__(self, node: NodeGraphicsNode, parent=None):
-        super().__init__(node, parent)
-
-        self.label.hide()
-        self.node.output_sockets[0].setSocketLabel("Optimizer")
+class Optimizer(QWidget):
+    def __init__(self, config:dict, parent=None):
+        super().__init__(parent=parent)
         
-        self._config = dict(
-            optimizer = "RMSprop",
-            config = dict(),
-        )
-        
+        self._config = config
         self.optimizer_list = ["Adadelta", "Adagrad", "Adam", "Adamax",
                                "Ftrl", "Nadam", "RMSprop", "SGD"]
         
-    
-    def currentWidget(self) -> AlgorithmBase:
-        return self.stackedlayout.currentWidget()       
+        self.initUI()
 
-    def config(self):
-        dialog = Dialog("Configuration", self.parent)
-        dialog.main_layout.addWidget(TitleLabel('Optimizer'))
-        dialog.main_layout.addWidget(SeparateHLine())
+    def initUI(self):
+        self.vlayout = QVBoxLayout(self)
+
         algorithm = HPrimaryComboBox(
             items=self.optimizer_list,
             label="Algorithm",
             getter=lambda: self._config['optimizer'],
             setter=lambda s:self.stackedlayout.setCurrentIndex(self.optimizer_list.index(s)),
-            layout=dialog.main_layout
+            layout=self.vlayout
         )
-        dialog.main_layout.addWidget(SeparateHLine())
+        self.vlayout.addWidget(SeparateHLine())
         self.stackedlayout = QStackedLayout()
-        dialog.main_layout.addLayout(self.stackedlayout)
+        self.vlayout.addLayout(self.stackedlayout)
         self.stackedlayout.addWidget(Adadelta(self._config['config']))
         self.stackedlayout.addWidget(Adagrad(self._config['config']))
         self.stackedlayout.addWidget(Adam(self._config['config']))
@@ -411,65 +401,45 @@ class Optimizer(NodeContentWidget):
         self.stackedlayout.addWidget(RMSprop(self._config['config']))
         self.stackedlayout.addWidget(SGD(self._config['config']))
         self.stackedlayout.setCurrentIndex(self.optimizer_list.index(self._config['optimizer']))
- 
-        if dialog.exec():
-            self._config.update(
-                config    = self.currentWidget()._config,
-                optimizer = algorithm.get_value()
-            )
-            self.exec()
+    
+    def currentWidget(self) -> AlgorithmBase:
+        return self.stackedlayout.currentWidget()       
 
-    def func(self):
-        self.eval()
-        try:
-            algorithm = self._config['optimizer']
-            config = self._config['config']
-            if algorithm == 'Adadelta':
-                optimizer = optimizers.Adadelta(**config)
-            elif algorithm == 'Adafactor':
-                optimizer = optimizers.Adafactor(**config)
-            elif algorithm == 'Adagrad':
-                optimizer = optimizers.Adagrad(**config)
-            elif algorithm == 'Adam':
-                optimizer = optimizers.Adam(**config)
-            elif algorithm == 'AdamW':
-                optimizer = optimizers.AdamW(**config)
-            elif algorithm == 'Adamax':
-                optimizer = optimizers.Adamax(**config)
-            elif algorithm == 'Ftrl':
-                optimizer = optimizers.Ftrl(**config)
-            elif algorithm == 'Lion':
-                optimizer = optimizers.Lion(**config)
-            elif algorithm == 'Nadam':
-                optimizer = optimizers.Nadam(**config)
-            elif algorithm == 'RMSprop':
-                optimizer = optimizers.RMSprop(**config)
-            elif algorithm == 'SGD':
-                optimizer = optimizers.SGD(**config)
+    def set_optimizer(self):
+        self._optimizer = self.optimizer_list[self.stackedlayout.currentIndex()]
+        config = self.currentWidget()._config
+        self._config.update(
+            optimizer = self._optimizer,
+            config = config
+        )
+        if self._optimizer == 'Adadelta':
+            optimizer = optimizers.Adadelta(**config)
+        elif self._optimizer == 'Adafactor':
+            optimizer = optimizers.Adafactor(**config)
+        elif self._optimizer == 'Adagrad':
+            optimizer = optimizers.Adagrad(**config)
+        elif self._optimizer == 'Adam':
+            optimizer = optimizers.Adam(**config)
+        elif self._optimizer == 'AdamW':
+            optimizer = optimizers.AdamW(**config)
+        elif self._optimizer == 'Adamax':
+            optimizer = optimizers.Adamax(**config)
+        elif self._optimizer == 'Ftrl':
+            optimizer = optimizers.Ftrl(**config)
+        elif self._optimizer == 'Lion':
+            optimizer = optimizers.Lion(**config)
+        elif self._optimizer == 'Nadam':
+            optimizer = optimizers.Nadam(**config)
+        elif self._optimizer == 'RMSprop':
+            optimizer = optimizers.RMSprop(**config)
+        elif self._optimizer == 'SGD':
+            optimizer = optimizers.SGD(**config)
+        
+        return optimizer
 
-            # change progressbar's color   
-            self.progress.changeColor('success')
-            # write log
-            logger.info(f"{self.name} {self.node.id}: created {algorithm} optimizer successfully.")
-
-        except Exception as e:
-            optimizer = None
-            # change progressbar's color   
-            self.progress.changeColor('fail')
-            # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return None.")
-            logger.exception(e)
-
-        self.node.output_sockets[0].socket_data = optimizer
 
     def serialize(self):
-        return {"config": self._config['config'],
-                "optimizer": self._config['optimizer'],
-                "comment": self.comment.toPlainText(),
-            }
+        return self._config
 
     def deserialize(self, data, hashmap={}):
-        super().deserialize(data)
-        self._config['config'] = data['config']
-        self._config['optimizer'] = data['optimizer']
-        self.comment.setText(data['comment'])
+        self._config.update(data)

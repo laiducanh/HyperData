@@ -200,42 +200,34 @@ class SquaredHinge(AlgorithmBase):
     def __init__(self, config, parent=None):
         super().__init__(config, parent)
     
-class Loss(NodeContentWidget):
-    def __init__(self, node: NodeGraphicsNode, parent=None):
-        super().__init__(node, parent)
+class Loss(QWidget):
+    def __init__(self, config:dict, parent=None):
+        super().__init__(parent=parent)
 
-        self.label.hide()
-        self.node.output_sockets[0].setSocketLabel("Loss function")
-        
-        self._config = dict(
-            loss = "Binary cross-entropy",
-            config = dict(),
-        )
-        
+        self._config = config
         self.func_list = ['Binary cross-entropy','Binary focal cross-entropy','Categorical cross-entropy',
                           'Categorical hinge','Cosine similarity','Hinge','Huber','Kullback-Leibler divergence',
                           'Logarithm of hyperbolic cosine','Mean of absolute error','Mean absolute percentage error',
                           'Mean squared error','Mean squared logarithmic error','Poisson','Squared Hinge']
         
+        self.initUI()
     
     def currentWidget(self) -> AlgorithmBase:
         return self.stackedlayout.currentWidget()       
 
-    def config(self):
-        dialog = Dialog("Configuration", self.parent)
-        dialog.main_layout.addWidget(TitleLabel('Loss Function'))
-        dialog.main_layout.addWidget(SeparateHLine())
+    def initUI(self):
+        self.vlayout = QVBoxLayout(self)
         algorithm = HPrimaryComboBox(
             items=self.func_list,
             label="Function",
             getter=lambda: self._config['loss'],
             setter=lambda s:self.stackedlayout.setCurrentIndex(self.func_list.index(s)),
-            layout=dialog.main_layout
+            layout=self.vlayout
         )
         algorithm.button.setMinimumWidth(400)
-        dialog.main_layout.addWidget(SeparateHLine())
+        self.vlayout.addWidget(SeparateHLine())
         self.stackedlayout = QStackedLayout()
-        dialog.main_layout.addLayout(self.stackedlayout)
+        self.vlayout.addLayout(self.stackedlayout)
         self.stackedlayout.addWidget(BinaryCrossentropy(self._config['config']))
         self.stackedlayout.addWidget(BinaryFocalCrossentropy(self._config['config']))
         self.stackedlayout.addWidget(CategoricalCrossentropy(self._config['config']))
@@ -252,73 +244,53 @@ class Loss(NodeContentWidget):
         self.stackedlayout.addWidget(Poisson(self._config['config']))
         self.stackedlayout.addWidget(SquaredHinge(self._config['config']))
         self.stackedlayout.setCurrentIndex(self.func_list.index(self._config['loss']))
- 
-        if dialog.exec():
-            self._config.update(
-                config    = self.currentWidget()._config,
-                loss = algorithm.get_value()
-            )
-            self.exec()
 
-    def func(self):
-        self.eval()
-        try:
-            algorithm = self._config['loss']
-            config = self._config['config']
-            if algorithm == 'Binary cross-entropy':
-                loss = losses.BinaryCrossentropy(**config)
-            elif algorithm == 'Binary focal cross-entropy':
-                loss = losses.BinaryFocalCrossentropy(**config)
-            elif algorithm == 'Categorical cross-entropy':
-                loss = losses.CategoricalCrossentropy(**config)
-            elif algorithm == 'Categorical hinge':
-                loss = losses.CategoricalHinge(**config)
-            elif algorithm == 'Cosine similarity':
-                loss = losses.CosineSimilarity(**config)
-            elif algorithm == 'Hinge':
-                loss = losses.Hinge(**config)
-            elif algorithm == 'Huber':
-                loss = losses.Huber(**config)
-            elif algorithm == 'Kullback-Leibler divergence':
-                loss = losses.KLDivergence(**config)
-            elif algorithm == 'Logarithm of hyperbolic cosine':
-                loss = losses.LogCosh(**config)
-            elif algorithm == 'Mean of absolute error':
-                loss = losses.MeanAbsoluteError(**config)
-            elif algorithm == 'Mean absolute percentage error':
-                loss = losses.MeanAbsolutePercentageError(**config)
-            elif algorithm == 'Mean squared error':
-                loss = losses.MeanSquaredError(**config)
-            elif algorithm == 'Mean squared logarithmic error':
-                loss = losses.MeanSquaredLogarithmicError(**config)
-            elif algorithm == 'Poisson':
-                loss = losses.Poisson(**config)
-            elif algorithm == 'Squared Hinge':
-                loss = losses.SquaredHinge(**config)
-
-            # change progressbar's color   
-            self.progress.changeColor('success')
-            # write log
-            logger.info(f"{self.name} {self.node.id}: created {algorithm} loss function successfully.")
-
-        except Exception as e:
-            loss = None
-            # change progressbar's color   
-            self.progress.changeColor('fail')
-            # write log
-            logger.error(f"{self.name} {self.node.id}: failed, return None.")
-            logger.exception(e)
-
-        self.node.output_sockets[0].socket_data = loss
+    def set_loss(self):
+        algorithm = self.func_list[self.stackedlayout.currentIndex()]
+        config = self.currentWidget()._config
+        self._config.update(
+            loss = algorithm,
+            config = config
+        )
+        if self._loss == 'Binary cross-entropy':
+            loss = losses.BinaryCrossentropy(**config)
+        elif algorithm == 'Binary focal cross-entropy':
+            loss = losses.BinaryFocalCrossentropy(**config)
+        elif algorithm == 'Categorical cross-entropy':
+            loss = losses.CategoricalCrossentropy(**config)
+        elif algorithm == 'Categorical hinge':
+            loss = losses.CategoricalHinge(**config)
+        elif algorithm == 'Cosine similarity':
+            loss = losses.CosineSimilarity(**config)
+        elif algorithm == 'Hinge':
+            loss = losses.Hinge(**config)
+        elif algorithm == 'Huber':
+            loss = losses.Huber(**config)
+        elif algorithm == 'Kullback-Leibler divergence':
+            loss = losses.KLDivergence(**config)
+        elif algorithm == 'Logarithm of hyperbolic cosine':
+            loss = losses.LogCosh(**config)
+        elif algorithm == 'Mean of absolute error':
+            loss = losses.MeanAbsoluteError(**config)
+        elif algorithm == 'Mean absolute percentage error':
+            loss = losses.MeanAbsolutePercentageError(**config)
+        elif algorithm == 'Mean squared error':
+            loss = losses.MeanSquaredError(**config)
+        elif algorithm == 'Mean squared logarithmic error':
+            loss = losses.MeanSquaredLogarithmicError(**config)
+        elif algorithm == 'Poisson':
+            loss = losses.Poisson(**config)
+        elif algorithm == 'Squared Hinge':
+            loss = losses.SquaredHinge(**config)
+        
+        return loss
 
     def serialize(self):
-        return {"config": self._config['config'],
-                "loss": self._config['loss'],
-                "comment": self.comment.toPlainText(),
+        return {"config": self._config,
+                "loss": self._loss,
             }
 
     def deserialize(self, data, hashmap={}):
-        super().deserialize(data)
-        self._config['config'] = data['config']
-        self._config['loss'] = data['loss']
-        self.comment.setText(data['comment'])
+        self._config = data['config']
+        self._loss = data['loss']
+

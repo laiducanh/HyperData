@@ -111,7 +111,7 @@ class NodeGraphicsView(QGraphicsView):
         deep_learning = Menu(text="Neural Network")
         self.menu.addMenu(deep_learning)
         for text in ["Input Layer","Dense Layer","Normalization Layer",
-                     "Optimizer","Loss Function","Model Compiler"]:
+                     "Model Compiler"]:
             action = Action(text=text, parent=deep_learning)
             action.triggered.connect(lambda _, text=text: self.addNode(text))
             deep_learning.addAction(action)
