@@ -6,8 +6,9 @@ from node_editor.node.data_encoder.data_encoder import *
 from node_editor.node.data_transformation.transformer import DataTransformer
 from node_editor.node.interpolation.curve_fitter import CurveFitter
 from node_editor.node.classifier.classifier import Classifier
-from node_editor.node.classifier.meta_classifier import MetaClassifier, BaggingClassifier, VotingClassifier
+from node_editor.node.classifier.meta_classifier import MetaClassifier
 from node_editor.node.regressor.regressor import Regressor
+from node_editor.node.regressor.meta_regressor import MetaRegressor
 from node_editor.node.clustering.clustering import Clustering
 from node_editor.node.decomposition.decomposition import Decomposition
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
@@ -135,18 +136,15 @@ class Node(NodeGraphicsNode):
         elif title == "Classifier":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = Classifier(self,parent)
-        elif title == "Bagging-Classifier":
-            super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
-            self.content = BaggingClassifier(self,parent)
-        elif title == "Voting-Classifier":
-            super().__init__(title=title, inputs=[MULTI_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
-            self.content = VotingClassifier(self,parent)
         elif title == "Meta-Classifier":
-            super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[MULTI_OUT, MULTI_OUT])
+            super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = MetaClassifier(self,parent)
         elif title == "Regressor":
             super().__init__(title=title, inputs=[SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
             self.content = Regressor(self,parent)
+        elif title == "Meta-Regressor":
+            super().__init__(title=title, inputs=[SINGLE_IN, MULTI_IN], outputs=[MULTI_OUT, MULTI_OUT, MULTI_OUT])
+            self.content = MetaRegressor(self,parent)
         elif title == "Clustering":
             super().__init__(title=title, inputs=[SINGLE_IN, SINGLE_IN], outputs=[MULTI_OUT, MULTI_OUT])
             self.content = Clustering(self,parent)

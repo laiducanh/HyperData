@@ -1,9 +1,8 @@
-from node_editor.node.classifier.classifier import ClassifierBase
+from node_editor.node.regressor.base import RegressorBase
 from sklearn import ensemble
 from ui.base_widgets.button import HToggle, HTransparentComboBox
-from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 
-class Voting(ClassifierBase):
+class Stacking(RegressorBase):
     def __init__(self, parent=None):
         super().__init__(parent)
     
@@ -12,16 +11,17 @@ class Voting(ClassifierBase):
         self.clear_layout()
 
         if not config: self._config = dict(
-            voting='hard',
+            passthrough=False
         )
         else: self._config = config
 
-        self.voting = HTransparentComboBox(
-            items=['hard','soft'],
-            label='Voting type',
-            getter=lambda: self._config['voting'],
+        self.passthrough = HToggle(
+            label='Pass through',
+            label2='Whether the output estimator is trained on the predictions',
+            getter=lambda: self._config['passthrough'],
             setter=self.set_estimator,
             layout=self.vlayout
         )
+        
     def set_estimator(self):
-        self._config['voting'] = self.voting.get_value()
+        self._config['passthrough'] = self.passthrough.get_value()

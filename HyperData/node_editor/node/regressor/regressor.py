@@ -10,15 +10,16 @@ from node_editor.node.regressor.base import RegressorBase
 from node_editor.node.regressor.linear import LinearRegression
 from node_editor.node.regressor.ridge import RidgeRegression
 from node_editor.node.regressor.lasso import Lasso
+from node_editor.node.regressor.multi_lasso import MultiLasso
 from node_editor.node.regressor.elasticnet import ElasticNet
+from node_editor.node.regressor.multi_elasticnet import MultiElasticNet
 from node_editor.node.regressor.least_angle import LeastAngleRegression
 from node_editor.node.regressor.lars_lasso import LarsLasso
 from node_editor.node.regressor.omp import OrthogonalMatchingPursuit
 from node_editor.node.regressor.bayesian_ridge import BayesianRidgeRegression
 from node_editor.node.regressor.ard import ARD
-from node_editor.node.regressor.tweedie import Tweedie
-from node_editor.node.regressor.poisson import Poisson
-from node_editor.node.regressor.gamma import Gamma
+from node_editor.node.regressor.glm import GLM
+from node_editor.node.regressor.kernel_ridge import KernelRidge
 from node_editor.node.regressor.huber import Huber
 from node_editor.node.regressor.theilsen import TheilSenRegression
 from node_editor.node.regressor.quantile import Quantile
@@ -27,6 +28,12 @@ from node_editor.node.regressor.nu_svr import NuSVR
 from node_editor.node.regressor.kneighbors import KNeighbors
 from node_editor.node.regressor.radius_neighbors import RadiusNeighbors
 from node_editor.node.regressor.gaussian_process import GaussianProcess
+from node_editor.node.regressor.pls import PLS
+from node_editor.node.regressor.random_forest import RandomForest
+from node_editor.node.regressor.decision_tree import DecisionTree
+from node_editor.node.regressor.extra_tree import ExtraTree, ExtraTrees
+from node_editor.node.regressor.gradient_boosting import GradientBoosting
+from node_editor.node.regressor.histgrad_boosting import HistGradientBoosting
 from PySide6.QtWidgets import QStackedLayout
 from sklearn import linear_model, base
 import pandas as pd
@@ -56,13 +63,15 @@ class Regressor(NodeContentWidget):
             config = dict(),
         )
 
-        self.estimator_list = ["Linear Regression","Ridge Regression","Lasso","ElasticNet",
-                               "Least Angle Regression","LARS Lasso","Orthogonal Matching Pursuit",
-                               "Bayesian Ridge Regression","Automatic Relevance Determination",
-                               "Tweedie Regression","Poisson Regression","Gamma Regression",
+        self.estimator_list = ["Linear Regression","Ridge","Lasso","Multi-task Lasso","ElasticNet",
+                               "Multi-task ElasticNet","Least Angle Regression","LARS Lasso",
+                               "Orthogonal Matching Pursuit","Bayesian Ridge",
+                               "Automatic Relevance Determination","Generalized Linear Model",
                                "Huber Regression","Theil-Sen Regression","Quantile Regression",
-                               "SVR","NuSVR","K Neighbors Regression","Radius Neighbors Regression",
-                               "Gaussian Process Regression"]
+                               "Kernel Ridge","SVR","NuSVR","K Neighbors","Radius Neighbors",
+                               "Gaussian Process","Partial Least Squares","Decision Tree",
+                               "Extra Tree","Random Forest","Extra Trees","Gradient Boosting",
+                               "Histogram Gradient Boosting"]
 
         self.estimator = linear_model.LinearRegression(**self._config["config"])
 
@@ -79,7 +88,7 @@ class Regressor(NodeContentWidget):
         menu = AlgorithmMenu()
         menu.sig.connect(lambda string: algorithm.button.setText(string))
         menu.sig.connect(lambda string: self.stackedlayout.setCurrentIndex(self.estimator_list.index(string)))
-        algorithm = HDropDownPrimaryPushButton(text="Algorithm")
+        algorithm = HDropDownPrimaryPushButton(label="Algorithm")
         algorithm.button.setText(self._config["estimator"])
         algorithm.button.setMenu(menu)
         dialog.main_layout.addWidget(algorithm)
@@ -89,31 +98,37 @@ class Regressor(NodeContentWidget):
         self.stackedlayout.addWidget(LinearRegression())
         self.stackedlayout.addWidget(RidgeRegression())
         self.stackedlayout.addWidget(Lasso())
+        self.stackedlayout.addWidget(MultiLasso())
         self.stackedlayout.addWidget(ElasticNet())
+        self.stackedlayout.addWidget(MultiElasticNet())
         self.stackedlayout.addWidget(LeastAngleRegression())
         self.stackedlayout.addWidget(LarsLasso())
         self.stackedlayout.addWidget(OrthogonalMatchingPursuit())
         self.stackedlayout.addWidget(BayesianRidgeRegression())
         self.stackedlayout.addWidget(ARD())
-        self.stackedlayout.addWidget(Tweedie())
-        self.stackedlayout.addWidget(Poisson())
-        self.stackedlayout.addWidget(Gamma())
+        self.stackedlayout.addWidget(GLM())
         self.stackedlayout.addWidget(Huber())
         self.stackedlayout.addWidget(TheilSenRegression())
         self.stackedlayout.addWidget(Quantile())
+        self.stackedlayout.addWidget(KernelRidge())
         self.stackedlayout.addWidget(SVR())
         self.stackedlayout.addWidget(NuSVR())
         self.stackedlayout.addWidget(KNeighbors())
         self.stackedlayout.addWidget(RadiusNeighbors())
         self.stackedlayout.addWidget(GaussianProcess())
+        self.stackedlayout.addWidget(PLS())
+        self.stackedlayout.addWidget(DecisionTree())
+        self.stackedlayout.addWidget(ExtraTree())
+        self.stackedlayout.addWidget(RandomForest())
+        self.stackedlayout.addWidget(ExtraTrees())
+        self.stackedlayout.addWidget(GradientBoosting())
+        self.stackedlayout.addWidget(HistGradientBoosting())
 
         if dialog.exec():
             self.estimator = self.currentWidget().estimator
             self.exec()
         
     def func(self):
-        self.eval()
-
         if DEBUG or GLOBAL_DEBUG:
             from sklearn import datasets, model_selection, preprocessing
             from sklearn.utils.validation import check_is_fitted

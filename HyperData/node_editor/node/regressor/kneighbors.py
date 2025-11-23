@@ -30,7 +30,7 @@ class KNeighbors(RegressorBase):
         self.weights = HGroupRadioButton(
             label='Weight function',
             items=['uniform','distance'],
-            getter=self._config['weights'],
+            getter=lambda: self._config['weights'],
             setter=self.set_estimator,
             layout=self.vlayout
         )

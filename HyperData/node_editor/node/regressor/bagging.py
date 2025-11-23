@@ -1,9 +1,9 @@
-from node_editor.node.classifier.classifier import ClassifierBase
+from node_editor.node.regressor.base import RegressorBase
 from sklearn import ensemble
 from ui.base_widgets.button import HToggle, HTransparentComboBox
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 
-class Bagging(ClassifierBase):
+class Bagging(RegressorBase):
     def __init__(self, parent=None):
         super().__init__(parent)
     

@@ -18,7 +18,7 @@ class RadiusNeighbors(RegressorBase):
             metric='minkowski',
         )
         else: self._config = config
-        self.estimator = neighbors.KNeighborsRegressor(**self._config)
+        self.estimator = neighbors.RadiusNeighborsRegressor(**self._config)
 
         self.radius = HTransparentDoubleSpinBox(
             label='Radius',
@@ -31,7 +31,7 @@ class RadiusNeighbors(RegressorBase):
         self.weights = HGroupRadioButton(
             label='Weight function',
             items=['uniform','distance'],
-            getter=self._config['weights'],
+            getter=lambda: self._config['weights'],
             setter=self.set_estimator,
             layout=self.vlayout
         )
@@ -67,4 +67,4 @@ class RadiusNeighbors(RegressorBase):
         self._config['algorithm'] = self.algorithm.get_value()
         self._config['leaf_size'] = self.leaf_size.get_value()
         self._config['metric'] = self.metric_.get_value()
-        self.estimator = neighbors.KNeighborsRegressor(**self._config)
+        self.estimator = neighbors.RadiusNeighborsRegressor(**self._config)

@@ -166,13 +166,17 @@ class ModelCompiler (DLBase):
                 optimizer=optimizer,
                 loss=loss
             )
-            early_stop = None
-            if self._config['train']['early_stop']:
+            early_stop = self._config['train']['early_stop']
+            patience = self._config['train']['es_patience']
+            restore_best_weights = self._config['train']['restore_best_weights']
+            if early_stop:
                 early_stop = callbacks.EarlyStopping(
-                    patience=self._config['train']['es_patience'],
-                    restore_best_weights=self._config['train']['restore_best_weights'],
+                    patience=patience,
+                    restore_best_weights=restore_best_weights,
                     verbose=0
                 )
+            else:
+                early_stop = None
             self.histories = []
       
             # fit model

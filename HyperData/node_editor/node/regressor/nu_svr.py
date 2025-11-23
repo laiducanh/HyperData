@@ -20,7 +20,7 @@ class NuSVR(RegressorBase):
             shrinking=True,
         )
         else: self._config = config
-        self.estimator = svm.SVR(**self._config)
+        self.estimator = svm.NuSVR(**self._config)
 
         self.kernel = HTransparentComboBox(
             items=['linear','poly','rbf','sigmoid'],
@@ -86,4 +86,4 @@ class NuSVR(RegressorBase):
         self._config['C'] = self.c.get_value()
         self._config['nu'] = self.nu.get_value()
         self._config['shrinking'] = self.shrinking.get_value()
-        self.estimator = svm.SVR(**self._config)
+        self.estimator = svm.NuSVR(**self._config)

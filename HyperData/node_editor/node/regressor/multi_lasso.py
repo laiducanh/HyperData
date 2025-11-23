@@ -1,9 +1,9 @@
 from node_editor.node.regressor.base import RegressorBase
 from sklearn import linear_model
-from ui.base_widgets.button import HTransparentComboBox
+from ui.base_widgets.button import HToggle
 from ui.base_widgets.spinbox import HTransparentDoubleSpinBox, HTransparentSpinBox
 
-class Poisson(RegressorBase):
+class MultiLasso(RegressorBase):
     def __init__(self, parent=None):
         super().__init__(parent)
     
@@ -12,26 +12,16 @@ class Poisson(RegressorBase):
 
         if not config: self._config = dict(
             alpha=1.0,
-            solver='lbfgs',
-            max_iter=100,
+            max_iter=1000,
         )
         else: self._config = config
-        self.estimator = linear_model.PoissonRegressor(**self._config)
+        self.estimator = linear_model.MultiTaskLasso(**self._config)
 
         self.alpha = HTransparentDoubleSpinBox(
             label='Regularization strength',
-            label2='Constant that multiplies the L2 term',
+            label2='Constant that multiplies the L1/L2 term',
             minimum=0, maximum=1000, singleStep=1,
             getter=lambda: self._config['alpha'],
-            setter=self.set_estimator,
-            layout=self.vlayout
-        )
-
-        self.solver = HTransparentComboBox(
-            items=['lbfgs', 'newton-cholesky'],
-            label='Solver',
-            label2='Optimization algorithm',
-            getter=lambda: self._config['solver'],
             setter=self.set_estimator,
             layout=self.vlayout
         )
@@ -47,5 +37,4 @@ class Poisson(RegressorBase):
     def set_estimator(self):
         self._config['alpha'] = self.alpha.get_value()
         self._config['max_iter'] = self.max_iter.get_value()
-        self._config['solver'] = self.solver.get_value()
-        self.estimator = linear_model.PoissonRegressor(**self._config)
+        self.estimator = linear_model.MultiTaskLasso(**self._config)

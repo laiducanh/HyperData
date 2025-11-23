@@ -16,18 +16,18 @@ from node_editor.node.classifier.report import scoring, Report
 from node_editor.node.classifier.base import ClassifierBase
 from node_editor.node.classifier.ridge import RidgeClassifier
 from node_editor.node.classifier.logistic import LogisticRegression
-from node_editor.node.classifier.sgd import SGDClassifier
-from node_editor.node.classifier.passive_aggressive import PassiveAggressiveClassifier
+from node_editor.node.classifier.discriminant_analysis import LDA, QDA
 from node_editor.node.classifier.svc import SVC
 from node_editor.node.classifier.nu_svc import NuSVC
-from node_editor.node.classifier.linear_svc import Linear_SVC
 from node_editor.node.classifier.kneighbors import KNeighbors
 from node_editor.node.classifier.nearest_centroid import NearestCentroid
 from node_editor.node.classifier.radius_neighbors import RadiusNeighbors
+from node_editor.node.classifier.nca import NCA
+from node_editor.node.classifier.bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB, CategoricalNB
 from node_editor.node.classifier.gradient_boosting import GradientBoosting
 from node_editor.node.classifier.histgrad_boosting import HistGradientBoosting
 from node_editor.node.classifier.random_forest import RandomForest
-from node_editor.node.classifier.extra_trees import ExtraTrees
+from node_editor.node.classifier.extra_tree import ExtraTree, ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
 
@@ -54,32 +54,40 @@ class Classifier (NodeContentWidget):
         self._config = dict(
             estimator = "Logistic Regression",
             config = dict(),
+            multiclass_strategy = "None"
         )
         
-        self.estimator_list = ["Ridge Classifier","Logistic Regression","SGD Classifier",
-                               "Passive Aggressive Classifier", "SVC", "NuSVC", "Linear SVC",
-                               "K Neighbors Classifier","Nearest Centroid", "Radius Neighbors Classifier",
-                               "Gradient Boosting Classifier", "Histogram Gradient Boosting Classifier",
-                               "Random Forest Classifier", "Extra Trees Classifier",
-                               "Decision Tree Classifier","Gaussian Process Classifier"]
+        self.estimator_list = ["Ridge","Logistic Regression","Linear Discriminant Analysis",
+                               "Quadratic Discriminant Analysis","SVC", "NuSVC",
+                               "K Neighbors","Nearest Centroid","Radius Neighbors",
+                               "Neighborhood Component Analysis","Gaussian Process","Gaussian Naive Bayes",
+                               "Multinomial Naive Bayes","Complement Naive Bayes","Bernoulli Naive Bayes",
+                               "Categorical Naive Bayes","Decision Tree","Extra Tree","Random Forest",
+                               "Extra Trees","Gradient Boosting", "Histogram Gradient Boosting",
+                                ]
         
         self.estimator = linear_model.LogisticRegression(**self._config["config"])
-        self.multiclass_strategy = "One vs. Rest"
         self.create_model()
     
     def currentWidget(self) -> ClassifierBase:
         return self.stackedlayout.currentWidget()       
 
     def create_model(self):
-        if self.multiclass_strategy == "One vs. Rest":
+        if self._config['multiclass_strategy'] == "One vs. Rest":
             self.model = OneVsRestClassifier(self.estimator)
-        elif self.multiclass_strategy == "One vs. One":
+        elif self._config['multiclass_strategy'] == "One vs. One":
             self.model = OneVsOneClassifier(self.estimator) 
+        else:
+            self.model = self.estimator
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        multiclass = HPrimaryComboBox(items=["One vs. Rest","One vs. One"],label="Multiclass strategy")
-        dialog.main_layout.addWidget(multiclass)
+        multiclass = HPrimaryComboBox(
+            items=["One vs. Rest","One vs. One","None"],
+            label="Multiclass Strategy",
+            getter=lambda: self._config['multiclass_strategy'],
+            layout=dialog.main_layout
+        )
         dialog.main_layout.addWidget(SeparateHLine())
         menu = AlgorithmMenu()
         menu.sig.connect(lambda s: algorithm.button.setText(s))
@@ -93,35 +101,40 @@ class Classifier (NodeContentWidget):
         dialog.main_layout.addLayout(self.stackedlayout)
         self.stackedlayout.addWidget(RidgeClassifier())
         self.stackedlayout.addWidget(LogisticRegression())
-        self.stackedlayout.addWidget(SGDClassifier())
-        self.stackedlayout.addWidget(PassiveAggressiveClassifier())
+        self.stackedlayout.addWidget(LDA())
+        self.stackedlayout.addWidget(QDA())
         self.stackedlayout.addWidget(SVC())
         self.stackedlayout.addWidget(NuSVC())
-        self.stackedlayout.addWidget(Linear_SVC())
         self.stackedlayout.addWidget(KNeighbors())
         self.stackedlayout.addWidget(NearestCentroid())
         self.stackedlayout.addWidget(RadiusNeighbors())
-        self.stackedlayout.addWidget(GradientBoosting())
-        self.stackedlayout.addWidget(HistGradientBoosting())
+        self.stackedlayout.addWidget(NCA())
+        self.stackedlayout.addWidget(GaussianProcess())
+        self.stackedlayout.addWidget(GaussianNB())
+        self.stackedlayout.addWidget(MultinomialNB())
+        self.stackedlayout.addWidget(ComplementNB())
+        self.stackedlayout.addWidget(BernoulliNB())
+        self.stackedlayout.addWidget(CategoricalNB())
+        self.stackedlayout.addWidget(DecisionTree())
+        self.stackedlayout.addWidget(ExtraTree())
         self.stackedlayout.addWidget(RandomForest())
         self.stackedlayout.addWidget(ExtraTrees())
-        self.stackedlayout.addWidget(DecisionTree())
-        self.stackedlayout.addWidget(GaussianProcess())
+        self.stackedlayout.addWidget(GradientBoosting())
+        self.stackedlayout.addWidget(HistGradientBoosting())
+        
         self.stackedlayout.setCurrentIndex(self.estimator_list.index(algorithm.button.text()))
  
         if dialog.exec():
             self._config.update(
                 config    = self.currentWidget()._config,
-                estimator = algorithm.button.text()
+                estimator = algorithm.button.text(),
+                multiclass_strategy = multiclass.get_value()
             )
             self.estimator = self.currentWidget().estimator
-            self.multiclass_strategy = multiclass.button.currentText()
             self.create_model()
             self.exec()
 
     def func(self):
-        self.eval()
-
         if DEBUG or GLOBAL_DEBUG:
             from sklearn import datasets, model_selection, preprocessing
             data = datasets.load_iris()

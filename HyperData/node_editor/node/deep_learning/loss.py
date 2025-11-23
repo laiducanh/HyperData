@@ -252,7 +252,7 @@ class Loss(QWidget):
             loss = algorithm,
             config = config
         )
-        if self._loss == 'Binary cross-entropy':
+        if algorithm == 'Binary cross-entropy':
             loss = losses.BinaryCrossentropy(**config)
         elif algorithm == 'Binary focal cross-entropy':
             loss = losses.BinaryFocalCrossentropy(**config)

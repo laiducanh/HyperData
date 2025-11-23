@@ -100,8 +100,8 @@ class NodeGraphicsView(QGraphicsView):
             data_cleaning.addAction(action)
         machine_learning = Menu(text="Machine Learning")
         self.menu.addMenu(machine_learning)
-        for text in ["Classifier","Bagging-Classifier","Voting-Classifier",
-                     "Regressor","Clustering","Decomposition",
+        for text in ["Classifier","Meta-Classifier","Regressor","Meta-Regressor",
+                     "Clustering","Decomposition",
                      "CV Splitter","Train/Test Splitter",
                      "Predictor","Feature Expander","Feature Selector",
                      "Label Encoder","Feature Encoder",]:

@@ -34,9 +34,12 @@ class DenseLayer (DLBase):
         units.button.setValue(self._config["units"])
         dialog.main_layout.addWidget(units)
 
-        activation = HTransparentComboBox(items=["elu","exponential","gelu","hard_sigmoid","linear",
-                                     "relu","selu","sigmoid","softmax","softplus","softsign",
-                                     "swish","tank"], label="Activation function")
+        activation = HTransparentComboBox(
+            items=["elu","exponential","gelu","hard_sigmoid","linear",
+                   "relu","selu","sigmoid","softmax","softplus","softsign",
+                   "swish","tank"], 
+            label="Activation function"
+        )
         activation.button.setCurrentText(self._config["activation"])
         dialog.main_layout.addWidget(activation)
 
