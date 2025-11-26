@@ -1,7 +1,10 @@
 import numpy as np
-from sklearn import metrics, preprocessing
+from sklearn import (linear_model, discriminant_analysis, svm, neighbors, gaussian_process,
+                     naive_bayes, tree, ensemble, multiclass, dummy, metrics)
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (HPrimaryComboBox, HTransparentPushButton, SegmentedWidget)
+from ui.base_widgets.frame import SeparateHLine
+from ui.base_widgets.text import BodyLabel
+from ui.base_widgets.button import (HTransparentPushButton, SegmentedWidget, HTransparentComboBox)
 from node_editor.node.report import ConfusionMatrix, ROC, PrecisionRecall, DET, DecisionBoundary
 from config.settings import logger, GLOBAL_DEBUG
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QApplication)
@@ -9,126 +12,230 @@ from PySide6.QtCore import Qt
 
 DEBUG = False
 
-def scoring(Y=list(), Y_pred=list()):
+def scoring(Y=list(), Y_pred=list(), metric='Accuracy'):
     """ Y and Y_pred are nested lists """
+    try:
+        score = []
+        for fold in range(len(Y)):
+            y, y_pred = Y[fold], Y_pred[fold]
+            if metric == 'Accuracy':
+                score.append(metrics.accuracy_score(y, y_pred))
+            elif metric == 'Balanced accuracy':
+                score.append(metrics.balanced_accuracy_score(y, y_pred))
+            elif metric == 'Micro Precision':
+                score.append(metrics.precision_score(y, y_pred, average='micro'))
+            elif metric == 'Macro Precision':
+                score.append(metrics.precision_score(y, y_pred, average='macro'))
+            elif metric == 'Weighted Precision':
+                score.append(metrics.precision_score(y, y_pred, average='weighted'))
+            elif metric == 'Micro Recall':
+                score.append(metrics.recall_score(y, y_pred, average='micro'))
+            elif metric == 'Macro Recall':
+                score.append(metrics.recall_score(y, y_pred, average='macro'))
+            elif metric == 'Weighted Recall':
+                score.append(metrics.recall_score(y, y_pred, average='weighted'))
+            elif metric == 'Micro F1 score':
+                score.append(metrics.f1_score(y, y_pred, average='micro'))
+            elif metric == 'Macro F1 score':
+                score.append(metrics.f1_score(y, y_pred, average='macro'))
+            elif metric == 'Weighted F1 score':
+                score.append(metrics.f1_score(y, y_pred, average='weighted'))
+            elif metric == 'Log loss':
+                score.append(metrics.log_loss(y, y_pred))
+            elif metric == 'Brier score loss':
+                score.append(metrics.brier_score_loss(y, y_pred))
+            elif metric == 'Zero-one loss':
+                score.append(metrics.zero_one_loss(y, y_pred))
 
-    if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
-        return {
-            "Accuracy": "--",
-            "Balanced accuracy": "--",
-            "Micro Precision": "--",
-            "Macro Precision": "--",
-            "Weighted Precision": "--",
-            "Micro Recall": "--",
-            "Macro Recall": "--",
-            "Weighted Recall": "--",
-            "Micro F1 score": "--",
-            "Macro F1 score": "--",
-            "Weighted F1 score": "--",
-            "Log loss": "--",
-            "Brier score loss":"--",
-            "Zero-one loss": "--",
-        }
+            return f"{np.array(score).mean():.2f} +/- {np.array(score).std():.2f}"
     
-    else:
-        accuracy = np.array([])
-        balanced_accuracy = np.array([])
-        micro_precision = np.array([])
-        macro_precision = np.array([])
-        weighted_precision = np.array([])
-        micro_recall = np.array([])
-        macro_recall = np.array([])
-        weighted_recall = np.array([])
-        micro_f1_score = np.array([])
-        macro_f1_score = np.array([])
-        weighted_f1_score = np.array([])
-        log_loss = np.array([])
-        brier_loss = np.array([])
-        zero_one_loss = np.array([])
+    except Exception as e:
+        logger.exception(e)
+        return '--'
 
-        for idx in range(len(Y)):
-            accuracy = np.append(
-                accuracy,
-                metrics.accuracy_score(Y[idx], Y_pred[idx])
-            )
-            balanced_accuracy = np.append(
-                balanced_accuracy,
-                metrics.balanced_accuracy_score(Y[idx], Y_pred[idx])
-            )
-            micro_precision = np.append(
-                micro_precision,
-                metrics.precision_score(Y[idx], Y_pred[idx], average="micro"),
-            )
-            macro_precision = np.append(
-                macro_precision,
-                metrics.precision_score(Y[idx], Y_pred[idx], average="macro")
-            )
-            weighted_precision = np.append(
-                weighted_precision,
-                metrics.precision_score(Y[idx], Y_pred[idx], average="weighted")
-            )
-            micro_recall = np.append(
-                micro_recall,
-                metrics.recall_score(Y[idx], Y_pred[idx], average="micro")
-            )
-            macro_recall = np.append(
-                macro_recall,
-                metrics.recall_score(Y[idx], Y_pred[idx], average="macro")
-            )
-            weighted_recall = np.append(
-                weighted_recall,
-                metrics.recall_score(Y[idx], Y_pred[idx], average="weighted")
-            )
-            micro_f1_score = np.append(
-                micro_f1_score,
-                metrics.f1_score(Y[idx], Y_pred[idx], average="micro")
-            )
-            macro_f1_score = np.append(
-                macro_f1_score,
-                metrics.f1_score(Y[idx], Y_pred[idx], average="macro")
-            )
-            weighted_f1_score = np.append(
-                weighted_f1_score,
-                metrics.f1_score(Y[idx], Y_pred[idx], average="weighted")
-            )
-            try:
-                log_loss = np.append(
-                    log_loss,
-                    metrics.log_loss(Y[idx], Y_pred[idx])
-                )
-                brier_loss = np.append(
-                    brier_loss,
-                    metrics.brier_score_loss(Y[idx], Y_pred[idx])
-                )
-            except: pass
-            zero_one_loss = np.append(
-                zero_one_loss,
-                metrics.zero_one_loss(Y[idx], Y_pred[idx])
-            )
-
-        return {
-            "Accuracy": f"{accuracy.mean():.2f} +/- {accuracy.std():.2f}",
-            "Balanced accuracy": f"{balanced_accuracy.mean():.2f} +/- {balanced_accuracy.std():.2f}",
-            "Micro Precision": f"{micro_precision.mean():.2f} +/- {micro_precision.std():.2f}",
-            "Macro Precision": f"{macro_precision.mean():.2f} +/- {macro_precision.std():.2f}",
-            "Weighted Precision": f"{weighted_precision.mean():.2f} +/- {weighted_precision.std():.2f}",
-            "Micro Recall": f"{micro_recall.mean():.2f} +/- {micro_recall.std():.2f}",
-            "Macro Recall": f"{macro_recall.mean():.2f} +/- {macro_recall.std():.2f}",
-            "Weighted Recall": f"{weighted_recall.mean():.2f} +/- {weighted_precision.std():.2f}",
-            "Micro F1 score": f"{micro_f1_score.mean():.2f} +/- {micro_f1_score.std():.2f}",
-            "Macro F1 score": f"{macro_f1_score.mean():.2f} +/- {macro_f1_score.std():.2f}",
-            "Weighted F1 score": f"{weighted_f1_score.mean():.2f} +/- {weighted_f1_score.std():.2f}",
-            "Log loss": f"{log_loss.mean():.2f} +/- {log_loss.std():.2f}",
-            "Brier score loss": f"{brier_loss.mean():.2f} +/- {brier_loss.std():.2f}",
-            "Zero-one loss": f"{zero_one_loss.mean():.2f} +/- {zero_one_loss.std():.2f}"
-        }
+def attributes(model):
+    attrs = {
+        "Number of features": model.n_features_in_,        
+    }
+    if isinstance(model, linear_model.RidgeClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Coefficient": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, linear_model.LogisticRegression):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Coefficient": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, discriminant_analysis.LinearDiscriminantAnalysis):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Weight vectors": model.coef_,
+            "Intercept": model.intercept_,
+        })
+    elif isinstance(model, discriminant_analysis.QuadraticDiscriminantAnalysis):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+        })
+    elif isinstance(model, svm.SVC):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Coefficient": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, svm.NuSVC):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Coefficient": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, neighbors.KNeighborsClassifier):
+        attrs.update({
+            "Number of samples": model.n_samples_fit_,
+            "Number of classes": len(model.classes_),
+        })
+    elif isinstance(model, neighbors.RadiusNeighborsClassifier):
+        attrs.update({
+            "Number of samples": model.n_samples_fit_,
+            "Number of classes": len(model.classes_),
+            "Outlier label": model.outlier_label_
+        })
+    elif isinstance(model, neighbors.NeighborhoodComponentsAnalysis):
+        attrs.update({
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, gaussian_process.GaussianProcessClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+        })
+    elif isinstance(model, naive_bayes.GaussianNB):
+        attrs.update({
+            "Number of training samples in each class": model.class_count_,
+            "Number of classes": len(model.classes_),
+            "Probability of each class": model.class_prior_,
+            "Absolute additive value to variances": model.epsilon_,
+            "Variance of each feature per class": model.var_,
+            "Mean of each feature per class": model.theta_
+        })
+    elif isinstance(model, naive_bayes.MultinomialNB):
+        attrs.update({
+            "Number of training samples in each class": model.class_count_,
+            "Number of classes": len(model.classes_),
+            "Smoothed empirical log probability for each class": model.class_log_prior_,
+        })
+    elif isinstance(model, naive_bayes.ComplementNB):
+        attrs.update({
+            "Number of training samples in each class": model.class_count_,
+            "Number of classes": len(model.classes_),
+            "Smoothed empirical log probability for each class": model.class_log_prior_,
+        })
+    elif isinstance(model, naive_bayes.BernoulliNB):
+        attrs.update({
+            "Number of training samples in each class": model.class_count_,
+            "Number of classes": len(model.classes_),
+            "Smoothed empirical log probability for each class": model.class_log_prior_,
+        })
+    elif isinstance(model, naive_bayes.CategoricalNB):
+        attrs.update({
+            "Number of samples for each feature": model.category_count_,
+            "Number of training samples in each class": model.class_count_,
+            "Number of classes": len(model.classes_),
+            "Smoothed empirical log probability for each class": model.class_log_prior_,
+        })
+    elif isinstance(model, tree.DecisionTreeClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Feature importance": model.feature_importances_,
+            "Maximum features": model.max_features_,
+            "Number of outputs": model.n_outputs_
+        })
+    elif isinstance(model, tree.ExtraTreeClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Feature importance": model.feature_importances_,
+            "Maximum features": model.max_features_,
+            "Number of outputs": model.n_outputs_
+        })
+    elif isinstance(model, ensemble.RandomForestClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Feature importance": model.feature_importances_,
+            "Number of outputs": model.n_outputs_,
+            "Out-of-bag score": model.oob_score_
+        })
+    elif isinstance(model, ensemble.ExtraTreesClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Feature importance": model.feature_importances_,
+            "Number of outputs": model.n_outputs_,
+            "Out-of-bag score": model.oob_score_
+        })
+    elif isinstance(model, ensemble.GradientBoostingClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Feature importance": model.feature_importances_,
+            "Train score": model.train_score_,
+            "Maximum features": model.max_features_
+        })
+    elif isinstance(model, ensemble.HistGradientBoostingClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Iterations run": model.n_iter_,
+            "Early stopping": model.do_early_stopping_,
+            "Train score": model.train_score_,
+            "Validation score": model.validation_score_,
+            "Number of tree": model.n_trees_per_iteration_
+        })
+    elif isinstance(model, ensemble.BaggingClassifier):
+        attrs.update({
+            "Estimator": model.estimator_.__class__.__name__,
+            "Number of classes": len(model.classes_),
+            "Out-of-bag score": model.oob_score_
+        })
+    elif isinstance(model, ensemble.VotingClassifier):
+        attrs.update({
+            "Estimators": model.named_estimators_,
+            "Number of classes": len(model.classes_),
+        })
+    elif isinstance(model, ensemble.StackingClassifier):
+        attrs.update({
+            "Estimators": model.named_estimators_,
+            "Number of classes": len(model.classes_),
+        })
+    elif isinstance(model, ensemble.AdaBoostClassifier):
+        attrs.update({
+            "Estimator": model.estimator_.__class__.__name__,
+            "Number of classes": len(model.classes_),
+            "Estimator weights": model.estimator_weights_,
+            "Estimator errors": model.estimator_errors_,
+            "Feature importance": model.feature_importances_
+        })
+    elif isinstance(model, dummy.DummyClassifier):
+        attrs.update({
+            "Number of classes": len(model.classes_),
+            "Number of outputs": model.n_outputs_
+        })
+    return attrs
 
 class Report(Dialog):
-    def __init__(self, model, estimator, X, Y, X_test, Y_test, Y_pred, parent=None):
+    def __init__(self, model, estimator, X, Y, X_test, Y_test, Y_pred, score_function, parent=None):
         """ X, Y, and Y_pred are nested lists """
         super().__init__(title="Metrics and Scoring",parent=parent)
 
-        self.score_function = "Accuracy"
+        self.model = model
+        self.estimator = estimator
+        self.score_function = score_function
+        self.X = X
+        self.Y = Y
+        self.X_test = X_test
+        self.Y_test = Y_test
+        self.Y_pred = Y_pred
 
         self.segment_widget = SegmentedWidget()
         self.main_layout.addWidget(self.segment_widget)
@@ -168,6 +275,7 @@ class Report(Dialog):
     
     def change_metric(self, metric:str):
         self.score_function = metric
+        self.score.setText(f'Score: {scoring(self.score_function, self.Y, self.Y_pred)}')
 
     def metrics(self, Y, Y_pred) -> QWidget:
         widget = QWidget()
@@ -176,23 +284,28 @@ class Report(Dialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         widget.setLayout(layout)
 
-        metric_to_show = HPrimaryComboBox(
+        metric_to_show = HTransparentComboBox(
             items=["Accuracy","Balanced accuracy",
                    "Micro Precision","Macro Precision","Weighted Precision",
                    "Micro Recall","Macro Recall","Weighted Recall",
                    "Micro F1 score","Macro F1 score","Weighted F1 score",
                    "Log loss","Brier score loss","Zero-one loss"], 
-            label="Metric"
+            label="Metric",
+            setter=self.change_metric,
+            layout=layout
         )
         metric_to_show.button.setMinimumWidth(250)
-        metric_to_show.button.currentTextChanged.connect(self.change_metric)
-        layout.addWidget(metric_to_show)
+        layout.addWidget(SeparateHLine())
 
-        score = scoring(Y, Y_pred)
-        for metric in score:
-            _btn = HTransparentPushButton(label=metric)
-            _btn.button.setText(str(score[metric]))
-            layout.addWidget(_btn)
+        self.score = BodyLabel(f'Score: {scoring(Y, Y_pred, self.score_function)}')
+        layout.addWidget(self.score)
 
+        if isinstance(self.model, (multiclass.OneVsOneClassifier, multiclass.OneVsRestClassifier)):
+            model = self.model.estimators_[0]
+        else:
+            model = self.model
+        for key, value in attributes(model).items():
+            layout.addWidget(SeparateHLine())
+            layout.addWidget(BodyLabel(f'{key}: {value}'))
 
         return widget
