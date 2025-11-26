@@ -16,7 +16,7 @@ class ExtraTrees(RegressorBase):
 
         if not config: self._config = dict(
             n_estimators=100,
-            criterion="gini",
+            criterion="squared_error",
             max_depth=None,
             min_samples_split=2,
             min_samples_leaf=1,
@@ -39,7 +39,7 @@ class ExtraTrees(RegressorBase):
         self.n_estimators.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.n_estimators)
 
-        self.criterion = HTransparentComboBox(items=["gini","entropy","log_loss"],label="Criterion")
+        self.criterion = HTransparentComboBox(items=['squared_error','friedman_mse','absolute_error','poisson'],label="Criterion")
         self.criterion.button.setCurrentText(self._config["criterion"])
         self.criterion.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.criterion)
@@ -70,7 +70,7 @@ class ExtraTree(RegressorBase):
         self.clear_layout()
 
         if not config: self._config = dict(
-            criterion='gini',
+            criterion='squared_error',
             splitter='random',
             max_depth=None,
             min_samples_split=2,
@@ -85,7 +85,7 @@ class ExtraTree(RegressorBase):
         self.estimator = tree.ExtraTreeRegressor(**self._config)
 
         self.criterion = HTransparentComboBox(
-            items=["gini","entropy","log_loss"], 
+            items=['squared_error','friedman_mse','absolute_error','poisson'], 
             label="Criterion",
             label2='The function to measure the quality of a split',
             getter=lambda: self._config["criterion"],

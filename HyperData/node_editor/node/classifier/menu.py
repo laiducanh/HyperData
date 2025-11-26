@@ -62,7 +62,7 @@ class AlgorithmMenu(Menu):
         self.addMenu(ensembles)
 
         others = Menu("Others", self)
-        for i in ["Gaussian Process"]:
+        for i in ["Gaussian Process","Dummy"]:
             action = QAction(i, self)
             action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             others.addAction(action)

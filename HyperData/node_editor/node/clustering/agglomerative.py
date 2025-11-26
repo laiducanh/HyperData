@@ -16,7 +16,6 @@ class AgglomerativeClustering(MethodBase):
             n_clusters = 2,
             metric = "euclidean",
             linkage = "ward",
-            compute_distances = False
         )
         else: self._config = config
         self.method = cluster.AgglomerativeClustering(**self._config)
@@ -43,3 +42,4 @@ class AgglomerativeClustering(MethodBase):
             linkage = self.linkage.button.currentText(),
         )
         self.method = cluster.AgglomerativeClustering(**self._config)
+    

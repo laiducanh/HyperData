@@ -50,7 +50,7 @@ class AlgorithmMenu(Menu):
         self.addMenu(ensemble)
 
         others = Menu("Others", self)
-        for i in ["Kernel Ridge","Gaussian Process","Partial Least Squares"]:
+        for i in ["Kernel Ridge","Gaussian Process","Partial Least Squares","Dummy"]:
             action = QAction(i, self)
             action.triggered.connect(lambda _, s=i: self.sig.emit(s))
             others.addAction(action)

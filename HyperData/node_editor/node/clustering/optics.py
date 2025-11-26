@@ -14,7 +14,6 @@ class OPTICS(MethodBase):
         if not config: self._config = dict(
             min_samples = 5,
             metric = "minkowski",
-            p = 2.0,
             cluster_method = "xi",
             xi = 0.05,
             predecessor_correction = True,
@@ -37,11 +36,6 @@ class OPTICS(MethodBase):
         self.metric_.button.setCurrentText(self._config["metric"])
         self.metric_.button.currentTextChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.metric_)
-
-        self.p = HTransparentDoubleSpinBox(label="Minkowski metric")
-        self.p.button.setValue(self._config["p"])
-        self.p.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.p)
 
         self.cluster_method = HTransparentComboBox(items=["xi","dbscan"], label="Method")
         self.cluster_method.button.setCurrentText(self._config["cluster_method"])
@@ -72,7 +66,6 @@ class OPTICS(MethodBase):
         self._config.update(
             min_samples = self.min_samples.button.value(),
             metric = self.metric_.button.currentText(),
-            p = self.p.button.value(),
             cluster_method = self.cluster_method.button.currentText(),
             xi = self.xi.button.value(),
             predecessor_correction = self.predecessor_correction.button.isChecked(),
@@ -80,3 +73,4 @@ class OPTICS(MethodBase):
             leaf_size = self.leaf_size.button.value(),
         )
         self.method = cluster.OPTICS(**self._config)
+    

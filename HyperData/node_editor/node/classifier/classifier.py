@@ -30,6 +30,7 @@ from node_editor.node.classifier.random_forest import RandomForest
 from node_editor.node.classifier.extra_tree import ExtraTree, ExtraTrees
 from node_editor.node.classifier.decision_tree import DecisionTree
 from node_editor.node.classifier.gaussian_process import GaussianProcess
+from node_editor.node.classifier.dummy import Dummy
 
 DEBUG = False
 
@@ -63,7 +64,7 @@ class Classifier (NodeContentWidget):
                                "Neighborhood Component Analysis","Gaussian Process","Gaussian Naive Bayes",
                                "Multinomial Naive Bayes","Complement Naive Bayes","Bernoulli Naive Bayes",
                                "Categorical Naive Bayes","Decision Tree","Extra Tree","Random Forest",
-                               "Extra Trees","Gradient Boosting", "Histogram Gradient Boosting",
+                               "Extra Trees","Gradient Boosting", "Histogram Gradient Boosting","Dummy",
                                 ]
         
         self.estimator = linear_model.LogisticRegression(**self._config["config"])
@@ -121,6 +122,7 @@ class Classifier (NodeContentWidget):
         self.stackedlayout.addWidget(ExtraTrees())
         self.stackedlayout.addWidget(GradientBoosting())
         self.stackedlayout.addWidget(HistGradientBoosting())
+        self.stackedlayout.addWidget(Dummy())
         
         self.stackedlayout.setCurrentIndex(self.estimator_list.index(algorithm.button.text()))
  
@@ -132,46 +134,51 @@ class Classifier (NodeContentWidget):
             )
             self.estimator = self.currentWidget().estimator
             self.create_model()
+            logger.info(f"{self.name} {self.node.id}: update config {self._config}")
             self.exec()
 
     def func(self):
+        # reset UI
+        self.score_btn.setText(f"Score: --")
+        self.label.setText('Shape: (--, --)') 
+        self.data_to_view = pd.DataFrame()
+
         if DEBUG or GLOBAL_DEBUG:
-            from sklearn import datasets, model_selection, preprocessing
-            data = datasets.load_iris()
-            df = pd.DataFrame(data=data.data, columns=data.feature_names)
-            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            X = df.iloc[:,:4]
-            random_state = np.random.RandomState(0)
-            n_samples, n_features = data.data.shape
-            #X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
-            X = pd.DataFrame(X)
-            Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
-            Y = pd.DataFrame(data=Y)
+            from sklearn import datasets, model_selection
+            X, Y = datasets.make_classification(
+                n_samples=1000,      # number of rows
+                n_features=20,       # total number of features
+                n_informative=5,     # features that actually affect the label
+                n_redundant=2,       # linear combinations of informative features
+                n_classes=2,         # binary classification
+                flip_y=0.05,         # 5% noisy labels
+                weights=[0.9, 0.1],  # 90% class 0, 10% class 1
+                random_state=42
+            )
             split = model_selection.ShuffleSplit(n_splits=5, test_size=0.2).split(X, Y)
             result = list()
             for fold, (train_idx, test_idx) in enumerate(split):
                 result.append((train_idx, test_idx))
-            self.node.input_sockets[0].socket_data = [result, X, Y]
+            self.node.input_sockets[0].socket_data = [result, pd.DataFrame(X), pd.DataFrame(Y)]
             print('data in', self.node.input_sockets[0].socket_data)
 
         try:
-            if DEBUG or (self.node.input_sockets[0].edges and 
-                         isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, 
-                                    (TrainTestSplitter, CVSplitter))):
+            if DEBUG or (isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, 
+                            (TrainTestSplitter, CVSplitter))):
                 cv = self.node.input_sockets[0].socket_data[0]
                 self.X = self.node.input_sockets[0].socket_data[1]
                 self.Y = self.node.input_sockets[0].socket_data[2]
                 self.X_test, self.Y_test, self.Y_pred = list(), list(), list()
                
                 data = self.node.input_sockets[0].socket_data[1].copy()
-                n_classes = self.Y.shape[1]   
                 n_samples = self.Y.shape[0]
+                n_classes = self.Y.shape[1]   
                 
-                data[f"Encoded Label"] = str()
+                data["Encoded Label"] = None
                 for i in range(n_samples):
                     for j in range(n_classes):
-                        data.iloc[i,-1] += str(self.Y.iloc[i,j])
-
+                        data.iloc[i,-1] = str(self.Y.iloc[i,j])
+                            
                 # convert self.X and self.Y into numpy arrays!
                 X = self.X.to_numpy()
                 Y = self.Y.to_numpy()
@@ -196,20 +203,20 @@ class Classifier (NodeContentWidget):
                         for j in range(n_classes):
                             data.iloc[i,-1] += str(Y_pred_all[i,j])
                                 
-                score = scoring(self.Y_test, self.Y_pred)
-                self.score_btn.setText(f"Score: {score[self.score_function]}")
+                score = scoring(self.Y_test, self.Y_pred, self.score_function)
+                self.score_btn.setText(f"Score: {score}")
                 
                 # change progressbar's color   
                 self.progress.changeColor('success')
                 # write log
-                logger.info(f"{self.name} {self.node.id}: {self.model} run successfully.")
+                logger.info(f"{self.name} {self.node.id}: {self.model.__class__.__name__} run successfully.")
 
             else:
                 data = pd.DataFrame()
                 self.score_btn.setText(f"Score: --")
                 # write log
-                logger.warning(f"{self.name} {self.node.id}: Did not define splitter, return an empty Dataframe.")
-                logger.info(f"{self.name} {self.node.id}: use the estimator for meta-classifiers.")
+                logger.warning(f"{self.name} {self.node.id}: Splitter is not valid, return an empty Dataframe.")
+                logger.info(f"{self.name} {self.node.id}: use the estimator {self.estimator.__class__.__name__} for meta-classifiers.")
         
         except Exception as e:
             data = pd.DataFrame()
@@ -226,10 +233,12 @@ class Classifier (NodeContentWidget):
         self.data_to_view = data.copy()
     
     def score_dialog(self):
-        dialog = Report(self.model, self.estimator, self.X, self.Y, self.X_test, self.Y_test, self.Y_pred)
+        dialog = Report(self.model, self.estimator, self.X, self.Y, self.X_test, self.Y_test, self.Y_pred, self.score_function)
         
         if dialog.exec():
             self.score_function = dialog.score_function
+            score = scoring(self.Y_test, self.Y_pred, self.score_function)
+            self.score_btn.setText(f"Score: {score}")
      
     def eval (self):
         self.resetNode()

@@ -4,7 +4,7 @@ from ui.base_widgets.button import (HDropDownPrimaryPushButton, TransparentPushB
 from ui.base_widgets.frame import SeparateHLine
 from config.settings import logger, GLOBAL_DEBUG
 from node_editor.node.train_test_split.train_test_split import TrainTestSplitter
-from node_editor.node.regressor.menu import AlgorithmMenu
+from node_editor.node.train_test_split.cv_split import CVSplitter
 from node_editor.node.regressor.report import scoring, Report
 from node_editor.node.regressor.base import RegressorBase
 from node_editor.node.regressor.bagging import Bagging
@@ -111,25 +111,32 @@ class MetaRegressor(NodeContentWidget):
             self.exec()
         
     def func(self):
+
+        # reset UI
+        self.score_btn.setText(f"Score: --")
+        self.label.setText('Shape: (--, --)') 
+        self.data_to_view = pd.DataFrame()
+
         if DEBUG or GLOBAL_DEBUG:
-            from sklearn import datasets, model_selection, preprocessing
-            from sklearn.utils.validation import check_is_fitted
-            from sklearn.exceptions import NotFittedError
-            data = datasets.load_iris()
-            df = pd.DataFrame(data=data.data, columns=data.feature_names)
-            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            X = df.iloc[:,:4]
-            Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
-            Y = pd.DataFrame(data=Y)
+            from sklearn import datasets, model_selection
+            X, Y = datasets.make_regression(
+                n_samples=1000,      # number of rows
+                n_features=20,       # total number of features
+                n_informative=5,     # features that actually affect the target
+                noise=100,           # adds Gaussian noise to the target values
+                bias=5,              # constant term added to the output
+                random_state=42
+            )
             split = model_selection.ShuffleSplit(n_splits=5, test_size=0.2).split(X, Y)
             result = list()
             for fold, (train_idx, test_idx) in enumerate(split):
                 result.append((train_idx, test_idx))
-            self.node.input_sockets[0].socket_data = [result, X, Y]
+            self.node.input_sockets[0].socket_data = [result, pd.DataFrame(X), pd.DataFrame(Y)]
             print('data in', self.node.input_sockets[0].socket_data)
-        
+
         try:
-            if DEBUG or isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, TrainTestSplitter):
+            if DEBUG or isinstance(self.node.input_sockets[0].edges[0].start_socket.node.content, 
+                            (TrainTestSplitter, CVSplitter)):
                 # cv is an array of indexes corresponding to (train, test)
                 cv = self.node.input_sockets[0].socket_data[0]
                 self.X = self.node.input_sockets[0].socket_data[1]
@@ -155,19 +162,19 @@ class MetaRegressor(NodeContentWidget):
 
                     data[f"Fold{fold+1}_Prediction"] = Y_pred_all
 
-                score = scoring(self.Y_test_score, self.Y_pred_score)
+                score = scoring(self.score_function, self.Y_test_score, self.Y_pred_score)
                 self.score_btn.setText(f"Score: {score[self.score_function]}")
                 # change progressbar's color   
                 self.progress.changeColor('success')
                 # write log
-                logger.info(f"{self.name} {self.node.id}: {self.estimator} run successfully.")
+                logger.info(f"{self.name} {self.node.id}: {self.estimator.__class__.__name__} run successfully.")
             else:
                 data = pd.DataFrame()
                 self.score_btn.setText(f"Score: --")
                 # change progressbar's color   
                 self.progress.changeColor('fail')
                 # write log
-                logger.warning(f"{self.name} {self.node.id}: not a valid splitter, return an empty Dataframe.")
+                logger.warning(f"{self.name} {self.node.id}: Splitter is not valid, return an empty Dataframe.")
         
         except Exception as e:
             data = pd.DataFrame()
@@ -177,9 +184,6 @@ class MetaRegressor(NodeContentWidget):
             # write log
             logger.error(f"{self.name} {self.node.id}: failed, return an empty Dataframe.")
             logger.exception(e)
-
-
-        
         
         self.node.output_sockets[0].socket_data = self.model
         self.node.output_sockets[1].socket_data = self.estimator
@@ -187,11 +191,11 @@ class MetaRegressor(NodeContentWidget):
         self.data_to_view = data.copy()
     
     def score_dialog(self):
-        dialog = Report(self.Y_test_score, self.Y_pred_score)
-        score = scoring(self.Y_test_score, self.Y_pred_score)
-        dialog.metricChange.connect(lambda s: self.score_btn.setText(f"Score {score[s]}"))
+        dialog = Report(self.model, self.Y_test_score, self.Y_pred_score, self.score_function)
         if dialog.exec():
             self.score_function = dialog.score_function
+            score = scoring(self.score_function, self.Y_test_score, self.Y_pred_score)
+            self.score_btn.setText(f"Score: {score}")
     
     def eval(self):
         self.resetNode()

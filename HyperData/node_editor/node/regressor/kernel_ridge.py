@@ -12,7 +12,7 @@ class KernelRidge(RegressorBase):
 
         if not config: self._config = dict(
             alpha=1.0,
-            kernel='auto',
+            kernel='linear',
             degree=3,
             coef0=1,
         )

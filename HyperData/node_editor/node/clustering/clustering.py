@@ -5,7 +5,6 @@ from node_editor.base.node_graphics_node import NodeGraphicsNode
 from node_editor.node.clustering.report import Report, scoring
 from node_editor.node.clustering.base import MethodBase
 from node_editor.node.clustering.kmeans import KMeans
-from node_editor.node.clustering.minibatch_kmeans import MiniBatchKMeans
 from node_editor.node.clustering.affinity import AffinityPropagation
 from node_editor.node.clustering.mean_shift import MeanShift
 from node_editor.node.clustering.spectral import SpectralClustering
@@ -15,18 +14,17 @@ from node_editor.node.clustering.dbscan import DBSCAN
 from node_editor.node.clustering.hdbscan import HDBSCAN
 from node_editor.node.clustering.optics import OPTICS
 from node_editor.node.clustering.birch import Birch
-from config.settings import logger, encode, GLOBAL_DEBUG
+from config.settings import logger, GLOBAL_DEBUG
 from ui.base_widgets.button import TransparentPushButton, HPrimaryComboBox
 from ui.base_widgets.window import Dialog
 from ui.base_widgets.frame import SeparateHLine
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QStackedLayout
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QStackedLayout
 from PySide6.QtGui import QAction
 from sklearn import cluster
 
 DEBUG = False
         
-class Clustering (NodeContentWidget):
+class Clustering(NodeContentWidget):
     def __init__(self, node: NodeGraphicsNode, parent=None):
         super().__init__(node, parent)
 
@@ -46,9 +44,9 @@ class Clustering (NodeContentWidget):
             config = dict(),
         )
 
-        self.method_list = ["K-Means","Mini-Batch K-Means","Affinity Propagation",
-                            "Mean Shift","Spectral Clustering","Agglomerative Clustering",
-                            "Bisecting K-Means","DBSCAN","HDBSCAN","OPTICS","Birch"]
+        self.method_list = ["K-Means","Affinity Propagation","Mean Shift","Spectral Clustering",
+                            "Agglomerative Clustering","Bisecting K-Means","Density-based Clustering",
+                            "Hierarchical Density-based Clustering","OPTICS","Birch"]
 
         self.model = cluster.KMeans(**self._config["config"])
         self.X = pd.DataFrame()
@@ -88,16 +86,18 @@ class Clustering (NodeContentWidget):
 
     def config(self):
         dialog = Dialog("Configuration", self.parent)
-        method = HPrimaryComboBox(items=self.method_list,label="Method")
+        method = HPrimaryComboBox(
+            items=self.method_list,label="Method",
+            getter=lambda: self._config['method'],
+            setter=lambda s: self.stackedlayout.setCurrentIndex(self.method_list.index(s)),
+            layout=dialog.main_layout
+        )
         method.button.setMinimumWidth(250)
-        method.button.currentTextChanged.connect(lambda s: self.stackedlayout.setCurrentIndex(self.method_list.index(s)))
-        dialog.main_layout.addWidget(method)
         dialog.main_layout.addWidget(SeparateHLine())
     
         self.stackedlayout = QStackedLayout()
         dialog.main_layout.addLayout(self.stackedlayout)
         self.stackedlayout.addWidget(KMeans())
-        self.stackedlayout.addWidget(MiniBatchKMeans())
         self.stackedlayout.addWidget(AffinityPropagation())
         self.stackedlayout.addWidget(MeanShift())
         self.stackedlayout.addWidget(SpectralClustering())
@@ -119,23 +119,23 @@ class Clustering (NodeContentWidget):
 
 
     def func(self):
-        self.eval()
+        # reset UI
+        self.score_btn.setText(f"Score: --")
+        self.label.setText('Shape: (--, --)') 
+        self.progress.changeColor('success')
+        self.data_to_view = pd.DataFrame()
 
         if DEBUG or GLOBAL_DEBUG:
-            from sklearn import datasets, model_selection, preprocessing
-            data = datasets.load_iris()
-            df = pd.DataFrame(data=data.data, columns=data.feature_names)
-            df["target_names"] = pd.Series(data.target).map({i: name for i, name in enumerate(data.target_names)})
-            X = df.iloc[:,:4]
-            random_state = np.random.RandomState(0)
-            n_samples, n_features = data.data.shape
-            #X = np.concatenate([data.data, random_state.randn(n_samples, 200 * n_features)], axis=1)
-            X = pd.DataFrame(X)
-            Y = preprocessing.LabelEncoder().fit_transform(df.iloc[:,4])
-            Y = pd.DataFrame(data=Y)
-                        
-            self.node.input_sockets[0].socket_data = X
-            self.node.input_sockets[1].socket_data = Y
+            from sklearn import datasets, model_selection
+            X, Y = datasets.make_blobs(
+                n_samples=300, 
+                centers=3, 
+                n_features=10, 
+                cluster_std=[1.0, 2.5, 0.5],  # different spread for each cluster
+                random_state=42
+            )
+            self.node.input_sockets[0].socket_data = pd.DataFrame(X)
+            self.node.input_sockets[1].socket_data = pd.DataFrame(Y)
             print('data in', self.node.input_sockets[0].socket_data, self.node.input_sockets[1].socket_data)
 
         try:
@@ -143,21 +143,20 @@ class Clustering (NodeContentWidget):
             self.X = self.node.input_sockets[0].socket_data
             self.model.fit(self.X)
             self.X["Prediction"] = self.model.labels_
-            df = pd.DataFrame(self.model.cluster_centers_, columns=columms)
-            df["Prediction"] = range(len(self.model.cluster_centers_))
-            data = pd.concat([df, self.X])
+            data = self.X.copy()
 
             score = scoring(
                 self.X, 
                 self.node.input_sockets[1].socket_data.to_numpy().ravel(),
-                self.model.labels_
+                self.model.labels_,
+                self.score_function
             )
-            self.score_btn.setText(f"Score: {score[self.score_function]}")
+            self.score_btn.setText(f"Score: {score}")
             
             # change progressbar's color   
             self.progress.changeColor('success')
             # write log
-            logger.info(f"{self.name} {self.node.id}: {self.model} run successfully.")
+            logger.info(f"{self.name} {self.node.id}: {self.model.__class__.__name__} run successfully.")
 
             
         except Exception as e:
@@ -174,9 +173,21 @@ class Clustering (NodeContentWidget):
         self.data_to_view = data.copy()
     
     def score_dialog(self):
-        dialog = Report(self.model, self.X, self.node.input_sockets[1].socket_data.to_numpy().ravel())
+        dialog = Report(
+            self.model, 
+            self.X, 
+            self.node.input_sockets[1].socket_data.to_numpy().ravel(),
+            self.score_function
+        )
         if dialog.exec():
             self.score_function = dialog.metrics.score_function
+            score = scoring(
+                self.X, 
+                self.node.input_sockets[1].socket_data.to_numpy().ravel(),
+                self.model.labels_, 
+                self.score_function
+            )
+            self.score_btn.setText(f"Score: {score}")
         
     def eval(self):
         self.resetNode()

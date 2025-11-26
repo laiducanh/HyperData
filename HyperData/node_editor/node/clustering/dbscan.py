@@ -17,7 +17,6 @@ class DBSCAN(MethodBase):
             metric = "euclidean",
             algorithm = "auto",
             leaf_size = 30,
-            p = 2.0,
         )
         else: self._config = config
         self.method = cluster.DBSCAN(**self._config)
@@ -50,11 +49,6 @@ class DBSCAN(MethodBase):
         self.leaf_size.button.setValue(self._config["leaf_size"])
         self.leaf_size.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.leaf_size)
-
-        self.p = HTransparentDoubleSpinBox(label="Minkowski metric")
-        self.p.button.setValue(self._config["p"])
-        self.p.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.p)
         
     def set_estimator(self):
         self._config.update(
@@ -63,6 +57,5 @@ class DBSCAN(MethodBase):
             metric = self.metric_.button.currentText(),
             algorithm = self.algorithm.button.currentText(),
             leaf_size = self.leaf_size.button.value(),
-            p = self.p.button.value(),
         )
         self.method = cluster.DBSCAN(**self._config)

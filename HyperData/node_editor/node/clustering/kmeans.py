@@ -36,11 +36,6 @@ class KMeans(MethodBase):
         self.max_iter.button.valueChanged.connect(self.set_estimator)
         self.vlayout.addWidget(self.max_iter)
 
-        self.tol = HTransparentSpinBox(minimum=1, label="Tolerance")
-        self.tol.button.setValue(int(1/self._config["tol"]))
-        self.tol.button.valueChanged.connect(self.set_estimator)
-        self.vlayout.addWidget(self.tol)
-
         self.algorithm = HTransparentComboBox(items=["lloyd","elkan"],label="Algorithm")
         self.algorithm.button.setCurrentText(self._config["algorithm"])
         self.algorithm.button.currentTextChanged.connect(self.set_estimator)
@@ -51,7 +46,6 @@ class KMeans(MethodBase):
             n_clusters = self.n_clusters.button.value(),
             init = self.init.button.currentText(),
             max_iter = self.max_iter.button.value(),
-            tol = 1/(10**(-self.tol)),
             algorithm = self.algorithm.button.currentText()
         )
         self.method = cluster.KMeans(**self._config)
