@@ -6,50 +6,235 @@ from config.settings import logger, GLOBAL_DEBUG, config
 from plot.canvas import Canvas
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QStackedLayout, QWidget, QVBoxLayout
-from sklearn import linear_model, metrics
+from sklearn import (linear_model, kernel_ridge, svm, neighbors, tree, ensemble,
+                     gaussian_process, cross_decomposition, dummy, metrics)
 from matplotlib.axes import Axes
 from typing import Literal
 import numpy as np
-from node_editor.node.regressor.linear import LinearRegression
 
 DEBUG = False
 
 def scoring(metric='r2 score', Y=list(), Y_pred=list()):
     """ Y and Y_pred are nested lists """
-
-    if len(Y) == 0 or len(Y_pred) == 0: # check if Y or Y_pred is an empty list
+    try:
+        score = []
+        for fold in range(len(Y)):
+            y, y_pred = Y[fold], Y_pred[fold]
+            if metric == 'r2 score':
+                score.append(metrics.r2_score(y, y_pred))
+            elif metric == 'mean absolute error':
+                score.append(metrics.mean_absolute_error(y, y_pred))
+            elif metric == 'mean squared error':
+                score.append(metrics.mean_squared_error(y, y_pred))
+            elif metric == 'mean squared logarithmic error':
+                score.append(metrics.mean_squared_log_error(y, y_pred))
+            elif metric == 'mean absolute percentage error':
+                score.append(metrics.mean_absolute_percentage_error(y, y_pred))
+            elif metric == 'median absolute error':
+                score.append(metrics.median_absolute_error(y, y_pred))
+            elif metric == 'maximum residual error':
+                score.append(metrics.max_error(y, y_pred))
+            elif metric == 'root mean squared error':
+                score.append(metrics.root_mean_squared_error(y, y_pred))
+            elif metric == 'root mean squared logarithmic error':
+                score.append(metrics.root_mean_squared_log_error(y, y_pred))
+            elif metric == 'explained variance':
+                score.append(metrics.explained_variance_score(y, y_pred))
+        
+        return f"{np.array(score).mean():.2f} +/- {np.array(score).std():.2f}"
+    except Exception as e:
+        logger.exception(e)
         return '--'
 
-    else:
-        try:
-            score = []
-            for fold in range(len(Y)):
-                y, y_pred = Y[fold], Y_pred[fold]
-                if metric == 'r2 score':
-                    score.append(metrics.r2_score(y, y_pred))
-                elif metric == 'mean absolute error':
-                    score.append(metrics.mean_absolute_error(y, y_pred))
-                elif metric == 'mean squared error':
-                    score.append(metrics.mean_squared_error(y, y_pred))
-                elif metric == 'mean squared logarithmic error':
-                    score.append(metrics.mean_squared_log_error(y, y_pred))
-                elif metric == 'mean absolute percentage error':
-                    score.append(metrics.mean_absolute_percentage_error(y, y_pred))
-                elif metric == 'median absolute error':
-                    score.append(metrics.median_absolute_error(y, y_pred))
-                elif metric == 'maximum residual error':
-                    score.append(metrics.max_error(y, y_pred))
-                elif metric == 'root mean squared error':
-                    score.append(metrics.root_mean_squared_error(y, y_pred))
-                elif metric == 'root mean squared logarithmic error':
-                    score.append(metrics.root_mean_squared_log_error(y, y_pred))
-                elif metric == 'explained variance':
-                    score.append(metrics.explained_variance_score(y, y_pred))
+def attributes(model):
+    attrs = {
+        "Number of features": model.n_features_in_,        
+    }
+    if isinstance(model, linear_model.LinearRegression):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Rank": model.rank_,
+            "Singular": model.singular_,
             
-            return f"{np.array(score).mean():.2f} +/- {np.array(score).std():.2f}"
-        except Exception as e:
-            logger.exception(e)
-            return '--'
+        })
+    elif isinstance(model, linear_model.Ridge):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, linear_model.Lasso):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, linear_model.MultiTaskLasso):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+            "Tolerance": model.eps_
+        })
+    elif isinstance(model, linear_model.ElasticNet):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, linear_model.MultiTaskElasticNet):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+            "Tolerance": model.eps_
+        })
+    elif isinstance(model, linear_model.Lars):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, linear_model.LassoLars):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, linear_model.OrthogonalMatchingPursuit):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_
+        })
+    elif isinstance(model, linear_model.BayesianRidge):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+            "Estimated precision of the noise": model.alpha_,
+            "Estimated precision of the weights": model.lambda_,
+            "Scores": model.scores_,
+        })
+    elif isinstance(model, linear_model.ARDRegression):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Estimated precision of the noise": model.alpha_,
+            "Estimated precision of the weights": model.lambda_,
+            "Scores": model.scores_,
+        })
+    elif isinstance(model, linear_model.TweedieRegressor):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, linear_model.HuberRegressor):
+        attrs.update({
+             "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+            "Scale": model.scale_
+        })
+    elif isinstance(model, linear_model.TheilSenRegressor):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+            "Approximated breakdown point": model.breakdown_,
+            "Number of subpopulations": model.n_subpopulation_
+        })
+    elif isinstance(model, linear_model.QuantileRegressor):
+        attrs.update({
+            "Coefficients": model.coef_,
+            "Intercept": model.intercept_,
+        })
+    elif isinstance(model, kernel_ridge.KernelRidge):
+        pass
+    elif isinstance(model, svm.SVR):
+        attrs.update({
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, svm.NuSVR):
+        attrs.update({
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, neighbors.KNeighborsRegressor):
+        pass
+    elif isinstance(model, neighbors.RadiusNeighborsRegressor):
+        pass
+    elif isinstance(model, gaussian_process.GaussianProcessRegressor):
+        pass
+    elif isinstance(model, cross_decomposition.PLSCanonical):
+        attrs.update({
+            "Intercept": model.intercept_,
+            "Iterations run": model.n_iter_,
+        })
+    elif isinstance(model, tree.DecisionTreeRegressor):
+        attrs.update({
+            "Feature importance": model.feature_importances_,
+            "Maximum features": model.max_features_,
+            "Number of outputs": model.n_outputs_
+        })
+    elif isinstance(model, tree.ExtraTreeRegressor):
+        attrs.update({
+            "Feature importance": model.feature_importances_,
+            "Maximum features": model.max_features_,
+            "Number of outputs": model.n_outputs_
+        })
+    elif isinstance(model, ensemble.RandomForestRegressor):
+        attrs.update({
+            "Feature importance": model.feature_importances_,
+            "Number of outputs": model.n_outputs_,
+            "Out-of-bag score": model.oob_score_,
+        })
+    elif isinstance(model, ensemble.ExtraTreesRegressor):
+        attrs.update({
+            "Feature importance": model.feature_importances_,
+            "Number of outputs": model.n_outputs_,
+            "Out-of-bag score": model.oob_score_,
+        })
+    elif isinstance(model, ensemble.GradientBoostingRegressor):
+        pass
+    elif isinstance(model, ensemble.HistGradientBoostingRegressor):
+        attrs.update({
+            "Early stopping": model.do_early_stopping_,
+            "Iterations run": model.n_iter_,
+            "Number of tree": model.n_trees_per_iteration_,
+            "Train scores": model.train_score_,
+            "Validation score": model.validation_score_
+        })
+    elif isinstance(model, ensemble.BaggingRegressor):
+        attrs.update({
+            "Estimator": model.estimator_.__class__.__name__,
+            "Out-of-bag score": model.oob_score_,
+            "Out-of-bag prediction": model.oob_prediction_
+        })
+    elif isinstance(model, ensemble.VotingRegressor):
+        attrs.update({
+            "Estimators": model.named_estimators_,
+        })
+    elif isinstance(model, ensemble.StackingRegressor):
+        attrs.update({
+            "Estimators": model.named_estimators_,
+        })
+    elif isinstance(model, ensemble.AdaBoostRegressor):
+        attrs.update({
+            "Estimator": model.estimator_.__class__.__name__,
+            "Feature importance": model.feature_importances_,
+            "Estimator weights": model.estimator_weights_,
+            "Estimator errors": model.estimator_errors_,
+        })
+    elif isinstance(model, dummy.DummyRegressor):
+        attrs.update({
+            "Number of outputs": model.n_outputs_
+        })
+
+    return attrs
     
 class Report(Dialog):
     def __init__(self, model, Y, Y_pred, score_function, parent=None):
@@ -104,12 +289,9 @@ class Report(Dialog):
         self.score = BodyLabel(f'Score: {scoring(self.score_function, self.Y, self.Y_pred)}')
         layout.addWidget(self.score)
 
-        if isinstance(self.model, linear_model.LinearRegression):
-            attrs = LinearRegression.get_attributes(self.model)
-            for key, value in attrs.items():
-                layout.addWidget(SeparateHLine())
-                layout.addWidget(BodyLabel(f'{key}: {value}'))
-                
+        for key, value in attributes(self.model).items():
+            layout.addWidget(SeparateHLine())
+            layout.addWidget(BodyLabel(f'{key}: {value}'))
 
         return widget
 
