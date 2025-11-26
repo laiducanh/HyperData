@@ -301,7 +301,7 @@ class NodeGraphicsView(QGraphicsView):
 
     def scaling_time(self, factor=None):
         """
-        Updates the current scale based on the wheel events.
+        Updates the current scale based on the wheel/key events.
 
         """
         if not factor: factor = 1.0 + self._numScheduledScalings / 300.0
@@ -318,6 +318,8 @@ class NodeGraphicsView(QGraphicsView):
             self.currentScale = 0.5
             self.scale(factor, factor)
             
+        logger.info(f"NodeGraphicsView: current scale {self.currentScale}.")
+            
     def anim_finished(self):
         """
         Called when the zoom animation is finished.
@@ -326,8 +328,6 @@ class NodeGraphicsView(QGraphicsView):
             self._numScheduledScalings -= 1
         else:
             self._numScheduledScalings += 1
-        
-        logger.info(f"NodeGraphicsView: current scale {self.currentScale}.")
     
     def edgeDragStart(self, item:NodeGraphicsSocket):
         

@@ -102,12 +102,8 @@ class NodeView (QMainWindow):
         return super().paintEvent(a0)
         
     def keyPressEvent(self, event: QKeyEvent) -> None:
-
-        logger.info(f"NodeView::keyPressEvent: {Qt.Key(event.key()).name} is pressed.")
-
         if event.key() == Qt.Key.Key_Slash:
             self.search_box.setFocus()
-            logger.info(f"NodeView::SearchBox: get focus.")
         else:
             super().keyPressEvent(event)
 
