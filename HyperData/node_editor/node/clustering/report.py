@@ -1,22 +1,18 @@
 import numpy as np
 import pandas as pd
 from ui.base_widgets.window import Dialog
-from ui.base_widgets.button import (HPrimaryComboBox, HTransparentComboBox, HToggle, SegmentedWidget,
-                                    HTransparentPushButton)
+from ui.base_widgets.button import HPrimaryComboBox, HTransparentComboBox, SegmentedWidget
 from ui.base_widgets.text import BodyLabel
 from ui.base_widgets.frame import SeparateHLine
 from plot.canvas import Canvas
 from config.settings import logger, GLOBAL_DEBUG
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QStackedLayout, QHBoxLayout, QApplication)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedLayout, QHBoxLayout
 from PySide6.QtCore import Qt
 from sklearn import cluster
 from sklearn.metrics import (rand_score, adjusted_rand_score, mutual_info_score, fowlkes_mallows_score,
                              adjusted_mutual_info_score, homogeneity_score, completeness_score,
                              silhouette_score,calinski_harabasz_score, davies_bouldin_score)
 import matplotlib.pyplot as plt
-from typing import Union
-from node_editor.node.clustering.kmeans import KMeans
-
 
 def scoring(X, labels_true, labels_pred, metric='Rand Index'):
     try:
@@ -44,6 +40,66 @@ def scoring(X, labels_true, labels_pred, metric='Rand Index'):
         logger.exception(e)
         return '--'
 
+def attributes(model):
+    attrs = {
+        "Number of samples": len(model.labels_),
+        "Number of features": model.n_features_in_,
+        "Number of clusters": len(set(model.labels_)),
+    }
+    if isinstance(model, cluster.KMeans):
+        attrs.update({
+            # "Cluster centers": str(model.cluster_centers_),
+            "Inertial": model.inertia_,
+            "Iterations run": model.n_iter_,
+            "Converged": len(set(model.labels_)) == model.cluster_centers_.shape[0]
+        })
+    elif isinstance(model, cluster.AffinityPropagation):
+        attrs.update({
+            # "Cluster centers": str(model.cluster_centers_),
+            # "Affinity matrix": str(model.affinity_matrix_),
+            "Iterations run": model.n_iter_,
+            "Converged": len(set(model.labels_)) == model.cluster_centers_.shape[0]
+        })
+    elif isinstance(model, cluster.AgglomerativeClustering):
+        attrs.update({
+            "Number of leaves": model.n_leaves_,
+            "Number of connected components": model.n_connected_components_,
+        })
+    elif isinstance(model, cluster.MeanShift):
+        attrs.update({
+            # "Cluster centers": str(model.cluster_centers_),
+            "Iterations run": model.n_iter_,
+            "Converged": len(set(model.labels_)) == model.cluster_centers_.shape[0]
+        })
+    elif isinstance(model, cluster.OPTICS):
+        attrs.update({
+            "Noisy samples": np.sum(model.labels_==-1),
+        })
+    elif isinstance(model, cluster.DBSCAN):
+        pass
+    elif isinstance(model, cluster.HDBSCAN):
+        attrs.update({
+            "Noisy samples": np.sum(model.labels_==-1),
+            "Infinite samples": np.sum(model.labels_==-2),
+            "Missing data samples": np.sum(model.labels_==-3),
+        })
+    elif isinstance(model, cluster.SpectralClustering):
+        attrs.update({
+            # "Affinity matrix": str(model.affinity_matrix_),
+        })
+    elif isinstance(model, cluster.Birch):
+        attrs.update({
+            # "Centroids of all subclusters": str(model.subcluster_centers_),
+        })
+    elif isinstance(model, cluster.BisectingKMeans):
+        attrs.update({
+            # "Cluster centers": str(model.cluster_centers_),
+            "Inertial": model.inertia_,
+            "Converged": len(set(model.labels_)) == model.cluster_centers_.shape[0]
+        })
+    
+    return attrs
+
 class Visualization(QWidget):
     def __init__(self, model, X:pd.DataFrame, parent=None):
         super().__init__(parent)
@@ -52,10 +108,6 @@ class Visualization(QWidget):
         self.X = X
 
         layout = QVBoxLayout(self)
-
-        self.plot = HPrimaryComboBox(items=["Scatter","Fireworks"], label="Plot Type")
-        self.plot.button.currentTextChanged.connect(self.draw_plot)
-        layout.addWidget(self.plot)
 
         hlayout = QHBoxLayout()
         layout.addLayout(hlayout)
@@ -83,54 +135,15 @@ class Visualization(QWidget):
         n_clusters = len(set(self.model.labels_))
         colors = plt.cycler("color", plt.cm.viridis(np.linspace(0, 1, n_clusters)))
 
-        if self.plot.button.currentText() == "Scatter":
-            for k, col in zip(range(n_clusters), colors):
-                class_members = self.model.labels_ == k
-                self.ax.scatter(
-                    self.X.iloc[class_members, self.x_btn.button.currentIndex()], 
-                    self.X.iloc[class_members, self.y_btn.button.currentIndex()],
-                    color=col["color"],
-                    alpha=0.7,
-                    label=f"Cluster {k+1}"
-                )
+        for k, col in zip(range(n_clusters), colors):
+            class_members = self.model.labels_ == k
             self.ax.scatter(
-                self.model.cluster_centers_[:, self.x_btn.button.currentIndex()],
-                self.model.cluster_centers_[:, self.y_btn.button.currentIndex()],
-                c='black',
-                s=300,
-                marker='x',
-            )
-
-        elif self.plot.button.currentText() == "Fireworks":
-            for k, col in zip(range(n_clusters), colors):
-                class_members = self.model.labels_ == k
-
-                self.ax.scatter(
-                    self.X.iloc[class_members, self.x_btn.button.currentIndex()], 
-                    self.X.iloc[class_members, self.y_btn.button.currentIndex()],
-                    color=col["color"],
-                    s=10,
-                    label=f"Cluster {k+1}"
-                )
-
-                x0 = self.model.cluster_centers_[:, self.x_btn.button.currentIndex()][k]
-                y0 = self.model.cluster_centers_[:, self.y_btn.button.currentIndex()][k]
-                self.ax.scatter(
-                    x0,
-                    y0,
-                    color=col["color"],
-                    s=30,
-                    marker='o'
-                )
-                for x, y in zip(
-                    self.X.iloc[class_members, self.x_btn.button.currentIndex()],
-                    self.X.iloc[class_members, self.y_btn.button.currentIndex()]
-                ):
-                    self.ax.plot(
-                        [x0, x], [y0, y],
-                        color=col["color"],
-                        alpha=0.5
-                    )
+                self.X.iloc[class_members, self.x_btn.button.currentIndex()], 
+                self.X.iloc[class_members, self.y_btn.button.currentIndex()],
+                color=col["color"],
+                alpha=0.7,
+                label=f"Cluster {k+1}"
+            )              
 
         self.ax.set_xlabel(self.x_btn.button.currentText())
         self.ax.set_ylabel(self.y_btn.button.currentText())
@@ -139,7 +152,8 @@ class Visualization(QWidget):
             loc='upper left', 
             bbox_to_anchor=(0, -0.1, 1, -0.), 
             ncols=np.ceil(n_clusters/3),
-            mode='expand'
+            mode='expand',
+            frameon=False
         )
         self.canvas.figure.tight_layout()
         self.canvas.draw_idle()
@@ -172,11 +186,9 @@ class Metrics(QWidget):
         self.score = BodyLabel(f'Score: {scoring(X, labels_true, model.labels_, self.score_function)}')
         layout.addWidget(self.score)
 
-        if isinstance(model, cluster.KMeans):
-            attrs = KMeans.get_attributes(model)
-            for key, value in attrs.items():
-                layout.addWidget(SeparateHLine())
-                layout.addWidget(BodyLabel(f'{key}: {value}'))
+        for key, value in attributes(model).items():
+            layout.addWidget(SeparateHLine())
+            layout.addWidget(BodyLabel(f'{key}: {value}'))
 
     def change_metric(self, metric:str):
         self.score_function = metric
